@@ -1,9 +1,12 @@
-
 let m = require('./math.js');
+let txfm = require('./txfm.js');
 
-// let txfm = require('./txfm.js');
-// m = txfm.wrap(m);
-
+m = txfm(m);
 
 m.x = 3;
-m.fft.mul(m.add(m.constants.pi, m.constants.e), m.x);
+
+//examples
+console.log(m.fft.mul(m.add(m.constants.pi, m.constants.e), m.x));
+console.log(m.fft.mul(m.fft.add(m.constants.pi, m.constants.e), m.x));
+console.log(m.fft.mul(m.fft.add(m.constants.pi, m.fft.e), m.x));
+console.log(m.fft.mul(m.abc.add(m.constants.pi, m.fft.e), m.x));
