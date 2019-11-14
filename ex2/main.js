@@ -1,5 +1,5 @@
 
-let m = require('math.js');
+let m = require('./math.js');
 
 // let txfm = require('./txfm.js');
 // m = txfm.wrap(m);
