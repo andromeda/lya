@@ -17,23 +17,29 @@ var o = {
   mult: (a,b) => a *b
 }
 
+//returns the proxy obj we want
+function wrap(obj) {
+	return new Proxy(obj,handler)
+}
 
-var wrapper= new Proxy(o,handler)
 
-//examples
-console.log(wrapper.add)
-console.log(wrapper.add)
-console.log(wrapper.add)
-console.log(wrapper.add)
+//example
+o=wrap(o)
 
-console.log(wrapper.sub)
-console.log(wrapper.sub)
-console.log(wrapper.sub)
-console.log(wrapper.sub)
+console.log(o.add)
+console.log(o.add)
+console.log(o.add)
+console.log(o.add)
 
-console.log(wrapper.mult)
-console.log(wrapper.mult)
-console.log(wrapper.mult)
+console.log(o.sub)
+console.log(o.sub)
+console.log(o.sub)
+console.log(o.sub)
+
+console.log(o.mult)
+console.log(o.mult)
+console.log(o.mult)
+console.log(o.mult)
 
 
 
