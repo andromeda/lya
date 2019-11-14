@@ -1,11 +1,12 @@
 //we declare the global array of our counters
-var counter=new Array;
+var counter = {}
 
-//if undef then we define the counter : we just increase by 1
 var handler = {
-  get: function(target,prop) {
-  	console.log(prop)
-  	return (typeof counter[prop] === "undefined") ? counter[prop]=1  :  (counter[prop]=counter[prop]+1);
+  apply: function(target, prop, argList) {
+    counter[target] = counter[target]? (counter[target] + 1) : 1;
+  	console.log(target.name, counter[target]);
+    //if undef then we define the counter : we just increase by 1
+  	return Reflect.apply(...arguments);
   }
 };
 
@@ -14,36 +15,20 @@ var handler = {
 var o = {
   add: (a, b) => a + b,
   sub: (a, b) => a - b,
-  mult: (a,b) => a *b
+  mul: (a, b) => a * b
 }
 
 //returns the proxy obj we want
 function wrap(obj) {
-	return new Proxy(obj,handler)
+  for (k in obj) {
+    obj[k] = new Proxy(obj[k], handler); 
+  }
+  return obj;
 }
 
 
 //example
-o=wrap(o)
+o = wrap(o)
 
-console.log(o.add)
-console.log(o.add)
-console.log(o.add)
-console.log(o.add)
-
-console.log(o.sub)
-console.log(o.sub)
-console.log(o.sub)
-console.log(o.sub)
-
-console.log(o.mult)
-console.log(o.mult)
-console.log(o.mult)
-console.log(o.mult)
-
-
-
-
-
-
-
+o.add(o.add(1, 2), 3);
+o.mul(o.mul(1, 2), 3);
