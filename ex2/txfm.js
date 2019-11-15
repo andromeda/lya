@@ -30,7 +30,11 @@ let handler = {
     return Reflect.get(target, name);
   },
   set: function(target, name, value){
-    console.log(name, counter.get([target[name]]));
+    //we need to get the counter in 2 diff ways -- one for type number and one for the rest
+    let counter_val;       //diff structure in counter for number and the rest
+    typeof target[name] === 'number' ? counter_val = counter.get(target)[name] : 
+        counter_val = counter.get(target[name]);
+    console.log(name, counter_val);
     return Reflect.set(target, name, value)
   }
 };
