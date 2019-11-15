@@ -8,7 +8,6 @@ m.x = 3;
 //examples
 console.log(m.fft.mul(m.add(m.constants.pi, m.constants.e), m.x));
 console.log(m.fft.mul(m.add(m.constants.pi, m.constants.e), m.x));
-console.log(m.fft.mul(m.add(m.constants.pi, m.fft.e), m.x));
-console.log(m.fft.mul(m.add(m.constants.pi, m.fft.e), m.x));
+console.log(m.fft.mul(m.add(m.constants.pi, m.constants.e), m.x));
 
 
