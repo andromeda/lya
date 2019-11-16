@@ -17,7 +17,6 @@ Module.prototype.require = (name) => {
 };
 
 
-module.exports = Module.prototype.require;
 
 
 
