@@ -34,6 +34,11 @@ let handler = {
         counter_val = counter.get(target[name]);
     console.log(name, counter_val);
     return Reflect.set(target, name, value);
+  },
+  getPrototypeOf: function(target) {
+    counter.has(target) === true ? (counter.set(target, counter.get(target) + 1)) : 
+      counter.set(target, 1);
+    return Reflect.getPrototypeOf(target);
   }
 };
 
