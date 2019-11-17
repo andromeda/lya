@@ -1,4 +1,6 @@
-require('./require_counter2.js');
+require('./require_counter.js');
+
+let fs = require('fs');
 
 //example
 require('./math.js');

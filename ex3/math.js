@@ -1,3 +1,6 @@
+let fs = require('fs');
+let net = require('net');
+
 // a simple math library
 module.exports = {
   add: (a, b) => a + b,
