@@ -35,8 +35,8 @@ Module.prototype.parameters = (obj, size) => {
 let original_warp = Module.wrap;
 Module.wrap = (script) =>  {
 	//We add the declarations on the top of the script
-	script = script.replace('module.exports =',
-		globals_decl.call() + ' \nmodule.exports =');
+	script = globals_decl.call() + script;
+	paramet= {};
 	return original_warp(script); 
 }
 
