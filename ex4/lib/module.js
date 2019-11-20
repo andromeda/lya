@@ -32,7 +32,7 @@ function makeRequireFunction(mod) {
   require.extensions = Module._extensions;
 
   require.cache = Module._cache;
-
+  
   return require;
 }
 
