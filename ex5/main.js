@@ -10,5 +10,3 @@ require('./print_test.js')
 
 
 
-console.log(variable_call)
-console.log(function_call)

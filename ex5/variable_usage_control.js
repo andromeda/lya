@@ -8,17 +8,20 @@ const fs = require('fs');
 let global_proxy={};
 
 //We declare the variables
-global['variable_call'] = {};
-global['function_call'] = {}; 
+let variable_call = {};
 
 //We declare the proxy
 let handler= {
 	apply: function (target) {
-		function_call[true_name]= target;
+		if (variable_call[true_name].hasOwnProperty(target.name) === false)	
+			variable_call[true_name][target.name]= 1;
+		else variable_call[true_name][target.name]++; 
 		return Reflect.apply( ...arguments);	
 	},
 	get: function(target, name){
-		variable_call[true_name]= target.name;
+		if (variable_call[true_name].hasOwnProperty(target.name) === false)	
+			variable_call[true_name][target.name]= 1;
+		else variable_call[true_name][target.name]++;
     	return Reflect.get(target, name);
 	},
   	set: function(target, name, value){
@@ -107,23 +110,19 @@ let true_name;
 vm.runInThisContext = function(code, options) {
   let code_to_run = original_run(code, options);
   true_name = get_name(options['filename']);
+  variable_call[true_name] = {};
   return new Proxy(code_to_run, handler_addArg)
 }
 
 //But in case we loaded the module and it is in cache and call it again we need it to re-import the name
 let original_updateChildren= Module.updateChildren;
 Module.updateChildren = (parent, child, scan) => {
-	console.log(child,'test buffer');
 	return original_updateChildren(parent,child,scan);
 }
 
-//In case of control-c exit print all the store data
-process.on('SIGINT', function() {
-    console.log("Caught interrupt signal");
+//We print all the results 
+process.on('exit', function() {
+    console.log("Caught exit signal");
     console.log(variable_call)
-	console.log(function_call)
-
-    if (i_should_exit)
-        process.exit();
 });
 
