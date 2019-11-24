@@ -16,7 +16,7 @@ let variable_call = {};
 let true_name;
 
 //Handlers of Proxies
-//We declare the handler for 
+//We declare the handler
 let handler= {
 	apply: function (target) {
 		if (variable_call[true_name].hasOwnProperty(target.name) === false)	
@@ -93,9 +93,10 @@ let globals_decl = () => {
 
 //We declare the data on the same time to pass them inside wrapped function
 let create_global = (name, final_decl) => {
-	if (global[name] != undefined)
+	if (global[name] != undefined){
 		global_proxy[name] = proxy_wrap(handler, global[name]);
 		final_decl = 'let ' + name + ' = pr.' + name +';\n' + final_decl; 
+	}
 	return final_decl;
 }
 
