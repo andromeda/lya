@@ -113,8 +113,6 @@ let get_name = (way_file) => {
 	return splited[splited.length - 1];
 };
 
-//Swap  
-
 //We export the name of the curr module and pass proxy to the final function
 vm.runInThisContext = function(code, options) {
   let code_to_run = original_run(code, options);
