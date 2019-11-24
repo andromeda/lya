@@ -1,8 +1,8 @@
 // a simple math library
 console.log('this is math test');
-let test = new Array;
+let test = new Array; 
 module.exports = {
-  add: (a, b) => new Array,  
+  add: (a, b) => a + b,  
   sub: (a, b) => a - b,
   constants: {
     pi: 3.14,
