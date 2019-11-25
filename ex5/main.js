@@ -1,11 +1,24 @@
 require("./variable_usage_control.js");
 
-let x= require("./math.js")
-require('./print_test.js')
-let y= require("./test2.js")
+//Import
+let x = require("./testcases/math.js")
+let y = require("./testcases/test1.js")
+let z = require('./testcases/test2.js')
 
-x.sub(2,1)
+//Test
+x.sub(2,1);
+x.add(1,1);
 x.add(1,x.pi);
+x.fft.add(3,1);
 
-y.add(3,1)
-y.sub(9,3)
+y.print_name();
+y.print_surname();
+
+z.print_name();
+z.print_surname();
+
+y.print_name();
+y.print_surname();
+
+z.print_name();
+z.print_surname();

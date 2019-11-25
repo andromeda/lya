@@ -13,21 +13,26 @@ let original_run = vm.runInThisContext;
 //We declare the variables
 let global_proxy={};
 let variable_call = {};
-let true_name;
+
+//We store names as a lifo
+let true_name={};
+let count=0;
 
 //Handlers of Proxies
 //We declare the handler
 let handler= {
 	apply: function (target) {
-		if (variable_call[true_name].hasOwnProperty(target.name) === false)	
-			variable_call[true_name][target.name] = 1;
-		else variable_call[true_name][target.name]++; 
+		let curr_name = true_name[count];
+		if (variable_call[curr_name].hasOwnProperty(target.name) === false)	
+			variable_call[curr_name][target.name] = 1;
+		else variable_call[curr_name][target.name]++; 
 		return Reflect.apply( ...arguments);	
 	},
 	get: function(target, name){
-		if (variable_call[true_name].hasOwnProperty(target.name) === false)	
-			variable_call[true_name][target.name] = 1;
-		else variable_call[true_name][target.name]++;
+		let curr_name = true_name[count];
+		if (variable_call[curr_name].hasOwnProperty(target.name) === false)	
+			variable_call[curr_name][target.name] = 1;
+		else variable_call[curr_name][target.name]++;
     	return Reflect.get(target, name);
 	}
 }
@@ -65,13 +70,27 @@ let proxy_wrap = function(handler,obj) {
     	}else if (type === 'object') {
     	  	obj[k] = proxy_wrap(obj[k]);
    	 	}else{
-   	 		try{
-   	 			obj[k] = new Proxy(obj[k], handler);
-   	 		}catch 
-   	 			(TypeError){}
+   	 		obj[k] = new Proxy(obj[k], handler);
     	}
   	} 
 	return obj;
+} 
+
+//Returns the proxy obj we want
+let proxy_wrap_imports = function(obj, handler) {
+  for (k in obj) {
+    if (typeof obj[k] === 'number') {
+      	obj[k] = obj[k];  //no action 
+    }else if (typeof obj[k] === 'object') {
+    	obj[k].truename = true_name[count];
+      	obj[k] = proxy_wrap_imports(obj[k], handler);
+    }else{
+    	try{
+    		obj[k] = new Proxy(obj[k], handler);
+    	}catch(TypeError){}
+    }
+  } 
+  return obj;
 } 
 
 //We read and store the data of the json file
@@ -85,7 +104,7 @@ let globals_decl = () => {
 		let global_variables = json_data[up_value];
 		for (let decl_name in global_variables){
 			let name = global_variables[decl_name];
-			final_decl = create_global(name,final_decl);
+			final_decl = create_global(name, final_decl);
 		}		
 	}
 	return final_decl;
@@ -117,27 +136,24 @@ let get_name = (way_file) => {
 //We export the name of the curr module and pass proxy to the final function
 vm.runInThisContext = function(code, options) {
   let code_to_run = original_run(code, options);
-  true_name = get_name(options['filename']);
-  variable_call[true_name] = {};
+  count++;
+  true_name[count] = get_name(options['filename']);
+  variable_call[true_name[count]] = {};
   return new Proxy(code_to_run, handler_addArg)
-}
-
-Module._resolveFilename = (request, parent, isMain) => {
-	let filename = original_resolveFilename(request, parent, isMain);
-	true_name = get_name(filename);
-	return filename;
 }
 
 //We wrap the result in the wrapper function
 Module.prototype.require = (path) => {
 	let result = original_require(path,this);
-	result = proxy_wrap(handler_exports, result);
-	result.truename = true_name;
+	if(result.truename === undefined ){
+		result = proxy_wrap_imports(result, handler_exports);
+		result.truename = true_name[count];
+	}
 	return result;
 }
 
 //We print all the results on the end of the program
 process.on('exit', function() {
     console.log("---------------------");
-    console.log(variable_call)
+    console.log(variable_call);
 });

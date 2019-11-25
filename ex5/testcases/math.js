@@ -1,6 +1,4 @@
 // a simple math library
-console.log('this is math test');
-let test = new Array; 
 module.exports = {
   add: (a, b) => a + b,  
   sub: (a, b) => a - b,
