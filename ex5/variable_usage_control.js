@@ -40,7 +40,7 @@ let handler= {
 //We use it for the imported libraries
 let handler_exports= {
 	apply: function (target) {
-		truename = arguments[1].truename;
+		truename = arguments[1].truename;	
 		if (variable_call[truename].hasOwnProperty(target.name) === false)	
 			variable_call[truename][target.name] = 1;
 		else variable_call[truename][target.name]++; 
@@ -51,6 +51,9 @@ let handler_exports= {
 //We pass all the global values with the proxies 
 let handler_addArg= {
 	apply: function (target) {
+		let local_require = arguments[2][1];	//We catch require in order to wrap it
+		local_require = new Proxy(local_require, handler);
+		arguments[2][1] = local_require;
 		arguments[2][5] = global_proxy;
 		return Reflect.apply( ...arguments);	 
 	}	
