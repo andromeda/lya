@@ -29,3 +29,7 @@ https://tvcutsem.github.io/js-membranes
 https://github.com/ajvincent/es-membrane
 
 https://github.com/salesforce/observable-membrane
+
+## Related Work
+
+* [Dynamic analysis using JavaScript proxies](https://dl.acm.org/citation.cfm?id=2819009.2819180)
