@@ -5,21 +5,20 @@ const fs = require('fs');
 
 //All the nessasary modules for swap
 let original_warp = Module.wrap;
-let original_comp = Module.prototype._compile;
 let original_require = Module.prototype.require;
-let original_resolveFilename= Module._resolveFilename;
+let original_resolveFilename = Module._resolveFilename;
 let original_run = vm.runInThisContext;
 
 //We declare the variables
-let global_proxy={};
+let global_proxy = {};
 let variable_call = {};
 
 //We store names as a lifo
-let true_name={};
-let count=0;
+let true_name = {};
+let count = 0;
 
 //Handlers of Proxies
-//We declare the handler
+//The handler of the functions
 let handler= {
 	apply: function (target) {
 		let curr_name = true_name[count];
@@ -37,7 +36,7 @@ let handler= {
 	}
 }
 
-//We use it for the imported libraries
+//The handler of the imported libraries
 let handler_exports= {
 	apply: function (target) {
 		truename = arguments[1].truename;
@@ -48,13 +47,15 @@ let handler_exports= {
 	}
 }
 
-//We pass all the global values with the proxies 
+//The handler of compiledWrapper
+//We wrap the compiledWrapper code in a proxy so
+//when it is called it will do this actions =>
 let handler_addArg= {
 	apply: function (target) {
-		let local_require = arguments[2][1];	//We catch require in order to wrap it
+		let local_require = arguments[2][1];	//We catch local require in order to wrap it
 		local_require = new Proxy(local_require, handler);
-		arguments[2][1] = local_require;
-		arguments[2][5] = global_proxy;
+		arguments[2][1] = local_require;	//We wrap require
+		arguments[2][5] = global_proxy;		//We pass the global values with the proxies
 		let result = Reflect.apply( ...arguments);
 		return result;
 	}	
@@ -80,7 +81,7 @@ let proxy_wrap = function(handler,obj) {
 	return obj;
 } 
 
-//Returns the proxy obj we want
+//Returns the proxy obj we want for the imports
 let proxy_wrap_imports = function(obj, handler) {
   for (k in obj) {
     if (typeof obj[k] === 'number') {
@@ -147,7 +148,6 @@ vm.runInThisContext = function(code, options) {
 }
 
 //We wrap the result in the wrapper function
-
 Module.prototype.require = (path) => {
 	let result = original_require(path,this);
 	if(result.truename === undefined ){
