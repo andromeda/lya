@@ -40,7 +40,7 @@ let handler= {
 //We use it for the imported libraries
 let handler_exports= {
 	apply: function (target) {
-		truename = arguments[1].truename;	
+		truename = arguments[1].truename;
 		if (variable_call[truename].hasOwnProperty(target.name) === false)	
 			variable_call[truename][target.name] = 1;
 		else variable_call[truename][target.name]++; 
@@ -55,7 +55,8 @@ let handler_addArg= {
 		local_require = new Proxy(local_require, handler);
 		arguments[2][1] = local_require;
 		arguments[2][5] = global_proxy;
-		return Reflect.apply( ...arguments);	 
+		let result = Reflect.apply( ...arguments);
+		return result;
 	}	
 }
 
@@ -146,11 +147,13 @@ vm.runInThisContext = function(code, options) {
 }
 
 //We wrap the result in the wrapper function
+
 Module.prototype.require = (path) => {
 	let result = original_require(path,this);
 	if(result.truename === undefined ){
 		result = proxy_wrap_imports(result, handler_exports);
 		result.truename = true_name[count];
+		if (count !=1) count--;	 
 	}
 	return result;
 }
