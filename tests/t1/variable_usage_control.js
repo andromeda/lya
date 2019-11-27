@@ -39,9 +39,11 @@ let handler= {
 //The handler of the imported libraries
 let handler_exports= {
 	apply: function (target) {
+    let curr_name = arguments[1].truepath;
 		truename = arguments[1].truename;
-		if (variable_call[truename].hasOwnProperty(target.name) === false)	
-			variable_call[truename][target.name] = true;
+    truename = truename + "." + target.name;
+		if (variable_call[curr_name].hasOwnProperty(truename) === false)	
+			variable_call[curr_name][truename] = true;
  
 		return Reflect.apply( ...arguments);
 	}
@@ -216,12 +218,13 @@ Module.prototype.require = (path) => {
 	let result = original_require(path,this);
 	if(result.truename === undefined ){
 		result = proxy_wrap_imports(result, handler_exports);
-		result.truename = true_name[count];
+    result.truename = 'require(\"' + path + '\")';
+    result.truepath = true_name[count];
 		if (count !=1) count--;	 
 	}else{
-    result.truename = true_name[count];
+    result.truename = 'require(\"' + path + '\")';
+    result.truepath = true_name[count];
   }
-
 	return result;
 }
 
