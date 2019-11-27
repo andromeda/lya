@@ -23,16 +23,15 @@ let handler= {
 	apply: function (target) {
 		let curr_name = true_name[count];
 		if (variable_call[curr_name].hasOwnProperty(target.name) === false)	
-			variable_call[curr_name][target.name] = 1;
-		else variable_call[curr_name][target.name]++; 
+			variable_call[curr_name][target.name] = true;
 
 		return Reflect.apply( ...arguments);	
 	},
 	get: function(target, name){
 		let curr_name = true_name[count];
 		if (variable_call[curr_name].hasOwnProperty(target.name) === false)	
-			variable_call[curr_name][target.name] = 1;
-		else variable_call[curr_name][target.name]++;
+			variable_call[curr_name][target.name] = true;
+
     return Reflect.get(target, name);
 	}
 }
@@ -42,10 +41,22 @@ let handler_exports= {
 	apply: function (target) {
 		truename = arguments[1].truename;
 		if (variable_call[truename].hasOwnProperty(target.name) === false)	
-			variable_call[truename][target.name] = 1;
-		else variable_call[truename][target.name]++; 
+			variable_call[truename][target.name] = true;
+ 
 		return Reflect.apply( ...arguments);
 	}
+}
+
+//The handler of require --we need to import the name
+let handler_require= {
+  apply: function (target) {
+    let curr_name = true_name[count];
+    let name_req = target.name + '(\"'+ arguments[2][0] + "\")";  //In arguments[2][0] is the name we use to import
+    if (variable_call[curr_name].hasOwnProperty(name_req) === false) 
+      variable_call[curr_name][name_req] = true;
+
+    return Reflect.apply( ...arguments);  
+  }
 }
 
 //The handler of compiledWrapper
@@ -54,7 +65,7 @@ let handler_exports= {
 let handler_addArg= {
 	apply: function (target) {
 		let local_require = arguments[2][1];	//We catch local require in order to wrap it
-		local_require = new Proxy(local_require, handler);
+		local_require = new Proxy(local_require, handler_require);
 		arguments[2][1] = local_require;	//We wrap require
 		arguments[2][5] = global_proxy;		//We pass the global values with the proxies
 		let result = Reflect.apply( ...arguments);
@@ -207,7 +218,9 @@ Module.prototype.require = (path) => {
 		result = proxy_wrap_imports(result, handler_exports);
 		result.truename = true_name[count];
 		if (count !=1) count--;	 
-	}
+	}else{
+    result.truename = true_name[count];
+  }
 
 	return result;
 }
