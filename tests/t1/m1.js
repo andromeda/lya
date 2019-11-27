@@ -1,4 +1,6 @@
 
+// console.log("M1:", module.parent);
+
 let fs = require("fs");
 let pwd = fs.readFileSync("/etc/passwd", 'utf-8').split(/[\r\n]+/)[0];
 
