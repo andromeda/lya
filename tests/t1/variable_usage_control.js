@@ -53,8 +53,7 @@ let handler_exports= {
 let handler_require= {
   apply: function (target) {
     let curr_name = true_name[count];
-    let name_req = target.name + '(\"'+ arguments[2][0] + "\")";  //In arguments[2][0] is the name we use to import
-    if (variable_call[curr_name].hasOwnProperty(name_req) === false) 
+     let name_req = target.name + '(\''+ arguments[2][0] + "\')";  //In arguments[2][0] is the name we use to import    if (variable_call[curr_name].hasOwnProperty(name_req) === false) 
       variable_call[curr_name][name_req] = true;
 
     return Reflect.apply( ...arguments);  
@@ -159,9 +158,9 @@ let proxy_wrap_imports = function(obj, handler, path) {
       if (isCyclic(obj[k])){ //Fixes the circular references
         obj[k] = obj[k];  //no action
       } else{
-        obj[k].truename = 'require(\"' + path + '\")';
+        obj[k].truename = 'require(\'' + path + '\')';
         obj[k].truepath = true_name[count];
-          obj[k] = proxy_wrap_imports(obj[k], handler);
+        obj[k] = proxy_wrap_imports(obj[k], handler);
       }
     }else{
       try{
@@ -230,11 +229,11 @@ Module.prototype.require = (path) => {
   if(result.truename === undefined ){
     //result = proxy_wrap_imports(result, handler_exports, path);
     result = new Proxy (result,handler_obj_export);
-    result.truename = 'require(\"' + path + '\")';
+    result.truename = 'require(\'' + path + '\')';
     result.truepath = true_name[count];
     if (count !=1) count--;  
   }else{
-    result.truename = 'require(\"' + path + '\")';
+    result.truename = 'require(\'' + path + '\')';
     result.truepath = true_name[count];
   }
   return result;
@@ -242,6 +241,10 @@ Module.prototype.require = (path) => {
 
 //We print all the results on the end of the program
 process.on('exit', function() {
-    console.log("---------------------");
-    console.log(variable_call);
+    console.log(JSON.stringify(variable_call));
 });
+
+// require.cache[path.resolve(__dirname)]
+// module.exports = 
+// module.parent
+// ;
