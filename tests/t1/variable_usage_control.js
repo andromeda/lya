@@ -76,6 +76,16 @@ let handler_addArg= {
   } 
 }
 
+let handler_obj_export= {
+	get: function(target, name){
+		if(typeof target[name] != 'string'){
+			let local_function = target[name];
+			target[name] = new Proxy(local_function, handler_exports)
+		}
+		return Reflect.get(target, name);
+	}
+}
+
 //Returns the proxy obj we want
 let proxy_wrap = function(handler,obj) {
   if (typeof obj === 'function') {
@@ -218,7 +228,8 @@ vm.runInThisContext = function(code, options) {
 Module.prototype.require = (path) => {
   let result = original_require(path,this);
   if(result.truename === undefined ){
-    result = proxy_wrap_imports(result, handler_exports, path);
+    //result = proxy_wrap_imports(result, handler_exports, path);
+    result = new Proxy (result,handler_obj_export);
     result.truename = 'require(\"' + path + '\")';
     result.truepath = true_name[count];
     if (count !=1) count--;  
@@ -226,7 +237,6 @@ Module.prototype.require = (path) => {
     result.truename = 'require(\"' + path + '\")';
     result.truepath = true_name[count];
   }
-
   return result;
 }
 
