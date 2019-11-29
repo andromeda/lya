@@ -74,13 +74,14 @@ let handler_addArg= {
   } 
 }
 
+//We first wrap the export obj so that we avoid to print functions that are not called by us
 let handler_obj_export= {
   get: function(target, name){
     if(typeof target[name] != 'undefined'){
-      if (typeof target[name] === 'object') {
+      if (typeof target[name] === 'object') { //if we try to grab an object we wrap it in this proxy
         let local_object = target[name];
         target[name] = new Proxy (local_object, handler_obj_export);
-        target[name].truename = target['truename'] + '.' + name ;
+        target[name].truename = target['truename'] + '.' + name ; //and update truename
         target[name].truepath = target['truepath'];
       }else if (typeof target[name] === 'string' ) {  //if we try to call a string that 
         if (name != 'truename' && name != 'truepath') { //is not truename or truepath
