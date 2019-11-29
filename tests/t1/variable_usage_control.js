@@ -44,7 +44,7 @@ let handler_exports= {
     truename = truename + "." + target.name;
     if (variable_call[curr_name].hasOwnProperty(truename) === false)  
       variable_call[curr_name][truename] = true;
- 
+
     return Reflect.apply( ...arguments);
   }
 }
@@ -76,12 +76,24 @@ let handler_addArg= {
 
 let handler_obj_export= {
   get: function(target, name){
-    if(typeof target[name] != 'string' && typeof target[name] != 'undefined'){
+    if(typeof target[name] != 'undefined'){
       if (typeof target[name] === 'object') {
         let local_object = target[name];
         target[name] = new Proxy (local_object, handler_obj_export);
         target[name].truename = target['truename'] + '.' + name ;
         target[name].truepath = target['truepath'];
+      }else if (typeof target[name] === 'string' ) {  //if we try to call a string that 
+        if (name != 'truename' && name != 'truepath') { //is not truename or truepath
+          let truename = target.truename;       //we need to print access to that variable
+          let truepath = true_name[count];    //we take the path that we are by using true_count
+          truename = truename + "." + name;
+          if (variable_call[truepath] === 'undefined') {
+            variable_call[truepath] = {};
+            variable_call[truepath][truename] = true; 
+          }else{
+            variable_call[truepath][truename] = true;
+          }
+        }
       }else{
         let local_function = target[name];
         target[name] = new Proxy(local_function, handler_exports)
