@@ -1,4 +1,4 @@
-require("./variable_usage_control.js");
+require = require("./variable_usage_control.js");
 
 let m1 = require("./m1.js");
 let m2 = require("./m2.js");

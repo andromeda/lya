@@ -40,7 +40,7 @@ let handler= {
 let handler_exports= {
   apply: function (target) {
     let curr_name = arguments[1].truepath;
-  let truename = arguments[1].truename;
+    let truename = arguments[1].truename;
     truename = truename + "." + target.name;
     if (variable_call[curr_name].hasOwnProperty(truename) === false)  
       variable_call[curr_name][truename] = true;
@@ -53,9 +53,8 @@ let handler_exports= {
 let handler_require= {
   apply: function (target) {
     let curr_name = true_name[count];
-     let name_req = target.name + '(\''+ arguments[2][0] + "\')";  //In arguments[2][0] is the name we use to import    if (variable_call[curr_name].hasOwnProperty(name_req) === false) 
-      variable_call[curr_name][name_req] = true;
-
+    let name_req = target.name + '(\''+ arguments[2][0] + "\')";  //In arguments[2][0] is the name we use to import    if (variable_call[curr_name].hasOwnProperty(name_req) === false) 
+    variable_call[curr_name][name_req] = true;
     return Reflect.apply( ...arguments);  
   }
 }
@@ -169,12 +168,12 @@ vm.runInThisContext = function(code, options) {
 Module.prototype.require = (path) => {
   let result = original_require(path,this);
   if(result.truename === undefined ){
-    //result = proxy_wrap_imports(result, handler_exports, path);
     result = new Proxy (result, handler_obj_export);
     result.truename = 'require(\'' + path + '\')';
     result.truepath = true_name[count];
-    if (count !=1) count--;  
+    if (count !=0) count--;  
   }else{
+    result = new Proxy (result, handler_obj_export);
     result.truename = 'require(\'' + path + '\')';
     result.truepath = true_name[count];
   }
@@ -186,7 +185,7 @@ process.on('exit', function() {
     console.log(JSON.stringify(variable_call));
 });
 
-// require.cache[path.resolve(__dirname)]
-// module.exports = 
-// module.parent
-// ;
+let exp_require = new Proxy (require, handler_require);
+true_name[0] = 'main';
+variable_call[true_name[0]] = {};
+module.exports = exp_require;
