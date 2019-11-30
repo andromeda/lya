@@ -1,0 +1,33 @@
+{
+  "name": "@andromeda/txfm",
+  "version": "0.1.0",
+  "description": "Dynamic Analysis at the Boundaries of Third-Party Modules",
+  "main": "src/txfm.js",
+  "scripts": {
+    "test": "npm run l && npm run t",
+    "l": "eslint ./src",
+    "t": "node ./tst/run-tests.js"
+  },
+  "eslintConfig": {
+    "extends": [
+      "eslint:recommended",
+      "google"
+    ],
+    "parserOptions": {
+      "ecmaVersion": 6
+    },
+    "env": {
+      "node": true,
+      "es6": true
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/andromeda/txfm.git"
+  },
+  "author": "Grigoris Ntousakis",
+  "bugs": {
+    "url": "https://github.com/andromeda/txfm/issues"
+  },
+  "homepage": "https://github.com/andromeda/txfm#readme"
+}
