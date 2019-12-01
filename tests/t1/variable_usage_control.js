@@ -40,11 +40,11 @@ let handler= {
 let handler_exports= {
   apply: function (target) {
     let curr_name = arguments[1].truepath;
-  let truename = arguments[1].truename;
+    let truename = arguments[1].truename;
     truename = truename + "." + target.name;
     if (variable_call[curr_name].hasOwnProperty(truename) === false)  
       variable_call[curr_name][truename] = true;
- 
+
     return Reflect.apply( ...arguments);
   }
 }
@@ -53,10 +53,8 @@ let handler_exports= {
 let handler_require= {
   apply: function (target) {
     let curr_name = true_name[count];
-    let name_req = target.name + '(\''+ arguments[2][0] + "\')";  //In arguments[2][0] is the name we use to import
-    if (variable_call[curr_name].hasOwnProperty(name_req) === false) 
-      variable_call[curr_name][name_req] = true;
-
+    let name_req = target.name + '(\''+ arguments[2][0] + "\')";  //In arguments[2][0] is the name we use to import    if (variable_call[curr_name].hasOwnProperty(name_req) === false) 
+    variable_call[curr_name][name_req] = true;
     return Reflect.apply( ...arguments);  
   }
 }
@@ -74,6 +72,37 @@ let handler_addArg= {
 
     return result;
   } 
+}
+
+//We first wrap the export obj so that we avoid to print functions that are not called by us
+let handler_obj_export= {
+  get: function(target, name){
+    if(typeof target[name] != 'undefined'){
+      if (typeof target[name] === 'object') { //if we try to grab an object we wrap it in this proxy
+        let local_object = target[name];
+        target[name] = new Proxy (local_object, handler_obj_export);
+        target[name].truename = target['truename'] + '.' + name ; //and update truename
+        target[name].truepath = target['truepath'];
+      }else if (typeof target[name] === 'string' ) {  //if we try to call a string that 
+        if (name != 'truename' && name != 'truepath') { //is not truename or truepath
+          let truename = target.truename;       //we need to print access to that variable
+          let truepath = true_name[count];    //we take the path that we are by using true_count
+          truename = truename + "." + name;
+          if (variable_call[truepath] === 'undefined') {
+            variable_call[truepath] = {};
+            variable_call[truepath][truename] = true; 
+          }else{
+            variable_call[truepath][truename] = true;
+          }
+        }
+      }else{
+        let local_function = target[name];
+        target[name] = new Proxy(local_function, handler_exports)
+      }
+    }
+
+    return Reflect.get(target, name);
+  }
 }
 
 //Returns the proxy obj we want
@@ -95,73 +124,7 @@ let proxy_wrap = function(handler,obj) {
     }
 
   return obj;
-} 
-
-//https://stackoverflow.com/questions/14962018/detecting-and-fixing-circular-references-in-javascript
-//StackOverFlow <3 O(n) solution -- with WeakMap
-function isCyclic(object) {
-   const seenObjects = new WeakMap(); // use to keep track of which objects have been seen.
-
-   function detectCycle(obj) {
-      // If 'obj' is an actual object (i.e., has the form of '{}'), check
-      // if it's been seen already.
-      if (Object.prototype.toString.call(obj) == '[object Object]') {
-
-         if (seenObjects.has(obj)) {
-            return true;
-         }
-
-         // If 'obj' hasn't been seen, add it to 'seenObjects'.
-         // Since 'obj' is used as a key, the value of 'seenObjects[obj]'
-         // is irrelevent and can be set as literally anything you want. I 
-         // just went with 'undefined'.
-         seenObjects.set(obj, undefined);
-
-         // Recurse through the object, looking for more circular references.
-         for (var key in obj) {
-            if (detectCycle(obj[key])) {
-               return true;
-            }
-         }
-
-      // If 'obj' is an array, check if any of it's elements are
-      // an object that has been seen already.
-      } else if (Array.isArray(obj)) {
-         for (var i in obj) {
-            if (detectCycle(obj[i])) {
-               return true;
-            }
-         }
-      }
-
-      return false;
-   }
-
-   return detectCycle(object);
-}
-
-//Returns the proxy obj we want for the imports
-let proxy_wrap_imports = function(obj, handler, path) {
-  for (k in obj) {
-    if (typeof obj[k] === 'number') {
-        obj[k] = obj[k];  //no action 
-    }else if (typeof obj[k] === 'object') {
-      if (isCyclic(obj[k])){ //Fixes the circular references
-        obj[k] = obj[k];  //no action
-      } else{
-        obj[k].truename = 'require(\'' + path + '\')';
-        obj[k].truepath = true_name[count];
-          obj[k] = proxy_wrap_imports(obj[k], handler);
-      }
-    }else{
-      try{
-        obj[k] = new Proxy(obj[k], handler);
-      }catch(TypeError){}
-    }
-  } 
-
-  return obj;
-} 
+}  
 
 //We read and store the data of the json file
 let rawdata = fs.readFileSync('globals.json'); 
@@ -218,26 +181,24 @@ vm.runInThisContext = function(code, options) {
 Module.prototype.require = (path) => {
   let result = original_require(path,this);
   if(result.truename === undefined ){
-    result = proxy_wrap_imports(result, handler_exports, path);
+    result = new Proxy (result, handler_obj_export);
     result.truename = 'require(\'' + path + '\')';
     result.truepath = true_name[count];
-    if (count !=1) count--;  
+    if (count !=0) count--;  
   }else{
+    result = new Proxy (result, handler_obj_export);
     result.truename = 'require(\'' + path + '\')';
     result.truepath = true_name[count];
   }
-
   return result;
 }
 
 //We print all the results on the end of the program
 process.on('exit', function() {
-    // console.log("---------------------");
     console.log(JSON.stringify(variable_call));
 });
 
-// require.cache[path.resolve(__dirname)]
-// module.exports = 
-// module.parent
-// ;
-
+let exp_require = new Proxy (require, handler_require);
+true_name[0] = 'main';
+variable_call[true_name[0]] = {};
+module.exports = exp_require;
