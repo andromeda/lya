@@ -5,8 +5,8 @@
   "main": "src/txfm.js",
   "scripts": {
     "test": "npm run l && npm run t",
-    "l": "eslint ./src",
-    "t": "node ./tst/run-tests.js"
+    "l": "./node_modules/.bin/eslint ./src",
+    "t": "./tst/run-tests.sh"
   },
   "eslintConfig": {
     "extends": [
@@ -29,5 +29,9 @@
   "bugs": {
     "url": "https://github.com/andromeda/txfm/issues"
   },
-  "homepage": "https://github.com/andromeda/txfm#readme"
+  "homepage": "https://github.com/andromeda/txfm#readme",
+  "devDependencies": {
+    "eslint": "^6.7.2",
+    "eslint-config-google": "^0.14.0"
+  }
 }
