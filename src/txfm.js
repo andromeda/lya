@@ -1,9 +1,9 @@
-//We import and declare all the nessacary modules  
+//We import and declare all the necessary modules  
 const Module = require('module');
 const vm = require('vm');
 const fs = require('fs');
 
-//All the nessasary modules for swap
+//All the necessary modules for swap
 let original_warp = Module.wrap;
 let original_require = Module.prototype.require;
 let original_resolveFilename = Module._resolveFilename;
@@ -127,8 +127,8 @@ let proxy_wrap = function(handler,obj) {
 }  
 
 //We read and store the data of the json file
-let rawdata = fs.readFileSync('globals.json'); 
-let json_data = JSON.parse(rawdata);  
+let json_data = require('./globals.json'); 
+//let json_data = JSON.parse(rawdata);  
 
 //We need to add all the global variable declarations in the script 
 let globals_decl = () => {
@@ -193,12 +193,19 @@ Module.prototype.require = (path) => {
   return result;
 }
 
-//We print all the results on the end of the program
-process.on('exit', function() {
-    console.log(JSON.stringify(variable_call));
-});
-
-let exp_require = new Proxy (require, handler_require);
+let exp_require = new Proxy(require, handler_require);
 true_name[0] = 'main';
 variable_call[true_name[0]] = {};
 module.exports = exp_require;
+
+exp_require.RESULTS = variable_call;
+
+//We print all the results on the end of the program
+process.on('exit', function() {
+  if (exp_require.SAVE_RESULTS) {
+    fs.writeFileSync(exp_require.SAVE_RESULTS, JSON.stringify(variable_call, null, 2), 'utf-8');
+  } else {
+    console.log(JSON.stringify(variable_call));
+  }
+});
+
