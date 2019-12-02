@@ -4,5 +4,9 @@ set -e
 cd $(dirname $0)
 
 cd ./t1
-node t1.js
+node test.js
+cd ..
+
+cd ./t2
+node test.js
 cd ..
