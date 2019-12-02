@@ -100,7 +100,8 @@ const handlerObjExport= {
         }
       } else {
         const localFunction = target[name];
-        target[name] = new Proxy(localFunction, handlerExports);
+        Object.defineProperty(localFunction, 'name', {value: name});// We rename the function to the true name
+        target[name] = new Proxy(localFunction, handlerExports);// This fixes the name problem
       }
     }
 
@@ -217,4 +218,3 @@ process.on('exit', function() {
     console.log(JSON.stringify(variableCall));
   }
 });
-
