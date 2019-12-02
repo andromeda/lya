@@ -1,3 +1,4 @@
+/* eslint prefer-rest-params: "off" */
 // We import and declare all the necessary modules
 const Module = require('module');
 const vm = require('vm');
@@ -21,7 +22,8 @@ let count = 0;
 const handler= {
   apply: function(target) {
     const currentName = trueName[count];
-    if (Object.prototype.hasOwnProperty.call(variableCall[currentName], target.name) === false) {
+    if (Object.prototype.hasOwnProperty.
+        call(variableCall[currentName], target.name) === false) {
       variableCall[currentName][target.name] = true;
     }
 
@@ -29,7 +31,8 @@ const handler= {
   },
   get: function(target, name) {
     const currentName = trueName[count];
-    if (Object.prototype.hasOwnProperty.call(variableCall[currentName], target.name) === false) {
+    if (Object.prototype.hasOwnProperty.
+        call(variableCall[currentName], target.name) === false) {
       variableCall[currentName][target.name] = true;
     }
 
@@ -43,7 +46,8 @@ const handlerExports= {
     const currentName = arguments[1].truepath;
     let truename = arguments[1].truename;
     truename = truename + '.' + target.name;
-    if (Object.prototype.hasOwnProperty.call(variableCall[currentName], truename) === false) {
+    if (Object.prototype.hasOwnProperty.
+        call(variableCall[currentName], truename) === false) {
       variableCall[currentName][truename] = true;
     }
 
@@ -55,7 +59,8 @@ const handlerExports= {
 const handlerRequire= {
   apply: function(target) {
     const currentName = trueName[count];
-    const nameReq = target.name + '(\''+ arguments[2][0] + '\')';// In arguments[2][0] is the name we use to import    if (variableCall[currentName].hasOwnProperty(name_req) === false)
+    const nameReq = target.name + '(\'' + arguments[2][0] +// In arguments[2][0]
+      '\')';// Is the name we use to import
     variableCall[currentName][nameReq] = true;
 
     return Reflect.apply( ...arguments);
@@ -67,7 +72,8 @@ const handlerRequire= {
 // when it is called it will do this actions =>
 const handlerAddArg= {
   apply: function(target) {
-    let localRequire = arguments[2][1];// We catch local require in order to wrap it
+    // We catch local require in order to wrap it
+    let localRequire = arguments[2][1];
     localRequire = new Proxy(localRequire, handlerRequire);
     arguments[2][1] = localRequire;// We wrap require
     arguments[2][5] = globalProxy;// We pass the global values with the proxies
@@ -77,19 +83,26 @@ const handlerAddArg= {
   },
 };
 
-// We first wrap the export obj so that we avoid to print functions that are not called by us
+// We first wrap the export obj so that we avoid to
+// print functions that are not called by us
 const handlerObjExport= {
   get: function(target, name) {
     if (typeof target[name] != 'undefined') {
-      if (typeof target[name] === 'object') {// If we try to grab an object we wrap it in this proxy
+      // If we try to grab an object we wrap it in this proxy
+      if (typeof target[name] === 'object') {
         const localObject = target[name];
         target[name] = new Proxy(localObject, handlerObjExport);
-        target[name].truename = target['truename'] + '.' + name;// And update truename
+        target[name].truename = target['truename'] + '.' +
+          name;// And update truename
+
         target[name].truepath = target['truepath'];
-      } else if (typeof target[name] === 'string') {// If we try to call a string that
-        if (name != 'truename' && name != 'truepath') {// ss not truename or truepath
-          const truepath = trueName[count];// We take the path that we are by using true_count
-          let truename = target.truename;// We need to print access to that variable
+        // If we try to call a string that is not truename or truepath
+        // We take the path that we are by using true_count
+        // We need to print access to that variable
+      } else if (typeof target[name] === 'string') {
+        if (name != 'truename' && name != 'truepath') {
+          const truepath = trueName[count];
+          let truename = target.truename;
           truename = truename + '.' + name;
           if (variableCall[truepath] === 'undefined') {
             variableCall[truepath] = {};
@@ -100,8 +113,10 @@ const handlerObjExport= {
         }
       } else {
         const localFunction = target[name];
-        Object.defineProperty(localFunction, 'name', {value: name});// We rename the function to the true name
-        target[name] = new Proxy(localFunction, handlerExports);// This fixes the name problem
+        // We rename the function to the true name
+        // This fixes the name problem
+        Object.defineProperty(localFunction, 'name', {value: name});
+        target[name] = new Proxy(localFunction, handlerExports);
       }
     }
 
@@ -213,7 +228,8 @@ expRequire.RESULTS = variableCall;
 // We print all the results on the end of the program
 process.on('exit', function() {
   if (expRequire.SAVE_RESULTS) {
-    fs.writeFileSync(expRequire.SAVE_RESULTS, JSON.stringify(variableCall, null, 2), 'utf-8');
+    fs.writeFileSync(expRequire.SAVE_RESULTS,
+        JSON.stringify(variableCall, null, 2), 'utf-8');
   } else {
     console.log(JSON.stringify(variableCall));
   }
