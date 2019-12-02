@@ -1,0 +1,14 @@
+{
+  "main": {
+    "require('./m1.js')": true,
+    "require('path')": true,
+    "require('path').join": true,
+    "global.x": true,
+    "global.y": true
+  },
+  "m1.js": {
+    "console.error": true,
+    "global.x": true,
+    "global.y": true
+  }
+}
