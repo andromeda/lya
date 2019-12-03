@@ -1,4 +1,4 @@
-/* eslint prefer-rest-params: "off" */
+/* eslint prefer-rest-params: "off", no-global-assign: "off" */
 // We import and declare all the necessary modules
 const Module = require('module');
 const vm = require('vm');
@@ -18,6 +18,7 @@ const trueName = {};
 let count = 0;
 
 // Handlers of Proxies
+
 // The handler of the functions
 const handler= {
   apply: function(target) {
@@ -37,6 +38,40 @@ const handler= {
     }
 
     return Reflect.get(target, name);
+  },
+};
+
+// The handler of the global variable
+// Every time we access the global variabe in order to declare or call
+// a variable, then we can print it on the export file. It doesnt work
+// if it isn't called like global.xx
+const handlerGlobal= {
+  get: function(target, name) {
+    if (typeof target[name+name] != 'undefined') {
+      const currentName = trueName[count];
+      const nameToShow = target[name+name];
+      if (Object.prototype.hasOwnProperty.
+          call(variableCall[currentName], nameToShow) === false) {
+        variableCall[currentName][nameToShow] = true;
+      }
+    }
+    return Reflect.get(target, name);
+  },
+  set: function(target, name, value) {
+    if (typeof value === 'number') {
+      const currentName = trueName[count];
+      const nameToStore = 'global.' + name;
+      const result = Reflect.set(target, name, value);
+      // In order to exist a disticton between the values we declared ourselfs
+      // we declare one more field with name+name key value that stores the name
+      Object.defineProperty(target, name+name, {value: nameToStore});
+      if (Object.prototype.hasOwnProperty.
+          call(variableCall[currentName], nameToStore) === false) {
+        variableCall[currentName][nameToStore] = true;
+      }
+      return result;
+    }
+    return Reflect.set(target, name, value);
   },
 };
 
@@ -149,7 +184,16 @@ const proxyWrap = function(handler, obj) {
 
 // We read and store the data of the json file
 const jsonData = require('./globals.json');
-// let jsonData = JSON.parse(rawdata);
+
+// We declare the data on the same time to pass them inside wrapped function
+const createGlobal = (name, finalDecl) => {
+  if (global[name] != undefined) {
+    globalProxy[name] = proxyWrap(handler, global[name]);
+    finalDecl = 'let ' + name + ' = pr.' + name +';\n' + finalDecl;
+  }
+
+  return finalDecl;
+};
 
 // We need to add all the global variable declarations in the script
 const globalsDecl = () => {
@@ -164,16 +208,6 @@ const globalsDecl = () => {
         }
       }
     }
-  }
-
-  return finalDecl;
-};
-
-// We declare the data on the same time to pass them inside wrapped function
-const createGlobal = (name, finalDecl) => {
-  if (global[name] != undefined) {
-    globalProxy[name] = proxyWrap(handler, global[name]);
-    finalDecl = 'let ' + name + ' = pr.' + name +';\n' + finalDecl;
   }
 
   return finalDecl;
@@ -221,8 +255,10 @@ Module.prototype.require = (path) => {
 const expRequire = new Proxy(require, handlerRequire);
 trueName[0] = 'main';
 variableCall[trueName[0]] = {};
-module.exports = expRequire;
 
+// We wrap the global variable in a proxy
+global = new Proxy(global, handlerGlobal);
+module.exports = expRequire;
 expRequire.RESULTS = variableCall;
 
 // We print all the results on the end of the program
