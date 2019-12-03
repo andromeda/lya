@@ -17,6 +17,9 @@ const variableCall = {};
 const trueName = {};
 let count = 0;
 
+// This holds the string of the transformations inside modules
+let finalDecl = ' ';
+
 // Handlers of Proxies
 
 // The handler of the functions
@@ -196,8 +199,7 @@ const createGlobal = (name, finalDecl) => {
 };
 
 // We need to add all the global variable declarations in the script
-const globalsDecl = () => {
-  let finalDecl = ' ';
+const createFinalDecl = () => {
   for (const upValue in jsonData) {
     if (Object.prototype.hasOwnProperty.call(jsonData, upValue)) {
       const globalVariables = jsonData[upValue];
@@ -211,6 +213,14 @@ const globalsDecl = () => {
   }
 
   return finalDecl;
+};
+
+const globalsDecl = () => {
+  if (finalDecl === ' ') {
+    return createFinalDecl();
+  } else {
+    return finalDecl;
+  }
 };
 
 // We do some stuff and then call original warp
