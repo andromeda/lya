@@ -187,12 +187,24 @@ const proxyWrap = function(handler, obj) {
 
 // We read and store the data of the json file
 const jsonData = require('./globals.json');
+const jsonStaticData = require('./staticGlobals.json');
 
 // We declare the data on the same time to pass them inside wrapped function
 const createGlobal = (name, finalDecl) => {
   if (global[name] != undefined) {
     globalProxy[name] = proxyWrap(handler, global[name]);
     finalDecl = 'let ' + name + ' = pr.' + name +';\n' + finalDecl;
+  }
+
+  return finalDecl;
+};
+
+// We use it to pass the static global data inside module
+const createStaticGlobal = (name, finalDecl, upValue) => {
+  if (global[upValue][name] != undefined) {
+    const finalName = upValue + name;
+    globalProxy[finalName] = proxyWrap(handler, global[upValue][name]);
+    finalDecl = finalDecl + upValue + '.' + name + ' = pr.' + finalName +';\n';
   }
 
   return finalDecl;
@@ -207,6 +219,19 @@ const createFinalDecl = () => {
         if (Object.prototype.hasOwnProperty.call(jsonData, upValue)) {
           const name = globalVariables[declName];
           finalDecl = createGlobal(name, finalDecl);
+        }
+      }
+    }
+  }
+  // This is for the static global Data --Math,JSON etc
+  for (const upValue in jsonStaticData) {
+    if (Object.prototype.hasOwnProperty.call(jsonStaticData, upValue)) {
+      const globalVariables = jsonStaticData[upValue];
+      finalDecl = 'let ' + upValue + ' = {};\n' + finalDecl;
+      for (const declName in globalVariables) {
+        if (Object.prototype.hasOwnProperty.call(jsonStaticData, upValue)) {
+          const name = globalVariables[declName];
+          finalDecl = createStaticGlobal(name, finalDecl, upValue);
         }
       }
     }

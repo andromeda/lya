@@ -45,6 +45,7 @@ var myMap = new Map();
 // Math
 Math.abs(5 - 8);
 Math.exp(0)
+Math.cos(2)
 
 isNaN(NaN);
 

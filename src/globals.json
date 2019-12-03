@@ -1,5 +1,4 @@
 {
-
 	"es": [
 		"Array",
 		"ArrayBuffer",
@@ -32,7 +31,6 @@
 		"isPrototypeOf",
 		"JSON",
 		"Map",
-		"Math",
 		"NaN",
 		"Number",
 		"Object",
@@ -64,7 +62,6 @@
 		"WeakMap",
 		"WeakSet"
 	],
-
 	"node": [
 		"Buffer",
 		"clearImmediate",
@@ -78,13 +75,13 @@
 		"URL",
 		"URLSearchParams"
 	],
-  "other": [
-    "WebAssembly",
-    "DTRACE_NET_SERVER_CONNECTION",
-    "DTRACE_NET_STREAM_END",
-    "DTRACE_HTTP_SERVER_REQUEST",
-    "DTRACE_HTTP_SERVER_RESPONSE",
-    "DTRACE_HTTP_CLIENT_REQUEST",
-    "DTRACE_HTTP_CLIENT_RESPONSE"
-      ]
+  	"other": [
+    		"WebAssembly",
+    		"DTRACE_NET_SERVER_CONNECTION",
+    		"DTRACE_NET_STREAM_END",
+    		"DTRACE_HTTP_SERVER_REQUEST",
+   		"DTRACE_HTTP_SERVER_RESPONSE",
+    		"DTRACE_HTTP_CLIENT_REQUEST",
+    		"DTRACE_HTTP_CLIENT_RESPONSE"
+      	]		   
 }
