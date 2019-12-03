@@ -10,3 +10,7 @@ cd ..
 cd ./t2
 node test.js
 cd ..
+
+cd ./t3
+node test.js
+cd ..
