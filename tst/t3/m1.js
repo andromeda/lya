@@ -102,7 +102,6 @@ const er = eval('2 + 2');
 //	"Infinity",	-- doesnt print
 //	"isPrototypeOf",	--works but doesnt print
 //	"JSON",	--works but doesnt print
-//	"Math",	--works but doesnt print
 //	"NaN",	--works but doesnt print
 //	"propertyIsEnumerable",
 //	"Proxy", --works but doesnt print
