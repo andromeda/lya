@@ -101,11 +101,9 @@ const er = eval('2 + 2');
 //	"hasOwnProperty",	-- prints object but not this function
 //	"Infinity",	-- doesnt print
 //	"isPrototypeOf",	--works but doesnt print
-//	"JSON",	--works but doesnt print
 //	"NaN",	--works but doesnt print
 //	"propertyIsEnumerable",
 //	"Proxy", --works but doesnt print
-//	"Reflect",--works but doesnt print
 //	"toLocaleString",--works but doesnt print
 //	"toString", --works but doesnt print
 //	"undefined", --works but doesnt print

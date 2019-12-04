@@ -35,5 +35,24 @@
 		"tan",
 		"tanh",
 		"trunc"
+	],
+	"JSON": [
+		"parse",
+		"stringify"
+	],
+	"Reflect": [
+		"apply",
+		"construct",
+		"defineProperty",
+		"deleteProperty",
+		"get",
+		"getOwnPropertyDescriptor",
+		"getPrototypeOf",
+		"has",
+		"isExtensible",
+		"ownKeys",
+		"preventExtensions",
+		"set",
+		"setPrototypeOf"
 	]
 }

@@ -10,14 +10,13 @@ myFirstPromise.then((successMessage) => {
 
 // Proxy
 const handler = {
-	get: function(target, name, value) {
-	console.log('hahahah')
-    return Reflect.get(target, name, value);
+	get: function(target, name) {
+    return Reflect.get(target, name);
   },
 };
-let test = {};
+let test = {0:'this is a test'};
 test = new Proxy(test, handler);
-test = 5;
+console.log(test[0]);
 
 // Undefined
 function testUndef(t) {
@@ -30,4 +29,3 @@ let x;
 testUndef(x);
 
 let m3 = require('./m3.js');
-
