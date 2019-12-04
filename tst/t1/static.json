@@ -2,27 +2,10 @@
   "main": {
     "require('path')": true,
     "require('path').join": true,
-    "require('./m1.js')": true,
-    "require('path').resolve": true,
-    "require('./m2.js')": true,
-    "require('./m1.js').fst": true,
-    "require('./m2.js').fst": true
+    "require('./m1')": true
   },
   "m1.js": {
-    "require('fs')": true,
-    "require('fs').readFileSync": true
-  },
-  "m2.js": {
-    "require('fs')": true,
-    "require('path')": true,
-    "require('path').dirname": true,
-    "require('./m3.js')": true,
-    "require('path').resolve": true,
-    "require('fs').readFileSync": true,
-    "require('./m3.js').fst": true
-  },
-  "m3.js": {
-    "require('fs')": true,
-    "require('fs').readFileSync": true
+    "Number": true,
+    "bound consoleCall": true
   }
 }

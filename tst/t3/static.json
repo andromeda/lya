@@ -1,26 +1,14 @@
 {
   "main": {
+    "require('./m1.js')": true,
     "require('path')": true,
     "require('path').join": true,
-    "require('./m1.js')": true
+    "global.x": true,
+    "global.y": true
   },
   "m1.js": {
-    "Array": true,
-    "Array.of": true,
-    "SharedArrayBuffer": true,
-    "Uint8Array": true,
-    "Atomics": true,
-    "Atomics.add": true,
-    "BigInt": true,
-    "BigInt64Array": true,
-    "Boolean": true,
-    "DataView": true,
-    "Date": true,
-    "encodeURI": true,
-    "encodeURIComponent": true,
-    "decodeURI": true,
-    "encodeURI": true,
-    "Error": true,
-    "eval": true
+    "console.error": true,
+    "global.x": true,
+    "global.y": true
   }
 }
