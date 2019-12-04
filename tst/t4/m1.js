@@ -97,17 +97,23 @@ const er = eval('2 + 2');
 // TODO: Add code for the rest; take examples from the following URL, by
 // replacing XXX with individual strings in quotes below:
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/XXX
-//
+
+//	Object---
 //	"hasOwnProperty",	-- prints object but not this function
-//	"Infinity",	-- doesnt print
 //	"isPrototypeOf",	--works but doesnt print
-//	"NaN",	--works but doesnt print
 //	"propertyIsEnumerable",
-//	"Proxy", --works but doesnt print
-//	"toLocaleString",--works but doesnt print
-//	"toString", --works but doesnt print
+
+//	Variables---
+//	"Infinity",	-- doesnt print
+//	"NaN",	--works but doesnt print
 //	"undefined", --works but doesnt print
+
+//	In multiple objects---
+//	"toString", --works but doesnt print
+//	"toLocaleString",--works but doesnt print
 //	"valueOf",	--works but doesnt print
+
+//	"Proxy", --works but doesnt print
 
 // Not compatible with Node v8.9.4 --version we are using
 // *******************************************************************************

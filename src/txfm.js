@@ -17,6 +17,9 @@ const variableCall = {};
 const trueName = {};
 let count = 0;
 
+// Holds the end of each name store of new assigned global variables
+const endName = '@name';
+
 // This holds the string of the transformations inside modules
 let finalDecl = ' ';
 
@@ -50,9 +53,9 @@ const handler= {
 // if it isn't called like global.xx
 const handlerGlobal= {
   get: function(target, name) {
-    if (typeof target[name+name] != 'undefined') {
+    if (typeof target[name+endName] != 'undefined') {
       const currentName = trueName[count];
-      const nameToShow = target[name+name];
+      const nameToShow = target[name+endName];
       if (Object.prototype.hasOwnProperty.
           call(variableCall[currentName], nameToShow) === false) {
         variableCall[currentName][nameToShow] = true;
@@ -66,8 +69,8 @@ const handlerGlobal= {
       const nameToStore = 'global.' + name;
       const result = Reflect.set(target, name, value);
       // In order to exist a disticton between the values we declared ourselfs
-      // we declare one more field with name+name key value that stores the name
-      Object.defineProperty(target, name+name, {value: nameToStore});
+      // We declare one more field with key value that stores the name
+      Object.defineProperty(target, name+endName, {value: nameToStore});
       if (Object.prototype.hasOwnProperty.
           call(variableCall[currentName], nameToStore) === false) {
         variableCall[currentName][nameToStore] = true;
