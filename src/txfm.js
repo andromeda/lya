@@ -206,8 +206,13 @@ const createGlobal = (name, finalDecl) => {
 const createStaticGlobal = (name, finalDecl, upValue) => {
   if (global[upValue][name] != undefined) {
     const finalName = upValue + name;
+    const nameToShow = upValue + '.' + name;
     globalProxy[finalName] = proxyWrap(handler, global[upValue][name]);
+    // We save the declared wraped functions in new local
     finalDecl = finalDecl + upValue + '.' + name + ' = pr.' + finalName +';\n';
+    // And we change the name to a better one
+    finalDecl = finalDecl + 'Object.defineProperty(' + upValue + '.' +
+      name + ',"name", {value:"' + nameToShow + '"});\n';
   }
 
   return finalDecl;
