@@ -191,7 +191,7 @@ const proxyWrap = function(handler, obj) {
 // We read and store the data of the json file
 const jsonData = require('./globals.json');
 const jsonStaticData = require('./staticGlobals.json');
-//const jsonPrototypeData = require('./prototypeGlobals.json');
+// const jsonPrototypeData = require('./prototypeGlobals.json');
 
 // We declare the data on the same time to pass them inside wrapped function
 const createGlobal = (name, finalDecl) => {
@@ -219,22 +219,22 @@ const createStaticGlobal = (name, finalDecl, upValue) => {
   return finalDecl;
 };
 
-//// We use it to pass the static global data inside module
-//const createPrototypeGlobal = (name, finalDecl, upValue) => {
-//  if (global[upValue][name] != undefined) {
-//    const finalName = upValue + name + 'prototype';
-//    const passName = '.prototype.' + name;
-//    const nameToShow = upValue + passName;
-//    globalProxy[finalName] = proxyWrap(handler,
-//        global[upValue]['prototype'][name]);
-//    // We save the declared wraped functions in new local
-//    finalDecl = finalDecl + upValue + passName + ' = pr.' + finalName +';\n';
-//    // And we change the name to a better one
-//    finalDecl = finalDecl + 'Object.defineProperty(' + upValue +
-//      passName + ',"name", {value:"' + nameToShow + '"});\n';
-//  }
-//  return finalDecl;
-//};
+// // We use it to pass the static global data inside module
+// const createPrototypeGlobal = (name, finalDecl, upValue) => {
+//   if (global[upValue][name] != undefined) {
+//     const finalName = upValue + name + 'prototype';
+//     const passName = '.prototype.' + name;
+//     const nameToShow = upValue + passName;
+//     globalProxy[finalName] = proxyWrap(handler,
+//         global[upValue]['prototype'][name]);
+//     // We save the declared wraped functions in new local
+//     finalDecl = finalDecl + upValue + passName + ' = pr.' + finalName +';\n';
+//     // And we change the name to a better one
+//     finalDecl = finalDecl + 'Object.defineProperty(' + upValue +
+//       passName + ',"name", {value:"' + nameToShow + '"});\n';
+//   }
+//   return finalDecl;
+// };
 
 // We need to add all the global prototype variable declarations in the script
 const createFinalDecl = () => {
@@ -252,18 +252,18 @@ const createFinalDecl = () => {
     }
   }
 
-  //// This is for the static global Data --Math,JSON etc
-//  for (const upValue in jsonPrototypeData) {
-//    if (Object.prototype.hasOwnProperty.call(jsonPrototypeData, upValue)) {
-//      const globalVariables = jsonPrototypeData[upValue];
-//      for (const declName in globalVariables) {
-//        if (Object.prototype.hasOwnProperty.call(jsonPrototypeData, upValue)) {
-//          const name = globalVariables[declName];
-//          finalDecl = createPrototypeGlobal(name, finalDecl, upValue);
-//        }
-//      }
-//    }
-//  }
+// This is for the static global Data --Math,JSON etc
+// for (const upValue in jsonPrototypeData) {
+//  if (Object.prototype.hasOwnProperty.call(jsonPrototypeData, upValue)) {
+//    const globalVariables = jsonPrototypeData[upValue];
+//    for (const declName in globalVariables) {
+//      if (Object.prototype.hasOwnProperty.call(jsonPrototypeData, upValue)) {
+//        const name = globalVariables[declName];
+//        finalDecl = createPrototypeGlobal(name, finalDecl, upValue);
+//       }
+//     }
+//   }
+// }
 
   for (const upValue in jsonData) {
     if (Object.prototype.hasOwnProperty.call(jsonData, upValue)) {
@@ -327,16 +327,36 @@ Module.prototype.require = (path) => {
   return result;
 };
 
+// We return the choice of the user
+// 1) True - False Analysis
+// 2) Times calling a function
+const analysisChoice = () => {
+  let choice;
+  try {
+    choice = global.analysisCh;
+  } catch (ReferenceError) {
+    choice = 1;
+  }
+
+  if (choice != (1 && 2)) {
+    return 1;
+  }
+  return choice;
+};
+const userChoice = analysisChoice();
+console.log(userChoice);
+
+// We export the require for the main function
 const expRequire = new Proxy(require, handlerRequire);
 trueName[0] = 'main';
 variableCall[trueName[0]] = {};
+module.exports = expRequire;
 
 // We wrap the global variable in a proxy
 global = new Proxy(global, handlerGlobal);
-module.exports = expRequire;
-expRequire.RESULTS = variableCall;
 
 // We print all the results on the end of the program
+expRequire.RESULTS = variableCall;
 process.on('exit', function() {
   if (expRequire.SAVE_RESULTS) {
     fs.writeFileSync(expRequire.SAVE_RESULTS,
