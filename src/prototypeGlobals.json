@@ -4,8 +4,11 @@
 		"propertyIsEnumerable"
 	],
 	"Number": [
-		"toString",
+		"toExponential",
+		"toFixed",
 		"toLocaleString",
+		"toPrecision",
+		"toString",
 		"valueOf"
 	]
 }
