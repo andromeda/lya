@@ -53,3 +53,5 @@ var regex2 = new RegExp('\\w+');
 // WeakMap - WeakSet
 const wm1 = new WeakMap();
 var ws = new WeakSet();
+
+require('./m4.js')

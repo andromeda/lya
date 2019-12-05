@@ -35,6 +35,12 @@ const object33 = new object11();
 object11.prototype.isPrototypeOf(object33);
 object22.prototype.isPrototypeOf(object33);
 
+// propertyIsEnumerable
+const array1 = [];
+object1.property1 = 42;
+array1[0] = 42;
+object1.propertyIsEnumerable('property1');
+
 // JSON
 let code = '"\u2028\u2029"';
 JSON.parse(code); // evaluates to "\u2028\u2029" in all engines
@@ -99,9 +105,7 @@ const er = eval('2 + 2');
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/XXX
 
 //	Object---
-//	"hasOwnProperty",	-- prints object but not this function
-//	"isPrototypeOf",	--works but doesnt print
-//	"propertyIsEnumerable",
+//  "hasOwnProperty"
 
 //	Variables---
 //	"Infinity",	-- doesnt print
