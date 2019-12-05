@@ -1,0 +1,11 @@
+{
+	"Object": [
+		"isPrototypeOf",
+		"propertyIsEnumerable"
+	],
+	"Number": [
+		"toString",
+		"toLocaleString",
+		"valueOf"
+	]
+}

@@ -191,6 +191,7 @@ const proxyWrap = function(handler, obj) {
 // We read and store the data of the json file
 const jsonData = require('./globals.json');
 const jsonStaticData = require('./staticGlobals.json');
+const jsonPrototypeData = require('./prototypeGlobals.json');
 
 // We declare the data on the same time to pass them inside wrapped function
 const createGlobal = (name, finalDecl) => {
@@ -218,19 +219,25 @@ const createStaticGlobal = (name, finalDecl, upValue) => {
   return finalDecl;
 };
 
-// We need to add all the global variable declarations in the script
-const createFinalDecl = () => {
-  for (const upValue in jsonData) {
-    if (Object.prototype.hasOwnProperty.call(jsonData, upValue)) {
-      const globalVariables = jsonData[upValue];
-      for (const declName in globalVariables) {
-        if (Object.prototype.hasOwnProperty.call(jsonData, upValue)) {
-          const name = globalVariables[declName];
-          finalDecl = createGlobal(name, finalDecl);
-        }
-      }
-    }
+// We use it to pass the static global data inside module
+const createPrototypeGlobal = (name, finalDecl, upValue) => {
+  if (global[upValue][name] != undefined) {
+    const finalName = upValue + name + 'prototype';
+    const passName = '.prototype.' + name;
+    const nameToShow = upValue + passName;
+    globalProxy[finalName] = proxyWrap(handler,
+        global[upValue]['prototype'][name]);
+    // We save the declared wraped functions in new local
+    finalDecl = finalDecl + upValue + passName + ' = pr.' + finalName +';\n';
+    // And we change the name to a better one
+    finalDecl = finalDecl + 'Object.defineProperty(' + upValue +
+      passName + ',"name", {value:"' + nameToShow + '"});\n';
   }
+  return finalDecl;
+};
+
+// We need to add all the global prototype variable declarations in the script
+const createFinalDecl = () => {
   // This is for the static global Data --Math,JSON etc
   for (const upValue in jsonStaticData) {
     if (Object.prototype.hasOwnProperty.call(jsonStaticData, upValue)) {
@@ -240,6 +247,31 @@ const createFinalDecl = () => {
         if (Object.prototype.hasOwnProperty.call(jsonStaticData, upValue)) {
           const name = globalVariables[declName];
           finalDecl = createStaticGlobal(name, finalDecl, upValue);
+        }
+      }
+    }
+  }
+
+  // This is for the static global Data --Math,JSON etc
+  for (const upValue in jsonPrototypeData) {
+    if (Object.prototype.hasOwnProperty.call(jsonPrototypeData, upValue)) {
+      const globalVariables = jsonPrototypeData[upValue];
+      for (const declName in globalVariables) {
+        if (Object.prototype.hasOwnProperty.call(jsonPrototypeData, upValue)) {
+          const name = globalVariables[declName];
+          finalDecl = createPrototypeGlobal(name, finalDecl, upValue);
+        }
+      }
+    }
+  }
+
+  for (const upValue in jsonData) {
+    if (Object.prototype.hasOwnProperty.call(jsonData, upValue)) {
+      const globalVariables = jsonData[upValue];
+      for (const declName in globalVariables) {
+        if (Object.prototype.hasOwnProperty.call(jsonData, upValue)) {
+          const name = globalVariables[declName];
+          finalDecl = createGlobal(name, finalDecl);
         }
       }
     }
