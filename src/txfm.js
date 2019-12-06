@@ -33,15 +33,15 @@ const timeCapsule = {};
 
 // Case handler
 // Returns the right require handler for the case
-const mainRequire = (wrapRequire) => {
+const mainRequire = (original) => {
   if (userChoice === 1) {// Case 1 - True False
-    return new Proxy(wrapRequire, RequireTrue);
+    return new Proxy(original, RequireTrue);
   } else if (userChoice === 2) {// Case 2 - Counter
-    return new Proxy(wrapRequire, RequireCounter);
+    return new Proxy(original, RequireCounter);
   } else if (userChoice === 3) {// Case 3 - Time
-    return new Proxy(wrapRequire, RequireTime);
+    return new Proxy(original, RequireTime);
   } else if (userChoice === 4) {// Case 4 - Time2.0
-    return new Proxy(wrapRequire, RequireTime2);
+    return new Proxy(original, RequireTime2);
   }// Add more
 };
 
@@ -267,14 +267,13 @@ const handlerExports= {
 };
 
 // The handler of require of True-False case_1
-const RequireTrue= {
-  apply: function(target) {
+const RequireTrue = {
+  apply: function(target, thisArg, argumentsList) {
     const currentName = trueName[count];
-    const nameReq = target.name + '(\'' + arguments[2][0] +// In arguments[2][0]
-      '\')';// Is the name we use to import
-    variableCall[currentName][nameReq] = true;
-
-    return Reflect.apply( ...arguments);
+    const origReqModuleName = argumentsList[0];
+    // console.log('==>', target, '\n', target.name, '\n args:', origReqModuleName);
+    variableCall[currentName]['require(\'' + origReqModuleName + '\')'] = true;
+    return Reflect.apply(...arguments);
   },
 };
 
@@ -534,9 +533,10 @@ vm.runInThisContext = function(code, options) {
 };
 
 // We wrap the result in the wrapper function
-Module.prototype.require = (path) => {
-//  console.log('==> path', path, process.versions);
-  let result = originalRequire(path, this);
+Module.prototype.require = function (...args) {
+  let path = args[0];
+  // console.log('==> this:', this);
+  let result = originalRequire.apply(this, args);
   if (result.truename === undefined ) {
     result = new Proxy(result, handlerObjExport);
     result.truename = 'require(\'' + path + '\')';
@@ -571,19 +571,22 @@ const analysisChoice = () => {
 const userChoice = analysisChoice();
 
 // We export the require to the main function
-const expRequire = mainRequire(require);
 trueName[0] = 'main';
 variableCall[trueName[0]] = {};
-module.exports = expRequire;
+module.exports = {
+  configRequire: (origRequire) => {
+    return mainRequire(origRequire);
+  }
+}
 
 // We wrap the global variable in a proxy
 global = new Proxy(global, handlerGlobal);
 
 // We print all the results on the end of the program
-expRequire.RESULTS = variableCall;
+lyaConfig.RESULTS = variableCall;
 process.on('exit', function() {
-  if (expRequire.SAVE_RESULTS) {
-    fs.writeFileSync(expRequire.SAVE_RESULTS,
+  if (lyaConfig.SAVE_RESULTS) {
+    fs.writeFileSync(lyaConfig.SAVE_RESULTS,
         JSON.stringify(variableCall, null, 2), 'utf-8');
   } else {
     console.log(JSON.stringify(variableCall));
