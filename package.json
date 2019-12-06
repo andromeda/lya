@@ -32,6 +32,7 @@
   "homepage": "https://github.com/andromeda/txfm#readme",
   "devDependencies": {
     "eslint": "^6.7.2",
-    "eslint-config-google": "^0.14.0"
+    "eslint-config-google": "^0.14.0",
+    "moment": "^2.24.0"
   }
 }
