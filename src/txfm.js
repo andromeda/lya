@@ -23,25 +23,89 @@ const endName = '@name';
 // This holds the string of the transformations inside modules
 let finalDecl = ' ';
 
-// Handlers of Proxies
+// Case handler
+// Returns the right require handler for the case
+const mainRequire = (wrapRequire) => {
+  if (userChoice === 1) {
+    return new Proxy(wrapRequire, RequireTrue);
+  } else if (userChoice === 2) {
+    return new Proxy(wrapRequire, RequireCounter);
+  }// Add more
+};
 
+// We incriment and declare the ness things
+// This is for the handlerObjExport
+const exportControl = (storedCalls, truename) => {
+  if (userChoice === 1) {// Case 1 - True False
+    if (storedCalls === 'undefined') {
+      storedCalls = {};
+      storedCalls[truename] = true;
+    } else {
+      storedCalls[truename] = true;
+    }
+  } else if (userChoice === 2) {// Case 2 - Counter
+    if (storedCalls === 'undefined') {
+      storedCalls = {};
+      storedCalls[truename] = 1;
+    } else {
+      if (storedCalls[truename] === undefined) {// Why this undef?
+        storedCalls[truename] = 1;
+      } else {
+        storedCalls[truename]++;
+      }
+    }
+  }// Add more
+};
+
+// We incriment and declare the ness things
+// This is for handlerExports
+const exportFuncControl = (storedCalls, truename) => {
+  if (userChoice === 1) {// Case 1 - True False
+    if (Object.prototype.hasOwnProperty.
+        call(storedCalls, truename) === false) {
+      storedCalls[truename] = true;
+    }
+  } else if (userChoice === 2) {// Case 2 - Counter
+    if (Object.prototype.hasOwnProperty.
+        call(storedCalls, truename) === false) {
+      storedCalls[truename] = 1;
+    } else {
+      storedCalls[truename]++;
+    }
+  }// Add more
+};
+
+// We change the original module control
+// We either declare true or false or incriment a counter
+const onModuleControl= (storedCalls, truename) => {
+  if (userChoice === 1) {// Case 1 - True False
+    if (Object.prototype.hasOwnProperty.
+        call(storedCalls, truename) === false) {
+      storedCalls[truename] = true;
+    }
+  } else if (userChoice === 2) {// Case 2 - Counter
+    if (Object.prototype.hasOwnProperty.
+        call(storedCalls, truename) === false) {
+      storedCalls[truename] = 1;
+    } else {
+      storedCalls[truename]++;
+    }
+  }// Add more
+};
+
+// ****************************
+// Handlers of Proxies
 // The handler of the functions
 const handler= {
   apply: function(target) {
     const currentName = trueName[count];
-    if (Object.prototype.hasOwnProperty.
-        call(variableCall[currentName], target.name) === false) {
-      variableCall[currentName][target.name] = true;
-    }
+    onModuleControl(variableCall[currentName], target.name);
 
     return Reflect.apply(...arguments);
   },
   get: function(target, name) {
     const currentName = trueName[count];
-    if (Object.prototype.hasOwnProperty.
-        call(variableCall[currentName], target.name) === false) {
-      variableCall[currentName][target.name] = true;
-    }
+    onModuleControl(variableCall[currentName], target.name);
 
     return Reflect.get(target, name);
   },
@@ -56,10 +120,7 @@ const handlerGlobal= {
     if (typeof target[name+endName] != 'undefined') {
       const currentName = trueName[count];
       const nameToShow = target[name+endName];
-      if (Object.prototype.hasOwnProperty.
-          call(variableCall[currentName], nameToShow) === false) {
-        variableCall[currentName][nameToShow] = true;
-      }
+      onModuleControl(variableCall[currentName], nameToShow);
     }
     return Reflect.get(target, name);
   },
@@ -71,10 +132,8 @@ const handlerGlobal= {
       // In order to exist a disticton between the values we declared ourselfs
       // We declare one more field with key value that stores the name
       Object.defineProperty(target, name+endName, {value: nameToStore});
-      if (Object.prototype.hasOwnProperty.
-          call(variableCall[currentName], nameToStore) === false) {
-        variableCall[currentName][nameToStore] = true;
-      }
+      onModuleControl(variableCall[currentName], nameToStore);
+
       return result;
     }
     return Reflect.set(target, name, value);
@@ -87,22 +146,31 @@ const handlerExports= {
     const currentName = arguments[1].truepath;
     let truename = arguments[1].truename;
     truename = truename + '.' + target.name;
-    if (Object.prototype.hasOwnProperty.
-        call(variableCall[currentName], truename) === false) {
-      variableCall[currentName][truename] = true;
-    }
+    exportFuncControl(variableCall[currentName], truename);
 
     return Reflect.apply( ...arguments);
   },
 };
 
-// The handler of require --we need to import the name
-const handlerRequire= {
+// The handler of require of True-False case_1
+const RequireTrue= {
   apply: function(target) {
     const currentName = trueName[count];
     const nameReq = target.name + '(\'' + arguments[2][0] +// In arguments[2][0]
       '\')';// Is the name we use to import
     variableCall[currentName][nameReq] = true;
+
+    return Reflect.apply( ...arguments);
+  },
+};
+
+// The handler of require of Counter case_2
+const RequireCounter= {
+  apply: function(target) {
+    const currentName = trueName[count];
+    const nameReq = target.name + '(\'' + arguments[2][0] +// In arguments[2][0]
+      '\')';// Is the name we use to import
+    variableCall[currentName][nameReq] = 1;
 
     return Reflect.apply( ...arguments);
   },
@@ -115,7 +183,7 @@ const handlerAddArg= {
   apply: function(target) {
     // We catch local require in order to wrap it
     let localRequire = arguments[2][1];
-    localRequire = new Proxy(localRequire, handlerRequire);
+    localRequire = mainRequire(localRequire);
     arguments[2][1] = localRequire;// We wrap require
     arguments[2][5] = globalProxy;// We pass the global values with the proxies
     const result = Reflect.apply( ...arguments);
@@ -145,12 +213,7 @@ const handlerObjExport= {
           const truepath = trueName[count];
           let truename = target.truename;
           truename = truename + '.' + name;
-          if (variableCall[truepath] === 'undefined') {
-            variableCall[truepath] = {};
-            variableCall[truepath][truename] = true;
-          } else {
-            variableCall[truepath][truename] = true;
-          }
+          exportControl(variableCall[truepath], truename);
         }
       } else {
         const localFunction = target[name];
@@ -165,6 +228,7 @@ const handlerObjExport= {
   },
 };
 
+// We wrap every function on global obj that exists in globals.json
 // Returns the proxy obj we want
 const proxyWrap = function(handler, obj) {
   if (typeof obj === 'function') {
@@ -344,10 +408,9 @@ const analysisChoice = () => {
   return choice;
 };
 const userChoice = analysisChoice();
-console.log(userChoice);
 
-// We export the require for the main function
-const expRequire = new Proxy(require, handlerRequire);
+// We export the require to the main function
+const expRequire = mainRequire(require);
 trueName[0] = 'main';
 variableCall[trueName[0]] = {};
 module.exports = expRequire;
