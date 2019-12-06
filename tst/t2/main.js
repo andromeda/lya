@@ -1,8 +1,13 @@
-global.analysisCh = 2;
-require = require("../../src/txfm.js");
+lyaConfig = {
+  SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
+  analysisCh: 2,
+};
+// console.log(require);
+let lya = require("../../src/txfm.js");
+require = lya.configRequire(require, lyaConfig);
+
 // Un-commenting  the line below will fail the test
 //let pwd = require('fs').readFileSync('/etc/passwd');
-require.SAVE_RESULTS = require("path").join(__dirname, "dynamic.json");
 
 let m1 = require("./m1.js");
 let m2 = require("./m2.js");

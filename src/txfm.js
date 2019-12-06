@@ -1,5 +1,7 @@
 /* eslint prefer-rest-params: "off", no-global-assign: "off",
 no-shadow-restricted-names: "off" */
+let lyaConfig;
+
 // We import and declare all the necessary modules
 const Module = require('module');
 const vm = require('vm');
@@ -351,6 +353,12 @@ const handlerAddArg= {
 
 // We first wrap the export obj so that we avoid to
 // print functions that are not called by us
+//
+// require('fs);
+// fs.openSync(pizza);
+// fs.read(katiAllo);
+//
+// fs.read () => {... fs.resolve(...) ... return...}
 const handlerObjExport= {
   get: function(target, name) {
     if (typeof target[name] != 'undefined') {
@@ -558,7 +566,7 @@ Module.prototype.require = function (...args) {
 const analysisChoice = () => {
   let choice;
   try {
-    choice = global.analysisCh;
+    choice = lyaConfig.analysisCh;
   } catch (ReferenceError) {
     choice = 1;
   }
@@ -574,7 +582,8 @@ const userChoice = analysisChoice();
 trueName[0] = 'main';
 variableCall[trueName[0]] = {};
 module.exports = {
-  configRequire: (origRequire) => {
+  configRequire: (origRequire, origConfig) => {
+    lyaConfig = origConfig;
     return mainRequire(origRequire);
   }
 }
@@ -583,7 +592,6 @@ module.exports = {
 global = new Proxy(global, handlerGlobal);
 
 // We print all the results on the end of the program
-lyaConfig.RESULTS = variableCall;
 process.on('exit', function() {
   if (lyaConfig.SAVE_RESULTS) {
     fs.writeFileSync(lyaConfig.SAVE_RESULTS,
