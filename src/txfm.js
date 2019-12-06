@@ -535,6 +535,7 @@ vm.runInThisContext = function(code, options) {
 
 // We wrap the result in the wrapper function
 Module.prototype.require = (path) => {
+  console.log('==> path', path, process.versions);
   let result = originalRequire(path, this);
   if (result.truename === undefined ) {
     result = new Proxy(result, handlerObjExport);
