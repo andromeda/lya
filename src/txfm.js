@@ -1,4 +1,5 @@
-/* eslint prefer-rest-params: "off", no-global-assign: "off" */
+/* eslint prefer-rest-params: "off", no-global-assign: "off",
+no-shadow-restricted-names: "off" */
 // We import and declare all the necessary modules
 const Module = require('module');
 const vm = require('vm');
@@ -23,13 +24,19 @@ const endName = '@name';
 // This holds the string of the transformations inside modules
 let finalDecl = ' ';
 
+// We store the time parametres
+const NS_PER_SEC = 1e9;
+const MS_PER_NS = 1e-6;
+
 // Case handler
 // Returns the right require handler for the case
 const mainRequire = (wrapRequire) => {
-  if (userChoice === 1) {
+  if (userChoice === 1) {// Case 1 - True False
     return new Proxy(wrapRequire, RequireTrue);
-  } else if (userChoice === 2) {
+  } else if (userChoice === 2) {// Case 2 - Counter
     return new Proxy(wrapRequire, RequireCounter);
+  } else if (userChoice === 3) {// Case 3 - Time
+    return new Proxy(wrapRequire, RequireTime);
   }// Add more
 };
 
@@ -59,12 +66,14 @@ const exportControl = (storedCalls, truename) => {
 
 // We incriment and declare the ness things
 // This is for handlerExports
-const exportFuncControl = (storedCalls, truename) => {
+const exportFuncControl = (storedCalls, truename, arguments) => {
   if (userChoice === 1) {// Case 1 - True False
     if (Object.prototype.hasOwnProperty.
         call(storedCalls, truename) === false) {
       storedCalls[truename] = true;
     }
+
+    return Reflect.apply(...arguments);
   } else if (userChoice === 2) {// Case 2 - Counter
     if (Object.prototype.hasOwnProperty.
         call(storedCalls, truename) === false) {
@@ -72,6 +81,55 @@ const exportFuncControl = (storedCalls, truename) => {
     } else {
       storedCalls[truename]++;
     }
+
+    return Reflect.apply(...arguments);
+  } else if (userChoice === 3) {// Case 3 - Time
+    if (Object.prototype.hasOwnProperty.
+        call(storedCalls, truename) === false) {
+      const time = process.hrtime();
+      const result = Reflect.apply( ...arguments);
+      const diff = process.hrtime(time);
+      storedCalls[truename] = (diff[0] * NS_PER_SEC + diff[1]) * MS_PER_NS;
+
+      return result;
+    }
+
+    return Reflect.apply(...arguments);
+  }// Add more
+};
+
+// We change the original module control
+// We either declare true or false or incriment a counter or timer
+// Works only with functions -- it runs Reflect.apply
+const onModuleControlFunc= (storedCalls, truename, arguments) => {
+  if (userChoice === 1) {// Case 1 - True False
+    if (Object.prototype.hasOwnProperty.
+        call(storedCalls, truename) === false) {
+      storedCalls[truename] = true;
+    }
+
+    return Reflect.apply(...arguments);
+  } else if (userChoice === 2) {// Case 2 - Counter
+    if (Object.prototype.hasOwnProperty.
+        call(storedCalls, truename) === false) {
+      storedCalls[truename] = 1;
+    } else {
+      storedCalls[truename]++;
+    }
+
+    return Reflect.apply(...arguments);
+  } else if (userChoice === 3) {// Case 3 - Timer
+    if (Object.prototype.hasOwnProperty.
+        call(storedCalls, truename) === false) {
+      const time = process.hrtime();
+      const result = Reflect.apply( ...arguments);
+      const diff = process.hrtime(time);
+      storedCalls[truename] = (diff[0] * NS_PER_SEC + diff[1]) * MS_PER_NS;
+
+      return result;
+    }
+
+    return Reflect.apply(...arguments);
   }// Add more
 };
 
@@ -99,9 +157,9 @@ const onModuleControl= (storedCalls, truename) => {
 const handler= {
   apply: function(target) {
     const currentName = trueName[count];
-    onModuleControl(variableCall[currentName], target.name);
 
-    return Reflect.apply(...arguments);
+    return onModuleControlFunc(variableCall[currentName],
+        target.name, arguments);
   },
   get: function(target, name) {
     const currentName = trueName[count];
@@ -122,6 +180,7 @@ const handlerGlobal= {
       const nameToShow = target[name+endName];
       onModuleControl(variableCall[currentName], nameToShow);
     }
+
     return Reflect.get(target, name);
   },
   set: function(target, name, value) {
@@ -136,6 +195,7 @@ const handlerGlobal= {
 
       return result;
     }
+
     return Reflect.set(target, name, value);
   },
 };
@@ -146,9 +206,8 @@ const handlerExports= {
     const currentName = arguments[1].truepath;
     let truename = arguments[1].truename;
     truename = truename + '.' + target.name;
-    exportFuncControl(variableCall[currentName], truename);
 
-    return Reflect.apply( ...arguments);
+    return exportFuncControl(variableCall[currentName], truename, arguments);
   },
 };
 
@@ -173,6 +232,21 @@ const RequireCounter= {
     variableCall[currentName][nameReq] = 1;
 
     return Reflect.apply( ...arguments);
+  },
+};
+
+// The handler of require of Counter case_3
+const RequireTime= {
+  apply: function(target) {
+    const currentName = trueName[count];
+    const nameReq = target.name + '(\'' + arguments[2][0] +// In arguments[2][0]
+      '\')';// Is the name we use to import
+    const time = process.hrtime();
+    const result = Reflect.apply( ...arguments);
+    const diff = process.hrtime(time);
+    variableCall[currentName][nameReq] = (diff[0] * NS_PER_SEC + diff[1]) *
+     MS_PER_NS;
+    return result;
   },
 };
 
@@ -394,6 +468,7 @@ Module.prototype.require = (path) => {
 // We return the choice of the user
 // 1) True - False Analysis
 // 2) Times calling a function
+// 3) Time analysis
 const analysisChoice = () => {
   let choice;
   try {
@@ -402,7 +477,7 @@ const analysisChoice = () => {
     choice = 1;
   }
 
-  if (choice != (1 && 2)) {
+  if (choice != 1 && choice != 2 && choice != 3) {// Add more
     return 1;
   }
   return choice;
