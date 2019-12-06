@@ -28,6 +28,9 @@ let finalDecl = ' ';
 const NS_PER_SEC = 1e9;
 const MS_PER_NS = 1e-6;
 
+// Array to store the time of the modules
+const timeCapsule = {};
+
 // Case handler
 // Returns the right require handler for the case
 const mainRequire = (wrapRequire) => {
@@ -37,6 +40,8 @@ const mainRequire = (wrapRequire) => {
     return new Proxy(wrapRequire, RequireCounter);
   } else if (userChoice === 3) {// Case 3 - Time
     return new Proxy(wrapRequire, RequireTime);
+  } else if (userChoice === 4) {// Case 4 - Time2.0
+    return new Proxy(wrapRequire, RequireTime2);
   }// Add more
 };
 
@@ -95,7 +100,26 @@ const exportFuncControl = (storedCalls, truename, arguments) => {
     }
 
     return Reflect.apply(...arguments);
-  }// Add more
+  } else if (userChoice === 4) {// Case 4 - Time2
+    if (Object.prototype.hasOwnProperty.
+        call(storedCalls, truename) === false) {
+      const time = process.hrtime();
+      const result = Reflect.apply( ...arguments);
+      const diff = process.hrtime(time);
+      timeCapsule[count] = (diff[0] * NS_PER_SEC + diff[1]) *
+        MS_PER_NS;
+      if (timeCapsule[count+1] != undefined) {
+        storedCalls[truename] = timeCapsule[count] - timeCapsule[count+1];
+        timeCapsule[count+1] = 0;
+      } else {
+        storedCalls[truename] = timeCapsule[count];
+      }
+
+      return result;
+    }
+
+    return Reflect.apply(...arguments);
+  }// Add more// Add more
 };
 
 // We change the original module control
@@ -125,6 +149,25 @@ const onModuleControlFunc= (storedCalls, truename, arguments) => {
       const result = Reflect.apply( ...arguments);
       const diff = process.hrtime(time);
       storedCalls[truename] = (diff[0] * NS_PER_SEC + diff[1]) * MS_PER_NS;
+
+      return result;
+    }
+
+    return Reflect.apply(...arguments);
+  } else if (userChoice === 4) {// Case 4 - Timer2
+    if (Object.prototype.hasOwnProperty.
+        call(storedCalls, truename) === false) {
+      const time = process.hrtime();
+      const result = Reflect.apply( ...arguments);
+      const diff = process.hrtime(time);
+      timeCapsule[count] = (diff[0] * NS_PER_SEC + diff[1]) *
+        MS_PER_NS;
+      if (timeCapsule[count+1] != undefined) {
+        storedCalls[truename] = timeCapsule[count] - timeCapsule[count+1];
+        timeCapsule[count+1] = 0;
+      } else {
+        storedCalls[truename] = timeCapsule[count];
+      }
 
       return result;
     }
@@ -246,6 +289,29 @@ const RequireTime= {
     const diff = process.hrtime(time);
     variableCall[currentName][nameReq] = (diff[0] * NS_PER_SEC + diff[1]) *
      MS_PER_NS;
+    return result;
+  },
+};
+
+// The handler of require of Counter case_4
+const RequireTime2= {
+  apply: function(target) {
+    const currentName = trueName[count];
+    const nameReq = target.name + '(\'' + arguments[2][0] +// In arguments[2][0]
+      '\')';// Is the name we use to import
+    const time = process.hrtime();
+    const result = Reflect.apply( ...arguments);
+    const diff = process.hrtime(time);
+    timeCapsule[count] = (diff[0] * NS_PER_SEC + diff[1]) *
+     MS_PER_NS;
+    if (timeCapsule[count+1] != undefined) {
+      variableCall[currentName][nameReq] = timeCapsule[count] -
+        timeCapsule[count+1];
+      timeCapsule[count+1] = 0;
+    } else {
+      variableCall[currentName][nameReq] = timeCapsule[count];
+    }
+
     return result;
   },
 };
@@ -469,6 +535,7 @@ Module.prototype.require = (path) => {
 // 1) True - False Analysis
 // 2) Times calling a function
 // 3) Time analysis
+// 4) Time analysis2.0
 const analysisChoice = () => {
   let choice;
   try {
@@ -477,7 +544,7 @@ const analysisChoice = () => {
     choice = 1;
   }
 
-  if (choice != 1 && choice != 2 && choice != 3) {// Add more
+  if (choice != 1 && choice != 2 && choice != 3 && choice != 4) {// Add more
     return 1;
   }
   return choice;
