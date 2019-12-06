@@ -1,3 +1,4 @@
+global.analysisCh = 2;
 require = require("../../src/txfm.js");
 // Un-commenting  the line below will fail the test
 //let pwd = require('fs').readFileSync('/etc/passwd');

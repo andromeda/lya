@@ -1,4 +1,5 @@
-/* eslint prefer-rest-params: "off", no-global-assign: "off" */
+/* eslint prefer-rest-params: "off", no-global-assign: "off",
+no-shadow-restricted-names: "off" */
 // We import and declare all the necessary modules
 const Module = require('module');
 const vm = require('vm');
@@ -23,25 +24,201 @@ const endName = '@name';
 // This holds the string of the transformations inside modules
 let finalDecl = ' ';
 
-// Handlers of Proxies
+// We store the time parametres
+const NS_PER_SEC = 1e9;
+const MS_PER_NS = 1e-6;
 
+// Array to store the time of the modules
+const timeCapsule = {};
+
+// Case handler
+// Returns the right require handler for the case
+const mainRequire = (wrapRequire) => {
+  if (userChoice === 1) {// Case 1 - True False
+    return new Proxy(wrapRequire, RequireTrue);
+  } else if (userChoice === 2) {// Case 2 - Counter
+    return new Proxy(wrapRequire, RequireCounter);
+  } else if (userChoice === 3) {// Case 3 - Time
+    return new Proxy(wrapRequire, RequireTime);
+  } else if (userChoice === 4) {// Case 4 - Time2.0
+    return new Proxy(wrapRequire, RequireTime2);
+  }// Add more
+};
+
+// We incriment and declare the ness things
+// This is for the handlerObjExport
+const exportControl = (storedCalls, truename) => {
+  if (userChoice === 1) {// Case 1 - True False
+    if (storedCalls === 'undefined') {
+      storedCalls = {};
+      storedCalls[truename] = true;
+    } else {
+      storedCalls[truename] = true;
+    }
+  } else if (userChoice === 2) {// Case 2 - Counter
+    if (storedCalls === 'undefined') {
+      storedCalls = {};
+      storedCalls[truename] = 1;
+    } else {
+      if (storedCalls[truename] === undefined) {// Why this undef?
+        storedCalls[truename] = 1;
+      } else {
+        storedCalls[truename]++;
+      }
+    }
+  }// Add more
+};
+
+// We incriment and declare the ness things
+// This is for handlerExports
+const exportFuncControl = (storedCalls, truename, arguments) => {
+  if (userChoice === 1) {// Case 1 - True False
+    if (Object.prototype.hasOwnProperty.
+        call(storedCalls, truename) === false) {
+      storedCalls[truename] = true;
+    }
+
+    return Reflect.apply(...arguments);
+  } else if (userChoice === 2) {// Case 2 - Counter
+    if (Object.prototype.hasOwnProperty.
+        call(storedCalls, truename) === false) {
+      storedCalls[truename] = 1;
+    } else {
+      storedCalls[truename]++;
+    }
+
+    return Reflect.apply(...arguments);
+  } else if (userChoice === 3) {// Case 3 - Time
+    if (Object.prototype.hasOwnProperty.
+        call(storedCalls, truename) === false) {
+      const time = process.hrtime();
+      const result = Reflect.apply( ...arguments);
+      const diff = process.hrtime(time);
+      storedCalls[truename] = (diff[0] * NS_PER_SEC + diff[1]) * MS_PER_NS;
+
+      return result;
+    }
+
+    return Reflect.apply(...arguments);
+  } else if (userChoice === 4) {// Case 4 - Time2
+    if (Object.prototype.hasOwnProperty.
+        call(storedCalls, truename) === false) {
+      const time = process.hrtime();
+      const result = Reflect.apply( ...arguments);
+      const diff = process.hrtime(time);
+      if (timeCapsule[count] != undefined) {
+        timeCapsule[count] = ((diff[0] * NS_PER_SEC + diff[1]) *
+        MS_PER_NS) + timeCapsule[count];
+      } else {
+        timeCapsule[count] = (diff[0] * NS_PER_SEC + diff[1]) *
+        MS_PER_NS;
+      }
+
+      if (timeCapsule[count+1] != undefined) {
+        storedCalls[truename] = timeCapsule[count] - timeCapsule[count+1];
+        timeCapsule[count+1] = 0;
+      } else {
+        storedCalls[truename] = timeCapsule[count];
+      }
+
+      return result;
+    }
+
+    return Reflect.apply(...arguments);
+  }// Add more// Add more
+};
+
+// We change the original module control
+// We either declare true or false or incriment a counter or timer
+// Works only with functions -- it runs Reflect.apply
+const onModuleControlFunc= (storedCalls, truename, arguments) => {
+  if (userChoice === 1) {// Case 1 - True False
+    if (Object.prototype.hasOwnProperty.
+        call(storedCalls, truename) === false) {
+      storedCalls[truename] = true;
+    }
+
+    return Reflect.apply(...arguments);
+  } else if (userChoice === 2) {// Case 2 - Counter
+    if (Object.prototype.hasOwnProperty.
+        call(storedCalls, truename) === false) {
+      storedCalls[truename] = 1;
+    } else {
+      storedCalls[truename]++;
+    }
+
+    return Reflect.apply(...arguments);
+  } else if (userChoice === 3) {// Case 3 - Timer
+    if (Object.prototype.hasOwnProperty.
+        call(storedCalls, truename) === false) {
+      const time = process.hrtime();
+      const result = Reflect.apply( ...arguments);
+      const diff = process.hrtime(time);
+      storedCalls[truename] = (diff[0] * NS_PER_SEC + diff[1]) * MS_PER_NS;
+
+      return result;
+    }
+
+    return Reflect.apply(...arguments);
+  } else if (userChoice === 4) {// Case 4 - Timer2
+    if (Object.prototype.hasOwnProperty.
+        call(storedCalls, truename) === false) {
+      const time = process.hrtime();
+      const result = Reflect.apply( ...arguments);
+      const diff = process.hrtime(time);
+      if (timeCapsule[count] != undefined) {
+        timeCapsule[count] = ((diff[0] * NS_PER_SEC + diff[1]) *
+        MS_PER_NS) + timeCapsule[count];
+      } else {
+        timeCapsule[count] = (diff[0] * NS_PER_SEC + diff[1]) *
+        MS_PER_NS;
+      }
+
+      if (timeCapsule[count+1] != undefined) {
+        storedCalls[truename] = timeCapsule[count] - timeCapsule[count+1];
+        timeCapsule[count+1] = 0;
+      } else {
+        storedCalls[truename] = timeCapsule[count];
+      }
+
+      return result;
+    }
+
+    return Reflect.apply(...arguments);
+  }// Add more
+};
+
+// We change the original module control
+// We either declare true or false or incriment a counter
+const onModuleControl= (storedCalls, truename) => {
+  if (userChoice === 1) {// Case 1 - True False
+    if (Object.prototype.hasOwnProperty.
+        call(storedCalls, truename) === false) {
+      storedCalls[truename] = true;
+    }
+  } else if (userChoice === 2) {// Case 2 - Counter
+    if (Object.prototype.hasOwnProperty.
+        call(storedCalls, truename) === false) {
+      storedCalls[truename] = 1;
+    } else {
+      storedCalls[truename]++;
+    }
+  }// Add more
+};
+
+// ****************************
+// Handlers of Proxies
 // The handler of the functions
 const handler= {
   apply: function(target) {
     const currentName = trueName[count];
-    if (Object.prototype.hasOwnProperty.
-        call(variableCall[currentName], target.name) === false) {
-      variableCall[currentName][target.name] = true;
-    }
 
-    return Reflect.apply(...arguments);
+    return onModuleControlFunc(variableCall[currentName],
+        target.name, arguments);
   },
   get: function(target, name) {
     const currentName = trueName[count];
-    if (Object.prototype.hasOwnProperty.
-        call(variableCall[currentName], target.name) === false) {
-      variableCall[currentName][target.name] = true;
-    }
+    onModuleControl(variableCall[currentName], target.name);
 
     return Reflect.get(target, name);
   },
@@ -56,11 +233,9 @@ const handlerGlobal= {
     if (typeof target[name+endName] != 'undefined') {
       const currentName = trueName[count];
       const nameToShow = target[name+endName];
-      if (Object.prototype.hasOwnProperty.
-          call(variableCall[currentName], nameToShow) === false) {
-        variableCall[currentName][nameToShow] = true;
-      }
+      onModuleControl(variableCall[currentName], nameToShow);
     }
+
     return Reflect.get(target, name);
   },
   set: function(target, name, value) {
@@ -71,12 +246,11 @@ const handlerGlobal= {
       // In order to exist a disticton between the values we declared ourselfs
       // We declare one more field with key value that stores the name
       Object.defineProperty(target, name+endName, {value: nameToStore});
-      if (Object.prototype.hasOwnProperty.
-          call(variableCall[currentName], nameToStore) === false) {
-        variableCall[currentName][nameToStore] = true;
-      }
+      onModuleControl(variableCall[currentName], nameToStore);
+
       return result;
     }
+
     return Reflect.set(target, name, value);
   },
 };
@@ -87,17 +261,13 @@ const handlerExports= {
     const currentName = arguments[1].truepath;
     let truename = arguments[1].truename;
     truename = truename + '.' + target.name;
-    if (Object.prototype.hasOwnProperty.
-        call(variableCall[currentName], truename) === false) {
-      variableCall[currentName][truename] = true;
-    }
 
-    return Reflect.apply( ...arguments);
+    return exportFuncControl(variableCall[currentName], truename, arguments);
   },
 };
 
-// The handler of require --we need to import the name
-const handlerRequire= {
+// The handler of require of True-False case_1
+const RequireTrue= {
   apply: function(target) {
     const currentName = trueName[count];
     const nameReq = target.name + '(\'' + arguments[2][0] +// In arguments[2][0]
@@ -108,6 +278,62 @@ const handlerRequire= {
   },
 };
 
+// The handler of require of Counter case_2
+const RequireCounter= {
+  apply: function(target) {
+    const currentName = trueName[count];
+    const nameReq = target.name + '(\'' + arguments[2][0] +// In arguments[2][0]
+      '\')';// Is the name we use to import
+    variableCall[currentName][nameReq] = 1;
+
+    return Reflect.apply( ...arguments);
+  },
+};
+
+// The handler of require of Counter case_3
+const RequireTime= {
+  apply: function(target) {
+    const currentName = trueName[count];
+    const nameReq = target.name + '(\'' + arguments[2][0] +// In arguments[2][0]
+      '\')';// Is the name we use to import
+    const time = process.hrtime();
+    const result = Reflect.apply( ...arguments);
+    const diff = process.hrtime(time);
+    variableCall[currentName][nameReq] = (diff[0] * NS_PER_SEC + diff[1]) *
+     MS_PER_NS;
+    return result;
+  },
+};
+
+// The handler of require of Counter case_4
+const RequireTime2= {
+  apply: function(target) {
+    const currentName = trueName[count];
+    const nameReq = target.name + '(\'' + arguments[2][0] +// In arguments[2][0]
+      '\')';// Is the name we use to import
+    const time = process.hrtime();
+    const result = Reflect.apply( ...arguments);
+    const diff = process.hrtime(time);
+    if (timeCapsule[count] != undefined) {
+      timeCapsule[count] = ((diff[0] * NS_PER_SEC + diff[1]) *
+        MS_PER_NS) + timeCapsule[count];
+    } else {
+      timeCapsule[count] = (diff[0] * NS_PER_SEC + diff[1]) *
+        MS_PER_NS;
+    }
+
+    if (timeCapsule[count+1] != undefined) {
+      variableCall[currentName][nameReq] = timeCapsule[count] -
+        timeCapsule[count+1];
+      timeCapsule[count+1] = 0;
+    } else {
+      variableCall[currentName][nameReq] = timeCapsule[count];
+    }
+
+    return result;
+  },
+};
+
 // The handler of compiledWrapper
 // We wrap the compiledWrapper code in a proxy so
 // when it is called it will do this actions =>
@@ -115,7 +341,7 @@ const handlerAddArg= {
   apply: function(target) {
     // We catch local require in order to wrap it
     let localRequire = arguments[2][1];
-    localRequire = new Proxy(localRequire, handlerRequire);
+    localRequire = mainRequire(localRequire);
     arguments[2][1] = localRequire;// We wrap require
     arguments[2][5] = globalProxy;// We pass the global values with the proxies
     const result = Reflect.apply( ...arguments);
@@ -145,12 +371,7 @@ const handlerObjExport= {
           const truepath = trueName[count];
           let truename = target.truename;
           truename = truename + '.' + name;
-          if (variableCall[truepath] === 'undefined') {
-            variableCall[truepath] = {};
-            variableCall[truepath][truename] = true;
-          } else {
-            variableCall[truepath][truename] = true;
-          }
+          exportControl(variableCall[truepath], truename);
         }
       } else {
         const localFunction = target[name];
@@ -165,6 +386,7 @@ const handlerObjExport= {
   },
 };
 
+// We wrap every function on global obj that exists in globals.json
 // Returns the proxy obj we want
 const proxyWrap = function(handler, obj) {
   if (typeof obj === 'function') {
@@ -191,7 +413,7 @@ const proxyWrap = function(handler, obj) {
 // We read and store the data of the json file
 const jsonData = require('./globals.json');
 const jsonStaticData = require('./staticGlobals.json');
-const jsonPrototypeData = require('./prototypeGlobals.json');
+// const jsonPrototypeData = require('./prototypeGlobals.json');
 
 // We declare the data on the same time to pass them inside wrapped function
 const createGlobal = (name, finalDecl) => {
@@ -219,22 +441,22 @@ const createStaticGlobal = (name, finalDecl, upValue) => {
   return finalDecl;
 };
 
-// We use it to pass the static global data inside module
-const createPrototypeGlobal = (name, finalDecl, upValue) => {
-  if (global[upValue][name] != undefined) {
-    const finalName = upValue + name + 'prototype';
-    const passName = '.prototype.' + name;
-    const nameToShow = upValue + passName;
-    globalProxy[finalName] = proxyWrap(handler,
-        global[upValue]['prototype'][name]);
-    // We save the declared wraped functions in new local
-    finalDecl = finalDecl + upValue + passName + ' = pr.' + finalName +';\n';
-    // And we change the name to a better one
-    finalDecl = finalDecl + 'Object.defineProperty(' + upValue +
-      passName + ',"name", {value:"' + nameToShow + '"});\n';
-  }
-  return finalDecl;
-};
+// // We use it to pass the static global data inside module
+// const createPrototypeGlobal = (name, finalDecl, upValue) => {
+//   if (global[upValue][name] != undefined) {
+//     const finalName = upValue + name + 'prototype';
+//     const passName = '.prototype.' + name;
+//     const nameToShow = upValue + passName;
+//     globalProxy[finalName] = proxyWrap(handler,
+//         global[upValue]['prototype'][name]);
+//     // We save the declared wraped functions in new local
+//     finalDecl = finalDecl + upValue + passName + ' = pr.' + finalName +';\n';
+//     // And we change the name to a better one
+//     finalDecl = finalDecl + 'Object.defineProperty(' + upValue +
+//       passName + ',"name", {value:"' + nameToShow + '"});\n';
+//   }
+//   return finalDecl;
+// };
 
 // We need to add all the global prototype variable declarations in the script
 const createFinalDecl = () => {
@@ -252,18 +474,18 @@ const createFinalDecl = () => {
     }
   }
 
-  // This is for the static global Data --Math,JSON etc
-  for (const upValue in jsonPrototypeData) {
-    if (Object.prototype.hasOwnProperty.call(jsonPrototypeData, upValue)) {
-      const globalVariables = jsonPrototypeData[upValue];
-      for (const declName in globalVariables) {
-        if (Object.prototype.hasOwnProperty.call(jsonPrototypeData, upValue)) {
-          const name = globalVariables[declName];
-          finalDecl = createPrototypeGlobal(name, finalDecl, upValue);
-        }
-      }
-    }
-  }
+// This is for the static global Data --Math,JSON etc
+// for (const upValue in jsonPrototypeData) {
+//  if (Object.prototype.hasOwnProperty.call(jsonPrototypeData, upValue)) {
+//    const globalVariables = jsonPrototypeData[upValue];
+//    for (const declName in globalVariables) {
+//      if (Object.prototype.hasOwnProperty.call(jsonPrototypeData, upValue)) {
+//        const name = globalVariables[declName];
+//        finalDecl = createPrototypeGlobal(name, finalDecl, upValue);
+//       }
+//     }
+//   }
+// }
 
   for (const upValue in jsonData) {
     if (Object.prototype.hasOwnProperty.call(jsonData, upValue)) {
@@ -327,16 +549,37 @@ Module.prototype.require = (path) => {
   return result;
 };
 
-const expRequire = new Proxy(require, handlerRequire);
+// We return the choice of the user
+// 1) True - False Analysis
+// 2) Times calling a function
+// 3) Time analysis
+// 4) Time analysis2.0
+const analysisChoice = () => {
+  let choice;
+  try {
+    choice = global.analysisCh;
+  } catch (ReferenceError) {
+    choice = 1;
+  }
+
+  if (choice != 1 && choice != 2 && choice != 3 && choice != 4) {// Add more
+    return 1;
+  }
+  return choice;
+};
+const userChoice = analysisChoice();
+
+// We export the require to the main function
+const expRequire = mainRequire(require);
 trueName[0] = 'main';
 variableCall[trueName[0]] = {};
+module.exports = expRequire;
 
 // We wrap the global variable in a proxy
 global = new Proxy(global, handlerGlobal);
-module.exports = expRequire;
-expRequire.RESULTS = variableCall;
 
 // We print all the results on the end of the program
+expRequire.RESULTS = variableCall;
 process.on('exit', function() {
   if (expRequire.SAVE_RESULTS) {
     fs.writeFileSync(expRequire.SAVE_RESULTS,
