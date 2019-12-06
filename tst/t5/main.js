@@ -1,4 +1,4 @@
-global.analysisCh = 3;
+global.analysisCh = 4;
 require = require("../../src/txfm.js");
 require.SAVE_RESULTS = require("path").join(__dirname, "dynamic.json");
 
