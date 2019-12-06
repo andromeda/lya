@@ -106,8 +106,14 @@ const exportFuncControl = (storedCalls, truename, arguments) => {
       const time = process.hrtime();
       const result = Reflect.apply( ...arguments);
       const diff = process.hrtime(time);
-      timeCapsule[count] = (diff[0] * NS_PER_SEC + diff[1]) *
+      if (timeCapsule[count] != undefined) {
+        timeCapsule[count] = ((diff[0] * NS_PER_SEC + diff[1]) *
+        MS_PER_NS) + timeCapsule[count];
+      } else {
+        timeCapsule[count] = (diff[0] * NS_PER_SEC + diff[1]) *
         MS_PER_NS;
+      }
+
       if (timeCapsule[count+1] != undefined) {
         storedCalls[truename] = timeCapsule[count] - timeCapsule[count+1];
         timeCapsule[count+1] = 0;
@@ -160,8 +166,14 @@ const onModuleControlFunc= (storedCalls, truename, arguments) => {
       const time = process.hrtime();
       const result = Reflect.apply( ...arguments);
       const diff = process.hrtime(time);
-      timeCapsule[count] = (diff[0] * NS_PER_SEC + diff[1]) *
+      if (timeCapsule[count] != undefined) {
+        timeCapsule[count] = ((diff[0] * NS_PER_SEC + diff[1]) *
+        MS_PER_NS) + timeCapsule[count];
+      } else {
+        timeCapsule[count] = (diff[0] * NS_PER_SEC + diff[1]) *
         MS_PER_NS;
+      }
+
       if (timeCapsule[count+1] != undefined) {
         storedCalls[truename] = timeCapsule[count] - timeCapsule[count+1];
         timeCapsule[count+1] = 0;
@@ -302,8 +314,14 @@ const RequireTime2= {
     const time = process.hrtime();
     const result = Reflect.apply( ...arguments);
     const diff = process.hrtime(time);
-    timeCapsule[count] = (diff[0] * NS_PER_SEC + diff[1]) *
-     MS_PER_NS;
+    if (timeCapsule[count] != undefined) {
+      timeCapsule[count] = ((diff[0] * NS_PER_SEC + diff[1]) *
+        MS_PER_NS) + timeCapsule[count];
+    } else {
+      timeCapsule[count] = (diff[0] * NS_PER_SEC + diff[1]) *
+        MS_PER_NS;
+    }
+
     if (timeCapsule[count+1] != undefined) {
       variableCall[currentName][nameReq] = timeCapsule[count] -
         timeCapsule[count+1];
