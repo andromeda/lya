@@ -29,3 +29,13 @@ DISK: ${chalk.yellow('70%')}
 
 let name = 'Greg'
 console.log(chalk.green('Hello %s'), name);
+
+//// Nest styles
+log(chalk.red('Hello', chalk.underline.bgBlue('world') + '!'));//
+
+// Nest styles of the same type even (color, underline, background)
+log(chalk.green(
+	'I am a green line ' +
+	chalk.blue.underline.bold('with a blue substring') +
+	' that becomes green again!'
+));

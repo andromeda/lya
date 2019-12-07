@@ -258,17 +258,6 @@ const handlerGlobal= {
   },
 };
 
-// The handler of the imported libraries
-const handlerExports= {
-  apply: function(target) {
-    const currentName = arguments[1].truepath;
-    let truename = arguments[1].truename;
-    truename = truename + '.' + target.name;
-
-    return exportFuncControl(variableCall[currentName], truename, arguments);
-  },
-};
-
 // The handler of require of True-False case_1
 const RequireTrue = {
   apply: function(target, thisArg, argumentsList) {
@@ -351,6 +340,24 @@ const handlerAddArg= {
   },
 };
 
+// The handler of the imported libraries
+const handlerExports= {
+  apply: function(target, thisArg, argumentsList) {
+    let currentName;
+    let truename;
+    try{
+      currentName = arguments[1].truepath;
+      truename = arguments[1].truename;
+      truename = truename + '.' + target.name;
+    } catch(TypeError) {
+      currentName = target.truepath;
+      truename = target.truename;
+    }
+
+    return exportFuncControl(variableCall[currentName], truename, arguments);
+  },
+};
+
 // We first wrap the export obj so that we avoid to
 // print functions that are not called by us
 //
@@ -362,6 +369,8 @@ const handlerAddArg= {
 const handlerObjExport= {
   get: function(target, name) {
     if (typeof target[name] != 'undefined') {
+      //console.log('lalala')
+      //console.log(target[name])
       // If we try to grab an object we wrap it in this proxy
       if (typeof target[name] === 'object') {
         const localObject = target[name];
@@ -379,11 +388,17 @@ const handlerObjExport= {
           let truename = target.truename;
           truename = truename + '.' + name;
           exportControl(variableCall[truepath], truename);
+          //console.log('hahahaha',name)
         }
       } else {
-        const localFunction = target[name];
+        let localFunction = target[name];
+        //if (localFunction[]) {}
         // We rename the function to the true name
         // This fixes the name problem
+        //console.log('############')
+        localFunction.truepath = trueName[count];
+        localFunction.truename = name;
+        //console.log(localFunction.truename,'mpelas', this)
         if (typeof localFunction != 'number') {
           Object.defineProperty(localFunction, 'name', {value: name});
           target[name] = new Proxy(localFunction, handlerExports);
