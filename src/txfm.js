@@ -450,15 +450,18 @@ const createGlobal = (name, finalDecl) => {
 };
 
 // We use it to pass the static global data inside module
+// FIXME: name injectGlobal? 
+// FIXME: give example here
 const createStaticGlobal = (name, finalDecl, upValue) => {
   if (global[upValue][name] != undefined) {
-    const finalName = upValue + name;
+    // FIXME: [nv] why final Value?
+    // const finalName = upValue + name;
     const nameToShow = upValue + '.' + name;
-    globalProxy[finalName] = proxyWrap(handler, global[upValue][name]);
+    globalProxy[nameToShow] = proxyWrap(handler, global[upValue][name]);
     // We save the declared wraped functions in new local
-    finalDecl = finalDecl + upValue + '.' + name + ' = pr.' + finalName +';\n';
+    finalDecl += nameToShow + ' = pr["' + nameToShow +'"];\n';
     // And we change the name to a better one
-    finalDecl = finalDecl + 'Object.defineProperty(' + upValue + '.' +
+    finalDecl += 'Object.defineProperty(' + upValue + '.' +
       name + ',"name", {value:"' + nameToShow + '"});\n';
   }
 
