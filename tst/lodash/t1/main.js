@@ -1,7 +1,8 @@
-lyaConfig = {};
-lyaConfig.SAVE_RESULTS = require("path").join(__dirname, "dynamic.json");
-// console.log(require);
-let lya = require("../../src/txfm.js");
+lyaConfig = {
+  SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
+  analysisCh: 1,
+};
+let lya = require("../../../src/txfm.js");
 require = lya.configRequire(require, lyaConfig);
 
 // var _ = require('../../node_modules/lodash/lodash.js');

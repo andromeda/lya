@@ -1,8 +1,10 @@
-global.analysisCh = 1;
-require = require("../../src/txfm.js");
+lyaConfig = {
+  SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
+  analysisCh: 1,
+};
 
-require.SAVE_RESULTS = require("path").join(__dirname, "dynamic.json");
+let lya = require("../../src/txfm.js");
+require = lya.configRequire(require, lyaConfig);
 
 const m1 = require('./m1.js');
 const o = new Number();
-// Do we want to print it on results? (Number from main)

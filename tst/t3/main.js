@@ -1,6 +1,10 @@
-global.analysisCh = 1;
-require = require("../../src/txfm.js");
-require.SAVE_RESULTS = require("path").join(__dirname, "dynamic.json");
+lyaConfig = {
+  SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
+  analysisCh: 2,
+};
+
+let lya = require("../../src/txfm.js");
+require = lya.configRequire(require, lyaConfig);
 
 global.x = 3;
 y = 4;
