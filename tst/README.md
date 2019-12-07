@@ -2,6 +2,8 @@
 
 ## chalk 
 	- t1 => simple test case to demonstate that the import works with lya
+	- t2 => more test cases 
+	- error => things to fix in chalk
 
 ## commander 
 	- t1 => simple test case to demonstate that the import works with lya	
@@ -9,7 +11,7 @@
 ## fs-extra
 	- t1 => simple test case to demonstate that the import works with lya
 
-## lodash 
+## lodash - Works
 	- t1 => simple test case to demonstate that the import works with lya
 	- t2 => expanded test to cover most usecases of lodash
 
