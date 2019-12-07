@@ -1,5 +1,14 @@
+lyaConfig = {
+  SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
+  analysisCh: 1,
+};
+
+let lya = require("../../../src/txfm.js");
+require = lya.configRequire(require, lyaConfig);
+
 /// <reference path="../moment.d.ts" />
-const moment = require('../moment');
+const moment = require('moment');
+moment.suppressDeprecationWarnings = true;
 
 moment.parseTwoDigitYear("50");
 
@@ -364,7 +373,9 @@ moment.locale('en', {
 });
 
 moment.locale('en', {
-    months : function (momentToFormat: moment.Moment, format: string) {
+    months : function (momentToFormat, format) {
+        momentToFormat = momentToFormat || moment.Moment;
+        format = format || string;
         // momentToFormat is the moment currently being formatted
         // format is the formatting string
         if (/^MMMM/.test(format)) { // if the format starts with 'MMMM'
@@ -383,7 +394,8 @@ moment.locale('en', {
 });
 
 moment.locale('en', {
-    monthsShort : function (momentToFormat: moment.Moment, format: string) {
+    monthsShort : function (momentToFormat, format) {
+        momentToFormat = momentToFormat || moment.Moment;
         if (/^MMMM/.test(format)) {
             return this.nominative[momentToFormat.month()];
         } else {
@@ -399,7 +411,8 @@ moment.locale('en', {
 });
 
 moment.locale('en', {
-    weekdays : function (momentToFormat: moment.Moment) {
+    weekdays : function (momentToFormat) {
+        momentToFormat = momentToFormat || moment.Moment;
         return this.weekdays[momentToFormat.day()];
     }
 });
@@ -409,7 +422,8 @@ moment.locale('en', {
 });
 
 moment.locale('en', {
-    weekdaysShort : function (momentToFormat: moment.Moment) {
+    weekdaysShort : function (momentToFormat) {
+      momentToFormat = momentToFormat || moment.Moment;
         return this.weekdaysShort[momentToFormat.day()];
     }
 });
@@ -419,7 +433,8 @@ moment.locale('en', {
 });
 
 moment.locale('en', {
-    weekdaysMin : function (momentToFormat: moment.Moment) {
+    weekdaysMin : function (momentToFormat) {
+momentToFormat = momentToFormat ||  moment.Moment;
         return this.weekdaysMin[momentToFormat.day()];
     }
 });
