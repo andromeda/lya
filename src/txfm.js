@@ -6,6 +6,8 @@ const Module = require('module');
 const vm = require('vm');
 const fs = require('fs');
 
+// var lyaConfig;
+
 // All the necessary modules for swap
 const originalWrap = Module.wrap;
 const originalRequire = Module.prototype.require;
@@ -272,7 +274,6 @@ const RequireTrue = {
   apply: function(target, thisArg, argumentsList) {
     const currentName = trueName[count];
     const origReqModuleName = argumentsList[0];
-    // console.log('==>', target, '\n', target.name, '\n args:', origReqModuleName);
     variableCall[currentName]['require(\'' + origReqModuleName + '\')'] = true;
     return Reflect.apply(...arguments);
   },
@@ -383,8 +384,10 @@ const handlerObjExport= {
         const localFunction = target[name];
         // We rename the function to the true name
         // This fixes the name problem
-        Object.defineProperty(localFunction, 'name', {value: name});
-        target[name] = new Proxy(localFunction, handlerExports);
+        if (typeof localFunction != 'number') {
+          Object.defineProperty(localFunction, 'name', {value: name});
+          target[name] = new Proxy(localFunction, handlerExports);
+        }
       }
     }
 
@@ -472,7 +475,7 @@ const createFinalDecl = () => {
       const globalVariables = jsonStaticData[upValue];
       finalDecl = 'let ' + upValue + ' = {};\n' + finalDecl;
       for (const declName in globalVariables) {
-        if (Object.prototype.hasOwnProperty.call(jsonStaticData, upValue)) {
+        if (Object.prototype.hasOwnProperty.call(globalVariables, declName)) {
           const name = globalVariables[declName];
           finalDecl = createStaticGlobal(name, finalDecl, upValue);
         }
@@ -497,7 +500,7 @@ const createFinalDecl = () => {
     if (Object.prototype.hasOwnProperty.call(jsonData, upValue)) {
       const globalVariables = jsonData[upValue];
       for (const declName in globalVariables) {
-        if (Object.prototype.hasOwnProperty.call(jsonData, upValue)) {
+        if (Object.prototype.hasOwnProperty.call(globalVariables, declName)) {
           const name = globalVariables[declName];
           finalDecl = createGlobal(name, finalDecl);
         }
@@ -510,6 +513,7 @@ const createFinalDecl = () => {
 
 const globalsDecl = () => {
   if (finalDecl === ' ') {
+    userRemoves();
     return createFinalDecl();
   } else {
     return finalDecl;
@@ -540,9 +544,8 @@ vm.runInThisContext = function(code, options) {
 };
 
 // We wrap the result in the wrapper function
-Module.prototype.require = function (...args) {
-  let path = args[0];
-  // console.log('==> this:', this);
+Module.prototype.require = function(...args) {
+  const path = args[0];
   let result = originalRequire.apply(this, args);
   if (result.truename === undefined ) {
     result = new Proxy(result, handlerObjExport);
@@ -577,6 +580,33 @@ const analysisChoice = () => {
 };
 const userChoice = analysisChoice();
 
+// User can remove things from json file that create conf
+const userRemoves = () => {
+  const list = lyaConfig.removejson;
+  if (list != undefined) {
+    for (let i = 0; i < list.length; i++) {
+      const value = list[i];
+      for (const upValue in jsonData) {
+        if (Object.prototype.hasOwnProperty.call(jsonData, upValue)) {
+          if (upValue === value) {
+            jsonData.remove(upValue);
+          }
+          const globalVariables = jsonData[upValue];
+          for (const declName in globalVariables) {
+            if (Object.prototype.hasOwnProperty.
+                call(globalVariables, declName)) {
+              const name = globalVariables[declName];
+              if (name === value) {
+                delete globalVariables[declName];
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+};
+
 // We export the require to the main function
 trueName[0] = 'main';
 variableCall[trueName[0]] = {};
@@ -584,8 +614,8 @@ module.exports = {
   configRequire: (origRequire, origConfig) => {
     lyaConfig = origConfig;
     return mainRequire(origRequire);
-  }
-}
+  },
+};
 
 // We wrap the global variable in a proxy
 global = new Proxy(global, handlerGlobal);
