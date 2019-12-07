@@ -1,40 +1,51 @@
-import assert from 'assert';
-import lodashStable from 'lodash';
-import { empties, _, falsey, stubTrue } from './utils.js';
+lyaConfig = {
+  SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
+  analysisCh: 1,
+};
+let lya = require("../../../src/txfm.js");
+require = lya.configRequire(require, lyaConfig);
 
-describe('constant', function() {
-  it('should create a function that returns `value`', function() {
-    var object = { 'a': 1 },
-        values = Array(2).concat(empties, true, 1, 'a'),
-        constant = _.constant(object);
+const _ = require("lodash");
 
-    var results = lodashStable.map(values, function(value, index) {
-      if (index < 2) {
-        return index ? constant.call({}) : constant();
-      }
-      return constant(value);
-    });
+let nums = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
-    assert.ok(lodashStable.every(results, function(result) {
-      return result === object;
-    }));
-  });
+let c1 = _.chunk(nums, 2);
+console.log(c1);
 
-  it('should work with falsey values', function() {
-    var expected = lodashStable.map(falsey, stubTrue);
+let c2 = _.chunk(nums, 3);
+console.log(c2);
 
-    var actual = lodashStable.map(falsey, function(value, index) {
-      var constant = index ? _.constant(value) : _.constant(),
-          result = constant();
+nums = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
-      return (result === value) || (result !== result && value !== value);
-    });
+c1 = _.slice(nums, 2, 6);
+console.log(c1);
 
-    assert.deepStrictEqual(actual, expected);
-  });
+c2 = _.slice(nums, 0, 8);
+console.log(c2);
 
-  it('should return a wrapped value when chaining', function() {
-    var wrapped = _(true).constant();
-    assert.ok(wrapped instanceof _);
-  });
-});
+var r = _.random(10);
+console.log(r);
+
+r = _.random(5, 10);
+console.log(r);
+
+words = ['sky', 'wood', 'forest', 'falcon', 
+    'pear', 'ocean', 'universe'];
+
+let word = _.sample(words);
+console.log(word);
+
+words = ['sky', 'wood', 'forest', 'falcon', 
+    'pear', 'ocean', 'universe'];
+
+console.log(_.shuffle(words));
+console.log(_.shuffle(words));
+console.log(_.shuffle(words));
+console.log(words);
+
+_.times(4, () => {
+
+    console.log("brave");
+})
+
+require('./m1.js');
