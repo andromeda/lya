@@ -3,6 +3,9 @@ set -e
 # or call the script with its absolute name
 cd $(dirname $0)
 
+pwd
+
+# if [[ $(uname) == "Linux" ]]; then
 cd ./chalk/t1
 node main.js
 echo "chalk - Test 1 .... ok"
@@ -12,6 +15,7 @@ cd ./t2
 node main.js
 echo "chalk - Test 2 .... ok"
 cd ../../
+# fi
 
 cd ./commander/t1
 node main.js
