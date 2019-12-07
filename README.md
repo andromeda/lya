@@ -1,5 +1,5 @@
 # Lya
-Module Fracture and Recombination for Dynamic Anlysis
+Module-aware Fracture and Recombination for Dynamic Anlysis
 
 
 ## More Resources on the Membrane Pattern
