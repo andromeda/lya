@@ -1,6 +1,5 @@
 /* eslint prefer-rest-params: "off", no-global-assign: "off",
 no-shadow-restricted-names: "off" */
-let lyaConfig;
 
 // We import and declare all the necessary modules
 const Module = require('module');
