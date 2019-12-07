@@ -377,7 +377,7 @@ const handlerObjExport= {
         target[name] = new Proxy(localObject, handlerObjExport);
         target[name].truename = target['truename'] + '.' +
           name;// And update truename
-
+  
         target[name].truepath = target['truepath'];
         // If we try to call a string that is not truename or truepath
         // We take the path that we are by using true_count

@@ -39,3 +39,6 @@ log(chalk.green(
 	chalk.blue.underline.bold('with a blue substring') +
 	' that becomes green again!'
 ));
+
+const error = chalk.bold.red;
+console.log(error('Error!'));
