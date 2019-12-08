@@ -43,6 +43,7 @@
   "dependencies": {
     "mkdirp": "^0.5.1",
     "tap": "^14.10.2",
-    "underscore": "^1.9.1"
+    "underscore": "^1.9.1",
+    "yargs": "^15.0.2"
   }
 }
