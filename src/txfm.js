@@ -443,7 +443,8 @@ const handlerObjExport= {
 	      localFunction.truepath = trueName[count];
         localFunction.truename = name;
         //console.log(localFunction,'mpelas', this)
-        if (typeof localFunction != 'number' && typeof localFunction != 'boolean') {
+        if (typeof localFunction != 'number' && typeof localFunction != 'boolean' &&
+           typeof localFunction != 'symbol') {
           Object.defineProperty(localFunction, 'name', {value: name});
           target[name] = new Proxy(localFunction, handlerExports);
           //console.log(trueName[count]);
