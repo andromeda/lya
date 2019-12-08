@@ -12,6 +12,9 @@
 	- t1 => simple test case
 	- t2 => test cases from mkdirp repo -- without using tap
 
+## yards
+	- t1 => simple test case -- pass
+
 ## lodash 
 	- t1 => simple test case to demonstate that the import works with lya
 	- t2 => expanded test to cover most usecases of lodash
