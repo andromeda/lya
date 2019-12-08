@@ -15,6 +15,11 @@
 ## yards
 	- t1 => simple test case -- pass
 
+## minimist
+	- t1 => simple test case 
+	- t2repo => official test case from minimist repo all of them work --
+	we can add more if we want 
+ 
 ## lodash 
 	- t1 => simple test case to demonstate that the import works with lya
 	- t2 => expanded test to cover most usecases of lodash
