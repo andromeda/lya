@@ -34,6 +34,10 @@ const MS_PER_NS = 1e-6;
 // Array to store the time of the modules
 const timeCapsule = {};
 
+// WeakMaps to store the name and the path
+const objName = new WeakMap();
+const objPath = new WeakMap();
+
 // Case handler
 // Returns the right require handler for the case
 const mainRequire = (original) => {
@@ -387,6 +391,8 @@ const handlerExports= {
     let truename;
     //console.log('handlerExports')
     try{
+      //truename = objName.get(target);
+      //currentName = objPath.get(target);
       currentName = arguments[1].truepath;
       truename = arguments[1].truename;
       truename = truename + '.' + target.name;
@@ -408,9 +414,10 @@ const handlerExports= {
 //
 // fs.read () => {... fs.resolve(...) ... return...}
 const handlerObjExport= {
-  get: function(target, name) {
+  get: function(target, name, receiver) {
     //console.log('##############################')
-    //console.log(typeof target[name],target)
+    //console.log(target)
+    //console.log(objName.get(target[name]),'hahahaha')
     if (typeof target[name] != 'undefined') {
       //console.log('lalala')
       //console.log(target[name])
@@ -429,8 +436,17 @@ const handlerObjExport= {
       } else if (typeof target[name] === 'string') {
         if (name != 'truename' && name != 'truepath') {
           //console.log('pass string');
+          //console.log(objName.has(target))
+          //const truepath = objPath.get(target);
+          //let truename = objName.get(target);
           const truepath = trueName[count];
           let truename = target.truename;
+
+          
+          //console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+          //console.log(truename, objName.get(target),'hahahaha')
+          //console.log(truepath, objPath.get(target),'hahahaha^2')
+
           truename = truename + '.' + name;
           exportControl(variableCall[truepath], truename);
         }
@@ -441,10 +457,13 @@ const handlerObjExport= {
         // This fixes the name problem
 	      localFunction.truepath = trueName[count];
         localFunction.truename = name;
-        //console.log(localFunction,'mpelas', this)
+  
         if (typeof localFunction != 'number' && typeof localFunction != 'boolean' &&
            typeof localFunction != 'symbol') {
           Object.defineProperty(localFunction, 'name', {value: name});
+          //objPath.set(localFunction, trueName[count]);
+          //objName.set(localFunction, name);
+          //console.log(name,'saaaa',objName.get(target))
           target[name] = new Proxy(localFunction, handlerExports);
           //console.log(trueName[count]);
 	  //console.log(count, trueName,localFunction)
@@ -612,11 +631,15 @@ Module.prototype.require = function(...args) {
   const path = args[0];
   let result = originalRequire.apply(this, args);
   if (result.truename === undefined ) {
+    //objName.set(result, 'require(\'' + path + '\')');
+    //objPath.set(result, trueName[count]);
     result = new Proxy(result, handlerObjExport);
     result.truename = 'require(\'' + path + '\')';
     result.truepath = trueName[count];
     if (count !=0) count--;
   } else {
+    //objName.set(result, 'require(\'' + path + '\')');
+    //objPath.set(result, trueName[count]);
     result = new Proxy(result, handlerObjExport);
     result.truename = 'require(\'' + path + '\')';
     result.truepath = trueName[count];
