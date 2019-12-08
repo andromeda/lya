@@ -11,9 +11,10 @@
 ## fs-extra
 	- t1 => simple test case to demonstate that the import works with lya
 
-## lodash - Works
+## lodash 
 	- t1 => simple test case to demonstate that the import works with lya
 	- t2 => expanded test to cover most usecases of lodash
+	- t3 => official test from lodash repo // Needs fix
 
 ## moment 
 	- t1 => simple test case to demonstate that the import works with lya
