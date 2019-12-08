@@ -340,11 +340,53 @@ const handlerAddArg= {
   },
 };
 
+function isCyclic(object) {
+   const seenObjects = new WeakMap(); // use to keep track of which objects have been seen.
+
+   function detectCycle(obj) {
+      // If 'obj' is an actual object (i.e., has the form of '{}'), check
+      // if it's been seen already.
+      if (Object.prototype.toString.call(obj) == '[object Object]') {
+
+         if (seenObjects.has(obj)) {
+            return true;
+         }
+
+         // If 'obj' hasn't been seen, add it to 'seenObjects'.
+         // Since 'obj' is used as a key, the value of 'seenObjects[obj]'
+         // is irrelevent and can be set as literally anything you want. I 
+         // just went with 'undefined'.
+         seenObjects.set(obj, undefined);
+
+         // Recurse through the object, looking for more circular references.
+         for (var key in obj) {
+            if (detectCycle(obj[key])) {
+               return true;
+            }
+         }
+
+      // If 'obj' is an array, check if any of it's elements are
+      // an object that has been seen already.
+      } else if (Array.isArray(obj)) {
+         for (var i in obj) {
+            if (detectCycle(obj[i])) {
+               return true;
+            }
+         }
+      }
+
+      return false;
+   }
+
+   return detectCycle(object);
+}
+
 // The handler of the imported libraries
 const handlerExports= {
   apply: function(target, thisArg, argumentsList) {
     let currentName;
     let truename;
+    //console.log('handlerExports')
     try{
       currentName = arguments[1].truepath;
       truename = arguments[1].truename;
@@ -368,6 +410,8 @@ const handlerExports= {
 // fs.read () => {... fs.resolve(...) ... return...}
 const handlerObjExport= {
   get: function(target, name) {
+    //console.log('##############################')
+    //console.log(typeof target[name],target)
     if (typeof target[name] != 'undefined') {
       //console.log('lalala')
       //console.log(target[name])
@@ -379,29 +423,31 @@ const handlerObjExport= {
           name;// And update truename
   
         target[name].truepath = target['truepath'];
+        //console.log('pass object')
         // If we try to call a string that is not truename or truepath
         // We take the path that we are by using true_count
         // We need to print access to that variable
       } else if (typeof target[name] === 'string') {
         if (name != 'truename' && name != 'truepath') {
+          //console.log('pass string');
           const truepath = trueName[count];
           let truename = target.truename;
           truename = truename + '.' + name;
           exportControl(variableCall[truepath], truename);
-          //console.log('hahahaha',name)
         }
       } else {
         let localFunction = target[name];
         //if (localFunction[]) {}
         // We rename the function to the true name
         // This fixes the name problem
-        //console.log('############')
-        localFunction.truepath = trueName[count];
+	      localFunction.truepath = trueName[count];
         localFunction.truename = name;
-        //console.log(localFunction.truename,'mpelas', this)
-        if (typeof localFunction != 'number') {
+        //console.log(localFunction,'mpelas', this)
+        if (typeof localFunction != 'number' && typeof localFunction != 'boolean') {
           Object.defineProperty(localFunction, 'name', {value: name});
           target[name] = new Proxy(localFunction, handlerExports);
+          //console.log(trueName[count]);
+	  //console.log(count, trueName,localFunction)
         }
       }
     }
