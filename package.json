@@ -37,6 +37,12 @@
     "eslint-config-google": "^0.14.0",
     "fs-extra": "^8.1.0",
     "lodash": "^4.17.15",
-    "moment": "^2.24.0"
+    "moment": "^2.24.0",
+    "qunit-extras": "^3.0.0"
+  },
+  "dependencies": {
+    "mkdirp": "^0.5.1",
+    "tap": "^14.10.2",
+    "underscore": "^1.9.1"
   }
 }
