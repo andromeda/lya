@@ -42,6 +42,7 @@
   },
   "dependencies": {
     "chai": "^4.2.0",
+    "colors": "^1.4.0",
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
     "tap": "^14.10.2",
