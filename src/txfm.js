@@ -328,15 +328,14 @@ const RequireTime2= {
 // We wrap the compiledWrapper code in a proxy so
 // when it is called it will do this actions =>
 const handlerAddArg= {
-  apply: function(target) {
+  apply: function(target, thisArg, argumentsList) {
     // We catch local require in order to wrap it
-    let localRequire = arguments[2][1];
+    let localRequire = argumentsList[1];
     localRequire = mainRequire(localRequire);
-    arguments[2][1] = localRequire;// We wrap require
-    arguments[2][5] = globalProxy;// We pass the global values with the proxies
-    const result = Reflect.apply( ...arguments);
+    argumentsList[1] = localRequire;// We wrap require
+    argumentsList[5] = globalProxy;// We pass the global values with the proxies
 
-    return result;
+    return Reflect.apply( ...arguments);
   },
 };
 
@@ -452,7 +451,7 @@ const handlerObjExport= {
         }
       }
     }
-
+    //console.log(typeof target[name]);	
     return Reflect.get(target, name);
   },
 };
