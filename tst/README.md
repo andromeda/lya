@@ -6,10 +6,11 @@
 	- error => things to fix in chalk
 
 ## commander 
-	- t1 => simple test case to demonstate that the import works with lya	
-
-## fs-extra
 	- t1 => simple test case to demonstate that the import works with lya
+
+## mkdirp
+	- t1 => simple test case
+	- t2 => test cases from mkdirp repo -- without using tap
 
 ## lodash 
 	- t1 => simple test case to demonstate that the import works with lya
