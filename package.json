@@ -37,6 +37,18 @@
     "eslint-config-google": "^0.14.0",
     "fs-extra": "^8.1.0",
     "lodash": "^4.17.15",
-    "moment": "^2.24.0"
+    "moment": "^2.24.0",
+    "qunit-extras": "^3.0.0"
+  },
+  "dependencies": {
+    "chai": "^4.2.0",
+    "colors": "^1.4.0",
+    "glob": "^7.1.6",
+    "minimist": "^1.2.0",
+    "mkdirp": "^0.5.1",
+    "tap": "^14.10.2",
+    "tape": "^4.11.0",
+    "underscore": "^1.9.1",
+    "yargs": "^15.0.2"
   }
 }

@@ -9,8 +9,11 @@ require = lya.configRequire(require, lyaConfig);
 const chalk = require('chalk');
 const log = console.log;
 
+// Found the problem with that 
+// We need to change the place we save truename and truepath
+// Not inside the object but maybe on WeakMap -- toDo
 // Use RGB colors in terminal emulators that support it.
-//log(chalk.keyword('orange')('Yay for orange colored text!'));
+log(chalk.keyword('orange')('Yay for orange colored text!'));
 //log(chalk.rgb(123, 45, 67).underline('Underlined reddish color'));
 //log(chalk.hex('#DEADED').bold('Bold gray!'));//
 
