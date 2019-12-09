@@ -454,8 +454,6 @@ const createGlobal = (name, finalDecl) => {
 // FIXME: give example here
 const createStaticGlobal = (name, finalDecl, upValue) => {
   if (global[upValue][name] != undefined) {
-    // FIXME: [nv] why final Value?
-    // const finalName = upValue + name;
     const nameToShow = upValue + '.' + name;
     globalProxy[nameToShow] = proxyWrap(handler, global[upValue][name]);
     // We save the declared wraped functions in new local
