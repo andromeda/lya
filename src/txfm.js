@@ -5,6 +5,7 @@ no-shadow-restricted-names: "off" */
 const Module = require('module');
 const vm = require('vm');
 const fs = require('fs');
+const path = require('path');
 
 // All the necessary modules for swap
 const originalWrap = Module.wrap;
@@ -36,6 +37,11 @@ const timeCapsule = {};
 const objName = new WeakMap();
 const objPath = new WeakMap();
 
+// We read and store the data of the json file
+const jsonData = require('./globals.json');
+const jsonStaticData = require('./staticGlobals.json');
+// const jsonPrototypeData = require('./prototypeGlobals.json');
+
 // Case handler
 // Returns the right require handler for the case
 const mainRequire = (original) => {
@@ -47,6 +53,8 @@ const mainRequire = (original) => {
     return new Proxy(original, RequireTime);
   } else if (userChoice === 4) {// Case 4 - Time2.0
     return new Proxy(original, RequireTime2);
+  } else if (userChoice === 5) {// Case 5 - Enforcement
+    return new Proxy(original, EnforcementCheck);
   }// Add more
 };
 
@@ -70,6 +78,11 @@ const exportControl = (storedCalls, truename) => {
       } else {
         storedCalls[truename]++;
       }
+    }
+  } else if (userChoice === 5) {// Case 5 - Enforcement
+    if (Object.prototype.hasOwnProperty.
+        call(storedCalls, truename) === false) {
+      throw new Error("Something went badly wrong in " + truename);
     }
   }// Add more
 };
@@ -130,7 +143,14 @@ const exportFuncControl = (storedCalls, truename, arguments) => {
     }
 
     return Reflect.apply(...arguments);
-  }
+  } else if (userChoice === 5) {// Case 5 - Enforcement
+    if (Object.prototype.hasOwnProperty.
+        call(storedCalls, truename) === true) {
+      return Reflect.apply(...arguments);
+    }
+
+    throw new Error("Something went badly wrong in " + truename);
+  }// Add more
 };
 
 // We change the original module control
@@ -190,6 +210,11 @@ const onModuleControlFunc= (storedCalls, truename, arguments) => {
     }
 
     return Reflect.apply(...arguments);
+  } else if (userChoice === 5) {// Case 5 - Enforcement
+    if (Object.prototype.hasOwnProperty.
+        call(storedCalls, truename) === false) {
+      //throw new Error("Something went badly wrong!");
+    }
   }// Add more
 };
 
@@ -208,6 +233,11 @@ const onModuleControl= (storedCalls, truename) => {
     } else {
       storedCalls[truename]++;
     }
+  } else if (userChoice === 5) {// Case 5 - Enforcement
+    if (Object.prototype.hasOwnProperty.
+        call(storedCalls, truename) === false) {
+      throw new Error("Something went badly wrong in " + truename);
+    } 
   }// Add more
 };
 
@@ -217,13 +247,21 @@ const onModuleControl= (storedCalls, truename) => {
 const handler= {
   apply: function(target) {
     const currentName = trueName[count];
+    if (userChoice === 5) {// This will be removed when we make it modular
+      return onModuleControlFunc(dynamicObj[currentName],
+        target.name, arguments); 
+    }
 
     return onModuleControlFunc(variableCall[currentName],
         target.name, arguments);
   },
   get: function(target, name) {
     const currentName = trueName[count];
-    onModuleControl(variableCall[currentName], target.name);
+    if (userChoice != 5){
+      onModuleControl(variableCall[currentName], target.name);
+    } else {
+      onModuleControl(dynamicObj[currentName], target.name);
+    }
 
     return Reflect.get(target, name);
   },
@@ -238,7 +276,11 @@ const handlerGlobal= {
     if (typeof target[name+endName] != 'undefined') {
       const currentName = trueName[count];
       const nameToShow = target[name+endName];
-      onModuleControl(variableCall[currentName], nameToShow);
+      if (userChoice != 5){
+        onModuleControl(variableCall[currentName], nameToShow);
+      } else {
+        onModuleControl(dynamicObj[currentName], nameToShow);
+      }
     }
 
     return Reflect.get(target, name);
@@ -251,8 +293,11 @@ const handlerGlobal= {
       // In order to exist a disticton between the values we declared ourselfs
       // We declare one more field with key value that stores the name
       Object.defineProperty(target, name+endName, {value: nameToStore});
-      onModuleControl(variableCall[currentName], nameToStore);
-
+      if (userChoice != 5){
+        onModuleControl(variableCall[currentName], nameToStore);
+      } else {
+        onModuleControl(dynamicObj[currentName], nameToStore);
+      }
       return result;
     }
 
@@ -326,6 +371,21 @@ const RequireTime2= {
   },
 };
 
+// The handler of require of Enforcement
+const EnforcementCheck= {
+  apply: function(target) {
+    const currentName = trueName[count];
+    const nameReq = target.name + '(\'' + arguments[2][0] +// In arguments[2][0]
+      '\')';// Is the name we use to import
+    if (Object.prototype.hasOwnProperty.
+          call(dynamicObj,currentName,nameReq) === true) {
+      return Reflect.apply( ...arguments);
+    }
+
+    return Reflect.apply( ...arguments);
+  },
+};
+
 // The handler of compiledWrapper
 // We wrap the compiledWrapper code in a proxy so
 // when it is called it will do this actions =>
@@ -392,6 +452,11 @@ const handlerExports= {
     currentName = objPath.get(target);
     truename = truename + '.' + target.name;
 
+    if (userChoice === 5) {// This will be removed when we make it modular
+      return exportFuncControl(dynamicObj[currentName],
+        truename, arguments); 
+    }
+
     return exportFuncControl(variableCall[currentName], truename, arguments);
   },
 };
@@ -437,8 +502,11 @@ const handlerObjExport= {
           }
 
           truename = truename + '.' + name;
-
-          exportControl(variableCall[trueName[count]], truename);
+          if (userChoice === 5) {
+            exportControl(dynamicObj[trueName[count]], truename);
+          } else {
+            exportControl(variableCall[trueName[count]], truename);
+          }
         }
       } else {
         let localFunction = target[name];
@@ -479,11 +547,6 @@ const proxyWrap = function(handler, obj) {
 
   return obj;
 };
-
-// We read and store the data of the json file
-const jsonData = require('./globals.json');
-const jsonStaticData = require('./staticGlobals.json');
-// const jsonPrototypeData = require('./prototypeGlobals.json');
 
 // We declare the data on the same time to pass them inside wrapped function
 const createGlobal = (name, finalDecl) => {
@@ -625,8 +688,9 @@ Module.prototype.require = function(...args) {
 // We return the choice of the user
 // 1) True - False Analysis
 // 2) Times calling a function
-// 3) Time analysis
-// 4) Time analysis2.0
+// 3) Time Analysis
+// 4) Time Analysis2.0
+// 5) Enforcement Analysis
 const analysisChoice = () => {
   let choice;
   try {
@@ -635,12 +699,31 @@ const analysisChoice = () => {
     choice = 1;
   }
 
-  if (choice != 1 && choice != 2 && choice != 3 && choice != 4) {// Add more
+  if (choice != 1 && choice != 2 && choice != 3 && choice != 4 && choice !=5) {// Add more
     return 1;
   }
   return choice;
 };
 const userChoice = analysisChoice();
+
+// We need to get the path of the main module in order to find dynamic json
+const createDynamicObj = () => {
+  const appDir = path.dirname(require.main.filename);
+  const jsonDir = appDir + '/dynamic.json';
+  let dynamicData = {};
+  try {
+    dynamicData = require(jsonDir);//We save all the json data inside an object
+  } catch (e) {
+    console.log('null');// A command to end the program
+    return null;// If found nothing
+  }
+
+  return dynamicData;
+};
+
+if (userChoice === 5) {
+  dynamicObj = createDynamicObj();
+};
 
 // User can remove things from json file that create conf
 const userRemoves = () => {
@@ -684,7 +767,7 @@ global = new Proxy(global, handlerGlobal);
 
 // We print all the results on the end of the program
 process.on('exit', function() {
-  if (lyaConfig.SAVE_RESULTS) {
+  if (lyaConfig.SAVE_RESULTS && userChoice != 5 ) {
     fs.writeFileSync(lyaConfig.SAVE_RESULTS,
         JSON.stringify(variableCall, null, 2), 'utf-8');
   } else {
