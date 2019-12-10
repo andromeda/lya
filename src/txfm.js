@@ -6,8 +6,6 @@ const Module = require('module');
 const vm = require('vm');
 const fs = require('fs');
 
-// var lyaConfig;
-
 // All the necessary modules for swap
 const originalWrap = Module.wrap;
 const originalRequire = Module.prototype.require;
@@ -132,7 +130,7 @@ const exportFuncControl = (storedCalls, truename, arguments) => {
     }
 
     return Reflect.apply(...arguments);
-  }// Add more// Add more
+  }
 };
 
 // We change the original module control
@@ -389,17 +387,10 @@ const handlerExports= {
   apply: function(target, thisArg, argumentsList) {
     let currentName;
     let truename;
-    //console.log('handlerExports')
-    try{
-      //truename = objName.get(target);
-      //currentName = objPath.get(target);
-      currentName = arguments[1].truepath;
-      truename = arguments[1].truename;
-      truename = truename + '.' + target.name;
-    } catch(TypeError) {
-      currentName = target.truepath;
-      truename = target.truename;
-    }
+
+    truename = objName.get(target);
+    currentName = objPath.get(target);
+    truename = truename + '.' + target.name;
 
     return exportFuncControl(variableCall[currentName], truename, arguments);
   },
@@ -415,62 +406,52 @@ const handlerExports= {
 // fs.read () => {... fs.resolve(...) ... return...}
 const handlerObjExport= {
   get: function(target, name, receiver) {
-    //console.log('##############################')
-    //console.log(target)
-    //console.log(objName.get(target[name]),'hahahaha')
     if (typeof target[name] != 'undefined') {
-      //console.log('lalala')
-      //console.log(target[name])
+
       // If we try to grab an object we wrap it in this proxy
       if (typeof target[name] === 'object') {
+        
+        let truepath = objPath.get(receiver);
+        let truename = objName.get(receiver);
+        if (truepath === undefined) {
+          truepath = objPath.get(target);
+          truename = objName.get(target);
+        }
+
         const localObject = target[name];
         target[name] = new Proxy(localObject, handlerObjExport);
-        target[name].truename = target['truename'] + '.' +
-          name;// And update truename
-  
-        target[name].truepath = target['truepath'];
-        //console.log('pass object')
+        
+        objName.set(target[name], truename + '.' + name);
+        objPath.set(target[name], truepath);
+
         // If we try to call a string that is not truename or truepath
         // We take the path that we are by using true_count
         // We need to print access to that variable
       } else if (typeof target[name] === 'string') {
         if (name != 'truename' && name != 'truepath') {
-          //console.log('pass string');
-          //console.log(objName.has(target))
-          //const truepath = objPath.get(target);
-          //let truename = objName.get(target);
-          const truepath = trueName[count];
-          let truename = target.truename;
-
-          
-          //console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-          //console.log(truename, objName.get(target),'hahahaha')
-          //console.log(truepath, objPath.get(target),'hahahaha^2')
+          let truepath = objPath.get(receiver);
+          let truename = objName.get(receiver);
+          if (truepath === undefined) {
+            truepath = objPath.get(target);
+            truename = objName.get(target);
+          }
 
           truename = truename + '.' + name;
-          exportControl(variableCall[truepath], truename);
+
+          exportControl(variableCall[trueName[count]], truename);
         }
       } else {
         let localFunction = target[name];
-        //if (localFunction[]) {}
-        // We rename the function to the true name
-        // This fixes the name problem
-	      localFunction.truepath = trueName[count];
-        localFunction.truename = name;
-  
         if (typeof localFunction != 'number' && typeof localFunction != 'boolean' &&
            typeof localFunction != 'symbol') {
           Object.defineProperty(localFunction, 'name', {value: name});
-          //objPath.set(localFunction, trueName[count]);
-          //objName.set(localFunction, name);
-          //console.log(name,'saaaa',objName.get(target))
           target[name] = new Proxy(localFunction, handlerExports);
-          //console.log(trueName[count]);
-	  //console.log(count, trueName,localFunction)
+          objPath.set(localFunction, trueName[count]);
+          objName.set(localFunction, objName.get(target));
         }
       }
     }
-    //console.log(typeof target[name]);	
+
     return Reflect.get(target, name);
   },
 };
@@ -628,19 +609,15 @@ vm.runInThisContext = function(code, options) {
 Module.prototype.require = function(...args) {
   const path = args[0];
   let result = originalRequire.apply(this, args);
-  if (result.truename === undefined ) {
-    //objName.set(result, 'require(\'' + path + '\')');
-    //objPath.set(result, trueName[count]);
+  if ( objName.has(result) === false ) {
+    objName.set(result, 'require(\'' + path + '\')');
+    objPath.set(result, trueName[count]);
     result = new Proxy(result, handlerObjExport);
-    result.truename = 'require(\'' + path + '\')';
-    result.truepath = trueName[count];
     if (count !=0) count--;
   } else {
-    //objName.set(result, 'require(\'' + path + '\')');
-    //objPath.set(result, trueName[count]);
     result = new Proxy(result, handlerObjExport);
-    result.truename = 'require(\'' + path + '\')';
-    result.truepath = trueName[count];
+    objName.set(result, 'require(\'' + path + '\')');
+    objPath.set(result, trueName[count]);
   }
   return result;
 };
