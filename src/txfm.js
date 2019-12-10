@@ -42,6 +42,97 @@ const jsonData = require('./globals.json');
 const jsonStaticData = require('./staticGlobals.json');
 // const jsonPrototypeData = require('./prototypeGlobals.json');
 
+// We return the choice of the user
+// 1) True - False Analysis
+// 2) Times calling a function
+// 3) Time Analysis
+// 4) Time Analysis2.0
+// 5) Enforcement Analysis
+const analysisChoice = () => {
+  let choice;
+  try {
+    choice = lyaConfig.analysisCh;
+  } catch (ReferenceError) {
+    choice = 1;
+  }
+
+  if (choice != 1 && choice != 2 && choice != 3 && choice != 4 && choice !=5) {// Add more
+    return 1;
+  }
+  return choice;
+};
+const userChoice = analysisChoice();
+
+if (userChoice === 5) {
+  dynamicObj = createDynamicObj();
+};
+
+// We need to get the path of the main module in order to find dynamic json
+const createDynamicObj = () => {
+  const appDir = path.dirname(require.main.filename);
+  const jsonDir = appDir + '/dynamic.json';
+  let dynamicData = {};
+  try {
+    dynamicData = require(jsonDir);//We save all the json data inside an object
+  } catch (e) {
+    console.log('null');// A command to end the program
+    return null;// If found nothing
+  }
+
+  return dynamicData;
+};
+
+// We export the require to the main function
+trueName[0] = 'main';
+variableCall[trueName[0]] = {};
+module.exports = {
+  configRequire: (origRequire, origConfig) => {
+    lyaConfig = origConfig;
+    return mainRequire(origRequire);
+  },
+};
+
+// The handler of the global variable
+// Every time we access the global variabe in order to declare or call
+// a variable, then we can print it on the export file. It doesnt work
+// if it isn't called like global.xx
+const handlerGlobal= {
+  get: function(target, name) {
+    if (typeof target[name+endName] != 'undefined') {
+      const currentName = trueName[count];
+      const nameToShow = target[name+endName];
+      if (userChoice != 5){
+        onModuleControl(variableCall[currentName], nameToShow);
+      } else {
+        onModuleControl(dynamicObj[currentName], nameToShow);
+      }
+    }
+
+    return Reflect.get(target, name);
+  },
+  set: function(target, name, value) {
+    if (typeof value === 'number') {
+      const currentName = trueName[count];
+      const nameToStore = 'global.' + name;
+      const result = Reflect.set(target, name, value);
+      // In order to exist a disticton between the values we declared ourselfs
+      // We declare one more field with key value that stores the name
+      Object.defineProperty(target, name+endName, {value: nameToStore});
+      if (userChoice != 5){
+        onModuleControl(variableCall[currentName], nameToStore);
+      } else {
+        onModuleControl(dynamicObj[currentName], nameToStore);
+      }
+      return result;
+    }
+
+    return Reflect.set(target, name, value);
+  },
+};
+
+// We wrap the global variable in a proxy
+global = new Proxy(global, handlerGlobal);
+
 // Case handler
 // Returns the right require handler for the case
 const mainRequire = (original) => {
@@ -145,11 +236,11 @@ const exportFuncControl = (storedCalls, truename, arguments) => {
     return Reflect.apply(...arguments);
   } else if (userChoice === 5) {// Case 5 - Enforcement
     if (Object.prototype.hasOwnProperty.
-        call(storedCalls, truename) === true) {
-      return Reflect.apply(...arguments);
+        call(storedCalls, truename) === false) {
+      throw new Error("Something went badly wrong in " + truename);
     }
 
-    throw new Error("Something went badly wrong in " + truename);
+    return Reflect.apply(...arguments);
   }// Add more
 };
 
@@ -213,8 +304,10 @@ const onModuleControlFunc= (storedCalls, truename, arguments) => {
   } else if (userChoice === 5) {// Case 5 - Enforcement
     if (Object.prototype.hasOwnProperty.
         call(storedCalls, truename) === false) {
-      //throw new Error("Something went badly wrong!");
+      throw new Error("Something went badly wrong!");
     }
+
+    return Reflect.apply(...arguments);
   }// Add more
 };
 
@@ -236,7 +329,7 @@ const onModuleControl= (storedCalls, truename) => {
   } else if (userChoice === 5) {// Case 5 - Enforcement
     if (Object.prototype.hasOwnProperty.
         call(storedCalls, truename) === false) {
-      throw new Error("Something went badly wrong in " + truename);
+	throw new Error("Something went badly wrong in " + truename);
     } 
   }// Add more
 };
@@ -267,43 +360,7 @@ const handler= {
   },
 };
 
-// The handler of the global variable
-// Every time we access the global variabe in order to declare or call
-// a variable, then we can print it on the export file. It doesnt work
-// if it isn't called like global.xx
-const handlerGlobal= {
-  get: function(target, name) {
-    if (typeof target[name+endName] != 'undefined') {
-      const currentName = trueName[count];
-      const nameToShow = target[name+endName];
-      if (userChoice != 5){
-        onModuleControl(variableCall[currentName], nameToShow);
-      } else {
-        onModuleControl(dynamicObj[currentName], nameToShow);
-      }
-    }
 
-    return Reflect.get(target, name);
-  },
-  set: function(target, name, value) {
-    if (typeof value === 'number') {
-      const currentName = trueName[count];
-      const nameToStore = 'global.' + name;
-      const result = Reflect.set(target, name, value);
-      // In order to exist a disticton between the values we declared ourselfs
-      // We declare one more field with key value that stores the name
-      Object.defineProperty(target, name+endName, {value: nameToStore});
-      if (userChoice != 5){
-        onModuleControl(variableCall[currentName], nameToStore);
-      } else {
-        onModuleControl(dynamicObj[currentName], nameToStore);
-      }
-      return result;
-    }
-
-    return Reflect.set(target, name, value);
-  },
-};
 
 // The handler of require of True-False case_1
 const RequireTrue = {
@@ -451,7 +508,6 @@ const handlerExports= {
     truename = objName.get(target);
     currentName = objPath.get(target);
     truename = truename + '.' + target.name;
-
     if (userChoice === 5) {// This will be removed when we make it modular
       return exportFuncControl(dynamicObj[currentName],
         truename, arguments); 
@@ -645,6 +701,33 @@ const globalsDecl = () => {
   }
 };
 
+// User can remove things from json file that create conf
+const userRemoves = () => {
+  const list = lyaConfig.removejson;
+  if (list != undefined) {
+    for (let i = 0; i < list.length; i++) {
+      const value = list[i];
+      for (const upValue in jsonData) {
+        if (Object.prototype.hasOwnProperty.call(jsonData, upValue)) {
+          if (upValue === value) {
+            jsonData.remove(upValue);
+          }
+          const globalVariables = jsonData[upValue];
+          for (const declName in globalVariables) {
+            if (Object.prototype.hasOwnProperty.
+                call(globalVariables, declName)) {
+              const name = globalVariables[declName];
+              if (name === value) {
+                delete globalVariables[declName];
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+};
+
 // We do some stuff and then call original warp
 Module.wrap = (script) => {
   script = globalsDecl() + script;
@@ -685,92 +768,10 @@ Module.prototype.require = function(...args) {
   return result;
 };
 
-// We return the choice of the user
-// 1) True - False Analysis
-// 2) Times calling a function
-// 3) Time Analysis
-// 4) Time Analysis2.0
-// 5) Enforcement Analysis
-const analysisChoice = () => {
-  let choice;
-  try {
-    choice = lyaConfig.analysisCh;
-  } catch (ReferenceError) {
-    choice = 1;
-  }
-
-  if (choice != 1 && choice != 2 && choice != 3 && choice != 4 && choice !=5) {// Add more
-    return 1;
-  }
-  return choice;
-};
-const userChoice = analysisChoice();
-
-// We need to get the path of the main module in order to find dynamic json
-const createDynamicObj = () => {
-  const appDir = path.dirname(require.main.filename);
-  const jsonDir = appDir + '/dynamic.json';
-  let dynamicData = {};
-  try {
-    dynamicData = require(jsonDir);//We save all the json data inside an object
-  } catch (e) {
-    console.log('null');// A command to end the program
-    return null;// If found nothing
-  }
-
-  return dynamicData;
-};
-
-if (userChoice === 5) {
-  dynamicObj = createDynamicObj();
-};
-
-// User can remove things from json file that create conf
-const userRemoves = () => {
-  const list = lyaConfig.removejson;
-  if (list != undefined) {
-    for (let i = 0; i < list.length; i++) {
-      const value = list[i];
-      for (const upValue in jsonData) {
-        if (Object.prototype.hasOwnProperty.call(jsonData, upValue)) {
-          if (upValue === value) {
-            jsonData.remove(upValue);
-          }
-          const globalVariables = jsonData[upValue];
-          for (const declName in globalVariables) {
-            if (Object.prototype.hasOwnProperty.
-                call(globalVariables, declName)) {
-              const name = globalVariables[declName];
-              if (name === value) {
-                delete globalVariables[declName];
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-};
-
-// We export the require to the main function
-trueName[0] = 'main';
-variableCall[trueName[0]] = {};
-module.exports = {
-  configRequire: (origRequire, origConfig) => {
-    lyaConfig = origConfig;
-    return mainRequire(origRequire);
-  },
-};
-
-// We wrap the global variable in a proxy
-global = new Proxy(global, handlerGlobal);
-
 // We print all the results on the end of the program
 process.on('exit', function() {
   if (lyaConfig.SAVE_RESULTS && userChoice != 5 ) {
     fs.writeFileSync(lyaConfig.SAVE_RESULTS,
         JSON.stringify(variableCall, null, 2), 'utf-8');
-  } else {
-    console.log(JSON.stringify(variableCall));
   }
 });
