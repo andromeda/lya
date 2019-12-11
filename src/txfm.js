@@ -64,10 +64,6 @@ const analysisChoice = () => {
 };
 const userChoice = analysisChoice();
 
-if (userChoice === 5) {
-  dynamicObj = createDynamicObj();
-}
-
 // We need to get the path of the main module in order to find dynamic json
 const createDynamicObj = () => {
   const appDir = path.dirname(require.main.filename);
@@ -76,12 +72,15 @@ const createDynamicObj = () => {
   try {
     dynamicData = require(jsonDir);// We save all the json data inside an object
   } catch (e) {
-    console.log('null');// A command to end the program
-    return null;// If found nothing
+    throw new Error('The dynamic.json file was not found!');
   }
 
   return dynamicData;
 };
+
+if (userChoice === 5) {
+  dynamicObj = createDynamicObj();
+}
 
 // We export the require to the main function
 trueName[0] = 'main';
