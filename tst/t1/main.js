@@ -1,5 +1,6 @@
 lyaConfig = {
   SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
+  POLICY: require("path").join(__dirname, "dynamic.json"),
   analysisCh: 1,
 };
 

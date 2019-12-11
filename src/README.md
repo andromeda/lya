@@ -8,3 +8,10 @@ Currently, the implementation comprises four files:
 * [txfm.js](./txfm.json): The main `lya` implementation.
 
 ## Main Implementation
+
+Two levels:
+
+* `console.log`: 
+* `add`: 
+
++ Control functions to say what we want to exclude

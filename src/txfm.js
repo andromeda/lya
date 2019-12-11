@@ -1,6 +1,8 @@
 /* eslint prefer-rest-params: "off", no-global-assign: "off",
 no-shadow-restricted-names: "off" */
 
+let lyaConfig= {};
+
 // We import and declare all the necessary modules
 const Module = require('module');
 const vm = require('vm');
@@ -12,16 +14,17 @@ const originalWrap = Module.wrap;
 const originalRequire = Module.prototype.require;
 const originalRun = vm.runInThisContext;
 
-const globalProxies = {};
-const accessMatrix = {};
-
 // `require` name stack / tree 
 // require( ...require('..')... )
 // main: 0;
 //   m1: 1;
 //     m2: 2;
 const trueName = [];
+trueName[0] = 'main';
 let requireLevel = 0;
+const globalProxies = {};
+const accessMatrix = {};
+accessMatrix[trueName[0]] = {};
 
 // Holds the end of each name store of new assigned global variables
 // suffix for our own metadata
@@ -52,50 +55,24 @@ const sglobals = require('./staticGlobals.json');
 // 3) Time Analysis
 // 4) Time Analysis2.0
 // 5) Enforcement Analysis
-const analysisChoice = () => {
-  let choice;
-  try {
-    choice = lyaConfig.analysisCh;
-  } catch (ReferenceError) {
-    choice = 1;
-  }
-
-  if (choice != 1 && choice != 2 && choice != 3 &&
-    choice != 4 && choice !=5) {// Add more
-    return 1;
-  }
-  return choice;
-};
-const userChoice = analysisChoice();
+const userChoice = (lyaConfig.analysisCh && [1, 2, 3, 4, 5].includes(lyaConfig.analysisCh))? lyaConfig.analysisCh : 1
 
 // We need to get the path of the main module in order to find dynamic json
 const createDynamicObj = () => {
-  console.log("===>", require.main.filename);
-  const appDir = path.dirname(require.main.filename);
-  const jsonDir = appDir + '/dynamic.json';
-  let dynamicData = {};
+  // We save all the json data inside an object
+  const appDir = path.join(path.dirname(require.main.filename), "dynamic.json");
+  let dynamicData;
   try {
-    dynamicData = require(jsonDir);// We save all the json data inside an object
+    dynamicData = require(lyaConfig.POLICY || pdir);
   } catch (e) {
     throw new Error('The dynamic.json file was not found!');
   }
-
   return dynamicData;
 };
 
 if (userChoice === 5) {
   dynamicObj = createDynamicObj();
 }
-
-// We export the require to the main function
-trueName[0] = 'main';
-accessMatrix[trueName[0]] = {};
-module.exports = {
-  configRequire: (origRequire, origConfig) => {
-    lyaConfig = origConfig;
-    return mainRequire(origRequire);
-  },
-};
 
 // The handler of the global variable
 // Every time we access the global variabe in order to declare or call
@@ -774,3 +751,10 @@ process.on('exit', function() {
         JSON.stringify(accessMatrix, null, 2), 'utf-8');
   }
 });
+
+module.exports = {
+  configRequire: (origRequire, origConfig) => {
+    lyaConfig = origConfig;
+    return mainRequire(origRequire);
+  },
+};
