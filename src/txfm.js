@@ -56,16 +56,13 @@ const analysisChoice = () => {
     choice = 1;
   }
 
-  if (choice != 1 && choice != 2 && choice != 3 && choice != 4 && choice !=5) {// Add more
+  if (choice != 1 && choice != 2 && choice != 3 &&
+    choice != 4 && choice !=5) {// Add more
     return 1;
   }
   return choice;
 };
 const userChoice = analysisChoice();
-
-if (userChoice === 5) {
-  dynamicObj = createDynamicObj();
-};
 
 // We need to get the path of the main module in order to find dynamic json
 const createDynamicObj = () => {
@@ -73,14 +70,17 @@ const createDynamicObj = () => {
   const jsonDir = appDir + '/dynamic.json';
   let dynamicData = {};
   try {
-    dynamicData = require(jsonDir);//We save all the json data inside an object
+    dynamicData = require(jsonDir);// We save all the json data inside an object
   } catch (e) {
-    console.log('null');// A command to end the program
-    return null;// If found nothing
+    throw new Error('The dynamic.json file was not found!');
   }
 
   return dynamicData;
 };
+
+if (userChoice === 5) {
+  dynamicObj = createDynamicObj();
+}
 
 // We export the require to the main function
 trueName[0] = 'main';
@@ -101,7 +101,7 @@ const handlerGlobal= {
     if (typeof target[name+endName] != 'undefined') {
       const currentName = trueName[count];
       const nameToShow = target[name+endName];
-      if (userChoice != 5){
+      if (userChoice != 5) {
         onModuleControl(variableCall[currentName], nameToShow);
       } else {
         onModuleControl(dynamicObj[currentName], nameToShow);
@@ -118,7 +118,7 @@ const handlerGlobal= {
       // In order to exist a disticton between the values we declared ourselfs
       // We declare one more field with key value that stores the name
       Object.defineProperty(target, name+endName, {value: nameToStore});
-      if (userChoice != 5){
+      if (userChoice != 5) {
         onModuleControl(variableCall[currentName], nameToStore);
       } else {
         onModuleControl(dynamicObj[currentName], nameToStore);
@@ -173,7 +173,7 @@ const exportControl = (storedCalls, truename) => {
   } else if (userChoice === 5) {// Case 5 - Enforcement
     if (Object.prototype.hasOwnProperty.
         call(storedCalls, truename) === false) {
-      throw new Error("Something went badly wrong in " + truename);
+      throw new Error('Something went badly wrong in ' + truename);
     }
   }// Add more
 };
@@ -237,7 +237,7 @@ const exportFuncControl = (storedCalls, truename, arguments) => {
   } else if (userChoice === 5) {// Case 5 - Enforcement
     if (Object.prototype.hasOwnProperty.
         call(storedCalls, truename) === false) {
-      throw new Error("Something went badly wrong in " + truename);
+      throw new Error('Something went badly wrong in ' + truename);
     }
 
     return Reflect.apply(...arguments);
@@ -304,7 +304,7 @@ const onModuleControlFunc= (storedCalls, truename, arguments) => {
   } else if (userChoice === 5) {// Case 5 - Enforcement
     if (Object.prototype.hasOwnProperty.
         call(storedCalls, truename) === false) {
-      throw new Error("Something went badly wrong!");
+      throw new Error('Something went badly wrong!');
     }
 
     return Reflect.apply(...arguments);
@@ -329,8 +329,8 @@ const onModuleControl= (storedCalls, truename) => {
   } else if (userChoice === 5) {// Case 5 - Enforcement
     if (Object.prototype.hasOwnProperty.
         call(storedCalls, truename) === false) {
-	throw new Error("Something went badly wrong in " + truename);
-    } 
+      throw new Error('Something went badly wrong in ' + truename);
+    }
   }// Add more
 };
 
@@ -342,7 +342,7 @@ const handler= {
     const currentName = trueName[count];
     if (userChoice === 5) {// This will be removed when we make it modular
       return onModuleControlFunc(dynamicObj[currentName],
-        target.name, arguments); 
+          target.name, arguments);
     }
 
     return onModuleControlFunc(variableCall[currentName],
@@ -350,8 +350,8 @@ const handler= {
   },
   get: function(target, name) {
     const currentName = trueName[count];
-    if (userChoice != 5){
-      onModuleControl(variableCall[currentName], target.name);
+    if (userChoice != 5) {
+      onModuleControl(variableCall [currentName], target.name);
     } else {
       onModuleControl(dynamicObj[currentName], target.name);
     }
@@ -359,8 +359,6 @@ const handler= {
     return Reflect.get(target, name);
   },
 };
-
-
 
 // The handler of require of True-False case_1
 const RequireTrue = {
@@ -435,7 +433,7 @@ const EnforcementCheck= {
     const nameReq = target.name + '(\'' + arguments[2][0] +// In arguments[2][0]
       '\')';// Is the name we use to import
     if (Object.prototype.hasOwnProperty.
-          call(dynamicObj,currentName,nameReq) === true) {
+        call(dynamicObj, currentName, nameReq) === true) {
       return Reflect.apply( ...arguments);
     }
 
@@ -458,59 +456,61 @@ const handlerAddArg= {
   },
 };
 
-function isCyclic(object) {
-   const seenObjects = new WeakMap(); // use to keep track of which objects have been seen.
+// We might use this function in order to detect if we are
+// using are calling a cyclic object
+const isCyclic= (object) => {
+  // Use to keep track of which objects
+  // have been seen.
+  const seenObjects = new WeakMap();
 
-   function detectCycle(obj) {
-      // If 'obj' is an actual object (i.e., has the form of '{}'), check
-      // if it's been seen already.
-      if (Object.prototype.toString.call(obj) == '[object Object]') {
+  function detectCycle(obj) {
+    // If 'obj' is an actual object (i.e., has the form of '{}'), check
+    // if it's been seen already.
+    if (Object.prototype.toString.call(obj) == '[object Object]') {
+      if (seenObjects.has(obj)) {
+        return true;
+      }
 
-         if (seenObjects.has(obj)) {
-            return true;
-         }
+      // If 'obj' hasn't been seen, add it to 'seenObjects'.
+      // Since 'obj' is used as a key, the value of 'seenObjects[obj]'
+      // is irrelevent and can be set as literally anything you want. I
+      // just went with 'undefined'.
+      seenObjects.set(obj, undefined);
 
-         // If 'obj' hasn't been seen, add it to 'seenObjects'.
-         // Since 'obj' is used as a key, the value of 'seenObjects[obj]'
-         // is irrelevent and can be set as literally anything you want. I 
-         // just went with 'undefined'.
-         seenObjects.set(obj, undefined);
-
-         // Recurse through the object, looking for more circular references.
-         for (var key in obj) {
-            if (detectCycle(obj[key])) {
-               return true;
-            }
-         }
+      // Recurse through the object, looking for more circular references.
+      for (const key in obj) {
+        if (detectCycle(obj[key])) {
+          return true;
+        }
+      }
 
       // If 'obj' is an array, check if any of it's elements are
       // an object that has been seen already.
-      } else if (Array.isArray(obj)) {
-         for (var i in obj) {
-            if (detectCycle(obj[i])) {
-               return true;
-            }
-         }
+    } else if (Array.isArray(obj)) {
+      for (const i in obj) {
+        if (detectCycle(obj[i])) {
+          return true;
+        }
       }
+    }
 
-      return false;
-   }
+    return false;
+  }
 
-   return detectCycle(object);
-}
+  return detectCycle(object);
+};
 
 // The handler of the imported libraries
 const handlerExports= {
   apply: function(target, thisArg, argumentsList) {
-    let currentName;
     let truename;
 
     truename = objName.get(target);
-    currentName = objPath.get(target);
+    const currentName = objPath.get(target);
     truename = truename + '.' + target.name;
     if (userChoice === 5) {// This will be removed when we make it modular
       return exportFuncControl(dynamicObj[currentName],
-        truename, arguments); 
+          truename, arguments);
     }
 
     return exportFuncControl(variableCall[currentName], truename, arguments);
@@ -528,10 +528,8 @@ const handlerExports= {
 const handlerObjExport= {
   get: function(target, name, receiver) {
     if (typeof target[name] != 'undefined') {
-
       // If we try to grab an object we wrap it in this proxy
       if (typeof target[name] === 'object') {
-        
         let truepath = objPath.get(receiver);
         let truename = objName.get(receiver);
         if (truepath === undefined) {
@@ -541,7 +539,7 @@ const handlerObjExport= {
 
         const localObject = target[name];
         target[name] = new Proxy(localObject, handlerObjExport);
-        
+
         objName.set(target[name], truename + '.' + name);
         objPath.set(target[name], truepath);
 
@@ -565,9 +563,10 @@ const handlerObjExport= {
           }
         }
       } else {
-        let localFunction = target[name];
-        if (typeof localFunction != 'number' && typeof localFunction != 'boolean' &&
-           typeof localFunction != 'symbol') {
+        const localFunction = target[name];
+        const type = typeof localFunction;
+        if (type != 'number' && type != 'boolean' &&
+         type != 'symbol') {
           Object.defineProperty(localFunction, 'name', {value: name});
           target[name] = new Proxy(localFunction, handlerExports);
           objPath.set(localFunction, trueName[count]);
@@ -615,7 +614,7 @@ const createGlobal = (name, finalDecl) => {
 };
 
 // We use it to pass the static global data inside module
-// FIXME: name injectGlobal? 
+// FIXME: name injectGlobal?
 // FIXME: give example here
 const createStaticGlobal = (name, finalDecl, upValue) => {
   if (global[upValue][name] != undefined) {
@@ -664,18 +663,18 @@ const createFinalDecl = () => {
     }
   }
 
-// This is for the static global Data --Math,JSON etc
-// for (const upValue in jsonPrototypeData) {
-//  if (Object.prototype.hasOwnProperty.call(jsonPrototypeData, upValue)) {
-//    const globalVariables = jsonPrototypeData[upValue];
-//    for (const declName in globalVariables) {
-//      if (Object.prototype.hasOwnProperty.call(jsonPrototypeData, upValue)) {
-//        const name = globalVariables[declName];
-//        finalDecl = createPrototypeGlobal(name, finalDecl, upValue);
-//       }
-//     }
-//   }
-// }
+  // This is for the static global Data --Math,JSON etc
+  // for (const upValue in jsonPrototypeData) {
+  //  if (Object.prototype.hasOwnProperty.call(jsonPrototypeData, upValue)) {
+  //    const globalVariables = jsonPrototypeData[upValue];
+  //    for (const declName in globalVariables) {
+  //    if (Object.prototype.hasOwnProperty.call(jsonPrototypeData, upValue)) {
+  //        const name = globalVariables[declName];
+  //        finalDecl = createPrototypeGlobal(name, finalDecl, upValue);
+  //       }
+  //     }
+  //   }
+  // }
 
   for (const upValue in jsonData) {
     if (Object.prototype.hasOwnProperty.call(jsonData, upValue)) {
