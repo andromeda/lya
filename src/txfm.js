@@ -12,34 +12,38 @@ const originalWrap = Module.wrap;
 const originalRequire = Module.prototype.require;
 const originalRun = vm.runInThisContext;
 
-// We declare the variables
-const globalProxy = {};
-const variableCall = {};
+const globalProxies = {};
+const accessMatrix = {};
 
-// We store names as a lifo
-const trueName = {};
-let count = 0;
+// `require` name stack / tree 
+// require( ...require('..')... )
+// main: 0;
+//   m1: 1;
+//     m2: 2;
+const trueName = [];
+let requireLevel = 0;
 
 // Holds the end of each name store of new assigned global variables
+// suffix for our own metadata
 const endName = '@name';
 
 // This holds the string of the transformations inside modules
 let finalDecl = ' ';
 
-// We store the time parametres
-const NS_PER_SEC = 1e9;
-const MS_PER_NS = 1e-6;
-
+// Normalize all values (seconds and to microseconds)
+// const NS_PER_SEC = 1e9;
+// const MS_PER_NS  = 1e-6;
+let toMillis = (a, b) => (a * 1e9 + b) * 1e-6;
 // Array to store the time of the modules
 const timeCapsule = {};
 
-// WeakMaps to store the name and the path
+// WeakMaps to store the name and the path for every object value
 const objName = new WeakMap();
 const objPath = new WeakMap();
 
 // We read and store the data of the json file
-const jsonData = require('./globals.json');
-const jsonStaticData = require('./staticGlobals.json');
+const globals = require('./globals.json');
+const sglobals = require('./staticGlobals.json');
 // const jsonPrototypeData = require('./prototypeGlobals.json');
 
 // We return the choice of the user
@@ -66,6 +70,7 @@ const userChoice = analysisChoice();
 
 // We need to get the path of the main module in order to find dynamic json
 const createDynamicObj = () => {
+  console.log("===>", require.main.filename);
   const appDir = path.dirname(require.main.filename);
   const jsonDir = appDir + '/dynamic.json';
   let dynamicData = {};
@@ -84,7 +89,7 @@ if (userChoice === 5) {
 
 // We export the require to the main function
 trueName[0] = 'main';
-variableCall[trueName[0]] = {};
+accessMatrix[trueName[0]] = {};
 module.exports = {
   configRequire: (origRequire, origConfig) => {
     lyaConfig = origConfig;
@@ -96,13 +101,15 @@ module.exports = {
 // Every time we access the global variabe in order to declare or call
 // a variable, then we can print it on the export file. It doesnt work
 // if it isn't called like global.xx
+// y global.y
 const handlerGlobal= {
   get: function(target, name) {
+    // XXX[target] != 'undefined'
     if (typeof target[name+endName] != 'undefined') {
-      const currentName = trueName[count];
+      const currentName = trueName[requireLevel];
       const nameToShow = target[name+endName];
       if (userChoice != 5) {
-        onModuleControl(variableCall[currentName], nameToShow);
+        onModuleControl(accessMatrix[currentName], nameToShow);
       } else {
         onModuleControl(dynamicObj[currentName], nameToShow);
       }
@@ -112,14 +119,14 @@ const handlerGlobal= {
   },
   set: function(target, name, value) {
     if (typeof value === 'number') {
-      const currentName = trueName[count];
+      const currentName = trueName[requireLevel];
       const nameToStore = 'global.' + name;
       const result = Reflect.set(target, name, value);
       // In order to exist a disticton between the values we declared ourselfs
       // We declare one more field with key value that stores the name
       Object.defineProperty(target, name+endName, {value: nameToStore});
       if (userChoice != 5) {
-        onModuleControl(variableCall[currentName], nameToStore);
+        onModuleControl(accessMatrix[currentName], nameToStore);
       } else {
         onModuleControl(dynamicObj[currentName], nameToStore);
       }
@@ -171,8 +178,8 @@ const exportControl = (storedCalls, truename) => {
       }
     }
   } else if (userChoice === 5) {// Case 5 - Enforcement
-    if (Object.prototype.hasOwnProperty.
-        call(storedCalls, truename) === false) {
+    if (Object.prototype.hasOwnProperty.call(storedCalls, truename) === false) {
+      // Object.prototype.hasOwnProperty(storedCalls, truename)
       throw new Error('Something went badly wrong in ' + truename);
     }
   }// Add more
@@ -203,7 +210,7 @@ const exportFuncControl = (storedCalls, truename, arguments) => {
       const time = process.hrtime();
       const result = Reflect.apply( ...arguments);
       const diff = process.hrtime(time);
-      storedCalls[truename] = (diff[0] * NS_PER_SEC + diff[1]) * MS_PER_NS;
+      storedCalls[truename] = toMillis(diff[0], diff[1]);
 
       return result;
     }
@@ -215,19 +222,17 @@ const exportFuncControl = (storedCalls, truename, arguments) => {
       const time = process.hrtime();
       const result = Reflect.apply( ...arguments);
       const diff = process.hrtime(time);
-      if (timeCapsule[count] != undefined) {
-        timeCapsule[count] = ((diff[0] * NS_PER_SEC + diff[1]) *
-        MS_PER_NS) + timeCapsule[count];
+      if (timeCapsule[requireLevel]) {
+        timeCapsule[requireLevel] += toMillis(diff[0], diff[1]);
       } else {
-        timeCapsule[count] = (diff[0] * NS_PER_SEC + diff[1]) *
-        MS_PER_NS;
+        timeCapsule[requireLevel] = toMillis(diff[0], diff[1]);
       }
 
-      if (timeCapsule[count+1] != undefined) {
-        storedCalls[truename] = timeCapsule[count] - timeCapsule[count+1];
-        timeCapsule[count+1] = 0;
+      if (timeCapsule[requireLevel+1] != undefined) {
+        storedCalls[truename] = timeCapsule[requireLevel] - timeCapsule[requireLevel+1];
+        timeCapsule[requireLevel+1] = 0;
       } else {
-        storedCalls[truename] = timeCapsule[count];
+        storedCalls[truename] = timeCapsule[requireLevel];
       }
 
       return result;
@@ -270,7 +275,7 @@ const onModuleControlFunc= (storedCalls, truename, arguments) => {
       const time = process.hrtime();
       const result = Reflect.apply( ...arguments);
       const diff = process.hrtime(time);
-      storedCalls[truename] = (diff[0] * NS_PER_SEC + diff[1]) * MS_PER_NS;
+      storedCalls[truename] = toMillis(diff[0], diff[1]);
 
       return result;
     }
@@ -282,19 +287,17 @@ const onModuleControlFunc= (storedCalls, truename, arguments) => {
       const time = process.hrtime();
       const result = Reflect.apply( ...arguments);
       const diff = process.hrtime(time);
-      if (timeCapsule[count] != undefined) {
-        timeCapsule[count] = ((diff[0] * NS_PER_SEC + diff[1]) *
-        MS_PER_NS) + timeCapsule[count];
+      if (timeCapsule[requireLevel]) {
+        timeCapsule[requireLevel] += toMillis(diff[0], diff[1]);
       } else {
-        timeCapsule[count] = (diff[0] * NS_PER_SEC + diff[1]) *
-        MS_PER_NS;
+        timeCapsule[requireLevel] = toMillis(diff[0], diff[1]);
       }
 
-      if (timeCapsule[count+1] != undefined) {
-        storedCalls[truename] = timeCapsule[count] - timeCapsule[count+1];
-        timeCapsule[count+1] = 0;
+      if (timeCapsule[requireLevel+1]) {
+        storedCalls[truename] = timeCapsule[requireLevel] - timeCapsule[requireLevel+1];
+        timeCapsule[requireLevel+1] = 0;
       } else {
-        storedCalls[truename] = timeCapsule[count];
+        storedCalls[truename] = timeCapsule[requireLevel];
       }
 
       return result;
@@ -339,19 +342,19 @@ const onModuleControl= (storedCalls, truename) => {
 // The handler of the functions
 const handler= {
   apply: function(target) {
-    const currentName = trueName[count];
+    const currentName = trueName[requireLevel];
     if (userChoice === 5) {// This will be removed when we make it modular
       return onModuleControlFunc(dynamicObj[currentName],
           target.name, arguments);
     }
 
-    return onModuleControlFunc(variableCall[currentName],
+    return onModuleControlFunc(accessMatrix[currentName],
         target.name, arguments);
   },
   get: function(target, name) {
-    const currentName = trueName[count];
+    const currentName = trueName[requireLevel];
     if (userChoice != 5) {
-      onModuleControl(variableCall [currentName], target.name);
+      onModuleControl(accessMatrix [currentName], target.name);
     } else {
       onModuleControl(dynamicObj[currentName], target.name);
     }
@@ -363,9 +366,9 @@ const handler= {
 // The handler of require of True-False case_1
 const RequireTrue = {
   apply: function(target, thisArg, argumentsList) {
-    const currentName = trueName[count];
+    const currentName = trueName[requireLevel];
     const origReqModuleName = argumentsList[0];
-    variableCall[currentName]['require(\'' + origReqModuleName + '\')'] = true;
+    accessMatrix[currentName]['require(\'' + origReqModuleName + '\')'] = true;
     return Reflect.apply(...arguments);
   },
 };
@@ -373,10 +376,10 @@ const RequireTrue = {
 // The handler of require of Counter case_2
 const RequireCounter= {
   apply: function(target) {
-    const currentName = trueName[count];
+    const currentName = trueName[requireLevel];
     const nameReq = target.name + '(\'' + arguments[2][0] +// In arguments[2][0]
       '\')';// Is the name we use to import
-    variableCall[currentName][nameReq] = 1;
+    accessMatrix[currentName][nameReq] = 1;
 
     return Reflect.apply( ...arguments);
   },
@@ -385,14 +388,13 @@ const RequireCounter= {
 // The handler of require of Counter case_3
 const RequireTime= {
   apply: function(target) {
-    const currentName = trueName[count];
+    const currentName = trueName[requireLevel];
     const nameReq = target.name + '(\'' + arguments[2][0] +// In arguments[2][0]
       '\')';// Is the name we use to import
     const time = process.hrtime();
     const result = Reflect.apply( ...arguments);
     const diff = process.hrtime(time);
-    variableCall[currentName][nameReq] = (diff[0] * NS_PER_SEC + diff[1]) *
-     MS_PER_NS;
+    accessMatrix[currentName][nameReq] = toMillis(diff[0], diff[1]);
     return result;
   },
 };
@@ -400,26 +402,24 @@ const RequireTime= {
 // The handler of require of Counter case_4
 const RequireTime2= {
   apply: function(target) {
-    const currentName = trueName[count];
+    const currentName = trueName[requireLevel];
     const nameReq = target.name + '(\'' + arguments[2][0] +// In arguments[2][0]
       '\')';// Is the name we use to import
     const time = process.hrtime();
     const result = Reflect.apply( ...arguments);
     const diff = process.hrtime(time);
-    if (timeCapsule[count] != undefined) {
-      timeCapsule[count] = ((diff[0] * NS_PER_SEC + diff[1]) *
-        MS_PER_NS) + timeCapsule[count];
+    if (timeCapsule[requireLevel]) {
+      timeCapsule[requireLevel] += toMillis(diff[0], diff[1]);
     } else {
-      timeCapsule[count] = (diff[0] * NS_PER_SEC + diff[1]) *
-        MS_PER_NS;
+      timeCapsule[requireLevel] = toMillis(diff[0], diff[1]);
     }
 
-    if (timeCapsule[count+1] != undefined) {
-      variableCall[currentName][nameReq] = timeCapsule[count] -
-        timeCapsule[count+1];
-      timeCapsule[count+1] = 0;
+    if (timeCapsule[requireLevel+1] != undefined) {
+      accessMatrix[currentName][nameReq] = timeCapsule[requireLevel] -
+        timeCapsule[requireLevel+1];
+      timeCapsule[requireLevel+1] = 0;
     } else {
-      variableCall[currentName][nameReq] = timeCapsule[count];
+      accessMatrix[currentName][nameReq] = timeCapsule[requireLevel];
     }
 
     return result;
@@ -429,7 +429,7 @@ const RequireTime2= {
 // The handler of require of Enforcement
 const EnforcementCheck= {
   apply: function(target) {
-    const currentName = trueName[count];
+    const currentName = trueName[requireLevel];
     const nameReq = target.name + '(\'' + arguments[2][0] +// In arguments[2][0]
       '\')';// Is the name we use to import
     if (Object.prototype.hasOwnProperty.
@@ -450,7 +450,7 @@ const handlerAddArg= {
     let localRequire = argumentsList[1];
     localRequire = mainRequire(localRequire);
     argumentsList[1] = localRequire;// We wrap require
-    argumentsList[5] = globalProxy;// We pass the global values with the proxies
+    argumentsList[5] = globalProxies;// We pass the global values with the proxies
 
     return Reflect.apply( ...arguments);
   },
@@ -513,7 +513,7 @@ const handlerExports= {
           truename, arguments);
     }
 
-    return exportFuncControl(variableCall[currentName], truename, arguments);
+    return exportFuncControl(accessMatrix[currentName], truename, arguments);
   },
 };
 
@@ -557,9 +557,9 @@ const handlerObjExport= {
 
           truename = truename + '.' + name;
           if (userChoice === 5) {
-            exportControl(dynamicObj[trueName[count]], truename);
+            exportControl(dynamicObj[trueName[requireLevel]], truename);
           } else {
-            exportControl(variableCall[trueName[count]], truename);
+            exportControl(accessMatrix[trueName[requireLevel]], truename);
           }
         }
       } else {
@@ -569,7 +569,7 @@ const handlerObjExport= {
          type != 'symbol') {
           Object.defineProperty(localFunction, 'name', {value: name});
           target[name] = new Proxy(localFunction, handlerExports);
-          objPath.set(localFunction, trueName[count]);
+          objPath.set(localFunction, trueName[requireLevel]);
           objName.set(localFunction, objName.get(target));
         }
       }
@@ -606,7 +606,7 @@ const proxyWrap = function(handler, obj) {
 // We declare the data on the same time to pass them inside wrapped function
 const createGlobal = (name, finalDecl) => {
   if (global[name] != undefined) {
-    globalProxy[name] = proxyWrap(handler, global[name]);
+    globalProxies[name] = proxyWrap(handler, global[name]);
     finalDecl = 'let ' + name + ' = pr.' + name +';\n' + finalDecl;
   }
 
@@ -619,7 +619,7 @@ const createGlobal = (name, finalDecl) => {
 const createStaticGlobal = (name, finalDecl, upValue) => {
   if (global[upValue][name] != undefined) {
     const nameToShow = upValue + '.' + name;
-    globalProxy[nameToShow] = proxyWrap(handler, global[upValue][name]);
+    globalProxies[nameToShow] = proxyWrap(handler, global[upValue][name]);
     // We save the declared wraped functions in new local
     finalDecl += nameToShow + ' = pr["' + nameToShow +'"];\n';
     // And we change the name to a better one
@@ -636,7 +636,7 @@ const createStaticGlobal = (name, finalDecl, upValue) => {
 //     const finalName = upValue + name + 'prototype';
 //     const passName = '.prototype.' + name;
 //     const nameToShow = upValue + passName;
-//     globalProxy[finalName] = proxyWrap(handler,
+//     globalProxies[finalName] = proxyWrap(handler,
 //         global[upValue]['prototype'][name]);
 //     // We save the declared wraped functions in new local
 //     finalDecl = finalDecl + upValue + passName + ' = pr.' + finalName +';\n';
@@ -650,9 +650,9 @@ const createStaticGlobal = (name, finalDecl, upValue) => {
 // We need to add all the global prototype variable declarations in the script
 const createFinalDecl = () => {
   // This is for the static global Data --Math,JSON etc
-  for (const upValue in jsonStaticData) {
-    if (Object.prototype.hasOwnProperty.call(jsonStaticData, upValue)) {
-      const globalVariables = jsonStaticData[upValue];
+  for (const upValue in sglobals) {
+    if (Object.prototype.hasOwnProperty.call(sglobals, upValue)) {
+      const globalVariables = sglobals[upValue];
       finalDecl = 'let ' + upValue + ' = {};\n' + finalDecl;
       for (const declName in globalVariables) {
         if (Object.prototype.hasOwnProperty.call(globalVariables, declName)) {
@@ -676,9 +676,9 @@ const createFinalDecl = () => {
   //   }
   // }
 
-  for (const upValue in jsonData) {
-    if (Object.prototype.hasOwnProperty.call(jsonData, upValue)) {
-      const globalVariables = jsonData[upValue];
+  for (const upValue in globals) {
+    if (Object.prototype.hasOwnProperty.call(globals, upValue)) {
+      const globalVariables = globals[upValue];
       for (const declName in globalVariables) {
         if (Object.prototype.hasOwnProperty.call(globalVariables, declName)) {
           const name = globalVariables[declName];
@@ -706,12 +706,12 @@ const userRemoves = () => {
   if (list != undefined) {
     for (let i = 0; i < list.length; i++) {
       const value = list[i];
-      for (const upValue in jsonData) {
-        if (Object.prototype.hasOwnProperty.call(jsonData, upValue)) {
+      for (const upValue in globals) {
+        if (Object.prototype.hasOwnProperty.call(globals, upValue)) {
           if (upValue === value) {
-            jsonData.remove(upValue);
+            globals.remove(upValue);
           }
-          const globalVariables = jsonData[upValue];
+          const globalVariables = globals[upValue];
           for (const declName in globalVariables) {
             if (Object.prototype.hasOwnProperty.
                 call(globalVariables, declName)) {
@@ -744,9 +744,9 @@ const getName = (wayFile) => {
 // We export the name of the curr module and pass proxy to the final function
 vm.runInThisContext = function(code, options) {
   const codeToRun = originalRun(code, options);
-  count++;
-  trueName[count] = getName(options['filename']);
-  variableCall[trueName[count]] = {};
+  requireLevel++;
+  trueName[requireLevel] = getName(options['filename']);
+  accessMatrix[trueName[requireLevel]] = {};
   return new Proxy(codeToRun, handlerAddArg);
 };
 
@@ -756,13 +756,13 @@ Module.prototype.require = function(...args) {
   let result = originalRequire.apply(this, args);
   if ( objName.has(result) === false ) {
     objName.set(result, 'require(\'' + path + '\')');
-    objPath.set(result, trueName[count]);
+    objPath.set(result, trueName[requireLevel]);
     result = new Proxy(result, handlerObjExport);
-    if (count !=0) count--;
+    if (requireLevel !=0) requireLevel--;
   } else {
     result = new Proxy(result, handlerObjExport);
     objName.set(result, 'require(\'' + path + '\')');
-    objPath.set(result, trueName[count]);
+    objPath.set(result, trueName[requireLevel]);
   }
   return result;
 };
@@ -771,6 +771,6 @@ Module.prototype.require = function(...args) {
 process.on('exit', function() {
   if (lyaConfig.SAVE_RESULTS && userChoice != 5 ) {
     fs.writeFileSync(lyaConfig.SAVE_RESULTS,
-        JSON.stringify(variableCall, null, 2), 'utf-8');
+        JSON.stringify(accessMatrix, null, 2), 'utf-8');
   }
 });
