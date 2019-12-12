@@ -1,13 +1,11 @@
 /* eslint prefer-rest-params: "off", no-global-assign: "off",
 no-shadow-restricted-names: "off" */
-
 let lyaConfig= {};
 
 // We import and declare all the necessary modules
 const Module = require('module');
 const vm = require('vm');
 const fs = require('fs');
-const path = require('path');
 
 // All the necessary modules for swap
 const originalWrap = Module.wrap;
@@ -17,13 +15,14 @@ const originalRun = vm.runInThisContext;
 // `require` name stack / tree 
 // require( ...require('..')... )
 // main: 0;
-//   m1: 1;
-//     m2: 2;
+// m1: 1;
+// m2: 2;
 const trueName = [];
-trueName[0] = 'main';
 let requireLevel = 0;
 const globalProxies = {};
 const accessMatrix = {};
+
+trueName[0] = 'main';
 accessMatrix[trueName[0]] = {};
 
 // Holds the end of each name store of new assigned global variables
@@ -33,10 +32,6 @@ const endName = '@name';
 // This holds the string of the transformations inside modules
 let finalDecl = ' ';
 
-// Normalize all values (seconds and to microseconds)
-// const NS_PER_SEC = 1e9;
-// const MS_PER_NS  = 1e-6;
-let toMillis = (a, b) => (a * 1e9 + b) * 1e-6;
 // Array to store the time of the modules
 const timeCapsule = {};
 
@@ -49,30 +44,23 @@ const globals = require('./globals.json');
 const sglobals = require('./staticGlobals.json');
 // const jsonPrototypeData = require('./prototypeGlobals.json');
 
+// We make a test on fragment
+const env = {
+  trueName : trueName,
+  requireLevel : requireLevel,
+  accessMatrix: accessMatrix,
+  timeCapsule : timeCapsule,
+};
+let testimp1 = require('./policy1.js')(env);
+
 // We return the choice of the user
 // 1) True - False Analysis
 // 2) Times calling a function
 // 3) Time Analysis
 // 4) Time Analysis2.0
 // 5) Enforcement Analysis
-const userChoice = (lyaConfig.analysisCh && [1, 2, 3, 4, 5].includes(lyaConfig.analysisCh))? lyaConfig.analysisCh : 1
-
-// We need to get the path of the main module in order to find dynamic json
-const createDynamicObj = () => {
-  // We save all the json data inside an object
-  const appDir = path.join(path.dirname(require.main.filename), "dynamic.json");
-  let dynamicData;
-  try {
-    dynamicData = require(lyaConfig.POLICY || pdir);
-  } catch (e) {
-    throw new Error('The dynamic.json file was not found!');
-  }
-  return dynamicData;
-};
-
-if (userChoice === 5) {
-  dynamicObj = createDynamicObj();
-}
+let userChoice = (lyaConfig.analysisCh && [1, 2, 3, 4, 5].includes(lyaConfig.analysisCh))? lyaConfig.analysisCh : 1
+userChoice = 1;
 
 // The handler of the global variable
 // Every time we access the global variabe in order to declare or call
@@ -120,198 +108,44 @@ global = new Proxy(global, handlerGlobal);
 // Case handler
 // Returns the right require handler for the case
 const mainRequire = (original) => {
-  if (userChoice === 1) {// Case 1 - True False
-    return new Proxy(original, RequireTrue);
-  } else if (userChoice === 2) {// Case 2 - Counter
-    return new Proxy(original, RequireCounter);
-  } else if (userChoice === 3) {// Case 3 - Time
-    return new Proxy(original, RequireTime);
-  } else if (userChoice === 4) {// Case 4 - Time2.0
-    return new Proxy(original, RequireTime2);
-  } else if (userChoice === 5) {// Case 5 - Enforcement
-    return new Proxy(original, EnforcementCheck);
-  }// Add more
+  return new Proxy(original, testimp1.require);
 };
 
 // We incriment and declare the ness things
 // This is for the handlerObjExport
 const exportControl = (storedCalls, truename) => {
   if (userChoice === 1) {// Case 1 - True False
-    if (storedCalls === 'undefined') {
-      storedCalls = {};
-      storedCalls[truename] = true;
-    } else {
-      storedCalls[truename] = true;
-    }
+    testimp1.exportControl(storedCalls, truename);
   } else if (userChoice === 2) {// Case 2 - Counter
-    if (storedCalls === 'undefined') {
-      storedCalls = {};
-      storedCalls[truename] = 1;
-    } else {
-      if (storedCalls[truename] === undefined) {// Why this undef?
-        storedCalls[truename] = 1;
-      } else {
-        storedCalls[truename]++;
-      }
-    }
+    testimp1.exportControl(storedCalls, truename);
   } else if (userChoice === 5) {// Case 5 - Enforcement
-    if (Object.prototype.hasOwnProperty.call(storedCalls, truename) === false) {
-      // Object.prototype.hasOwnProperty(storedCalls, truename)
-      throw new Error('Something went badly wrong in ' + truename);
-    }
-  }// Add more
+    testimp1.exportControl(storedCalls, truename);
+  }
 };
 
 // We incriment and declare the ness things
 // This is for handlerExports
 const exportFuncControl = (storedCalls, truename, arguments) => {
-  if (userChoice === 1) {// Case 1 - True False
-    if (Object.prototype.hasOwnProperty.
-        call(storedCalls, truename) === false) {
-      storedCalls[truename] = true;
-    }
-
-    return Reflect.apply(...arguments);
-  } else if (userChoice === 2) {// Case 2 - Counter
-    if (Object.prototype.hasOwnProperty.
-        call(storedCalls, truename) === false) {
-      storedCalls[truename] = 1;
-    } else {
-      storedCalls[truename]++;
-    }
-
-    return Reflect.apply(...arguments);
-  } else if (userChoice === 3) {// Case 3 - Time
-    if (Object.prototype.hasOwnProperty.
-        call(storedCalls, truename) === false) {
-      const time = process.hrtime();
-      const result = Reflect.apply( ...arguments);
-      const diff = process.hrtime(time);
-      storedCalls[truename] = toMillis(diff[0], diff[1]);
-
-      return result;
-    }
-
-    return Reflect.apply(...arguments);
-  } else if (userChoice === 4) {// Case 4 - Time2
-    if (Object.prototype.hasOwnProperty.
-        call(storedCalls, truename) === false) {
-      const time = process.hrtime();
-      const result = Reflect.apply( ...arguments);
-      const diff = process.hrtime(time);
-      if (timeCapsule[requireLevel]) {
-        timeCapsule[requireLevel] += toMillis(diff[0], diff[1]);
-      } else {
-        timeCapsule[requireLevel] = toMillis(diff[0], diff[1]);
-      }
-
-      if (timeCapsule[requireLevel+1] != undefined) {
-        storedCalls[truename] = timeCapsule[requireLevel] - timeCapsule[requireLevel+1];
-        timeCapsule[requireLevel+1] = 0;
-      } else {
-        storedCalls[truename] = timeCapsule[requireLevel];
-      }
-
-      return result;
-    }
-
-    return Reflect.apply(...arguments);
-  } else if (userChoice === 5) {// Case 5 - Enforcement
-    if (Object.prototype.hasOwnProperty.
-        call(storedCalls, truename) === false) {
-      throw new Error('Something went badly wrong in ' + truename);
-    }
-
-    return Reflect.apply(...arguments);
-  }// Add more
+  return testimp1.exportFuncControl(storedCalls, truename, arguments);
 };
 
 // We change the original module control
 // We either declare true or false or incriment a counter or timer
 // Works only with functions -- it runs Reflect.apply
 const onModuleControlFunc= (storedCalls, truename, arguments) => {
-  if (userChoice === 1) {// Case 1 - True False
-    if (Object.prototype.hasOwnProperty.
-        call(storedCalls, truename) === false) {
-      storedCalls[truename] = true;
-    }
-
-    return Reflect.apply(...arguments);
-  } else if (userChoice === 2) {// Case 2 - Counter
-    if (Object.prototype.hasOwnProperty.
-        call(storedCalls, truename) === false) {
-      storedCalls[truename] = 1;
-    } else {
-      storedCalls[truename]++;
-    }
-
-    return Reflect.apply(...arguments);
-  } else if (userChoice === 3) {// Case 3 - Timer
-    if (Object.prototype.hasOwnProperty.
-        call(storedCalls, truename) === false) {
-      const time = process.hrtime();
-      const result = Reflect.apply( ...arguments);
-      const diff = process.hrtime(time);
-      storedCalls[truename] = toMillis(diff[0], diff[1]);
-
-      return result;
-    }
-
-    return Reflect.apply(...arguments);
-  } else if (userChoice === 4) {// Case 4 - Timer2
-    if (Object.prototype.hasOwnProperty.
-        call(storedCalls, truename) === false) {
-      const time = process.hrtime();
-      const result = Reflect.apply( ...arguments);
-      const diff = process.hrtime(time);
-      if (timeCapsule[requireLevel]) {
-        timeCapsule[requireLevel] += toMillis(diff[0], diff[1]);
-      } else {
-        timeCapsule[requireLevel] = toMillis(diff[0], diff[1]);
-      }
-
-      if (timeCapsule[requireLevel+1]) {
-        storedCalls[truename] = timeCapsule[requireLevel] - timeCapsule[requireLevel+1];
-        timeCapsule[requireLevel+1] = 0;
-      } else {
-        storedCalls[truename] = timeCapsule[requireLevel];
-      }
-
-      return result;
-    }
-
-    return Reflect.apply(...arguments);
-  } else if (userChoice === 5) {// Case 5 - Enforcement
-    if (Object.prototype.hasOwnProperty.
-        call(storedCalls, truename) === false) {
-      throw new Error('Something went badly wrong!');
-    }
-
-    return Reflect.apply(...arguments);
-  }// Add more
+  return testimp1.exportFuncControl(storedCalls, truename, arguments)
 };
 
 // We change the original module control
 // We either declare true or false or incriment a counter
 const onModuleControl= (storedCalls, truename) => {
   if (userChoice === 1) {// Case 1 - True False
-    if (Object.prototype.hasOwnProperty.
-        call(storedCalls, truename) === false) {
-      storedCalls[truename] = true;
-    }
+    testimp1.onModuleControl(storedCalls, truename);
   } else if (userChoice === 2) {// Case 2 - Counter
-    if (Object.prototype.hasOwnProperty.
-        call(storedCalls, truename) === false) {
-      storedCalls[truename] = 1;
-    } else {
-      storedCalls[truename]++;
-    }
+    testimp1.onModuleControl(storedCalls, truename);
   } else if (userChoice === 5) {// Case 5 - Enforcement
-    if (Object.prototype.hasOwnProperty.
-        call(storedCalls, truename) === false) {
-      throw new Error('Something went badly wrong in ' + truename);
-    }
-  }// Add more
+    testimp1.onModuleControl(storedCalls, truename);
+  }
 };
 
 // ****************************
@@ -337,84 +171,6 @@ const handler= {
     }
 
     return Reflect.get(target, name);
-  },
-};
-
-// The handler of require of True-False case_1
-const RequireTrue = {
-  apply: function(target, thisArg, argumentsList) {
-    const currentName = trueName[requireLevel];
-    const origReqModuleName = argumentsList[0];
-    accessMatrix[currentName]['require(\'' + origReqModuleName + '\')'] = true;
-    return Reflect.apply(...arguments);
-  },
-};
-
-// The handler of require of Counter case_2
-const RequireCounter= {
-  apply: function(target) {
-    const currentName = trueName[requireLevel];
-    const nameReq = target.name + '(\'' + arguments[2][0] +// In arguments[2][0]
-      '\')';// Is the name we use to import
-    accessMatrix[currentName][nameReq] = 1;
-
-    return Reflect.apply( ...arguments);
-  },
-};
-
-// The handler of require of Counter case_3
-const RequireTime= {
-  apply: function(target) {
-    const currentName = trueName[requireLevel];
-    const nameReq = target.name + '(\'' + arguments[2][0] +// In arguments[2][0]
-      '\')';// Is the name we use to import
-    const time = process.hrtime();
-    const result = Reflect.apply( ...arguments);
-    const diff = process.hrtime(time);
-    accessMatrix[currentName][nameReq] = toMillis(diff[0], diff[1]);
-    return result;
-  },
-};
-
-// The handler of require of Counter case_4
-const RequireTime2= {
-  apply: function(target) {
-    const currentName = trueName[requireLevel];
-    const nameReq = target.name + '(\'' + arguments[2][0] +// In arguments[2][0]
-      '\')';// Is the name we use to import
-    const time = process.hrtime();
-    const result = Reflect.apply( ...arguments);
-    const diff = process.hrtime(time);
-    if (timeCapsule[requireLevel]) {
-      timeCapsule[requireLevel] += toMillis(diff[0], diff[1]);
-    } else {
-      timeCapsule[requireLevel] = toMillis(diff[0], diff[1]);
-    }
-
-    if (timeCapsule[requireLevel+1] != undefined) {
-      accessMatrix[currentName][nameReq] = timeCapsule[requireLevel] -
-        timeCapsule[requireLevel+1];
-      timeCapsule[requireLevel+1] = 0;
-    } else {
-      accessMatrix[currentName][nameReq] = timeCapsule[requireLevel];
-    }
-
-    return result;
-  },
-};
-
-// The handler of require of Enforcement
-const EnforcementCheck= {
-  apply: function(target) {
-    const currentName = trueName[requireLevel];
-    const nameReq = target.name + '(\'' + arguments[2][0] +// In arguments[2][0]
-      '\')';// Is the name we use to import
-    if (Object.prototype.hasOwnProperty.
-        call(dynamicObj, currentName, nameReq) === true) {
-      return Reflect.apply( ...arguments);
-    }
-
-    return Reflect.apply( ...arguments);
   },
 };
 
@@ -721,7 +477,7 @@ const getName = (wayFile) => {
 // We export the name of the curr module and pass proxy to the final function
 vm.runInThisContext = function(code, options) {
   const codeToRun = originalRun(code, options);
-  requireLevel++;
+  testimp1.requireLevel++;
   trueName[requireLevel] = getName(options['filename']);
   accessMatrix[trueName[requireLevel]] = {};
   return new Proxy(codeToRun, handlerAddArg);
@@ -735,7 +491,7 @@ Module.prototype.require = function(...args) {
     objName.set(result, 'require(\'' + path + '\')');
     objPath.set(result, trueName[requireLevel]);
     result = new Proxy(result, handlerObjExport);
-    if (requireLevel !=0) requireLevel--;
+    if (testimp1.requireLevel !=0) testimp1.requireLevel--;
   } else {
     result = new Proxy(result, handlerObjExport);
     objName.set(result, 'require(\'' + path + '\')');
