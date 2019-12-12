@@ -260,9 +260,10 @@ const handlerExports= {
 // fs.read () => {... fs.resolve(...) ... return...}
 const handlerObjExport= {
   get: function(target, name, receiver) {
-    if (typeof target[name] != 'undefined') {
+    if (typeof target[name] != 'undefined') { // + udnefined
       // If we try to grab an object we wrap it in this proxy
       if (typeof target[name] === 'object') {
+       // FIXME
         let truepath = objPath.get(receiver);
         let truename = objName.get(receiver);
         if (truepath === undefined) {
