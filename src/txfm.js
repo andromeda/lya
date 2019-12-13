@@ -349,7 +349,9 @@ const getName = (wayFile) => {
 // We export the name of the curr module and pass proxy to the final function
 vm.runInThisContext = function(code, options) {
   const codeToRun = originalRun(code, options);
-  policy.requireLevel++;
+  requireLevel++;
+  policy.updateCounter(requireLevel);
+  //policy.requireLevel++;
   trueName[requireLevel] = getName(options['filename']);
   accessMatrix[trueName[requireLevel]] = {};
   return new Proxy(codeToRun, handlerAddArg);
@@ -363,7 +365,11 @@ Module.prototype.require = function(...args) {
     objName.set(result, 'require(\'' + path + '\')');
     objPath.set(result, trueName[requireLevel]);
     result = new Proxy(result, handlerObjExport);
-    if (policy.requireLevel !=0) policy.requireLevel--;
+    if (requireLevel !=0){
+      requireLevel--;
+      policy.updateCounter(requireLevel);
+    }
+    //if (policy.requireLevel !=0) policy.requireLevel--;
   } else {
     result = new Proxy(result, handlerObjExport);
     objName.set(result, 'require(\'' + path + '\')');

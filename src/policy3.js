@@ -95,6 +95,11 @@ const handlerExports= {
   },
 };
 
+// We update the instance of require
+const updateCounter = (counter) => {
+  locEnv.requireLevel = counter;
+}
+
 module.exports = (env) => {
 	locEnv = env;
 	return {
@@ -104,5 +109,6 @@ module.exports = (env) => {
     handler : handler,
     handlerGlobal : handlerGlobal,
     handlerExports : handlerExports,
+    updateCounter : updateCounter,
 	}
 };

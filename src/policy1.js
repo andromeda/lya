@@ -113,10 +113,15 @@ const handlerExports= {
     truename = locEnv.objName.get(target);
     const currentName = locEnv.objPath.get(target);
     truename = truename + '.' + target.name;
-
+    //TODO: fix the currentName
     return exportFuncControl(locEnv.accessMatrix[currentName], truename, arguments);
   },
 };
+
+// We update the instance of require
+const updateCounter = (counter) => {
+  locEnv.requireLevel = counter;
+}
 
 module.exports = (env) => {
 	locEnv = env;
@@ -129,5 +134,6 @@ module.exports = (env) => {
     handler : handler,
     handlerGlobal : handlerGlobal,
     handlerExports : handlerExports,
+    updateCounter : updateCounter,
 	}
 };
