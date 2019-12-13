@@ -9,12 +9,29 @@ Currently, the implementation comprises four files:
 
 ## Main Implementation
 
-Two levels:
+We import the user choice. We import the right policy by importing the right module.
+The execution begins and we wrap the main require in a proxy.
 
-* `console.log`: 
-* `add`: 
+Every time we use the `require('xxx')` things happen on two levels: 
+
+* The modules xxx code: This code runs for one time, only on the first import. 
+We prepare all the global functions by wrapping them using `globalsDecl` function and 
+then we pass them inside the module before runtime, using `vm.runInThisContext`.  
+* The modules xxx export code: We wrap the export obj in a proxy. The idea is that we wrap
+only the outside obj. Every time we access the object in order to call some of exported functions,
+variables etc we wrap the specific thing to its own proxy.  
 
 + Control functions to say what we want to exclude
+
+## Policies
+
+* Policy 1 - True/False: A simple access/ no access policy that checks if a obj has been used.
+* Policy 2 - Counter: We track how many times a object has been accessed.
+* Policy 3 - Time: A simple time counter 
+* Policy 4 - Time2.0: A better timer counter that keeps the time counts on the module
+* Policy 5 - Enforcement: If a module try to accesss any object outside of the dynamic.json file we
+stop it from exec.
+* Policy 6 - RWE: A read/ write/ execute analysis
 
 ## TODO
 
