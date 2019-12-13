@@ -1,6 +1,6 @@
 /* eslint prefer-rest-params: "off", no-global-assign: "off",
 no-shadow-restricted-names: "off" */
-let lyaConfig= {};
+//let lyaConfig= {};
 
 // We import and declare all the necessary modules
 const Module = require('module');
@@ -50,8 +50,9 @@ const env = {
   requireLevel : requireLevel,
   accessMatrix: accessMatrix,
   timeCapsule : timeCapsule,
+  objName : objName,
+  objPath : objPath,
 };
-let testimp1 = require('./policy1.js')(env);
 
 // We return the choice of the user
 // 1) True - False Analysis
@@ -60,118 +61,49 @@ let testimp1 = require('./policy1.js')(env);
 // 4) Time Analysis2.0
 // 5) Enforcement Analysis
 let userChoice = (lyaConfig.analysisCh && [1, 2, 3, 4, 5].includes(lyaConfig.analysisCh))? lyaConfig.analysisCh : 1
-userChoice = 1;
 
-// The handler of the global variable
-// Every time we access the global variabe in order to declare or call
-// a variable, then we can print it on the export file. It doesnt work
-// if it isn't called like global.xx
-// y global.y
-const handlerGlobal= {
-  get: function(target, name) {
-    // XXX[target] != 'undefined'
-    if (typeof target[name+endName] != 'undefined') {
-      const currentName = trueName[requireLevel];
-      const nameToShow = target[name+endName];
-      if (userChoice != 5) {
-        onModuleControl(accessMatrix[currentName], nameToShow);
-      } else {
-        onModuleControl(dynamicObj[currentName], nameToShow);
-      }
-    }
-
-    return Reflect.get(target, name);
-  },
-  set: function(target, name, value) {
-    if (typeof value === 'number') {
-      const currentName = trueName[requireLevel];
-      const nameToStore = 'global.' + name;
-      const result = Reflect.set(target, name, value);
-      // In order to exist a disticton between the values we declared ourselfs
-      // We declare one more field with key value that stores the name
-      Object.defineProperty(target, name+endName, {value: nameToStore});
-      if (userChoice != 5) {
-        onModuleControl(accessMatrix[currentName], nameToStore);
-      } else {
-        onModuleControl(dynamicObj[currentName], nameToStore);
-      }
-      return result;
-    }
-
-    return Reflect.set(target, name, value);
-  },
-};
+// You import the right policy depenting on the choice
+// of the user.
+const importPolicy = (choice) => {
+  if (choice === 1) {
+    return require('./policy1.js')(env);
+  } else if (choice === 2) {
+    return require('./policy2.js')(env);
+  } else if (choice === 3) {
+    return require('./policy3.js')(env);
+  } else if (choice === 4) {
+    return require('./policy4.js')(env);
+  } else if (choice === 5) {
+    return require('./policy5.js')(env);
+  }// You can add here as many policies as you want
+}
+let policy = importPolicy(userChoice);
 
 // We wrap the global variable in a proxy
-global = new Proxy(global, handlerGlobal);
+global = new Proxy(global, policy.handlerGlobal);
 
 // Case handler
 // Returns the right require handler for the case
 const mainRequire = (original) => {
-  return new Proxy(original, testimp1.require);
+  return new Proxy(original, policy.require);
 };
 
 // We incriment and declare the ness things
 // This is for the handlerObjExport
 const exportControl = (storedCalls, truename) => {
   if (userChoice === 1) {// Case 1 - True False
-    testimp1.exportControl(storedCalls, truename);
+    policy.exportControl(storedCalls, truename);
   } else if (userChoice === 2) {// Case 2 - Counter
-    testimp1.exportControl(storedCalls, truename);
+    policy.exportControl(storedCalls, truename);
   } else if (userChoice === 5) {// Case 5 - Enforcement
-    testimp1.exportControl(storedCalls, truename);
+    policy.exportControl(storedCalls, truename);
   }
 };
 
 // We incriment and declare the ness things
 // This is for handlerExports
 const exportFuncControl = (storedCalls, truename, arguments) => {
-  return testimp1.exportFuncControl(storedCalls, truename, arguments);
-};
-
-// We change the original module control
-// We either declare true or false or incriment a counter or timer
-// Works only with functions -- it runs Reflect.apply
-const onModuleControlFunc= (storedCalls, truename, arguments) => {
-  return testimp1.exportFuncControl(storedCalls, truename, arguments)
-};
-
-// We change the original module control
-// We either declare true or false or incriment a counter
-const onModuleControl= (storedCalls, truename) => {
-  if (userChoice === 1) {// Case 1 - True False
-    testimp1.onModuleControl(storedCalls, truename);
-  } else if (userChoice === 2) {// Case 2 - Counter
-    testimp1.onModuleControl(storedCalls, truename);
-  } else if (userChoice === 5) {// Case 5 - Enforcement
-    testimp1.onModuleControl(storedCalls, truename);
-  }
-};
-
-// ****************************
-// Handlers of Proxies
-// The handler of the functions
-const handler= {
-  apply: function(target) {
-    const currentName = trueName[requireLevel];
-    if (userChoice === 5) {// This will be removed when we make it modular
-      return onModuleControlFunc(dynamicObj[currentName],
-          target.name, arguments);
-    }
-
-    return onModuleControlFunc(accessMatrix[currentName],
-        target.name, arguments);
-  },
-  get: function(target, name) {
-    const currentName = trueName[requireLevel];
-    if (userChoice != 5) {
-      onModuleControl(accessMatrix [currentName], target.name);
-    } else {
-      onModuleControl(dynamicObj[currentName], target.name);
-    }
-
-    return Reflect.get(target, name);
-  },
+  return policy.exportFuncControl(storedCalls, truename, arguments);
 };
 
 // The handler of compiledWrapper
@@ -186,67 +118,6 @@ const handlerAddArg= {
     argumentsList[5] = globalProxies;// We pass the global values with the proxies
 
     return Reflect.apply( ...arguments);
-  },
-};
-
-// We might use this function in order to detect if we are
-// using are calling a cyclic object
-const isCyclic= (object) => {
-  // Use to keep track of which objects
-  // have been seen.
-  const seenObjects = new WeakMap();
-
-  function detectCycle(obj) {
-    // If 'obj' is an actual object (i.e., has the form of '{}'), check
-    // if it's been seen already.
-    if (Object.prototype.toString.call(obj) == '[object Object]') {
-      if (seenObjects.has(obj)) {
-        return true;
-      }
-
-      // If 'obj' hasn't been seen, add it to 'seenObjects'.
-      // Since 'obj' is used as a key, the value of 'seenObjects[obj]'
-      // is irrelevent and can be set as literally anything you want. I
-      // just went with 'undefined'.
-      seenObjects.set(obj, undefined);
-
-      // Recurse through the object, looking for more circular references.
-      for (const key in obj) {
-        if (detectCycle(obj[key])) {
-          return true;
-        }
-      }
-
-      // If 'obj' is an array, check if any of it's elements are
-      // an object that has been seen already.
-    } else if (Array.isArray(obj)) {
-      for (const i in obj) {
-        if (detectCycle(obj[i])) {
-          return true;
-        }
-      }
-    }
-
-    return false;
-  }
-
-  return detectCycle(object);
-};
-
-// The handler of the imported libraries
-const handlerExports= {
-  apply: function(target, thisArg, argumentsList) {
-    let truename;
-
-    truename = objName.get(target);
-    const currentName = objPath.get(target);
-    truename = truename + '.' + target.name;
-    if (userChoice === 5) {// This will be removed when we make it modular
-      return exportFuncControl(dynamicObj[currentName],
-          truename, arguments);
-    }
-
-    return exportFuncControl(accessMatrix[currentName], truename, arguments);
   },
 };
 
@@ -302,7 +173,7 @@ const handlerObjExport= {
         if (type != 'number' && type != 'boolean' &&
          type != 'symbol') {
           Object.defineProperty(localFunction, 'name', {value: name});
-          target[name] = new Proxy(localFunction, handlerExports);
+          target[name] = new Proxy(localFunction, policy.handlerExports);
           objPath.set(localFunction, trueName[requireLevel]);
           objName.set(localFunction, objName.get(target));
         }
@@ -340,7 +211,7 @@ const proxyWrap = function(handler, obj) {
 // We declare the data on the same time to pass them inside wrapped function
 const createGlobal = (name, finalDecl) => {
   if (global[name] != undefined) {
-    globalProxies[name] = proxyWrap(handler, global[name]);
+    globalProxies[name] = proxyWrap(policy.handler, global[name]);
     finalDecl = 'let ' + name + ' = pr.' + name +';\n' + finalDecl;
   }
 
@@ -353,7 +224,7 @@ const createGlobal = (name, finalDecl) => {
 const createStaticGlobal = (name, finalDecl, upValue) => {
   if (global[upValue][name] != undefined) {
     const nameToShow = upValue + '.' + name;
-    globalProxies[nameToShow] = proxyWrap(handler, global[upValue][name]);
+    globalProxies[nameToShow] = proxyWrap(policy.handler, global[upValue][name]);
     // We save the declared wraped functions in new local
     finalDecl += nameToShow + ' = pr["' + nameToShow +'"];\n';
     // And we change the name to a better one
@@ -478,7 +349,7 @@ const getName = (wayFile) => {
 // We export the name of the curr module and pass proxy to the final function
 vm.runInThisContext = function(code, options) {
   const codeToRun = originalRun(code, options);
-  testimp1.requireLevel++;
+  policy.requireLevel++;
   trueName[requireLevel] = getName(options['filename']);
   accessMatrix[trueName[requireLevel]] = {};
   return new Proxy(codeToRun, handlerAddArg);
@@ -492,7 +363,7 @@ Module.prototype.require = function(...args) {
     objName.set(result, 'require(\'' + path + '\')');
     objPath.set(result, trueName[requireLevel]);
     result = new Proxy(result, handlerObjExport);
-    if (testimp1.requireLevel !=0) testimp1.requireLevel--;
+    if (policy.requireLevel !=0) policy.requireLevel--;
   } else {
     result = new Proxy(result, handlerObjExport);
     objName.set(result, 'require(\'' + path + '\')');
