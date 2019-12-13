@@ -176,6 +176,8 @@ const handlerObjExport= {
           target[name] = new Proxy(localFunction, policy.handlerExports);
           objPath.set(localFunction, trueName[requireLevel]);
           objName.set(localFunction, objName.get(target));
+
+          policy.readFunction(localFunction, objName.get(target));
         }
       }
     }

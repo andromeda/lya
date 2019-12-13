@@ -136,6 +136,21 @@ const updateCounter = (counter) => {
   locEnv.requireLevel = counter;
 }
 
+// Read function so we print it in the export file
+// This is to catch the read
+const readFunction = (myFunc, name) => {
+  name = name + '.' + myFunc.name;
+  const currentPlace = locEnv.trueName[locEnv.requireLevel];
+  let storedCalls = locEnv.accessMatrix[currentPlace];
+
+  if (Object.prototype.hasOwnProperty.
+        call(storedCalls, name) === false) {
+      storedCalls[name] = 1;
+  } else {
+    storedCalls[name]++;
+  }
+}
+
 module.exports = (env) => {
 	locEnv = env;
 	return {
@@ -148,5 +163,6 @@ module.exports = (env) => {
     handlerGlobal : handlerGlobal,
     handlerExports : handlerExports,
     updateCounter : updateCounter,
+    readFunction : readFunction,
 	}
 };
