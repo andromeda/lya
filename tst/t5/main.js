@@ -9,4 +9,4 @@ require = lya.configRequire(require, lyaConfig);
 let m1 = require('./m1.js');
 global.test = 1;
 global.test = 1;
-
+// TODO: fix the problem with time
