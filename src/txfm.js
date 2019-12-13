@@ -60,7 +60,7 @@ const env = {
 // 3) Time Analysis
 // 4) Time Analysis2.0
 // 5) Enforcement Analysis
-let userChoice = (lyaConfig.analysisCh && [1, 2, 3, 4, 5].includes(lyaConfig.analysisCh))? lyaConfig.analysisCh : 1
+let userChoice = (lyaConfig.analysisCh && [1, 2, 3, 4, 5, 6].includes(lyaConfig.analysisCh))? lyaConfig.analysisCh : 1
 
 // You import the right policy depenting on the choice
 // of the user.
@@ -75,6 +75,8 @@ const importPolicy = (choice) => {
     return require('./policy4.js')(env);
   } else if (choice === 5) {
     return require('./policy5.js')(env);
+  } else if (choice === 6) {
+    return require('./policy6.js')(env);
   }// You can add here as many policies as you want
 }
 let policy = importPolicy(userChoice);
