@@ -60,24 +60,7 @@ let userChoice = (lyaConfig.analysisCh && [1, 2, 3, 4, 5, 6, 7].includes(lyaConf
 
 // You import the right policy depenting on the choice
 // of the user.
-const importPolicy = (choice) => {
-  if (choice === 1) {
-    return require('./policy1.js')(env);
-  } else if (choice === 2) {
-    return require('./policy2.js')(env);
-  } else if (choice === 3) {
-    return require('./policy3.js')(env);
-  } else if (choice === 4) {
-    return require('./policy4.js')(env);
-  } else if (choice === 5) {
-    return require('./policy5.js')(env);
-  } else if (choice === 6) {
-    return require('./policy6.js')(env);
-  } else if (choice === 7) {
-    return require('./policy7.js')(env);
-  }// You can add here as many policies as you want
-}
-let policy = importPolicy(userChoice);
+let policy = require('./policy' + userChoice + '.js')(env);;
 
 // We wrap the global variable in a proxy
 global = new Proxy(global, policy.handlerGlobal);
