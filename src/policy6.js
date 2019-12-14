@@ -15,43 +15,58 @@ const RequireRWE = {
   apply: function(target, thisArg, argumentsList) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
     const origReqModuleName = argumentsList[0];
-    locEnv.accessMatrix[currentName]['require(\'' + origReqModuleName + '\')'] = 'r';
+    locEnv.accessMatrix[currentName]['require(\'' + origReqModuleName + '\')'] = 'R';
     return Reflect.apply(...arguments);
   },
 };
 
+// We add the R or W or E to the existing string
+const addEvent = (event, values, index) => {
+  let storedValue = values[index];
+  if (!storedValue.includes(event)){
+    storedValue += event;
+    values[index] = storedValue;
+  }
+};
+
 const exportControl = (storedCalls, truename) => {
 	if (storedCalls === 'undefined') {
-      storedCalls = {};
-      storedCalls[truename] = 'r';
-    } else {
-      storedCalls[truename] = 'r';
-    }
+    storedCalls = {};
+    storedCalls[truename] = 'R';
+  } else {
+    addEvent('R', storedCalls, truename);
+  }
 };
 
 const exportFuncControl = (storedCalls, truename, arguments) => {
 	if (Object.prototype.hasOwnProperty.
         call(storedCalls, truename) === false) {
-      storedCalls[truename] = 'e';
-    }
+    storedCalls[truename] = 'E';
+  } else {
+    addEvent('E', storedCalls, truename);
+  }
 
-    return Reflect.apply(...arguments);
+  return Reflect.apply(...arguments);
 };
 
 const onModuleControlFunc = (storedCalls, truename, arguments) => {
 	if (Object.prototype.hasOwnProperty.
         call(storedCalls, truename) === false) {
-      storedCalls[truename] = 'e';
-    }
+    storedCalls[truename] = 'E';
+  } else {
+    addEvent('E', storedCalls, truename);
+  }
 
-    return Reflect.apply(...arguments);
+  return Reflect.apply(...arguments);
 };
 
 const onModuleControl = (storedCalls, truename, mode) => {
 	if (Object.prototype.hasOwnProperty.
         call(storedCalls, truename) === false) {
-      storedCalls[truename] = mode;
-    }
+    storedCalls[truename] = mode;
+  } else {
+    addEvent(mode, storedCalls, truename);
+  }
 };
 
 // The handler of the global variable
@@ -65,7 +80,7 @@ const handlerGlobal= {
     if (typeof target[name+endName] != 'undefined') {
       const currentName = locEnv.trueName[locEnv.requireLevel];
       const nameToShow = target[name+endName];
-      onModuleControl(locEnv.accessMatrix[currentName], nameToShow, 'r');
+      onModuleControl(locEnv.accessMatrix[currentName], nameToShow, 'R');
     }
 
     return Reflect.get(target, name);
@@ -78,7 +93,7 @@ const handlerGlobal= {
       // In order to exist a disticton between the values we declared ourselfs
       // We declare one more field with key value that stores the name
       Object.defineProperty(target, name+endName, {value: nameToStore});
-      onModuleControl(locEnv.accessMatrix[currentName], nameToStore, 'w');
+      onModuleControl(locEnv.accessMatrix[currentName], nameToStore, 'W');
 
       return result;
     }
@@ -99,9 +114,9 @@ const handler= {
   },
   get: function(target, name) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
-    onModuleControl(locEnv.accessMatrix[currentName], target.name);
+    onModuleControl(locEnv.accessMatrix[currentName], target.name, 'R');
 
-    return Reflect.get(target, name, 'r');
+    return Reflect.get(target, name);
   },
 };
 
@@ -132,7 +147,9 @@ const readFunction = (myFunc, name) => {
 
   if (Object.prototype.hasOwnProperty.
         call(storedCalls, name) === false) {
-      storedCalls[name] = 'r';
+    storedCalls[name] = 'R';
+  } else {
+    addEvent('R', storedCalls, name);
   }
 }
 
