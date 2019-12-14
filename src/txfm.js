@@ -32,9 +32,6 @@ const endName = '@name';
 // This holds the string of the transformations inside modules
 let finalDecl = ' ';
 
-// Array to store the time of the modules
-const timeCapsule = {};
-
 // WeakMaps to store the name and the path for every object value
 const objName = new WeakMap();
 const objPath = new WeakMap();
@@ -49,7 +46,6 @@ const env = {
   trueName : trueName,
   requireLevel : requireLevel,
   accessMatrix: accessMatrix,
-  timeCapsule : timeCapsule,
   objName : objName,
   objPath : objPath,
 };

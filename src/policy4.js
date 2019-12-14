@@ -2,13 +2,15 @@
 //   trueName : trueName,
 //   requireLevel : requireLevel,
 //   accessMatrix: accessMatrix,
-//   timeCapsule : timeCapsule,
 // }
 let locEnv;
 
 // Holds the end of each name store of new assigned global variables
 // suffix for our own metadata
 const endName = '@name';
+
+// Array to store the time of the modules
+const timeCapsule = {};
 
 // Normalize all values (seconds and to microseconds)
 let toMillis = (a, b) => (a * 1e9 + b) * 1e-6;
@@ -22,18 +24,18 @@ const RequireTime2= {
     const time = process.hrtime();
     const result = Reflect.apply( ...arguments);
     const diff = process.hrtime(time);
-    if (locEnv.timeCapsule[locEnv.requireLevel]) {
-      locEnv.timeCapsule[locEnv.requireLevel] += toMillis(diff[0], diff[1]);
+    if (timeCapsule[locEnv.requireLevel]) {
+      timeCapsule[locEnv.requireLevel] += toMillis(diff[0], diff[1]);
     } else {
-      locEnv.timeCapsule[locEnv.requireLevel] = toMillis(diff[0], diff[1]);
+      timeCapsule[locEnv.requireLevel] = toMillis(diff[0], diff[1]);
     }
 
-    if (locEnv.timeCapsule[locEnv.requireLevel+1] != undefined) {
-      locEnv.accessMatrix[currentName][nameReq] = locEnv.timeCapsule[locEnv.requireLevel] -
-        locEnv.timeCapsule[locEnv.requireLevel+1];
-      locEnv.timeCapsule[locEnv.requireLevel+1] = 0;
+    if (timeCapsule[locEnv.requireLevel+1] != undefined) {
+      locEnv.accessMatrix[currentName][nameReq] = timeCapsule[locEnv.requireLevel] -
+        timeCapsule[locEnv.requireLevel+1];
+      timeCapsule[locEnv.requireLevel+1] = 0;
     } else {
-      locEnv.accessMatrix[currentName][nameReq] = locEnv.timeCapsule[locEnv.requireLevel];
+      locEnv.accessMatrix[currentName][nameReq] = timeCapsule[locEnv.requireLevel];
     }
 
     return result;
@@ -46,18 +48,18 @@ const exportFuncControl = (storedCalls, truename, arguments) => {
       const time = process.hrtime();
       const result = Reflect.apply( ...arguments);
       const diff = process.hrtime(time);
-      if (locEnv.timeCapsule[locEnv.requireLevel]) {
-        locEnv.timeCapsule[locEnv.requireLevel] += toMillis(diff[0], diff[1]);
+      if (timeCapsule[locEnv.requireLevel]) {
+        timeCapsule[locEnv.requireLevel] += toMillis(diff[0], diff[1]);
       } else {
-        locEnv.timeCapsule[locEnv.requireLevel] = toMillis(diff[0], diff[1]);
+        timeCapsule[locEnv.requireLevel] = toMillis(diff[0], diff[1]);
       }
 
-      if (locEnv.timeCapsule[locEnv.requireLevel+1] != undefined) {
-        storedCalls[truename] = locEnv.timeCapsule[locEnv.requireLevel] -
-          locEnv.timeCapsule[locEnv.requireLevel+1];
-        locEnv.timeCapsule[locEnv.requireLevel+1] = 0;
+      if (timeCapsule[locEnv.requireLevel+1] != undefined) {
+        storedCalls[truename] = timeCapsule[locEnv.requireLevel] -
+          timeCapsule[locEnv.requireLevel+1];
+        timeCapsule[locEnv.requireLevel+1] = 0;
       } else {
-        storedCalls[truename] = locEnv.timeCapsule[locEnv.requireLevel];
+        storedCalls[truename] = timeCapsule[locEnv.requireLevel];
       }
 
       return result;
@@ -72,18 +74,18 @@ const onModuleControlFunc = (storedCalls, truename, arguments) => {
       const time = process.hrtime();
       const result = Reflect.apply( ...arguments);
       const diff = process.hrtime(time);
-      if (locEnv.timeCapsule[locEnv.requireLevel]) {
-        locEnv.timeCapsule[locEnv.requireLevel] += toMillis(diff[0], diff[1]);
+      if (timeCapsule[locEnv.requireLevel]) {
+        timeCapsule[locEnv.requireLevel] += toMillis(diff[0], diff[1]);
       } else {
-        locEnv.timeCapsule[locEnv.requireLevel] = toMillis(diff[0], diff[1]);
+        timeCapsule[locEnv.requireLevel] = toMillis(diff[0], diff[1]);
       }
 
-      if (locEnv.timeCapsule[locEnv.requireLevel+1]) {
-        storedCalls[truename] = locEnv.timeCapsule[locEnv.requireLevel] -
-          locEnv.timeCapsule[locEnv.requireLevel+1];
-        locEnv.timeCapsule[locEnv.requireLevel+1] = 0;
+      if (timeCapsule[locEnv.requireLevel+1]) {
+        storedCalls[truename] = timeCapsule[locEnv.requireLevel] -
+          timeCapsule[locEnv.requireLevel+1];
+        timeCapsule[locEnv.requireLevel+1] = 0;
       } else {
-        storedCalls[truename] = locEnv.timeCapsule[locEnv.requireLevel];
+        storedCalls[truename] = timeCapsule[locEnv.requireLevel];
       }
 
       return result;

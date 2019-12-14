@@ -2,7 +2,6 @@
 //   trueName : trueName,
 //   requireLevel : requireLevel,
 //   accessMatrix: accessMatrix,
-//   timeCapsule : timeCapsule,
 // }
 let locEnv;
 
