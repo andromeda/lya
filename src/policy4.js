@@ -24,6 +24,7 @@ const RequireTime2= {
     const time = process.hrtime();
     const result = Reflect.apply( ...arguments);
     const diff = process.hrtime(time);
+    const thisTime = toMillis(diff[0], diff[1]);
     if (timeCapsule[locEnv.requireLevel]) {
       timeCapsule[locEnv.requireLevel] += toMillis(diff[0], diff[1]);
     } else {
@@ -31,11 +32,11 @@ const RequireTime2= {
     }
 
     if (timeCapsule[locEnv.requireLevel+1] != undefined) {
-      locEnv.accessMatrix[currentName][nameReq] = timeCapsule[locEnv.requireLevel] -
+      locEnv.accessMatrix[currentName][nameReq] = thisTime -
         timeCapsule[locEnv.requireLevel+1];
       timeCapsule[locEnv.requireLevel+1] = 0;
     } else {
-      locEnv.accessMatrix[currentName][nameReq] = timeCapsule[locEnv.requireLevel];
+      locEnv.accessMatrix[currentName][nameReq] = thisTime;
     }
 
     return result;
@@ -48,6 +49,8 @@ const exportFuncControl = (storedCalls, truename, arguments) => {
       const time = process.hrtime();
       const result = Reflect.apply( ...arguments);
       const diff = process.hrtime(time);
+      const thisTime = toMillis(diff[0], diff[1]);
+
       if (timeCapsule[locEnv.requireLevel]) {
         timeCapsule[locEnv.requireLevel] += toMillis(diff[0], diff[1]);
       } else {
@@ -55,11 +58,11 @@ const exportFuncControl = (storedCalls, truename, arguments) => {
       }
 
       if (timeCapsule[locEnv.requireLevel+1] != undefined) {
-        storedCalls[truename] = timeCapsule[locEnv.requireLevel] -
+        storedCalls[truename] = thisTime -
           timeCapsule[locEnv.requireLevel+1];
         timeCapsule[locEnv.requireLevel+1] = 0;
       } else {
-        storedCalls[truename] = timeCapsule[locEnv.requireLevel];
+        storedCalls[truename] = thisTime;
       }
 
       return result;
@@ -74,6 +77,8 @@ const onModuleControlFunc = (storedCalls, truename, arguments) => {
       const time = process.hrtime();
       const result = Reflect.apply( ...arguments);
       const diff = process.hrtime(time);
+      const thisTime = toMillis(diff[0], diff[1]);
+
       if (timeCapsule[locEnv.requireLevel]) {
         timeCapsule[locEnv.requireLevel] += toMillis(diff[0], diff[1]);
       } else {
@@ -81,11 +86,11 @@ const onModuleControlFunc = (storedCalls, truename, arguments) => {
       }
 
       if (timeCapsule[locEnv.requireLevel+1]) {
-        storedCalls[truename] = timeCapsule[locEnv.requireLevel] -
+        storedCalls[truename] = thisTime -
           timeCapsule[locEnv.requireLevel+1];
         timeCapsule[locEnv.requireLevel+1] = 0;
       } else {
-        storedCalls[truename] = timeCapsule[locEnv.requireLevel];
+        storedCalls[truename] = thisTime;
       }
 
       return result;
