@@ -37,6 +37,10 @@ stop it from exec.
 
 * Finish Refactoring (@gntousakis)
 
+* Find large program (with regex) for testing timing (t3) (@nvasilakis)
+
+* Code improvements for txfm (@nvasilakis)
+
 * Create configuration object (@nvasilakis)
 
 * Complete policy 1 for all accesses
