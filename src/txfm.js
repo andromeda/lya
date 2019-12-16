@@ -160,6 +160,7 @@ const handlerObjExport= {
           objPath.set(localFunction, trueName[requireLevel]);
           objName.set(localFunction, objName.get(target));
 
+          // The problem here is that we have a name undef
           policy.readFunction(localFunction, objName.get(target));
         }
       }
@@ -370,6 +371,7 @@ Module.prototype.require = function(...args) {
 // We print all the results on the end of the program
 process.on('exit', function() {
   if (lyaConfig.SAVE_RESULTS && userChoice != 5 ) {
+    global.end = true;
     fs.writeFileSync(lyaConfig.SAVE_RESULTS,
         JSON.stringify(accessMatrix, null, 2), 'utf-8');
   }

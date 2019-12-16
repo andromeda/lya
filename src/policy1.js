@@ -132,6 +132,13 @@ const readFunction = (myFunc, name) => {
   if (Object.prototype.hasOwnProperty.
         call(storedCalls, name) === false) {
       storedCalls[name] = true;
+
+      // TODO: More elegant fix to things happening after exit
+      // maybe change the process.on exit somehow????
+      if (global.end) {
+            require('fs').writeFileSync(lyaConfig.SAVE_RESULTS,
+        JSON.stringify(locEnv.accessMatrix, null, 2), 'utf-8');
+      }
   }
 }
 
