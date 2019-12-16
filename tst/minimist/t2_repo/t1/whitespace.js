@@ -1,6 +1,6 @@
 lyaConfig = {
   SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
-  analysisCh: 5,
+  analysisCh: 6,
   removejson: ['hasOwnProperty'],
 };
 let lya = require("../../../../src/txfm.js");
