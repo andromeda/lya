@@ -25,14 +25,14 @@ variables etc we wrap the specific thing to its own proxy.
 
 ## Policies
 
-* Policy 1 - True/False: A simple access/ no access policy that checks if a obj has been used.
-* Policy 2 - Counter: We track how many times a object has been accessed.
-* Policy 3 - Time: A simple time counter 
-* Policy 4 - Time2.0: A better timer counter that keeps the time counts on the module
-* Policy 5 - Enforcement: If a module try to accesss any object outside of the dynamic.json file we
+* [Policy 1](./policy1.js) - True/False: A simple access/ no access policy that checks if a obj has been used.
+* [Policy 2](./policy2.js) - Counter: We track how many times a object has been accessed.
+* [Policy 3](./policy3.js) - Time: A simple time counter 
+* [Policy 4](./policy4.js) - Time2.0: A better timer counter that keeps the time counts on the module
+* [Policy 5](./policy5.js) - Enforcement: If a module try to accesss any object outside of the dynamic.json file we
 stop it from exec.
-* Policy 6 - RWE: A read/ write/ execute analysis
-* Policy 7 - Enforcement-RWE: If check if we try to access a module outside dynamic.json or if we try
+* [Policy 6](./policy6.js) - RWE: A read/ write/ execute analysis
+* [Policy 7](./policy7.js) - Enforcement-RWE: If check if we try to access a module outside dynamic.json or if we try
 to access a value diff than before(R and try RE, E and we try RW etc)
 
 ## TODO
