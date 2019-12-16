@@ -160,10 +160,10 @@ module.exports = (env) => {
 		exportFuncControl : exportFuncControl,
 		onModuleControlFunc : onModuleControlFunc,
 		onModuleControl : onModuleControl,
-    	handler : handler,
-    	handlerGlobal : handlerGlobal,
-    	handlerExports : handlerExports,
-    	updateCounter : updateCounter,
-    	readFunction : readFunction,
+    handler : handler,
+    handlerGlobal : handlerGlobal,
+    handlerExports : handlerExports,
+    updateCounter : updateCounter,
+    readFunction : readFunction,
 	}
 };

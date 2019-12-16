@@ -1,6 +1,7 @@
 /* eslint prefer-rest-params: "off", no-global-assign: "off",
 no-shadow-restricted-names: "off" */
 //let lyaConfig= {};
+global.end= false;
 
 // We import and declare all the necessary modules
 const Module = require('module');
@@ -370,8 +371,8 @@ Module.prototype.require = function(...args) {
 
 // We print all the results on the end of the program
 process.on('exit', function() {
-  if (lyaConfig.SAVE_RESULTS && userChoice != 5 ) {
-    global.end = true;
+  global.end = true;
+  if (lyaConfig.SAVE_RESULTS && userChoice != 5 && userChoice != 7) {
     fs.writeFileSync(lyaConfig.SAVE_RESULTS,
         JSON.stringify(accessMatrix, null, 2), 'utf-8');
   }

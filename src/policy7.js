@@ -1,4 +1,4 @@
-// TODO: Add a function that checks if we have R W E
+// TODO: Find a more elegant solution than !global.end
 // env is {
 //   trueName : trueName,
 //   requireLevel : requireLevel,
@@ -28,14 +28,30 @@ const createDynamicObj = () => {
 
 dynamicObj = createDynamicObj();
 
+// Check that the line of dynamic.json contains the right char 
+// for the occasion ==> false / else true
+const problemCheck = (line, char) => {
+  try {
+    if (line.includes(char)) {
+      return false;
+    } else {
+      return true;
+    }
+  } catch (e) {
+    new Error('Good problem!');
+  }
+};
+
 // The handler of require of Enforcement
 const EnforcementCheck= {
   apply: function(target) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
     const nameReq = target.name + '(\'' + arguments[2][0] +// In arguments[2][0]
       '\')';// Is the name we use to import
-    if (Object.prototype.hasOwnProperty.
-        call(dynamicObj, currentName, nameReq) === false) {
+    //problemCheck(dynamicObj[currentName][nameReq])
+    if ((Object.prototype.hasOwnProperty.
+        call(dynamicObj, currentName, nameReq) === false ||
+          problemCheck(dynamicObj[currentName][nameReq],'R')) && !global.end) {
       throw new Error('Something went badly wrong on the require!');
     }
 
@@ -44,14 +60,15 @@ const EnforcementCheck= {
 };
 
 const exportControl = (storedCalls, truename) => {
-	if (Object.prototype.hasOwnProperty.call(storedCalls, truename) === false) {
+  if ((Object.prototype.hasOwnProperty.call(storedCalls, truename) === false ||
+    problemCheck(storedCalls[truename],'R')) && !global.end) {
       throw new Error('Something went badly wrong in ' + truename);
     }
 }
 
 const exportFuncControl = (storedCalls, truename, arguments) => {
-	if (Object.prototype.hasOwnProperty.
-        call(storedCalls, truename) === false) {
+  if ((Object.prototype.hasOwnProperty.call(storedCalls, truename) === false ||
+    problemCheck(storedCalls[truename],'E')) && !global.end) {
       throw new Error('Something went badly wrong in ' + truename);
     }
 
@@ -59,17 +76,17 @@ const exportFuncControl = (storedCalls, truename, arguments) => {
 }
 
 const onModuleControlFunc = (storedCalls, truename, arguments) => {
-	if (Object.prototype.hasOwnProperty.
-        call(storedCalls, truename) === false) {
+  if ((Object.prototype.hasOwnProperty.call(storedCalls, truename) === false ||
+    problemCheck(storedCalls[truename],'E')) && !global.end) {
       throw new Error('Something went badly wrong!');
     }
 
     return Reflect.apply(...arguments);
 }
 
-const onModuleControl = (storedCalls, truename) => {
-	if (Object.prototype.hasOwnProperty.
-        call(storedCalls, truename) === false) {
+const onModuleControl = (storedCalls, truename, mode) => {
+  if ((Object.prototype.hasOwnProperty.call(storedCalls, truename) === false ||
+    problemCheck(storedCalls[truename], mode)) && !global.end) {
       throw new Error('Something went badly wrong in ' + truename);
     }
 };
@@ -85,7 +102,7 @@ const handlerGlobal= {
     if (typeof target[name+endName] != 'undefined') {
       const currentName = locEnv.trueName[locEnv.requireLevel];
       const nameToShow = target[name+endName];
-      onModuleControl(dynamicObj[currentName], nameToShow);
+      onModuleControl(dynamicObj[currentName], nameToShow, 'R');
     }
 
     return Reflect.get(target, name);
@@ -98,7 +115,7 @@ const handlerGlobal= {
       // In order to exist a disticton between the values we declared ourselfs
       // We declare one more field with key value that stores the name
       Object.defineProperty(target, name+endName, {value: nameToStore});
-      onModuleControl(dynamicObj[currentName], nameToStore);
+      onModuleControl(dynamicObj[currentName], nameToStore, 'W');
 
       return result;
     }
@@ -119,7 +136,7 @@ const handler= {
   },
   get: function(target, name) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
-    onModuleControl(dynamicObj[currentName], target.name);
+    onModuleControl(dynamicObj[currentName], target.name, 'R');
 
     return Reflect.get(target, name);
   },
@@ -144,17 +161,33 @@ const updateCounter = (counter) => {
   locEnv.requireLevel = counter;
 }
 
+// Read function so we print it in the export file
+// This is to catch the read
+const readFunction = (myFunc, name) => {
+  name = name + '.' + myFunc.name;
+  const currentPlace = locEnv.trueName[locEnv.requireLevel];
+  let storedCalls = dynamicObj[currentPlace];
+
+  if ((Object.prototype.hasOwnProperty.
+        call(storedCalls, name) === false ||
+          problemCheck(storedCalls[name], 'R')) && !global.end) {
+      throw new Error('Something went badly wrong in ' + name);
+  }
+}
+
+
 module.exports = (env) => {
-	locEnv = env;
-	return {
-		require : EnforcementCheck,
-		exportControl : exportControl,
-		exportFuncControl : exportFuncControl,
-		onModuleControlFunc : onModuleControlFunc,
-		onModuleControl : onModuleControl,
+  locEnv = env;
+  return {
+    require : EnforcementCheck,
+    exportControl : exportControl,
+    exportFuncControl : exportFuncControl,
+    onModuleControlFunc : onModuleControlFunc,
+    onModuleControl : onModuleControl,
     handler : handler,
     handlerGlobal : handlerGlobal,
     handlerExports : handlerExports,
     updateCounter : updateCounter,
-	}
+    readFunction : readFunction,
+  }
 };
