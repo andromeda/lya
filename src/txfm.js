@@ -115,7 +115,7 @@ const handlerAddArg= {
 // fs.read () => {... fs.resolve(...) ... return...}
 const handlerObjExport= {
   get: function(target, name, receiver) {
-    if (typeof target[name] != 'undefined' && typeof name === 'symbol') { // + udnefined
+    if (typeof target[name] != 'undefined' && typeof name === 'string') { // + udnefined
       // If we try to grab an object we wrap it in this proxy
       if (typeof target[name] === 'object') {
         // FIXME
@@ -125,7 +125,6 @@ const handlerObjExport= {
           truepath = objPath.get(target);
           truename = objName.get(target);
         }
-
         const localObject = target[name];
         target[name] = new Proxy(localObject, handlerObjExport);
         objName.set(target[name], truename + '.' + name);
@@ -160,12 +159,12 @@ const handlerObjExport= {
           objPath.set(localFunction, trueName[requireLevel]);
           objName.set(localFunction, objName.get(target));
           // The problem here is that we have a name undef
-          console.log(typeof name)
-          policy.readFunction(localFunction, objName.get(target));
+          if (userChoice!=3 && userChoice!=4) {
+            policy.readFunction(localFunction, objName.get(target));
+          }
         }
       }
     }
-
     return Reflect.get(target, name);
   },
 };

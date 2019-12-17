@@ -17,6 +17,7 @@ const createDynamicObj = () => {
   // We save all the json data inside an object
   const appDir = path.join(path.dirname(require.main.filename), 'dynamic.json');
   let dynamicData;
+  //console.log(lyaConfig.POLICY,'lala')
   try {
     dynamicData = require(lyaConfig.POLICY || appDir);
   } catch (e) {
