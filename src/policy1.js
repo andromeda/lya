@@ -61,10 +61,12 @@ const onModuleControl = (storedCalls, truename) => {
 const handlerGlobal= {
   get: function(target, name) {
     // XXX[target] != 'undefined'
-    if (typeof target[name+endName] != 'undefined') {
-      const currentName = locEnv.trueName[locEnv.requireLevel];
-      const nameToShow = target[name+endName];
-      onModuleControl(locEnv.accessMatrix[currentName], nameToShow);
+    if (typeof name === 'string'){
+      if (typeof target[name+endName] != 'undefined') {
+        const currentName = locEnv.trueName[locEnv.requireLevel];
+        const nameToShow = target[name+endName];
+        onModuleControl(locEnv.accessMatrix[currentName], nameToShow);
+      }
     }
 
     return Reflect.get(target, name);

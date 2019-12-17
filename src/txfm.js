@@ -118,7 +118,7 @@ const handlerObjExport= {
     if (typeof target[name] != 'undefined') { // + udnefined
       // If we try to grab an object we wrap it in this proxy
       if (typeof target[name] === 'object') {
-       // FIXME
+        // FIXME
         let truepath = objPath.get(receiver);
         let truename = objName.get(receiver);
         if (truepath === undefined) {
@@ -128,7 +128,6 @@ const handlerObjExport= {
 
         const localObject = target[name];
         target[name] = new Proxy(localObject, handlerObjExport);
-
         objName.set(target[name], truename + '.' + name);
         objPath.set(target[name], truepath);
 
@@ -160,7 +159,6 @@ const handlerObjExport= {
           target[name] = new Proxy(localFunction, policy.handlerExports);
           objPath.set(localFunction, trueName[requireLevel]);
           objName.set(localFunction, objName.get(target));
-
           // The problem here is that we have a name undef
           policy.readFunction(localFunction, objName.get(target));
         }
