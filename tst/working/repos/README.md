@@ -20,3 +20,6 @@
 
 ## debug
 	- repo => the test from repo pass
+
+## classnames
+	- repo => all the test from the repo pass
