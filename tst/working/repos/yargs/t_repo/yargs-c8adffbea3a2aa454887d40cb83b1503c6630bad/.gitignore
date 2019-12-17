@@ -1,0 +1,7 @@
+.idea/
+node_modules/
+.nyc_output/
+*.swp
+test.js
+coverage
+package-lock.json
