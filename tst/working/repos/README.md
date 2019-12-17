@@ -18,3 +18,5 @@
         - t1 => simple test case to demonstate that the import works with lya
         - t2 => more elegant test case from moment repo
 
+## debug
+	- repo => the test from repo pass
