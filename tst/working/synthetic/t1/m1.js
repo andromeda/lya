@@ -4,4 +4,4 @@ let f = mathObj.add;
 //let y = f;
 //console.log(f) 
 f(1, 2);
-//Math.add(1, 2);
+//mathObj.add(1, 2);

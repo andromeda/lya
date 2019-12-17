@@ -1,7 +1,7 @@
 lyaConfig = {
   SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
   POLICY: require("path").join(__dirname, "dynamic.json"),
-  analysisCh: 7,
+  analysisCh: 6,
 };
 
 let lya = require("../../../../src/txfm.js");
