@@ -3,7 +3,7 @@ lyaConfig = {
   analysisCh: 5,
 };
 
-let lya = require("../../../src/txfm.js");
+let lya = require("../../../../../src/txfm.js");
 require = lya.configRequire(require, lyaConfig);
 
 /// <reference path="../moment.d.ts" />
