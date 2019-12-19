@@ -142,8 +142,52 @@ Aside from the sections corresponding to these contributions (\S\ref{bg}--\ref{i
 \section{Background, Examples, and Goals}
 \label{bg}
 
-\section{Module-aware Dialysis}
+A single application today often incorporates multiple libraries\footnote{We use the terms ``library'', ``package'', and ``module'' interchangeably.} written and published by several different authors.
+The emerging development process should (and to a certain extent, does) simplify the development and testing process;
+  unfortunately, good abstractions are sealed (\ie they do not leak between abstraction layers), which makes the inspection of a library difficult.
+
+\subsection{Modularity Today}
+
+languages provide module systems
+
+closely coupled with the runtime
+
+A module uses a \ttt{import} function and returns an export .
+Intuitively a map
+
+Several details:
+  same module at multiple levels, and the module cache
+  sometime it's the same, some times it;s not
+  module resolution algorithm
+
+\subsection{Motivating Examples}
+
+Having reviewed the building blocks and underlying techniques that power modularity, we now turn to examples of dynamic analysis that today are difficult or require specialized solutions. These examples illuminate key design requirements for \sys's implementation of module-level dynamic analysis.
+
+\subsection{Design Goals}
+
+We have briefly introduced four motivating analyses for extracting information about an application's dependencies.
+While the challenges behind these analyses share several characteristics, today they remain largely unaddressed by dynamic analyses systems as these 
+
+require highly specialized solutions often outside the core language,
+do not leverage or offer semantic information at the level of module boundaries,
+or lead to a high (often impractical) performance overheads due to the high granularity of their analyses.
+These applications clearly illustrate the need for a system 
+To summarize, these applications would appear to be served well by a system that:
+\begin{itemize}
+  \item Operates at the level of modules, both semantics and performance-wise
+  \item Does not require learning a new tool or language---on the contrary,
+    developers
+  \item can be bolt onto an existing runtime as a library, regardless of whether 
+  \item supports programmable analyses
+\end{itemize}
+
+In the next section we describe the design \sys, a new dynamic analyses
+framework that satisfies these goals
+
+\section{Module-aware Dynamic Analysis}
 \label{design}
+
 
 \section{Applications of Analysis}
 \label{apps}
