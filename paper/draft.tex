@@ -42,9 +42,101 @@ Our implementation, \sys, simplifies the analysis
 \end{abstract}
 
 \section{Introduction}
+\label{intro}
 
+Dynamic analysis is a type of program analysis performed by (and while) executing a program with the goal of identifying information about the program.
+Such information may include the ability to infer execution invariants, check security constraints, and extract performance characteristics (multiple citations).
+
+% Where dynamic analysis shines is
+Dynamic analysis occupies a clear spot in the space of analysis has clear strengths and weaknesses.
+  (i) involve current runtime information, such as the workload patterns
+  (ii) have full visibility into the current execution (no path explosion),
+  (iii) is the only viable option in dynamic programming languages---such as Ruby, Python, 
+Examples of information not analyzable statically include runtime code evaluation, runtime introspection and reflection, as well as multi-lingual support.
+Dynamic analysis is a particularly good fit for the analysis of dynamic languages.
+
+Unfortunately, however, reaping these benefits comes with significant overheads in terms of developer effort and runtime performance.
+One approach is to instrument the program requires an in-depth understanding of its internals and associated tools (\eg instruction set \etc).
+Another approach is to modify the runtime environment of the program---\eg JavaScript's V8 engine.
+Problem-specific solutions require significant investment outside the language's mental model and  
+
+This paper proposes a novel approach to dynamic analysis, termed \emph{module-aware dynamic analysis} and implemented in \sys.
+(i) at a somewhat coarser granularity, but still offering insights---and in a semantics-aware way tailored to the programming language.
+(ii) bolt on
+Our approach is applicable to any language that supports some notion of modularity, runtime introspection, and .
+It plugs into the module-loading capability of the runtime system to insert key hooks for inserting 
+After the parsing and interpretation phases of module loading complete, 
+ which are then parsed and interpreted and 
+Surprisingly, as we show in this paper, this architecture requires \emph{no} modifications to the language runtime---that is, it is backward-compatible with vanilla unmodified language runtime environments.
+
+Its key strategy is to fracture applications at the boundaries of modules, instrument their interfaces (including direct accesses) using meta-programming capabilities, and recombine them 
+By combining visiiblity into both built-in and third-party modules, \sys can get gather important information for 
+at a much lower cost---both in terms of runtime performance and developer effort.
+
+% to enable module-aware dynamic analysis are general
+To achieve this, module-aware dynamic analysis leverages several techniques.
+It plugs into the module manager;
+wraps interfaces
+(i) bolt on, meaning
+(ii) high-performance, and 
+(iii) low effort 
+
+As shown later, these capabilities are generally available in all dynamic programming languages---\eg 
+
+To demonstrate the effectiveness of our techniques, we
+  (i) build a prototype of module-aware dynamic analysis for server-side JavaScript, called \sys; and
+  (ii) develop a diverse set of analyses---including an allow/deny security analysis, a profiling analysis showing hot modules, a synthesis-oriented analysis on input-output data, and an analysis enforcing a static union-based type system at runtime.
+  (iii)  and use \sys to evaluate these analyses on three levels:
+    synthetic micro-benchmarks, that highlight certain features;
+    single-module meso-benchmarks, that allow comparison with other dynamic analysis tools; and
+    end-to-end full-application macro-benchmarks, that shows \sys's behavior of the system on realistic workloads. 
+\sys's implementation and evaluation drives the design requirements for \sys and highlights the benefits of bolt-on module-aware dynamic analysis.
+
+Our contributions, presented in \S\ref{bg}--\ref{impl} include:
+\begin{itemize}
+\item We characterize the shared needs of four case-study analyses~\sx{bg} for which an implementation from scratch would require a significant investment in terms of developer effort.
+\item We present the design of the bolt-on module-oriented dynamic analysis~\sx{design}, which meets the requirements of the four case-study analyses.
+\item We describe designs of four 
+\item We discuss our prototype implementation, \sys, as a pluggable library for the JavaScript ecosystem~\sx{impl}; our evaluation shows that \sys incurs minimal performance overheads over the respective baseline runtime.
+\end{itemize}
+
+Aside from the sections corresponding to these contributions (\S\ref{bg}--\ref{impl}), the paper discusses \sys's limitations and its application to other environments~\sx{diss};
+   it compares \sys with related prior work in the literature~\sx{rw}; and draws appropriate conclusions~\sx{end}.
+
+
+\section{Background, Examples, and Goals}
+\label{bg}
+
+\section{Module-aware Dialysis}
+\label{design}
+
+\section{Applications of Analysis}
+\label{apps}
+
+\section{Implementation}
+\label{impl}
+
+\section{Evaluation}
+\label{eval}
+
+\subsection{Micro-benchmarks}
+\label{micro}
+
+\subsection{Single-module Benchmarks}
+\label{meso}
+
+\subsection{End-to-End Benchmarks}
+\label{macro}
+
+\section{Discussion and Limitations}
+\label{diss}
+
+\section{Related Work}
+\label{rw}
 Some citations to ensure we can see them~\cite{Christophe:2015:DAU:2819009.2819180, Keil:2013:EDA:2508168.2508176, Lehmann:2019:WFD:3297858.3304068, Sun:2018:EDA:3178372.3179527}.
 
+\section{Conclusion}
+\label{end}
 
 % \section*{Acknowledgments}
 % 
