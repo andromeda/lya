@@ -1,18 +1,34 @@
+% TODO: tempted to term this "Module-aware dynamic fracture, analysis, and reassembly" as Dialysis or refracture
 \documentclass[letterpaper,twocolumn,10pt]{article}
 \usepackage{usenix2019_v3}
 
 \usepackage{soul}
 \usepackage{xspace}
 \usepackage{color}
-\newcommand{\eg}{{\em e.g.}, }
-\newcommand{\ie}{{\em i.e.}, }
-\newcommand{\etc}{{\em etc.}\xspace}
-\newcommand{\vs}{{\em vs.} }
+
+\def\omit#1{}
+\def\eg{{\em e.g.}, }
+\def\ie{{\em i.e.}, }
+\def\etc{{\em etc.}\xspace}
+\def\vs{{\em vs.}\xspace}
+% \newcommand{\heading}[1]{\vspace{4pt}\noindent\textbf{#1}\enspace}
+% No vspace, coz Usenix class already has paragraph space
+\newcommand{\heading}[1]{\vspace{2pt}\noindent\textbf{#1}\enspace}
+\newcommand{\ttt}[1]{\texttt{#1}}
+\newcommand{\ttiny}[1]{\texttt{\scriptsize #1}}
+\newcommand{\tcn}[1]{}
 
 \newcommand{\cf}[1]{(\emph{Cf}.\S\ref{#1})}
 \newcommand{\sx}[1]{(\S\ref{#1})}
 \newcommand{\sys}{{\scshape Lya}\xspace}
 \newcommand{\toy}{{\tt lya.js}\xspace}
+
+\newcommand{\nv}[1]{[{\color{cyan}#1 --- Nikos}]}
+\newcommand{\review}[1]{{\color{red}#1}}
+\newcommand{\TODO}[1]{\hl{\textbf{TODO:} #1}\xspace}
+\newcommand{\todo}[1]{\hl{#1}\xspace}
+\newcommand{\fixme}[1]{{\color{red}#1}}
+\newcommand{\tc}{(\todo{cite})\xspace}
 %-------------------------------------------------------------------------------
 \begin{document}
 %-------------------------------------------------------------------------------
@@ -25,18 +41,37 @@
 
 %for single author (just remove % characters)
 \author{
-{\rm Grigoris Ntousakis}\\
-Technical University of Crete
-\and
-{\rm Nikos Vasilakis}\\
-Massachusetts Institute of Technology
+{\rm Anonymous Author(s)}\\
+Submission \#323, 12 pages; Additional Material:
+% {\rm Grigoris Ntousakis}\\
+% Technical University of Crete
+% \and
+% {\rm Nikos Vasilakis}\\
+% Massachusetts Institute of Technology
 }
 
 \maketitle
 
 \begin{abstract}
-We introduce \emph{module-level dynamic analysis}, a new dynamic analysis abstraction that supports dynamic fracture and recombination at the level of individual modules.
-By leveraging the ubiquity of third-party modules in today's applications, this analysis provides 
+Modern software relies extensive on third-party libraries:
+  recent studies on several ecosystems show that code written by an application's nominal developers is only a small fraction of its total line count.
+Such over-reliance creates many challenges that appear later in the development process, exactly because developers have little knowledge and understanding of the module's internals.
+For example, security auditing and performance profiling large applications in the presence of deeply-nested third-party code becomes cumbersome.
+
+We introduce \emph{module dialysis}, a technique for dynamic analysis specifically tailored to module boundaries.
+Module dialysis can be bolted on existing language runtime environments in a language-agnostic fashion, and enables module-aware application fracture, analysis, and reassembly at runtime.
+Dialysis supports dynamic application fragmentation, analysis, and re-assembly at the level of individual modules.
+Tailored at providing information at the (recursive) boundaries of third-party modules.
+Such modules can be part of third-party packages or of the language's standard library;
+  the latter is important for resources that are part of the broader environment where the application is executing, such as the operating system and the network.
+By leveraging the ubiquity of third-party modules in today's applications, this analysis provides insights k
+
+We use a series of case-study analyses to motivate \sys's design and demonstrate how \sys provides high-performance by shadowing variables and transforming and wrapping values
+
+, all with minimal developer effort.
+The key feature is that module-level analysis can be bolted onto existing runtime environments as a library, without requiring low-level intsrumentation and maintaing the semantics of..
+Measurements of two COWL implementations, one in Firefox and one in Chromium, demonstrate a virtually imperceptible increase in page-load latency.
+
 Our implementation, \sys, simplifies the analysis 
 
 \end{abstract}
