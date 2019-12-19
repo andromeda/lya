@@ -192,8 +192,129 @@ framework that satisfies these goals
 \section{Applications of Analysis}
 \label{apps}
 
-\section{Implementation}
+
+\section{Implementation: Lya}
 \label{impl}
+
+We implemented \sys for version 
+We show where other implementations would diverge in table 1
+
+The following subsections outline how module systems handle modules at runtime, by exemplifying the internals of Node.js.
+It sketches the Node.js runtime~\sx{a}, the use of the module system~\sx{b}, and the internals of how module loading works~\sx{c}.
+
+(1) why node.js
+(2) Create a table of compatibility and show individual aspects
+
+\heading{Module System}
+Node.js' module system is implemented entirely in JavaScript.
+It exposes \ttt{require}, a global-looking function for importing modules.
+\fixme{Figure} above demonstrates the use of \ttt{require}.
+
+% \begin{lstlisting}[language=js,mathescape,upquote=true]
+% // -------------- [./main.js] -------------
+% // importing point
+% let Point = require("./point.js");
+% Point.create(1, 1).print(); // => [1, 1]
+% 
+% // -------------- [./point.js] ------------
+% let Point = function Point (x, y) {
+%     this.x = x; this.y = y;
+% };
+% Point.prototype.print = function print () {
+%   console.log([this.x, this.y]);
+% };
+% module.exports = {
+%     create:  function create (x, y) {
+%         return new Point(x, y);
+%     }
+% };
+% \end{lstlisting}
+
+In the example above, the main module (\ttt{main.js}) imports the \ttt{point.js} module using the \ttt{require} statement (line 3)
+Functionality from the exporting module (\ttt{point.js}) that is expected to become available to the importing module (\ttt{main.js}) is assigned to a special \ttt{module.exports} object (line 13);
+  the rest is module-private functionality.
+Files and modules are in one-to-one correspondence (each file is treated as a separate module).
+Method \ttt{require} is synchronous (\ie blocking):
+  it will block execution until the module specified is loaded.
+% ---and can be used to load built-in modules such as \ttt{http} and \ttt{fs}.
+The module system is implemented in the \ttt{module} built-in module~\sx{c}, which locates, wraps, compiles, and executes the specified file.
+
+\sys hooks into \ttt{module} and alters the return value of the \ttt{require} call that imports \ttt{point.js} (line 3).
+
+\subsection{Implementation of the Module System}
+\label{c}
+
+At a very high level, loading a fresh module with \ttt{require("foo");} corresponds to the following five stages:
+
+\begin{enumerate}
+% \def\labelenumi{\arabic{enumi}.}
+\item Resolution: identify the file to which the module specified corresponds, and locate it in the filesystem.
+\item Loading: depending on the file type, use the corresponding loader (\eg V8 compiler for \ttt{js}, \ttt{JSON.parse} for \ttt{json} \etc).
+\item Wrapping: wrap the module so that module-globals get encapsulated and Node.js globals (\eg \ttt{require}) get resolved.
+\item Evaluation: evaluate the wrapped module in the current context, so that global names and top-level objects get resolved correctly.
+\item Caching: add the module to a handful of module-related cache structures, for purposes of consistency and performance.
+\end{enumerate}
+
+% The resolution algorithm is somewhat convoluted, because it depends on several different facts (including the type of the file requested, whether it is a globally installed, whether it is a directory \etc).
+% It does not require any \sys support beyond copying the directory that contains the source code of the all the modules onto the remote host.
+\sys interposes on all of these steps to facilitate transformations.
+Wrapping (3) and evaluation (4) are particularly interesting, because they allow \sys to interpose at the module boundary during runtime.
+Before a module's code is evaluated, the Node.js module loader wraps the module so that
+  (i) it keeps top-level variables (defined with \ttt{var}, \ttt{const} or \ttt{let}) scoped to the module rather than the global object; and
+  (ii) it provides some global-looking variables that are actually specific to the module, such as the \ttt{module} and \ttt{exports} objects that the implementor can use to export values from the module and convenience variables---such as \ttt{\_\_filename} and \ttt{\_\_dirname}  containing the module's absolute filename and directory path, respectively.
+True globals remaining are
+  (i) the global objects as defined by the EcmaScript standard (\eg \ttt{Object}, \ttt{Function}, \ttt{Math}); and
+  (ii) Node.js-specific globals (\eg \ttt{console}, \ttt{process}, \ttt{timer}).
+These globals require further interposition.
+
+% \begin{lstlisting}[language=js,mathescape,upquote=true]
+% // Node.js will wrap a module with a function,
+% // so as to bring certain names into scope
+% // before compiling/evaluating code.
+% let wrapped = "function (" +
+%         "exports, require, module, " +
+%         "__filename, __dirname, CTX) {" +
+%     "let Math = CTX.Math" +
+%     "let console = CTX.console" +
+%     //...[more definitions]
+%     moduleSource +
+%   "});"
+% \end{lstlisting}
+
+
+\sys hooks into the wrapper function (the last variable in the function definition, \ttt{CTX}).
+This trivial source-to-source transformation re-defines global variables as module-locals and initializes them with \sys-augmented values.
+For example, \ttt{console} in the context of the module will be an \sys-created object that allows \sys to interpose on it.
+Evaluation of the module passes an additional value to this function, which is the modified context.
+As a result, any changes to the top-level objects and any global variables are accessible from the within the module.
+
+% \begin{lstlisting}[language=js,mathescape,upquote=true]
+% //Input: module ID e.g., absolute filepath
+% let load = function (ID) {
+%   if (cache[ID]) {
+%      return cache[ID];
+%   }
+%   let m = {
+%     exports: {}, id: ID, dir: path.resolve(ID)
+%   };
+%   let cm = v8.compile(wrapped);
+%   let ii = iris.getImplicit(ID);
+%   let c = iris.freshContext(ii);
+%   cm(m.exports, this.require, m, ID, m.dir, c);
+%   let ei = iris.getExplicit(ID);
+%   m.exports = iris.wrap(m.exports, [ei] );
+%   cache[ID] = m;
+%   return m.exports;
+% }
+% \end{lstlisting}
+
+The \ttt{load} method in the \ttt{Module} module combines evaluation (line 10) and caching (line 14) of the wrapped module.
+After evaluation, invoking the compiled function generates the value that is assigned to \ttt{module.exports} from within the module (line 12).
+\sys passes a freshly constructed context at that invocation, modified according to the implicit segment of the (PIC??) corresponding to the module being loaded.
+Before returning the value of \ttt{module.exports}, \sys transforms it according to the explicit segment of the (PIC??) corresponding to the module being loaded.
+Finally, the results of the entire process are placed into the module cache for later use.
+
+\
 
 \section{Evaluation}
 \label{eval}
