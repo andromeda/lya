@@ -1,9 +1,18 @@
 \documentclass[letterpaper,twocolumn,10pt]{article}
 \usepackage{usenix2019_v3}
 
-\usepackage{tikz}
-\usepackage{amsmath}
+\usepackage{soul}
+\usepackage{xspace}
+\usepackage{color}
+\newcommand{\eg}{{\em e.g.}, }
+\newcommand{\ie}{{\em i.e.}, }
+\newcommand{\etc}{{\em etc.}\xspace}
+\newcommand{\vs}{{\em vs.} }
 
+\newcommand{\cf}[1]{(\emph{Cf}.\S\ref{#1})}
+\newcommand{\sx}[1]{(\S\ref{#1})}
+\newcommand{\sys}{{\scshape Lya}\xspace}
+\newcommand{\toy}{{\tt lya.js}\xspace}
 %-------------------------------------------------------------------------------
 \begin{document}
 %-------------------------------------------------------------------------------
@@ -12,7 +21,7 @@
 \date{}
 
 % make title bold and 14 pt font (Latex default is non-bold, 16 pt)
-\title{\Large \bf Module-aware Fracture and Recombination for Dynamic Analysis}
+\title{\Large \bf Module-level Dynamic Analysis}
 
 %for single author (just remove % characters)
 \author{
@@ -26,7 +35,10 @@ Massachusetts Institute of Technology
 \maketitle
 
 \begin{abstract}
-  One two three
+We introduce \emph{module-level dynamic analysis}, a new dynamic analysis abstraction that supports dynamic fracture and recombination at the level of individual modules.
+By leveraging the ubiquity of third-party modules in today's applications, this analysis provides 
+Our implementation, \sys, simplifies the analysis 
+
 \end{abstract}
 
 \section{Introduction}
