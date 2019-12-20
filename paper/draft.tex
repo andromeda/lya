@@ -6,6 +6,13 @@
 \usepackage{soul}
 \usepackage{xspace}
 \usepackage{color}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{graphicx}
+
+\captionsetup[figure]{font=footnotesize,name={Fig.},labelfont={bf, footnotesize}}
+\captionsetup[table]{font=footnotesize,name={Tab.},labelfont={bf, footnotesize}, skip=2pt, aboveskip=2pt}
+\captionsetup{font=footnotesize,labelfont={bf, footnotesize}, belowskip=2pt}
 
 \def\omit#1{}
 \def\eg{{\em e.g.}, }
@@ -16,7 +23,7 @@
 % No vspace, coz Usenix class already has paragraph space
 \newcommand{\heading}[1]{\vspace{2pt}\noindent\textbf{#1}\enspace}
 \newcommand{\ttt}[1]{\texttt{#1}}
-\newcommand{\ttiny}[1]{\texttt{\scriptsize #1}}
+\newcommand{\ttiny}[1]{\texttt{\footnotesize #1}}
 \newcommand{\tcn}[1]{}
 
 \newcommand{\cf}[1]{(\emph{Cf}.\S\ref{#1})}
@@ -96,23 +103,28 @@ We use a series of case-studies to motivate \sys's design, and demonstrate how \
 \section{Introduction}
 \label{intro}
 
-Dynamic analysis is a type of program analysis performed by (and while) executing a program with the goal of identifying information about the program.
+Dynamic analysis is a type of program analysis performed by (and while) executing a program, with the goal of extracting information about the program and its execution.
 Such information may include the ability to infer execution invariants, check security constraints, and extract performance characteristics (multiple citations).
+Contrary to other types of analysis, its key benefits make it primary candidate in a variety of scenarios---for example in scenarios that
+  (i) involve current and accurate runtime information in view of changing workloads or use patterns,
+  (ii) have full visibility into the current execution (no path explosion),
+  (iii) enforce Turing-complete execution policies, where the invariants themselves are arbitrary programs,
+  (iii) involve dynamic or interpreted programming languages---such as Ruby, Python, Lua, or JavaScript.
 
 % Where dynamic analysis shines is
-Dynamic analysis occupies a clear spot in the space of analysis has clear strengths and weaknesses.
-  (i) involve current runtime information, such as the workload patterns
-  (ii) have full visibility into the current execution (no path explosion),
-  (iii) is the only viable option in dynamic programming languages---such as Ruby, Python, 
-Examples of information not analyzable statically include runtime code evaluation, runtime introspection and reflection, as well as multi-lingual support.
-Dynamic analysis is a particularly good fit for the analysis of dynamic languages.
+% Dynamic analysis occupies a clear spot in the space of analysis has clear strengths and weaknesses.
+% Examples of information not analyzable statically include runtime code evaluation, runtime introspection and reflection, as well as multi-lingual support.
+% Dynamic analysis is a particularly good fit for the analysis of dynamic languages.
 
-Unfortunately, however, reaping these benefits comes with significant overheads in terms of developer effort and runtime performance.
+Unfortunately, however, reaping these benefits comes with significant overheads in terms of developer effort or runtime performance.
 One approach is to instrument the program requires an in-depth understanding of its internals and associated tools (\eg instruction set \etc).
 Another approach is to modify the runtime environment of the program---\eg JavaScript's V8 engine.
 Problem-specific solutions require significant investment outside the language's mental model and  
 
-This paper proposes a novel approach to dynamic analysis, termed \emph{module-aware dynamic analysis} and implemented in \sys.
+This paper proposes a novel approach to dynamic analysis, termed \emph{module dialysis}\footnote{
+  A method of deconstruction, often for the purposes of removing waste products or component alteration.
+  From ancient Greek diá ($\delta\iota\alpha$ ``inter-, through'') and lúein (``loosen''); synchronically, dia- + -lysis.
+} and implemented in \sys.
 (i) at a somewhat coarser granularity, but still offering insights---and in a semantics-aware way tailored to the programming language.
 (ii) bolt on
 Our approach is applicable to any language that supports some notion of modularity, runtime introspection, and .
@@ -274,16 +286,57 @@ framework that satisfies these goals
 
 \subsection{Overview}
 
-At a high level, dialysis works at three stages:
+FIXME: add user data
+At a high level, module dialysis works at three stages:
 
-: Fracture the programs into shards — pieces
-of the programs that implement a computation or functionality. The granularity of the fracture determines
-the size of the shards. Potentially useful granularities
-include functions, procedures, classes, abstract data
-types, modules, loops, and program slices. Program
-fracture typically includes the encapsulation of each
-shard into its own separately invocable program for
-testing, analysis, and exploration.
+\begin{itemize}
+  
+  \item \Fra:
+    It first starts by recursively dis-assembling programs into their library dependencies---pieces of software implement a computation or functionality.
+    This is essentially achieved by instrumenting the import statements and walking the program's recursive dependency structure.
+    Different analysis can operate at different granularities, and has to solve challenges such as multi-module and dedublication.
+
+  \item \Ana:
+It then sets a specific analysis up by wrapping and transforming each module interface, its surrounding environment, as well as the values passing through the module boundary.
+Programmatic transformations walk and transform each one of these values based on their type:
+  the module interface is usually a complex (but singular) object; the surrounding environment treats 
+This phase requires solving several challenges, including enumerating and tracking all points of entry into and exit out of a library.
+It also requires providing 
+ in a backwards compatible fashion.
+
+  \item \Ass:
+  Finally, it re-assembles individual modified modules back into the original structure.
+  This creates several challenges, the most important of which is the treatment of the module cache---a mechanism for avoiding multiple loads of the same module .
+  Since a single library can now correspond to many different wrappers, each modified to capture different  analysis fragments, the cache needs to be augmented to ensure the right analysis fragment clicks at the right place during the re-assembly of the dependency tree.
+
+\end{itemize}
+
+% \textbf{Core Language}
+% a few is not the same as 
+Transformations are used pervasively throughout \sys, and are abstracted via a few parametrizable templates.
+Templates map different types of values (List.~\ref{core-tx}) to a generic handler for each type.
+%given a value, a template will transform it using a handler matching its type
+% Templates match, 
+% \hl{match} between different \hl{value} % what are values
+%    \emph{types} and define generic handlers for each type.
+Transformations have these handlers parametrized to achieve concrete goals such as monitoring, serialization, and scale-out.
+Simplified instances are described in the following two sections (\S\ref{profiling}--\ref{core}).
+
+Transformations can be applied to any value in the language, such as an object returned from a module or an exception about to be sent across the network.
+The general case of such a value is a directed acyclic graph (DAG).
+The types of its vertices can be coarsely grouped into primitives, functions, and objects.
+Objects map strings to other values, pointing to other vertices in the DAG.
+% Listing~\ref{core-tx} presents a simplified core of the language.
+Transformations start by walking the DAG from the root vertex and processing component values based on their types.
+They do not mutate original values, but first copy them, apply transformations to the copies, and return copies to the caller.
+They only partially explore the object graph, as they do not peak through function closure environments.
+Fortunately, this aligns well with our goal of monitoring activity at module boundaries and ignoring module-internal activity.
+
+As an example, consider transforming the \ttt{crypto} module~\sx{solution}.
+\sys traverses the object returned by \ttt{crypto} and replaces functions such as \ttt{pbkdf2} with wrappers whose specifics depend on the intended goal:
+  profiling wrappers call the original function in between statistics collection, and RPC wrappers forward the call to a remote replica.
+
+
 
 
 \section{Applications of Analysis}
@@ -427,6 +480,43 @@ Finally, the results of the entire process are placed into the module cache for 
 
 \section{Discussion and Limitations}
 \label{diss}
+
+Library dialysis, as implemented in \sys, depends on a few features available in the programming language.
+In this section we describe how to develop the same solution on other environments.
+In the second part of this section, we reflect on some of the current limitations of the system.
+
+\subsection{Applying to Other Environments}
+
+\begin{table}[t]
+\center
+\footnotesize
+\setlength\tabcolsep{3pt}
+\caption{
+  \footnotesize{
+    \textbf{Language features used and their availability in other languages}.
+    Broadly, the requirements of module dialysis can be broken down into to five elementary requirements.
+  }
+}
+\begin{tabular*}{\columnwidth}{l @{\extracolsep{\fill}} llllllll}
+\toprule
+                                & Lua     & JavaScript  & Ruby   &      &      &      &      &         \\
+\midrule
+Instrument \ttiny{import}s      &         &             &        &      &      &      &      &         \\
+Walk objects                    &         &             &        &      &      &      &      &         \\
+Shadow variables                &         &             &        &      &      &      &      &         \\
+Wrap values                     &         &             &        &      &      &      &      &         \\
+Global names                    &         &             &        &      &      &      &      &         \\
+\bottomrule
+\end{tabular*}
+\label{tab:compatibility}
+\vspace{-5mm}
+\end{table}
+
+
+\heading{Dynamic Language Interpretation}
+Dynamic languages have features---\eg name (re-)binding, value introspection, dynamic code evaluation, and access interposition---that enable runtime transformations~\cite{aop, metaobject}.
+They conveniently unify module identification with interposition: % used for performance monitoring and replica construction:
+  a single function or function-like operator locates a module, interprets it, and applies transformations before exposing its interface in the caller context.
 
 \section{Related Work}
 \label{rw}
