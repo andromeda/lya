@@ -59,22 +59,22 @@ Submission \#225, 12 pages; Additional Material:
 
 \begin{abstract}
 
-This paper introduces \emph{module dialysis}, a novel technique for dynamic analysis specifically tailored to module boundaries. % to applications with many modules
-Modules are becoming the cornerstone of modern software engineering:
-  applications today use hundreds of modules, to the point where code written by their nominal developers is becoming only a small fraction of their total line count.
-On the surface, such code reuse is beneficial, as it lowers development costs, software testing, encapsulation; 
-  however, such over-reliance creates many challenges later in the development process, exactly because developers have little knowledge and understanding of module's internals.
+This paper introduces \emph{library dialysis}, a novel dynamic-analysis technique specifically tailored to applications with many third-party libraries.
+The proliferation of third party libraries in applications is a recent trend in software engineering:
+Libraries are becoming the cornerstone of modern 
+  applications today rely on hundreds of libraries, to the point where code written by their nominal developers is becoming only a small fraction of their total line count.
+% On the surface, such reliance is beneficial, as it lowers development costs, aids targeted software testing, and enables code reuse;
+Despite its benefits, such over-reliance creates many challenges down the road, exactly because developers have little knowledge and understanding of each library's internals.
 For example, security auditing and performance profiling---which are already challenging for monolithic applications---become extremely difficult in the presence of deeply-nested third-party code.
 
-% Turn such over-reliance on its head
-To address these challenges, module dialysis enables dynamic fragmentation, analysis, and re-assembly of applications at the level of individual modules.
+To address these challenges, library dialysis enables dynamic fragmentation, analysis, and re-assembly of applications at the level of individual modules.
 One of its highlights is ease of deployment and use:
   (i) bolted onto existing runtime environments as a library, by wrapping and transforming the underlying module system
   (ii) allowing developers to extract information using the same abstractions as the host language---eschewing low-level instrumentation.
 Due to the in the host language and at a coarser granularity than full-fledged dynamic analysis, module dialysis has the potential of low performance overheads while still providing important information.
 
 Our dialysis prototype, \sys, targets the JavaScript ecosystem through the V8 runtime.
-We use a series of case-studies to motivate \sys's design, and demonstrate how \sys allows the analysis of both individual modules as well as multi-module application programs---all with a surprisingly low developer effort.
+We use a series of case-studies to motivate \sys's design, and demonstrate how \sys allows the analysis of both individual modules as well as multi-module application programs---all with a surprisingly   low developer effort.
 Experiments with \sys show that it adds a virtually imperceptible increase in the load latency of individual modules and that it scales well to real applications with hundreds of modules.
 
 module-level analysis 
@@ -85,13 +85,10 @@ Module dialysis can be bolted on existing language runtime environments in a lan
 % By leveraging the ubiquity of third-party modules in today's applications
 Such modules can be part of third-party packages or of the language's standard library;
   the latter is important for resources that are part of the broader environment where the application is executing, such as the operating system and the network.
-By leveraging the ubiquity of third-party modules in today's applications, this analysis provides insights k
 
-We use a series of case-study analyses to motivate \sys's design and demonstrate how \sys provides high-performance by shadowing variables and transforming and wrapping values
 
 , all with minimal developer effort.
-The key feature is that module-level analysis can be bolted onto existing runtime environments as a library, without requiring low-level intsrumentation and maintaing the semantics of..
-Measurements of two COWL implementations, one in Firefox and one in Chromium, demonstrate a virtually imperceptible increase in page-load latency.
+As a result, 
 
 Our implementation, \sys, simplifies the analysis 
 
