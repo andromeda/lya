@@ -1,4 +1,5 @@
 % TODO: tempted to term this "Module-aware dynamic fragmentation, analysis, and reassembly" as Dialysis or refracture
+% CFP: https://www.usenix.org/conference/atc20/call-for-papers
 \documentclass[letterpaper,twocolumn,10pt]{article}
 \usepackage{usenix2019_v3}
 
@@ -26,6 +27,9 @@
 \newcommand{\fra}{fragmentation\xspace} % fracture
 \newcommand{\ana}{analysis\xspace}      % 
 \newcommand{\ass}{reassembly\xspace}    % 
+\newcommand{\Fra}{Fragmentation\xspace} % fracture
+\newcommand{\Ana}{Analysis\xspace}      % 
+\newcommand{\Ass}{Reassembly\xspace}    % 
 \newcommand{\dia}{\fra, \ana, and \ass}
 
 \newcommand{\nv}[1]{[{\color{cyan}#1 --- Nikos}]}
@@ -175,7 +179,74 @@ Several details:
 
 \subsection{Motivating Examples}
 
-Having reviewed the building blocks and underlying techniques that power modularity, we now turn to examples of dynamic analysis that today are difficult or require specialized solutions. These examples illuminate key design requirements for \sys's implementation of module-level dynamic analysis.
+Having reviewed the building blocks and underlying techniques that power modularity, we now turn to examples of dynamic analysis that today are difficult or require specialized solutions:
+  (i) an allow/deny security analysis,
+  (ii) a profiling analysis showing hot modules,
+  (iii) a synthesis-oriented analysis on input-output data, and
+  (iv) an analysis enforcing a static union-based type system at runtime.
+These examples illuminate key design requirements for \sys's implementation of module-level dynamic analysis.
+
+\heading{Security Analysis}
+Today's ubiquitous reliance on third-party modules has led to an explosion of supply-chain attacks~\cite{maass2016theory, lauinger2017thou, long2015owasp, cadariu2015tracking, breakapp:plos:2017, snyk}.
+Both bugs and malicious code in imported modules provide attack vectors that are exploitable long after modules reach their end-users.
+As development-time module boundaries do not exist at runtime, modules end up executing with no meaningful isolation or privilege separation guarantees between each other and the trusted portions of an application.
+The popularity of certain libraries---depended upon by tens of thousands of other libraries or applications---allows vulnerabilities deep in the dependency graph to affect a great number of applications~\cite{kuppusamy2016diplomat, leftpad, npmstudy:19}.
+Discovered vulnerabilities are becoming harder to eradicate, as updates are fetched automatically~\cite{npmFailure} and module unpublishing is becoming a multi-step process to avoid breaking applications~\cite{npmUnpublish}.
+Worst of all,\omit{package developers accidentally publishing their security} leaked publishing tokens allow anyone to update packages with code that will eventually reach end-users via package updates~\cite{eslint1, eslint2}.
+
+Recent work~\cite{dld:08, sandcrust, tsampas2017towards, breakapp:ndss:2018} has shown that 
+The key issue underlying the \ttt{event-stream} attack is that any third-party fragment of an application has unrestricted access to the functionality available to the rest of application. % and is exploitable.
+Some of this functionality is \emph{explicitly} provided by other libraries such as \ttt{fs} and \ttt{http}.
+Other functionality is \emph{implicitly} provided by the programming language;
+  examples include the ability to use global variables, import modules, and access the cache of the loaded modules.
+Both explicitly and implicitly provided functionality is exploitable by third-party code.
+While it may be needed for the application to function as a whole, it is not necessarily needed by \ttt{event-stream}.
+% However, not \emph{all} of this capability is needed by \emph{all} of the modules during \emph{all} of the time.
+MLC shows great promise, as it can
+(i) retrofit security into \emph{legacy} systems not designed with security as their primary concern,
+(ii) protect against a plethora of \emph{real} attacks stemming from defective, subverted, and malicious elements, and
+(iii) shield against attacker-controlled components with \emph{unknown} vulnerabilities and powerful \emph{runtime} code evaluation. % (\eg \texttt{eval}).
+
+To make this concrete, we are introducing
+
+\heading{Performance Diagnosis}
+Developers use various techniques to understand such problems.
+For example, collected traces can be replayed against off-line versions of the system and statistical profiling can identify hot code-paths.
+These techniques, however, require some degree of \emph{manual} effort:
+  capturing traces, setting up testbeds, replaying traces, analyzing statistics, and debugging performance are all tedious and time-consuming tasks.
+Pervasiveness of third-party modules and heavy code reuse in modern applications compound the challenge, as the causes may lie deep in the dependency chain.
+
+Once provided with a few recipes, \sys starts monitoring the performance of the corresponding modules in order to detect bottlenecked modules.
+A key observation is the semantic isomorphism between calling a function and passing a message~\cite{scheme:98, duality:79}.
+This allows viewing a series of calls as a stream of messages. % that 
+% at each module boundary 
+Module boundaries can be viewed as (virtual) queues of messages that await processing.
+% and applying windowed average operations on a 
+Overwhelming a module causes its ingress queue to grow.
+% MM: related to the sync vs. async
+% As the queue grows due to module overloading, new messages will be processed only after all other messages have been processed.
+At some point, the waiting time of newly-arrived messages becomes longer than the time to send the messages to a remote copy of the module, run the call there, and return the results back to their intended recipient.
+% Intuitively, it makes sense to schedule a queue on a remote processor when the wait time at the end of the queue becomes longer than scheduling the message to a remote queue.
+
+To make this concrete, we are introducing
+
+\heading{Type and Invariant Checking}
+Extracting type invariants is helpful in a variety of ways---type safety is an important property and types are lightweight annotations that can be quickly and efficiently checked.
+Dynamic analysis can be used to generate type assertions or invariants
+For example
+
+To make this concrete, we are using
+The static type system is defined as a variant of a simply-typed lambda calculus augmented with union types.
+
+\heading{Learning, Synthesis, and Regeneration}
+Extracting type invariants is helpful in a variety of ways---type safety is an important property and types are lightweight annotations that can be quickly and efficiently checked.
+Dynamic analysis can be used to generate type assertions or invariants
+For example
+The approach has been pioneered by systems such as 
+
+To make this concrete, we are using
+The static type system is defined as a variant of a simply-typed lambda calculus augmented with union types.
+
 
 \subsection{Design Goals}
 
