@@ -74,23 +74,14 @@
 This paper introduces \emph{library dialysis}, a novel dynamic-analysis technique specifically tailored to applications with many third-party libraries.
 Such library over-reliance is a recent trend in software engineering:
   applications today rely recursively on hundreds of libraries, to the point where code written by their nominal developers is becoming only a small fraction of their total line count.
-% On the surface, such reliance is beneficial, as it lowers development costs, aids targeted software testing, and enables code reuse;
+% On the surface, such reliance is beneficial, 
 Despite its benefits, such over-reliance creates many challenges for developers, exactly because their little knowledge of and visibility in the internals of these libraries:
   for example, security auditing and performance profiling---already challenging in monolithic applications---become extremely difficult in the presence of deeply-nested third-party code.
 
 To address these challenges, library dialysis is a general technique that allows extracting meaningful insights with only a few lines of analysis-specific code.
 This feature is achieved by automating dynamic \fra, \ana, and \ass of applications at the level of individual modules and during program execution, by wrapping and transforming the underlying dependency graph.
-Operating at this level of granularity has several benefits:
-  (i) it allows bolting library dialysis itself as a library onto existing runtime environments that do not feature dynamic analysis,
-  (ii) it supports analysis expressions directly in the same language, tools, and abstractions as the host application language---eschewing low-level instrumentation, and %developers can use their tools 
-  (iii) it features low performance overheads, to the point that has the potential to be used online.
-% FIXME: It depends on the analysis
-% Due to the in the host language and at a coarser granularity than full-fledged dynamic analysis, module dialysis 
-% Operating at the granularity of library has several benefits: (i) ease (ii) performance (iii) while still getting 
-%In a sense, modules are the right level of abstraction 
-
 Our dialysis prototype, \sys, targets the JavaScript ecosystem, which counts over 1M libraries and is used on the web, server, and mobile.
-We use a series of case-studies to motivate \sys's design, and demonstrate how \sys allows the analysis of both individual modules as well as multi-module application programs---all with a surprisingly   low developer effort and performance overhead:
+We use a series of case-studies to motivate \sys's design, and demonstrate how \sys allows the analysis of both individual modules as well as multi-module application programs---all with a surprisingly low developer effort and performance overhead:
   insightful analyses can be expressed in 10--20 lines of code, add a virtually imperceptible increase in the load latency of individual modules, and scale to real applications with hundreds of modules.
 
 % Module dialysis can be bolted on existing language runtime environments in a language-agnostic fashion 
@@ -98,74 +89,99 @@ We use a series of case-studies to motivate \sys's design, and demonstrate how \
 % Such modules can be part of third-party packages or of the language's standard library;
 %   the latter is important for resources that are part of the broader environment where the application is executing, such as the operating system and the network.
 
+% Operating at this level of granularity has several benefits:
+%   (i) it allows bolting library dialysis itself as a library onto existing runtime environments that do not feature dynamic analysis,
+%   (ii) it supports analysis expressions directly in the same language, tools, and abstractions as the host application language---eschewing low-level instrumentation, and %developers can use their tools 
+%   (iii) it features low performance overheads, to the point that has the potential to be used online.
+% % FIXME: It depends on the analysis
+% % Due to the in the host language and at a coarser granularity than full-fledged dynamic analysis, module dialysis 
+% % Operating at the granularity of library has several benefits: (i) ease (ii) performance (iii) while still getting 
+% %In a sense, modules are the right level of abstraction 
 \end{abstract}
 
 \section{Introduction}
 \label{intro}
 
 Dynamic analysis is a type of program analysis performed by (and while) executing a program, with the goal of extracting information about the program and its execution.
-Such information may include the ability to infer execution invariants, check security constraints, and extract performance characteristics (multiple citations).
-Contrary to other types of analysis, its key benefits make it primary candidate in a variety of scenarios---for example in scenarios that
-  (i) involve current and accurate runtime information in view of changing workloads or use patterns,
-  (ii) have full visibility into the current execution (no path explosion),
-  (iii) enforce Turing-complete execution policies, where the invariants themselves are arbitrary programs,
-  (iii) involve dynamic or interpreted programming languages---such as Ruby, Python, Lua, or JavaScript.
+Such information may include the ability to infer execution invariants, check security constraints, and extract performance characteristics~\cite{analysis:10}.
+Contrary to other types of analysis, its key benefits make it the primary (or only) candidate in a variety of scenarios---namely, ones that require:
+  (i) current runtime information, such as profiling information, in view of changing workloads or use patterns~\cite{staticdynamic},
+  (ii) accurate visibility into the execution, devoid of abstraction or approximation~\cite{staticdynamic},
+  (iii) Turing-complete policies, where invariants themselves are arbitrary programs~\cite{contracts1, contracts2, contracts3},
+  (iii) dynamic or runtime-reflection features~\cite{jsanalysis1, jsanalysis2}, such as the ones present in Python and JavaScript.
 
 % Where dynamic analysis shines is
 % Dynamic analysis occupies a clear spot in the space of analysis has clear strengths and weaknesses.
 % Examples of information not analyzable statically include runtime code evaluation, runtime introspection and reflection, as well as multi-lingual support.
 % Dynamic analysis is a particularly good fit for the analysis of dynamic languages.
 
-Unfortunately, however, reaping these benefits comes with significant overheads in terms of developer effort or runtime performance.
-One approach is to instrument the program requires an in-depth understanding of its internals and associated tools (\eg instruction set \etc).
-Another approach is to modify the runtime environment of the program---\eg JavaScript's V8 engine.
-Problem-specific solutions require significant investment outside the language's mental model and  
+Unfortunately, reaping these benefits comes with significant costs in terms of (often, both) developer effort and runtime performance.
+Instrumenting the program often requires a good understanding of its internals.
+Applying associated tools adds to this requirement, such as instrumentation framework, instruction sets, and other underlying primitives~\cite{pin, valgrind}.
+Modifying the runtime environment of the program is also cumbersome, error-prone, and JavaScript's V8 engine.
+Problem-specific solutions require significant investment outside the language's mental model---for example, performance tracing frameworks such as perf and dtrace each feature their own language for specifying tracing programs, different from the application's language.
+---as a case in point, Jalangi reports XX overhed (exact overheads always depend on the specific analysis).
 
+Both overheads are severely compounded by the use of third-party libraries, development-time constructs usually glued together without a full understanding of their internals.
+Libraries are used pervasively nowadays to lower development costs and improve software quality, a recent phenomenon enabled by zero-cost of sharing:
+% This over-reliance to third-party libraries is a recent phenomenon, 
+  with the proliferation of language-specific package repositories, the effort of publishing and that of using a library have essentially dropped to zero.
+As a result, applications today
+  to the point that it is common for thousands of applications to depend on libraries that count only a few dozen lines:
+  for example, leftpad and
+  
 This paper proposes a novel approach to dynamic analysis, termed \emph{module dialysis}\footnote{
-  A method of deconstruction, often for the purposes of removing waste products or component alteration.
+  A method of deconstruction, often for the purposes of removing waste products or altering piecewise components.
   From ancient Greek diá ($\delta\iota\alpha$ ``inter-, through'') and lúein (``loosen''); synchronically, dia- + -lysis.
 } and implemented in \sys.
-(i) at a somewhat coarser granularity, but still offering insights---and in a semantics-aware way tailored to the programming language.
-(ii) bolt on
-Our approach is applicable to any language that supports some notion of modularity, runtime introspection, and .
-It plugs into the module-loading capability of the runtime system to insert key hooks for inserting 
-After the parsing and interpretation phases of module loading complete, 
- which are then parsed and interpreted and 
-Surprisingly, as we show in this paper, this architecture requires \emph{no} modifications to the language runtime---that is, it is backward-compatible with vanilla unmodified language runtime environments.
+Library dialysis is a general technique, applicable to any programming language, that enables dynamic fragmentation, analysis, and re-assembly of applications at the level of individual libraries. 
+It operates during program execution, automating wrapping and transforming the underlying dependency graph, allowing developers to extract meaningful insights with only a few lines of analysis-specific code
+By operating at the granularity of libraries, module dialysis has several benefits over full-fledged dynamic analysis:
+  (i) it allows bolting library dialysis itself as a library onto existing runtime environments that do not feature dynamic analysis,
+  (ii) it supports analysis expressions directly in the same language, tools, and abstractions as the host application language---eschewing low-level instrumentation, and
+  (iii) it features significantly low runtime performance overheads, enabling the potential for toggling its use in production environments.
 
-Its key strategy is to fracture applications at the boundaries of modules, instrument their interfaces (including direct accesses) using meta-programming capabilities, and recombine them 
-By combining visiiblity into both built-in and third-party modules, \sys can get gather important information for 
-at a much lower cost---both in terms of runtime performance and developer effort.
+% (i) at a somewhat coarser granularity, but still offering insights---and in a semantics-aware way tailored to the programming language.
+% (ii) bolt on
+% Our approach is applicable to any language that supports some notion of modularity, runtime introspection, and .
+% It plugs into the module-loading capability of the runtime system to insert key hooks for inserting 
+% After the parsing and interpretation phases of module loading complete, 
+%  which are then parsed and interpreted and 
+% Surprisingly, as we show in this paper, this architecture requires \emph{no} modifications to the language runtime---that is, it is backward-compatible with vanilla unmodified language runtime environments.
+% 
+% Its key strategy is to fracture applications at the boundaries of modules, instrument their interfaces (including direct accesses) using meta-programming capabilities, and recombine them 
+% By combining visiiblity into both built-in and third-party modules, \sys can get gather important information for 
+% at a much lower cost---both in terms of runtime performance and developer effort.
+% 
+% % to enable module-aware dynamic analysis are general
+% To achieve this, module-aware dynamic analysis leverages several techniques.
+% It plugs into the module manager;
+% wraps interfaces
+% (i) bolt on, meaning
+% (ii) high-performance, and 
+% (iii) low effort 
+% 
+% As shown later, these capabilities are generally available in all dynamic programming languages---\eg 
 
-% to enable module-aware dynamic analysis are general
-To achieve this, module-aware dynamic analysis leverages several techniques.
-It plugs into the module manager;
-wraps interfaces
-(i) bolt on, meaning
-(ii) high-performance, and 
-(iii) low effort 
+To demonstrate the effectiveness of the proposed techniques, we build a prototype of library dialysis, called \sys, targeting the JavaScript ecosystem---featuring more than 1M libraries (cite), high code-reuse (cite), and a pressing need for usable dynamic analysis (cite).
+We develop a diverse set of four analyses that infer practical information about the analyzed program---including an allow/deny security analysis, a profiling analysis showing hot modules, a synthesis-oriented analysis on input-output data, and an analysis enforcing a static union-based type system at runtime.
+This set of analysis drives the design requirements for \sys and highlights the benefits of bolt-on module-aware dynamic analysis.
+Finally, we we use \sys to evaluate these analyses on three different levels:
+  (i) synthetic micro-benchmarks that highlight certain features and confirm the correctness of our analyses in a controlled environment;
+  (ii) single-module meso-benchmarks that allow comparison with more traditional dynamic analysis frameworks; and
+  (iii) end-to-end full-application macro-benchmarks that show behavior of the \sys system on realistic workloads. 
 
-As shown later, these capabilities are generally available in all dynamic programming languages---\eg 
-
-To demonstrate the effectiveness of our techniques, we
-  (i) build a prototype of module-aware dynamic analysis for server-side JavaScript, called \sys; and
-  (ii) develop a diverse set of analyses---including an allow/deny security analysis, a profiling analysis showing hot modules, a synthesis-oriented analysis on input-output data, and an analysis enforcing a static union-based type system at runtime.
-  (iii)  and use \sys to evaluate these analyses on three levels:
-    synthetic micro-benchmarks, that highlight certain features;
-    single-module meso-benchmarks, that allow comparison with other dynamic analysis tools; and
-    end-to-end full-application macro-benchmarks, that shows \sys's behavior of the system on realistic workloads. 
-\sys's implementation and evaluation drives the design requirements for \sys and highlights the benefits of bolt-on module-aware dynamic analysis.
-
-Our contributions, presented in \S\ref{bg}--\ref{impl} include:
+\S\ref{bg}--\ref{eval} present our key contributions:
 \begin{itemize}
-\item We characterize the shared needs of four case-study analyses~\sx{bg} for which an implementation from scratch would require a significant investment in terms of developer effort.
-\item We present the design of the bolt-on module-oriented dynamic analysis~\sx{design}, which meets the requirements of the four case-study analyses.
-\item We describe designs of four 
-\item We discuss our prototype implementation, \sys, as a pluggable library for the JavaScript ecosystem~\sx{impl}; our evaluation shows that \sys incurs minimal performance overheads over the respective baseline runtime.
+\item \S\ref{bg} characterizes the shared needs of four case-study analyses for which no prior dynamic analysis framework meets their needs.
+\item \S\ref{design} presents the design of the bolt-on module-oriented dynamic analysis~\sx{design}, which meets the requirements of the four case-study analyses.
+\item \S\ref{impl} discuss our prototype implementation, \sys, as a pluggable library for the JavaScript ecosystem;
+\item \S\ref{eval} implementation and evaluation of the four analyses, showing \sys can express insightful analyses in 10–20 lines of code, adds a virtually imperceptible increase in the load latency of individual modules, and scales to real applications with hundreds of modules.
 \end{itemize}
 
-Aside from the sections corresponding to these contributions (\S\ref{bg}--\ref{impl}), the paper discusses \sys's limitations and its application to other environments~\sx{diss};
-   it compares \sys with related prior work in the literature~\sx{rw}; and draws appropriate conclusions~\sx{end}.
+Aside from the aforementioned sections (\S\ref{bg}--\ref{impl}), the paper discusses \sys's limitations and its application to other languages~\sx{diss};
+  it compares with related prior work in the literature~\sx{rw};
+  and closes with appropriate conclusions~\sx{end}.
 
 
 \section{Background, Examples, and Goals}
