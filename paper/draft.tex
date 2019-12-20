@@ -42,12 +42,13 @@
 \date{}
 
 % make title bold and 14 pt font (Latex default is non-bold, 16 pt)
-\title{\Large \bf Module Dialysis with Lya}
+\title{\Large \bf Library Dialysis with Lya}
 
 %for single author (just remove % characters)
 \author{
 {\rm Anonymous Author(s)}\\
-Submission \#225, 12 pages; Additional Material:
+\normalsize{Submission \#225, 12 pages}\\
+\normalsize{Additional Anonymized Material: \href{https://git.io/JvfCf}{https://git.io/JvfCf}.}
 % {\rm Grigoris Ntousakis}\\
 % Technical University of Crete
 % \and
@@ -60,37 +61,31 @@ Submission \#225, 12 pages; Additional Material:
 \begin{abstract}
 
 This paper introduces \emph{library dialysis}, a novel dynamic-analysis technique specifically tailored to applications with many third-party libraries.
-The proliferation of third party libraries in applications is a recent trend in software engineering:
-Libraries are becoming the cornerstone of modern 
-  applications today rely on hundreds of libraries, to the point where code written by their nominal developers is becoming only a small fraction of their total line count.
+Such library over-reliance is a recent trend in software engineering:
+  applications today rely recursively on hundreds of libraries, to the point where code written by their nominal developers is becoming only a small fraction of their total line count.
 % On the surface, such reliance is beneficial, as it lowers development costs, aids targeted software testing, and enables code reuse;
-Despite its benefits, such over-reliance creates many challenges down the road, exactly because developers have little knowledge and understanding of each library's internals.
-For example, security auditing and performance profiling---which are already challenging for monolithic applications---become extremely difficult in the presence of deeply-nested third-party code.
+Despite its benefits, such over-reliance creates many challenges for developers, exactly because their little knowledge of and visibility in the internals of these libraries:
+  for example, security auditing and performance profiling---already challenging in monolithic applications---become extremely difficult in the presence of deeply-nested third-party code.
 
-To address these challenges, library dialysis enables dynamic fragmentation, analysis, and re-assembly of applications at the level of individual modules.
-One of its highlights is ease of deployment and use:
-  (i) bolted onto existing runtime environments as a library, by wrapping and transforming the underlying module system
-  (ii) allowing developers to extract information using the same abstractions as the host language---eschewing low-level instrumentation.
-Due to the in the host language and at a coarser granularity than full-fledged dynamic analysis, module dialysis has the potential of low performance overheads while still providing important information.
+To address these challenges, library dialysis is a general technique that allows extracting meaningful insights with only a few lines of analysis-specific code.
+This feature is achieved by automating dynamic \fra, \ana, and \ass of applications at the level of individual modules and during program execution, by wrapping and transforming the underlying dependency graph.
+Operating at this level of granularity has several benefits:
+  (i) it allows bolting library dialysis itself as a library onto existing runtime environments that do not feature dynamic analysis,
+  (ii) it supports analysis expressions directly in the same language, tools, and abstractions as the host application language---eschewing low-level instrumentation, and %developers can use their tools 
+  (iii) it features low performance overheads, to the point that has the potential to be used online.
+% FIXME: It depends on the analysis
+% Due to the in the host language and at a coarser granularity than full-fledged dynamic analysis, module dialysis 
+% Operating at the granularity of library has several benefits: (i) ease (ii) performance (iii) while still getting 
+%In a sense, modules are the right level of abstraction 
 
-Our dialysis prototype, \sys, targets the JavaScript ecosystem through the V8 runtime.
-We use a series of case-studies to motivate \sys's design, and demonstrate how \sys allows the analysis of both individual modules as well as multi-module application programs---all with a surprisingly   low developer effort.
-Experiments with \sys show that it adds a virtually imperceptible increase in the load latency of individual modules and that it scales well to real applications with hundreds of modules.
+Our dialysis prototype, \sys, targets the JavaScript ecosystem, which counts over 1M libraries and is used on the web, server, and mobile.
+We use a series of case-studies to motivate \sys's design, and demonstrate how \sys allows the analysis of both individual modules as well as multi-module application programs---all with a surprisingly   low developer effort and performance overhead:
+  insightful analyses can be expressed in 10--20 lines of code, add a virtually imperceptible increase in the load latency of individual modules, and scale to real applications with hundreds of modules.
 
-module-level analysis 
-
- and demonstrate how \sys provides high-performance by shadowing variables and transforming and wrapping values
-
-Module dialysis can be bolted on existing language runtime environments in a language-agnostic fashion 
-% By leveraging the ubiquity of third-party modules in today's applications
-Such modules can be part of third-party packages or of the language's standard library;
-  the latter is important for resources that are part of the broader environment where the application is executing, such as the operating system and the network.
-
-
-, all with minimal developer effort.
-As a result, 
-
-Our implementation, \sys, simplifies the analysis 
+% Module dialysis can be bolted on existing language runtime environments in a language-agnostic fashion 
+% % By leveraging the ubiquity of third-party modules in today's applications
+% Such modules can be part of third-party packages or of the language's standard library;
+%   the latter is important for resources that are part of the broader environment where the application is executing, such as the operating system and the network.
 
 \end{abstract}
 
@@ -205,6 +200,19 @@ framework that satisfies these goals
 
 \section{Module-aware Dynamic Analysis}
 \label{design}
+
+\subsection{Overview}
+
+At a high level, dialysis works at three stages:
+
+: Fracture the programs into shards — pieces
+of the programs that implement a computation or functionality. The granularity of the fracture determines
+the size of the shards. Potentially useful granularities
+include functions, procedures, classes, abstract data
+types, modules, loops, and program slices. Program
+fracture typically includes the encapsulation of each
+shard into its own separately invocable program for
+testing, analysis, and exploration.
 
 
 \section{Applications of Analysis}
