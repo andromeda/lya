@@ -1,128 +1,142 @@
 /* eslint-env mocha */
-lyaConfig = {
-  SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
-  analysisCh: 7,
-  POLICY: '/home/grigorisntousakis/Dropbox/thesis/lya/tst/working/repos/debug/debug-master/dynamic.json'
-};
-let lya = require("../../../../../src/txfm.js");
-require = lya.configRequire(require, lyaConfig);
+if (parseInt(process.env.npm_config_key) != 0) {
+	lyaConfig = {
+	SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
+	analysisCh: parseInt(process.env.npm_config_key),
+ 	POLICY: '../tst/working/repos/debug/debug-master/dynamic.json'
+	};
+	let lya = require("../../../../../src/txfm.js");
+	require = lya.configRequire(require, lyaConfig);
+}
+const time = process.hrtime();
+const fs = require('fs');
 
 const assert = require('assert');
 const debug = require('./src');
 
-describe('debug', () => {
-	it('passes a basic sanity check', () => {
-		const log = debug('test');
-		log.enabled = true;
-		log.log = () => {};
-
-		assert.doesNotThrow(() => log('hello world'));
-	});
-
-	it('allows namespaces to be a non-string value', () => {
-		const log = debug('test');
-		log.enabled = true;
-		log.log = () => {};
-
-		assert.doesNotThrow(() => debug.enable(true));
-	});
-
-	it('honors global debug namespace enable calls', () => {
-		assert.deepStrictEqual(debug('test:12345').enabled, false);
-		assert.deepStrictEqual(debug('test:67890').enabled, false);
-
-		debug.enable('test:12345');
-		assert.deepStrictEqual(debug('test:12345').enabled, true);
-		assert.deepStrictEqual(debug('test:67890').enabled, false);
-	});
-
-	it('uses custom log function', () => {
-		const log = debug('test');
-		log.enabled = true;
-
-		const messages = [];
-		log.log = (...args) => messages.push(args);
-
-		log('using custom log function');
-		log('using custom log function again');
-		log('%O', 12345);
-
-		assert.deepStrictEqual(messages.length, 3);
-	});
-
-	describe('extend namespace', () => {
-		it('should extend namespace', () => {
-			const log = debug('foo');
+for (var i = 0; i < 10; i++) {
+	describe('debug', () => {
+		it('passes a basic sanity check', () => {
+			const log = debug('test');
 			log.enabled = true;
-			log.log = () => {};
+			log.log = () => {};	
 
-			const logBar = log.extend('bar');
-			assert.deepStrictEqual(logBar.namespace, 'foo:bar');
-		});
+			assert.doesNotThrow(() => log('hello world'));
+		});	
 
-		it('should extend namespace with custom delimiter', () => {
-			const log = debug('foo');
+		it('allows namespaces to be a non-string value', () => {
+			const log = debug('test');
 			log.enabled = true;
-			log.log = () => {};
+			log.log = () => {};	
 
-			const logBar = log.extend('bar', '--');
-			assert.deepStrictEqual(logBar.namespace, 'foo--bar');
-		});
+			assert.doesNotThrow(() => debug.enable(true));
+		});	
 
-		it('should extend namespace with empty delimiter', () => {
-			const log = debug('foo');
-			log.enabled = true;
-			log.log = () => {};
+		it('honors global debug namespace enable calls', () => {
+			assert.deepStrictEqual(debug('test:12345').enabled, false);
+			assert.deepStrictEqual(debug('test:67890').enabled, false);	
 
-			const logBar = log.extend('bar', '');
-			assert.deepStrictEqual(logBar.namespace, 'foobar');
-		});
+			debug.enable('test:12345');
+			assert.deepStrictEqual(debug('test:12345').enabled, true);
+			assert.deepStrictEqual(debug('test:67890').enabled, false);
+		});	
 
-		it('should keep the log function between extensions', () => {
-			const log = debug('foo');
-			log.log = () => {};
+		it('uses custom log function', () => {
+			const log = debug('test');
+			log.enabled = true;	
 
-			const logBar = log.extend('bar');
-			assert.deepStrictEqual(log.log, logBar.log);
+			const messages = [];
+			log.log = (...args) => messages.push(args);	
+
+			log('using custom log function');
+			log('using custom log function again');
+			log('%O', 12345);	
+
+			assert.deepStrictEqual(messages.length, 3);
+		});	
+
+		describe('extend namespace', () => {
+			it('should extend namespace', () => {
+				const log = debug('foo');
+				log.enabled = true;
+				log.log = () => {};	
+
+				const logBar = log.extend('bar');
+				assert.deepStrictEqual(logBar.namespace, 'foo:bar');
+			});	
+
+			it('should extend namespace with custom delimiter', () => {
+				const log = debug('foo');
+				log.enabled = true;
+				log.log = () => {};	
+
+				const logBar = log.extend('bar', '--');
+				assert.deepStrictEqual(logBar.namespace, 'foo--bar');
+			});	
+
+			it('should extend namespace with empty delimiter', () => {
+				const log = debug('foo');
+				log.enabled = true;
+				log.log = () => {};	
+
+				const logBar = log.extend('bar', '');
+				assert.deepStrictEqual(logBar.namespace, 'foobar');
+			});	
+
+			it('should keep the log function between extensions', () => {
+				const log = debug('foo');
+				log.log = () => {};	
+
+				const logBar = log.extend('bar');
+				assert.deepStrictEqual(log.log, logBar.log);
+			});
+		});	
+
+		describe('rebuild namespaces string (disable)', () => {
+			it('handle names, skips, and wildcards', () => {
+				debug.enable('test,abc*,-abc');
+				const namespaces = debug.disable();
+				assert.deepStrictEqual(namespaces, 'test,abc*,-abc');
+			});	
+
+			it('handles empty', () => {
+				debug.enable('');
+				const namespaces = debug.disable();
+				assert.deepStrictEqual(namespaces, '');
+				assert.deepStrictEqual(debug.names, []);
+				assert.deepStrictEqual(debug.skips, []);
+			});	
+
+			it('handles all', () => {
+				debug.enable('*');
+				const namespaces = debug.disable();
+				assert.deepStrictEqual(namespaces, '*');
+			});	
+
+			it('handles skip all', () => {
+				debug.enable('-*');
+				const namespaces = debug.disable();
+				assert.deepStrictEqual(namespaces, '-*');
+			});	
+
+			//it('names+skips same with new string', () => {
+	//			debug.enable('test,abc*,-abc');
+	//			const oldNames = [...debug.names];
+	//			const oldSkips = [...debug.skips];
+	//			const namespaces = debug.disable();
+	//			assert.deepStrictEqual(namespaces, 'test,abc*,-abc');
+	//			debug.enable(namespaces);
+	//			assert.deepStrictEqual(oldNames.map(String), debug.names.map(String));
+	//			assert.deepStrictEqual(oldSkips.map(String), debug.skips.map(String));
+	//		});
 		});
 	});
+}
 
-	describe('rebuild namespaces string (disable)', () => {
-		it('handle names, skips, and wildcards', () => {
-			debug.enable('test,abc*,-abc');
-			const namespaces = debug.disable();
-			assert.deepStrictEqual(namespaces, 'test,abc*,-abc');
-		});
+const diff = process.hrtime(time);
+const thisTime = (diff[0] * 1e9 + diff[1]) * 1e-6;
+var logger = fs.createWriteStream('timetest.txt', {
+  flags: 'a' // 'a' means appending (old data will be preserved)
+})
+logger.write('The time of ' + parseInt(process.env.npm_config_key) + ' is ' + thisTime + ' \n', 'utf-8');
 
-		it('handles empty', () => {
-			debug.enable('');
-			const namespaces = debug.disable();
-			assert.deepStrictEqual(namespaces, '');
-			assert.deepStrictEqual(debug.names, []);
-			assert.deepStrictEqual(debug.skips, []);
-		});
-
-		it('handles all', () => {
-			debug.enable('*');
-			const namespaces = debug.disable();
-			assert.deepStrictEqual(namespaces, '*');
-		});
-
-		it('handles skip all', () => {
-			debug.enable('-*');
-			const namespaces = debug.disable();
-			assert.deepStrictEqual(namespaces, '-*');
-		});
-
-		//it('names+skips same with new string', () => {
-//			debug.enable('test,abc*,-abc');
-//			const oldNames = [...debug.names];
-//			const oldSkips = [...debug.skips];
-//			const namespaces = debug.disable();
-//			assert.deepStrictEqual(namespaces, 'test,abc*,-abc');
-//			debug.enable(namespaces);
-//			assert.deepStrictEqual(oldNames.map(String), debug.names.map(String));
-//			assert.deepStrictEqual(oldSkips.map(String), debug.skips.map(String));
-//		});
-	});
-});
