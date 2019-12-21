@@ -355,8 +355,8 @@ As an example, consider transforming the \ttt{crypto} module~\sx{solution}.
 
 
 
-\section{Applications of Analysis}
-\label{apps}
+% \section{Applications of Analysis}
+% \label{apps}
 
 
 \section{Implementation: Lya}
@@ -536,13 +536,80 @@ They conveniently unify module identification with interposition: % used for per
 
 \section{Related Work}
 \label{rw}
-Some citations to ensure we can see them~\cite{Christophe:2015:DAU:2819009.2819180, Keil:2013:EDA:2508168.2508176, Lehmann:2019:WFD:3297858.3304068, Sun:2018:EDA:3178372.3179527}.
+
+Existing dynamic analysis frameworks can be classified either as coarse- or fine-grained.
+The former analyze interactions at the boundaries of entire components, whereas the latter associate metadata at the level of individual instructions or objects.
+We compare \sys to previously proposed systems in both categories, then contrast the two categories' overall characteristics.
+
+\heading{Heavyweight instrumentation}
+There is a series of heavyweight dynamic analysis frameworks.
+Popular frameworks include
+  Valgrind~\cite{valgrind} and Pin~\cite{pin} for native programs,
+  DiSL~\cite{disl} and RoadRunner~\cite{roadrunner} for JVM byte code,
+  Jalangi~\cite{jalangi} for JavaScript programs, and,
+  most recently, Wasabi~\cite{wasabi} for Web-Assembly.
+
+The approach advocated by \sys is to throw a quick-and-easy analysis at the module boundaries
+
+Jalangi is the most relevant of these frameworks, and served as an inspiration 
+
+
+\heading{Dynamic Analysis for WebAssembly}
+Related to JavaScript is WebAssembly, a standardized subset of JavaScript target ideal as a compilation target.
+Two techniques modify V8
+
+Wasabi is a framework for dynamic analysis of WebAssembly.
+Similar to \sys, it succeeds at lowering the effort required to write analyses, 
+and provides hooks for observation rather than manipulation
+Contrary to \sys, Wasabi instruments binaries statically, \ie ahead-of-time, and aims on heavyweight instrumentation.
+
+; even more similarly, it allows expressing analyses in JavaScript.
+Prior work has modified 
+
+
+Some citations to ensure we can see them~\cite{javascript1, javascript2, javascript3}.
+
+\heading{Dynamic Instrumentation}
+Dialysis is related to dynamic binary instrumentation frameworks that wrap parts of the program to extract information.
+Many such frameworks translate basic blocks of the program just before their execution;
+  \sys starts with a phase that wraps (equivalent to instrumenting) a library during import, adding a small overhead at the loading time of each library.
+The overhead of this phase is only a small fraction of the time required to locate and load the module from disk.
+
+
+\heading{Program Transformations}
+% Add our work
+Module dialysis builds on aspect-oriented programming (AOP), a programming model that maps program points to actions to be taken at these points~\cite{aop}.
+Both approaches lower complexity by mapping multiple points across the program to the same actions, but dialysis does not alter the program's control flow.
+Moreover, AOP works on languages that were already designed to support it, whereas module dialysis was explicitly designed to bolt onto existing languages and environments.
+
+More generally AOP is related to metaobjects~\cite{metaobject}, objects that manipulate object structure and which enable a program to access to its own internal structure, including rewriting itself as it executes.
+They are examples of runtime reflection, of which \sys makes extensive use to traverse, understand, wrap, and rewrite interfaces.
+With \sys, however, developers do not need to provide their own metaobjects.
+% self element
+
+\heading{Fracture and Recombination}
+Module dialysis draws inspiration directly from program fracture and recombination (PFR)~\cite{fracture1, fracture3}, a line of work less tied to program analysis and more towards program synthesis and automated patch generation.
+PFR breaks up multiple programs into multiple components (called shards) with the goal of exchanging functionality between donor-donee pairs of programs.
+Module dialysis operates on single programs, avoids breaking semantics, and leverages the existence of components with (mostly) explicit boundaries, in the guise of libraries or modules.
 
 \section{Conclusion}
 \label{end}
 
+Recent trends in software engineering have led to unprecedented levels of third-party code re-use.
+Applications today routinely pull together hundreds of libraries, making their analysis difficult 
+
+due to the very same abstraction and modularity principles that have benefited software engineering for decades.
+
+security auditing and performance profiling---already challenging in monolithic applications---become extremely difficult in the presence of deeply-nested third-party code.
+
+This paper introduces \emph{module dialysis}, an approach 
+corser
+approach towards coarse-grained
+This is achieved using a set of programmatic \emph{transformations} parametrizable by optional \emph{distribution recipes}.
+These operate at module boundaries during runtime to collect profiling information, detect bottlenecked components, and dynamically separate and coalesce parts of the application.
+
 % \section*{Acknowledgments}
-% 
+% Martin
 % \section*{Availability}
 
 \bibliographystyle{plain}
