@@ -7,12 +7,15 @@
 \usepackage{xspace}
 \usepackage{color}
 \usepackage{booktabs}
-\usepackage{caption}
 \usepackage{graphicx}
 
+\usepackage{caption}
 \captionsetup[figure]{font=footnotesize,name={Fig.},labelfont={bf, footnotesize}}
 \captionsetup[table]{font=footnotesize,name={Tab.},labelfont={bf, footnotesize}, skip=2pt, aboveskip=2pt}
 \captionsetup{font=footnotesize,labelfont={bf, footnotesize}, belowskip=2pt}
+
+\usepackage{enumitem}
+\setlist{noitemsep,leftmargin=10pt,topsep=2pt,parsep=2pt,partopsep=2pt}
 
 \def\omit#1{}
 \def\eg{{\em e.g.}, }
@@ -127,14 +130,14 @@ Their ubiquity is a recent phenomenon enabled by zero-cost code sharing~\cite{li
 % Libraries are used pervasively today to lower development costs and improve software quality, 
 % This over-reliance to third-party libraries is a recent phenomenon, 
   with the proliferation of language-specific package repositories, the effort of publishing and that of using a library are essentially zero.
-As a result, applications frequently count hundreds of libraries, each often containing only a few lines of code~\cite{}. % how to say thousands of them depend on a 11-line lib?
+As a result, applications frequently count hundreds of libraries, each often containing only a few lines of code~\cite{leftpad, npmstudy:19}. % how to say thousands of them depend on a 11-line lib?
 Library-oriented analysis adds to the challenges of prior tools as
   (i) library boundaries disappear at runtime, and
   (ii) coarse-grained, high-level language semantics misalign with fine-grained, low-level instrumentation.
 
 To address these challenges, we propose a novel approach to dynamic analysis, termed \emph{dialysis}\footnote{
   A method of deconstruction into elements often for the purposes of removing waste products or altering piecewise components.
-  From ancient Greek diá ($\delta\iota\alpha$ ``inter-, through'') and lúein (``loosen''); synchronically, dia- + -lysis.
+  From ancient Greek {\scriptsize $\delta\iota\acute{\alpha}$} (di\'{a}, ``inter-, through'') and {\scriptsize $\lambda\acute{\tilde{\upsilon}}\epsilon\iota\nu$} (lúein, ``to loosen'').
 } and implemented in \sys.
 Program dialysis is a general technique, applicable to any programming language, that enables dynamic fragmentation, analysis, and re-assembly of applications at the level of individual libraries. 
 It operates during program execution, automating wrapping and transformation of the program's dependency graph, and allowing developers to extract meaningful insights with only a few lines of analysis-specific code
@@ -165,16 +168,20 @@ By operating at the granularity of libraries, dialysis has several benefits over
 % 
 % As shown later, these capabilities are generally available in all dynamic programming languages---\eg 
 
-To demonstrate its effectiveness, we evaluate \sys on the JavaScript ecosystem with over 1M libraries (cite), high code-reuse (cite), and a pressing need for usable dynamic analysis (cite).
-We develop a diverse set of analyses that infer practical information about the analyzed program---including an allow/deny security analysis, a profiling analysis showing bottlenecked modules, a synthesis-oriented analysis on input-output data, and an analysis enforcing a static union-based type system at runtime.
-This set of analysis drives the design requirements for \sys and highlights the benefits of our approach.
-Finally, we use \sys to evaluate these analyses on three different levels:
+To demonstrate its effectiveness, we evaluate \sys on the JavaScript ecosystem (>1.2M libraries~\cite{modulecounts}). % and unusually high code-reuse~\cite{npmstudy:19}. %, and a pressing need for usable dynamic analysis~\cite{}.
+We develop a diverse set of analyses that target practical information about a program:
+  an allow/deny security analysis,
+  a profiling analysis showing bottlenecked modules,
+  a synthesis-oriented analysis on input-output data, and
+  an analysis enforcing a static union-based type system at runtime.
+This set of analyses drives the design requirements for \sys, and highlights dialysis as a middle ground between coarse- and fine-grained analysis.
+We evaluate \sys at three different levels:
   (i) synthetic micro-benchmarks that test certain aspects and confirm the correctness of our analyses in a controlled environment;
   (ii) single-module meso-benchmarks that allow comparison with dynamic analysis frameworks; and
   (iii) end-to-end full-application macro-benchmarks that show behavior of \sys on realistic workloads. 
 \S\ref{bg}--\ref{eval} present our key contributions:
 \begin{itemize}
-\item \S\ref{bg} characterizes the shared needs of four case-study analyses for which no prior dynamic analysis framework meets their needs.
+\item \S\ref{bg} characterizes the shared needs of four case-study multi-module analyses whose needs remain mostly unmet by general-purpose analysis frameworks.
 \item \S\ref{design} presents the design of the bolt-on module-oriented dynamic analysis~\sx{design}, which meets the requirements of the four case-study analyses.
 \item \S\ref{impl} discusses our implementation, \sys, as a pluggable library for the JavaScript ecosystem, as well as the implementation of the four analyses.
 \item \S\ref{eval} evaluates \sys showing it expresses insightful analyses succinctly, adds minimal overheads over the baseline runtime, and scales to hundreds of modules.
@@ -189,10 +196,15 @@ Aside from the aforementioned sections (\S\ref{bg}--\ref{impl}), the paper discu
 \label{bg}
 
 A single application today often incorporates multiple libraries\footnote{We use the terms ``library'', ``package'', and ``module'' interchangeably.} written and published by several different authors.
-The emerging development process should (and to a certain extent, does) simplify the development and testing process;
-  unfortunately, good abstractions are sealed (\ie they do not leak between abstraction layers), which makes the inspection of a library difficult.
+To make the difficulties of analyzing such library-overreliant more concrete, we describe several example analysis that are often needed by the authors of third-party libraries.
+These examples illustrate key requirements for the design of a framework for analyzing applications at the boundaries of modules.
+Before describing these examples, however, we offer a brief refresher on the abstractions and corresponding internals of module systems~\sx{bg1}.
 
-\subsection{Modularity Today}
+% The emerging development process should (and to a certain extent, does) simplify the development and testing process;
+%   unfortunately, good abstractions are sealed (\ie they do not leak between abstraction layers), which makes the inspection of a library difficult.
+
+\subsection{Background on Modules and Module Systems}
+\label{bg1}
 
 languages provide module systems
 
