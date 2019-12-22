@@ -1,23 +1,23 @@
-lyaConfig = {
-  SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
-  analysisCh: 5,
-};
-
-let lya = require("../../../../../src/txfm.js");
-require = lya.configRequire(require, lyaConfig);
-
+if (parseInt(process.env.key) != 0) {
+	lyaConfig = {
+	SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
+	analysisCh: parseInt(process.env.key),
+	removejson: ['hasOwnProperty'],
+	};
+	let lya = require("../../../../src/txfm.js");
+	require = lya.configRequire(require, lyaConfig);
+}
+const time = process.hrtime();
+const fs = require('fs');
 /// <reference path="../moment.d.ts" />
+
 const moment = require('moment');
-moment.suppressDeprecationWarnings = true;
-
-moment.parseTwoDigitYear("50");
-
-moment().add('hours', 1).fromNow();
-
+moment.suppressDeprecationWarnings = true;	
+moment.parseTwoDigitYear("50");	
+moment().add('hours', 1).fromNow();	
 var day = new Date(2011, 9, 16);
 var dayWrapper = moment(day);
-var otherDay = moment(new Date(2020, 3, 7));
-
+var otherDay = moment(new Date(2020, 3, 7));	
 var day1 = moment(1318781876406);
 var day2 = moment.unix(1318781876);
 var day3 = moment("Dec 25, 1995");
@@ -31,8 +31,7 @@ var day9 = moment([2010, 6]);
 var day10 = moment([2010, 6, 10]);
 var array = [2010, 1, 14, 15, 25, 50, 125];
 var day11 = moment(Date.UTC.apply({}, array));
-var day12 = moment.unix(1318781876);
-
+var day12 = moment.unix(1318781876);	
 // TODO: reenable in 2.0
 // moment(null);
 moment(undefined);
@@ -42,27 +41,23 @@ moment("20140101", "YYYYMMDD", "en");
 moment("20140101", "YYYYMMDD", "en", true);
 moment("20140101", ["YYYYMMDD"], true);
 moment("20140101", ["YYYYMMDD"], "en");
-moment("20140101", ["YYYYMMDD"], "en", true);
-
+moment("20140101", ["YYYYMMDD"], "en", true);	
 moment(day.toISOString(), moment.ISO_8601);
 moment(day.toISOString(), moment.ISO_8601, true);
 moment(day.toISOString(), moment.ISO_8601, "en", true);
 moment(day.toISOString(), [moment.ISO_8601]);
 moment(day.toISOString(), [moment.ISO_8601], true);
-moment(day.toISOString(), [moment.ISO_8601], "en", true);
-
+moment(day.toISOString(), [moment.ISO_8601], "en", true);	
 moment(day.toUTCString(), moment.RFC_2822);
 moment(day.toUTCString(), moment.RFC_2822, true);
 moment(day.toUTCString(), moment.RFC_2822, "en", true);
 moment(day.toUTCString(), [moment.RFC_2822]);
 moment(day.toUTCString(), [moment.RFC_2822], true);
-moment(day.toUTCString(), [moment.RFC_2822], "en", true);
-
+moment(day.toUTCString(), [moment.RFC_2822], "en", true);	
 var a = moment([2012]);
 var b = moment(a);
 a.year(2000);
-b.year(); // 2012
-
+b.year(); // 2012	
 moment.utc();
 moment.utc(12345);
 moment.utc([12, 34, 56]);
@@ -75,22 +70,18 @@ moment.utc("1-2-3", "3-2-1", "en", true);
 moment.utc("01-01-2014", ["DD-MM-YYYY", "MM-DD-YYYY"]);
 moment.utc("01-01-2014", ["DD-MM-YYYY", "MM-DD-YYYY"], true);
 moment.utc("01-01-2014", ["DD-MM-YYYY", "MM-DD-YYYY"], "en");
-moment.utc("01-01-2014", ["DD-MM-YYYY", "MM-DD-YYYY"], "en", true);
-
+moment.utc("01-01-2014", ["DD-MM-YYYY", "MM-DD-YYYY"], "en", true);	
 var a2 = moment.utc([2011, 0, 1, 8]);
 a.hours();
 a.local();
-a.hours();
-
+a.hours();	
 moment("2011-10-10", "YYYY-MM-DD").isValid();
 moment("2011-10-50", "YYYY-MM-DD").isValid();
 moment("2011-10-10T10:20:90").isValid();
 moment([2011, 0, 1]).isValid();
 moment([2011, 0, 50]).isValid();
-moment("not a date").isValid();
-
-moment().add('days', 7).subtract('months', 1).year(2009).hours(0).minutes(0).seconds(0);
-
+moment("not a date").isValid();	
+moment().add('days', 7).subtract('months', 1).year(2009).hours(0).minutes(0).seconds(0);	
 moment().add('days', 7);
 moment().add('days', 7).add('months', 1);
 moment().add({days:7,months:1});
@@ -105,18 +96,13 @@ var m2 = moment(new Date(2011, 2, 12, 5, 0, 0));
 m2.hours();
 m2.add('hours', 24).hours();
 var duration = moment.duration({'days': 1});
-moment([2012, 0, 31]).add(duration);
-
+moment([2012, 0, 31]).add(duration);	
 moment().add('seconds', 1);
-moment().add(1, 'seconds');
-
-moment().add('1', 'seconds');
-
-moment().subtract('days', 7);
-
+moment().add(1, 'seconds');	
+moment().add('1', 'seconds');	
+moment().subtract('days', 7);	
 moment().seconds(30);
-moment().minutes(30);
-
+moment().minutes(30);	
 moment().hours(12);
 moment().date(5);
 moment().day(5);
@@ -145,8 +131,7 @@ moment().isoWeek(45);
 moment().isoWeeks();
 moment().isoWeeks(45);
 moment().dayOfYear();
-moment().dayOfYear(45);
-
+moment().dayOfYear(45);	
 moment().set('year', 2013);
 moment().set('month', 3);  // April
 moment().set('date', 1);
@@ -154,8 +139,7 @@ moment().set('hour', 13);
 moment().set('minute', 20);
 moment().set('second', 30);
 moment().set('millisecond', 123);
-moment().set({'year': 2013, 'month': 3});
-
+moment().set({'year': 2013, 'month': 3});	
 var getMilliseconds= moment().milliseconds();
 var getSeconds = moment().seconds();
 var getMinutes = moment().minutes();
@@ -164,58 +148,46 @@ var getDate = moment().date();
 var getDay = moment().day();
 var getMonth = moment().month();
 var getQuater = moment().quarter();
-var getYear = moment().year();
-
-moment().hours(0).minutes(0).seconds(0).milliseconds(0);
-
+var getYear = moment().year();	
+moment().hours(0).minutes(0).seconds(0).milliseconds(0);	
 var a3 = moment([2011, 0, 1, 8]);
 a3.hours();
 a3.utc();
-a3.hours();
-
+a3.hours();	
 var a4 = moment([2010, 1, 14, 15, 25, 50, 125]);
 a4.format("dddd, MMMM Do YYYY, h:mm:ss a");
-a4.format("ddd, hA");
-
+a4.format("ddd, hA");	
 moment().format('\\L');
-moment().format('[today] DDDD');
-
+moment().format('[today] DDDD');	
 var a5 = moment([2007, 0, 29]);
 var b5 = moment([2007, 0, 28]);
-a5.from(b5);
-
+a5.from(b5);	
 var a6 = moment([2007, 0, 29]);
 var b6 = moment([2007, 0, 28]);
 a6.from(b6);
 a6.from([2007, 0, 28]);
 a6.from(new Date(2007, 0, 28));
-a6.from("1-28-2007");
-
+a6.from("1-28-2007");	
 var a7 = moment();
 var b7 = moment("10-10-1900", "MM-DD-YYYY");
-a7.from(b7);
-
+a7.from(b7);	
 var start = moment([2007, 0, 5]);
 var end = moment([2007, 0, 10]);
 start.from(end);
-start.from(end, true);
-
+start.from(end, true);	
 moment([2007, 0, 29]).fromNow();
 moment([2007, 0, 29]).fromNow();
-moment([2007, 0, 29]).fromNow(true);
-
+moment([2007, 0, 29]).fromNow(true);	
 var a8 = moment([2007, 0, 29]);
 var b8 = moment([2007, 0, 28]);
 a8.diff(b8) ;
 a8.diff(b8, 'days');
 a8.diff(b8, 'years')
-a8.diff(b8, 'years', true);
-
+a8.diff(b8, 'years', true);	
 moment.min([a8, b8]);
 moment.min(a8, b8);
 moment.max([a8, b8]);
-moment.max(a8, b8);
-
+moment.max(a8, b8);	
 moment([2007, 0, 29]).toDate();
 moment([2007, 1, 23]).toISOString();
 moment(1318874398806).valueOf();
@@ -224,32 +196,25 @@ moment([2000]).isLeapYear();
 moment().zone();
 moment().utcOffset();
 moment("2012-2", "YYYY-MM").daysInMonth();
-moment([2011, 2, 12]).isDST();
-
+moment([2011, 2, 12]).isDST();	
 moment.isMoment(new Date());
-moment.isMoment(moment());
-
+moment.isMoment(moment());	
 moment.isDate(new Date());
-moment.isDate(/regexp/);
-
+moment.isDate(/regexp/);	
 moment.isDuration(new Date());
-moment.isDuration(moment.duration());
-
+moment.isDuration(moment.duration());	
 moment().isBetween(moment(), moment());
 moment().isBetween(new Date(), new Date());
 moment().isBetween([1,1,2000], [1,1,2001], "year");
-moment().isBetween([1,1,2000], [1,1,2001], null, "()");
-
+moment().isBetween([1,1,2000], [1,1,2001], null, "()");	
 moment.localeData('fr');
-moment(1316116057189).fromNow();
-
+moment(1316116057189).fromNow();	
 moment.localeData('en');
 var globalLang = moment();
 var localLang = moment();
 localLang.localeData();
 localLang.format('LLLL');
-globalLang.format('LLLL');
-
+globalLang.format('LLLL');	
 // TODO: reenable in 2.0
 // moment.duration(null);
 moment.duration(undefined);
@@ -282,24 +247,20 @@ moment.duration(500).asSeconds();
 moment.duration().minutes();
 moment.duration().asMinutes();
 moment.duration().toISOString();
-moment.duration().toJSON();
-
+moment.duration().toJSON();	
 var adur = moment.duration(3, 'd');
 var bdur = moment.duration(2, 'd');
 adur.subtract(bdur).days();
 adur.subtract(1).days();
-adur.subtract(1, 'd').days();
-
+adur.subtract(1, 'd').days();	
 // Selecting a language
 moment.locale();
 moment.locale('en');
-moment.locale(['en', 'fr']);
-
+moment.locale(['en', 'fr']);	
 // TODO: Reenable in 2.0
 // moment.defineLocale('en', null);
 // moment.updateLocale('en', null);
-// moment.locale('en', null);
-
+// moment.locale('en', null);	
 // Defining a custom language:
 moment.locale('en', {
     months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
@@ -363,15 +324,13 @@ moment.locale('en', {
         dow: 1,
         doy: 4
     }
-});
-
+});	
 moment.locale('en', {
     months : [
         "January", "February", "March", "April", "May", "June", "July",
         "August", "September", "October", "November", "December"
     ]
-});
-
+});	
 moment.locale('en', {
     months : function (momentToFormat, format) {
         momentToFormat = momentToFormat || moment.Moment;
@@ -384,15 +343,13 @@ moment.locale('en', {
             return this.subjective[momentToFormat.month()];
         }
     }
-});
-
+});	
 moment.locale('en', {
     monthsShort : [
         "Jan", "Feb", "Mar", "Apr", "May", "Jun",
         "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
     ]
-});
-
+});	
 moment.locale('en', {
     monthsShort : function (momentToFormat, format) {
         momentToFormat = momentToFormat || moment.Moment;
@@ -402,43 +359,36 @@ moment.locale('en', {
             return this.subjective[momentToFormat.month()];
         }
     }
-});
-
+});	
 moment.locale('en', {
     weekdays : [
         "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
     ]
-});
-
+});	
 moment.locale('en', {
     weekdays : function (momentToFormat) {
         momentToFormat = momentToFormat || moment.Moment;
         return this.weekdays[momentToFormat.day()];
     }
-});
-
+});	
 moment.locale('en', {
     weekdaysShort : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-});
-
+});	
 moment.locale('en', {
     weekdaysShort : function (momentToFormat) {
       momentToFormat = momentToFormat || moment.Moment;
         return this.weekdaysShort[momentToFormat.day()];
     }
-});
-
+});	
 moment.locale('en', {
     weekdaysMin : ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"]
-});
-
+});	
 moment.locale('en', {
     weekdaysMin : function (momentToFormat) {
 momentToFormat = momentToFormat ||  moment.Moment;
         return this.weekdaysMin[momentToFormat.day()];
     }
-});
-
+});	
 moment.locale('en', {
     longDateFormat : {
         LTS: "h:mm:ss A",
@@ -452,8 +402,7 @@ moment.locale('en', {
         LLLL: "dddd, MMMM Do YYYY LT",
         llll: "ddd, MMM D YYYY LT"
     }
-});
-
+});	
 moment.locale('en', {
     longDateFormat : {
         LTS: "h:mm A",
@@ -463,8 +412,7 @@ moment.locale('en', {
         LLL: "MMMM Do YYYY LT",
         LLLL: "dddd, MMMM Do YYYY LT"
     }
-});
-
+});	
 moment.locale('en', {
     relativeTime : {
         future: "in %s",
@@ -482,8 +430,7 @@ moment.locale('en', {
         y:  "a year",
         yy: "%d years"
     }
-});
-
+});	
 moment.locale('en', {
     meridiem : function (hour, minute, isLowercase) {
         if (hour < 9) {
@@ -498,8 +445,7 @@ moment.locale('en', {
             return "晚上";
         }
     }
-});
-
+});	
 moment.locale('en', {
     calendar : {
         lastDay : '[Yesterday at] LT',
@@ -511,8 +457,7 @@ moment.locale('en', {
         nextWeek : 'dddd [at] LT',
         sameElse : 'L'
     }
-});
-
+});	
 moment.locale('en', {
     ordinal : function (number) {
         var b = number % 10;
@@ -522,8 +467,13 @@ moment.locale('en', {
             (b === 3) ? 'rd' : 'th';
         return number + output;
     }
-});
-
+});	
 console.log(moment.version);
-
 moment.defaultFormat = 'YYYY-MM-DD HH:mm';
+
+const diff = process.hrtime(time);
+const thisTime = (diff[0] * 1e9 + diff[1]) * 1e-6;
+var logger = fs.createWriteStream('timetest.txt', {
+  flags: 'a' // 'a' means appending (old data will be preserved)
+})
+logger.write('The time of ' + parseInt(process.env.key) + ' is ' + thisTime + ' \n', 'utf-8');
