@@ -1,8 +1,5 @@
-// env is {
-//   trueName : trueName,
-//   requireLevel : requireLevel,
-//   accessMatrix: accessMatrix,
-// }
+// This is the policy for true false analysis. Each time we access a variable
+// or a function we write it with true in a export file dynamic.json 
 let locEnv;
 
 // Holds the end of each name store of new assigned global variables

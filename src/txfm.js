@@ -1,6 +1,8 @@
 /* eslint prefer-rest-params: "off", no-global-assign: "off",
 no-shadow-restricted-names: "off" */
-//let lyaConfig= {};
+
+// We use this global value to know if the program has ended or not
+// necessary for enforcement analysis(5, 7) 
 global.end= false;
 
 // We import and declare all the necessary modules
@@ -57,6 +59,8 @@ const env = {
 // 3) Time Analysis
 // 4) Time Analysis2.0
 // 5) Enforcement Analysis
+// 6) RWE Analysis
+// 7) RWE Enforcement
 let userChoice = (lyaConfig.analysisCh && [1, 2, 3, 4, 5, 6, 7].includes(lyaConfig.analysisCh))? lyaConfig.analysisCh : 1
 
 // You import the right policy depenting on the choice
@@ -72,6 +76,7 @@ const mainRequire = (original) => {
   return new Proxy(original, policy.require);
 };
 
+// TOFIX:
 // We incriment and declare the ness things
 // This is for the handlerObjExport
 const exportControl = (storedCalls, truename) => {
@@ -105,14 +110,16 @@ const handlerAddArg= {
   },
 };
 
-// We first wrap the export obj so that we avoid to
-// print functions that are not called by us
-//
+// TODO: 
 // require('fs);
 // fs.openSync(pizza);
 // fs.read(katiAllo);
 //
 // fs.read () => {... fs.resolve(...) ... return...}
+
+// We first wrap the export obj. Every time someone requires 
+// a function or an object from inside export obj we wrap it 
+// in the right handler(in our case handlerExports).
 const handlerObjExport= {
   get: function(target, name, receiver) {
     if (typeof target[name] != 'undefined' && typeof name === 'string') { // + udnefined
@@ -350,6 +357,8 @@ vm.runInThisContext = function(code, options) {
 Module.prototype.require = function(...args) {
   const path = args[0];
   let result = originalRequire.apply(this, args);
+  // If false that means that we pass from here for the 
+  // first time.
   if ( objName.has(result) === false ) {
     objName.set(result, 'require(\'' + path + '\')');
     objPath.set(result, trueName[requireLevel]);
@@ -358,7 +367,6 @@ Module.prototype.require = function(...args) {
       requireLevel--;
       policy.updateCounter(requireLevel);
     }
-    //if (policy.requireLevel !=0) policy.requireLevel--;
   } else {
     result = new Proxy(result, handlerObjExport);
     objName.set(result, 'require(\'' + path + '\')');
@@ -367,7 +375,9 @@ Module.prototype.require = function(...args) {
   return result;
 };
 
-// We print all the results on the end of the program
+// We print all the results on the end of the program only if we dont
+// use it for enforcement analysis(5, 7) cause we dont want to
+// print anything.
 process.on('exit', function() {
   global.end = true;
   if (lyaConfig.SAVE_RESULTS && userChoice != 5 && userChoice != 7) {

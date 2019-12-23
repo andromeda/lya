@@ -1,8 +1,5 @@
-// env is {
-//   trueName : trueName,
-//   requireLevel : requireLevel,
-//   accessMatrix: accessMatrix,
-// }
+// This is the policy for counter analysis. Each time we access a variable
+// or a function we increment a counter in a export file dynamic.json 
 let locEnv;
 
 // Holds the end of each name store of new assigned global variables
