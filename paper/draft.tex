@@ -292,30 +292,36 @@ The static type system is defined as a variant of a simply-typed lambda calculus
 \subsection{Design Goals}
 
 We have briefly introduced four motivating analyses for extracting information about an application's dependencies.
-While the challenges behind these analyses share several characteristics, today they remain largely unaddressed by dynamic analyses systems as these 
-
-require highly specialized solutions often outside the core language,
-do not leverage or offer semantic information at the level of module boundaries,
-or lead to a high (often impractical) performance overheads due to the high granularity of their analyses.
-These applications clearly illustrate the need for a system 
+While the challenges behind these analyses share several characteristics, today they remain largely unaddressed by dynamic analyses frameworks due to a combination of factors:
+  these frameworks either require highly specialized solutions often outside the core language,
+  do not leverage or offer semantic information at the level of module boundaries, or
+  lead to a high (often impractical) performance overheads due to the high granularity of their analyses.
 To summarize, these applications would appear to be served well by a system that:
 \begin{itemize}
-  \item Operates at the level of modules, both semantics and performance-wise
-  \item Does not require learning a new tool or language---on the contrary,
-    developers
-  \item can be bolt onto an existing runtime as a library, regardless of whether 
-  \item supports programmable analyses
+  \item \textbf{(G1)} Operates at the level of modules, leveraging both the semantics and performance potential that this level of granularity potentially offers.
+  \item \textbf{(G2)} Does not require learning a new tool or language, but rather allows developers to express their analyses on the same language as the program.
+  \item \textbf{(G3)} Can be implemented as a library that bolts onto an existing language runtime environment.
 \end{itemize}
 
-In the next section we describe the design \sys, a new dynamic analyses
-framework that satisfies these goals
+The next section describes program dialysis, a new program analysis technique that satisfies these goals, in a language-agnostic manner~\sx{design};
+  the section following that describes a concrete implementation for the server-side JavaScript ecosystem~\sx{impl}.
 
-\section{Module-aware Dynamic Analysis}
+\section{The Design of Program Dialysis}
 \label{design}
 
-\subsection{Overview}
+Dialysis detects and scales out bottlenecked components by interposing on the application's module boundaries.
+It is introduced as a backward-compatible, drop-in replacement of the language's module system.
+It can be imported as an application-specific module (\eg \ttt{ignis} package) or can be bundled with a custom language runtime (\eg \sys-powered Lua) replacing its system-wide module system.
+Dialysis starts by dynamically modifying the function that imports libraries: \eat{for locating and loading a module.}
+  instead of simply locating and loading a module, the function yields to \sys, which applies a series of transformation steps to modules, with the goal of interposing on their boundaries.
+We start with a three-step overview of dialysis~\sx{overview}, highlighting the challenges that arise in the process.
+We next describe each one of these steps in more detail
 
-FIXME: add user data
+\subsection{Overview}
+\label{overview}
+
+This section presents the design of 
+% FIXME: add user data
 At a high level, module dialysis works at three stages:
 
 \begin{itemize}
@@ -565,7 +571,7 @@ Another use is in the existence of multi-language applications---wrappers and FF
 In this section, we compare \sys to previously proposed systems in several categories.
 For a comparison between dialysis and dynamic analysis, we refer the reader to the previous section~\sx{principles}.
 
-\heading{Dynamic Analysis Systems}
+% \heading{Dynamic Analysis Systems}
 There are several dynamic analysis frameworks for JavaScript~\cite{javascript1, javascript2, javascript3, mugshot, jalangi}.
 The two most popular, Jalangi~\cite{jalangi} and Mugshot~\cite{mugshot}, are fine-grained code-level instrumentation tools.
 On top of analysis, their heavy instrumentation is powerful enough to record and replay entire program executions.
@@ -575,20 +581,17 @@ They are also not embeddable in existing applications in a runtime-agnostic mann
 These features are contrary to \sys, which leverages fairly basic programming-language techniques such as variable shadowing and context transformation during library loading to insert analysis hooks completely transparently to the runtime environment.
 
 NodeProf~\cite{javascript3} is a fine-grained dynamic analysis implemented using Truffle~\cite{} and running on top of Graal.js [28], a Node.js-compatible runtime.
-NodeProf takes a different approach than code-level instrumentation, statically instrumenting the AST, which makes it easier to maintain compared to source changes.
-Similar to \sys, NodeProf 
-is not tied to the source code, has significantly lower overheads, and can be toggled on/off during program execution.
-Requires AST extraction and manipulation to build, which is not available in many languages % it is an additional requirement
-and is in conflict with many dynamic features. 
-It stands at a different point in the design space---more powerful analysis, but with significantly more effort:
-  assumes knowledge of the internal Graal and Truffle APIs and requires recompilation of the Java hooks.
+NodeProf stands at a different point in the analysis design space---more powerful than \sys, but with significantly more effort.
+It statically instruments the program's AST (rather than the code), making it easier to maintain compared to source changes but assuming some knowledge of the Graal and Truffle APIs and requiring recompilation of the Java hooks.
+Different from \sys, it leverages AST extraction and manipulation to build, which is not available in many languages and may be limit by dynamic features such as reflection and JITing.
+Nevertheless, NodeProf's approach shares similarities with \sys, including decoupling from the source code, overheads lower than code instrumentation, and can on/off toggling during execution.
+%FIXME: Lya is also limited (i) by dynamic features such as reflection, because they're gonna hit the wrapper and (ii) the equality and other primitive operators
 
-Similar to NodeProf, \sys 
-
-Aran~\cite{javascript1} is presented in a poster to 
+Aran~\cite{javascript1}, an implementation sketch of proxy-based analysis, leverages JavaScript's \ttt{with} primitive to wrap custom contexts.
+\sys works at the module boundaries (at a potentially coarser granularity) without any special language constructs.
 
 JSConTest2~\cite{javascript2} is a dynamic \emph{access} analysis framework, similar to \sys's analysis \fixme{A2}, build around proxies.
-It allows users to write 
+It allows users to write access control contracts, policies that execute at runtime.
 It illustrates the need for a general-purpose framework such as \sys, as many of JSConTest2's access permission contracts are 
 Our evaluation shows that this analysis (and others) can be implemented on top of \sys with significantly less effort.
 
