@@ -149,6 +149,62 @@ const readFunction = (myFunc, name) => {
   }
 }
 
+const handlerObjExport= {
+  get: function(target, name, receiver) {
+    if (typeof target[name] != 'undefined' && typeof name === 'string') { // + udnefined
+      // If we try to grab an object we wrap it in this proxy
+      if (typeof target[name] === 'object') {
+        // FIXME
+        let truepath = locEnv.objPath.get(receiver);
+        let truename = locEnv.objName.get(receiver);
+        if (truename === undefined) {
+          truename = locEnv.objName.get(target);
+        }
+        if (truepath === undefined) {
+          truepath = locEnv.objPath.get(target);
+        }
+        const localObject = target[name];
+        target[name] = new Proxy(localObject, handlerObjExport);
+        locEnv.objName.set(target[name], truename + '.' + name);
+        locEnv.objPath.set(target[name], truepath);
+
+        // If we try to call a string that is not truename or truepath
+        // We take the path that we are by using true_count
+        // We need to print access to that variable
+      } else if (typeof target[name] === 'string') {
+        if (name != 'truename' && name != 'truepath') {
+          let truepath = locEnv.objPath.get(receiver);
+          let truename = locEnv.objName.get(receiver);
+          if (truename === undefined) {
+            truename = locEnv.objName.get(target);
+          }
+          if (truepath === undefined) {
+            truepath = locEnv.objPath.get(target);
+          }
+
+          truename = truename + '.' + name;
+          exportControl(locEnv.accessMatrix[locEnv.trueName[locEnv.requireLevel]], truename);
+          
+        }
+      } else {
+        const localFunction = target[name];
+        const type = typeof localFunction;
+        if (type != 'number' && type != 'boolean' && type != 'symbol') {
+          Object.defineProperty(localFunction, 'name', {value: name});
+          target[name] = new Proxy(localFunction, handlerExports);
+          locEnv.objPath.set(localFunction, locEnv.trueName[locEnv.requireLevel]);
+          locEnv.objName.set(localFunction, locEnv.objName.get(localFunction));
+
+          // Undefined fix
+          readFunction(localFunction, locEnv.objName.get(target));
+        }
+      }
+    }
+
+    return Reflect.get(target, name);
+  },
+};
+
 module.exports = (env) => {
 	locEnv = env;
 	return {
@@ -162,5 +218,12 @@ module.exports = (env) => {
     handlerExports : handlerExports,
     updateCounter : updateCounter,
     readFunction : readFunction,
+    handlerObjExport : handlerObjExport,
+    objNameSet : (result, path) => {
+      locEnv.objName.set(result, 'require(\'' + path + '\')');
+    },
+    objPathSet : (result) => {
+      locEnv.objPath.set(result, locEnv.trueName[locEnv.requireLevel]);
+    },
 	}
 };

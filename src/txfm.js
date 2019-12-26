@@ -76,19 +76,6 @@ const mainRequire = (original) => {
   return new Proxy(original, policy.require);
 };
 
-// TOFIX:
-// We incriment and declare the ness things
-// This is for the handlerObjExport
-const exportControl = (storedCalls, truename) => {
-  if (userChoice === 1) {// Case 1 - True False
-    policy.exportControl(storedCalls, truename);
-  } else if (userChoice === 2) {// Case 2 - Counter
-    policy.exportControl(storedCalls, truename);
-  } else if (userChoice === 5) {// Case 5 - Enforcement
-    policy.exportControl(storedCalls, truename);
-  }
-};
-
 // We incriment and declare the ness things
 // This is for handlerExports
 const exportFuncControl = (storedCalls, truename, arguments) => {
@@ -107,72 +94,6 @@ const handlerAddArg= {
     argumentsList[5] = globalProxies;// We pass the global values with the proxies
 
     return Reflect.apply( ...arguments);
-  },
-};
-
-// TODO: 
-// require('fs);
-// fs.openSync(pizza);
-// fs.read(katiAllo);
-//
-// fs.read () => {... fs.resolve(...) ... return...}
-
-// We first wrap the export obj. Every time someone requires 
-// a function or an object from inside export obj we wrap it 
-// in the right handler(in our case handlerExports).
-const handlerObjExport= {
-  get: function(target, name, receiver) {
-    if (typeof target[name] != 'undefined' && typeof name === 'string') { // + udnefined
-      // If we try to grab an object we wrap it in this proxy
-      if (typeof target[name] === 'object') {
-        // FIXME
-        let truepath = objPath.get(receiver);
-        let truename = objName.get(receiver);
-        if (truepath === undefined) {
-          truepath = objPath.get(target);
-          truename = objName.get(target);
-        }
-        const localObject = target[name];
-        target[name] = new Proxy(localObject, handlerObjExport);
-        objName.set(target[name], truename + '.' + name);
-        objPath.set(target[name], truepath);
-
-        // If we try to call a string that is not truename or truepath
-        // We take the path that we are by using true_count
-        // We need to print access to that variable
-      } else if (typeof target[name] === 'string') {
-        if (name != 'truename' && name != 'truepath') {
-          let truepath = objPath.get(receiver);
-          let truename = objName.get(receiver);
-          if (truepath === undefined) {
-            truepath = objPath.get(target);
-            truename = objName.get(target);
-          }
-
-          truename = truename + '.' + name;
-          if (userChoice === 5) {
-            exportControl(dynamicObj[trueName[requireLevel]], truename);
-          } else {
-            exportControl(accessMatrix[trueName[requireLevel]], truename);
-          }
-        }
-      } else {
-        const localFunction = target[name];
-        const type = typeof localFunction;
-        if (type != 'number' && type != 'boolean' &&
-         type != 'symbol') {
-          Object.defineProperty(localFunction, 'name', {value: name});
-          target[name] = new Proxy(localFunction, policy.handlerExports);
-          objPath.set(localFunction, trueName[requireLevel]);
-          objName.set(localFunction, objName.get(target));
-          // The problem here is that we have a name undef
-          if (userChoice!=3 && userChoice!=4) {
-            policy.readFunction(localFunction, objName.get(target));
-          }
-        }
-      }
-    }
-    return Reflect.get(target, name);
   },
 };
 
@@ -360,17 +281,17 @@ Module.prototype.require = function(...args) {
   // If false that means that we pass from here for the 
   // first time.
   if ( objName.has(result) === false ) {
-    objName.set(result, 'require(\'' + path + '\')');
-    objPath.set(result, trueName[requireLevel]);
-    result = new Proxy(result, handlerObjExport);
+    policy.objNameSet(result,path);
+    policy.objPathSet(result);
+    result = new Proxy(result, policy.handlerObjExport);
     if (requireLevel !=0){
       requireLevel--;
       policy.updateCounter(requireLevel);
     }
   } else {
-    result = new Proxy(result, handlerObjExport);
-    objName.set(result, 'require(\'' + path + '\')');
-    objPath.set(result, trueName[requireLevel]);
+    result = new Proxy(result, policy.handlerObjExport);
+    policy.objNameSet(result,path);
+    policy.objPathSet(result);
   }
   return result;
 };

@@ -141,7 +141,46 @@ const handlerExports= {
 // We update the instance of require
 const updateCounter = (counter) => {
   locEnv.requireLevel = counter;
-}
+};
+
+const handlerObjExport= {
+  get: function(target, name, receiver) {
+    if (typeof target[name] != 'undefined' && typeof name === 'string') { // + udnefined
+      // If we try to grab an object we wrap it in this proxy
+      if (typeof target[name] === 'object') {
+        // FIXME
+        let truepath = locEnv.objPath.get(receiver);
+        let truename = locEnv.objName.get(receiver);
+        if (truename === undefined) {
+          truename = locEnv.objName.get(target);
+        }
+        if (truepath === undefined) {
+          truepath = locEnv.objPath.get(target);
+        }
+        const localObject = target[name];
+        target[name] = new Proxy(localObject, handlerObjExport);
+        locEnv.objName.set(target[name], truename + '.' + name);
+        locEnv.objPath.set(target[name], truepath);
+
+        // If we try to call a string that is not truename or truepath
+        // We take the path that we are by using true_count
+        // We need to print access to that variable
+      } else {
+        const localFunction = target[name];
+        const type = typeof localFunction;
+        if (type != 'number' && type != 'boolean' && type != 'symbol' && type != 'string') {
+          Object.defineProperty(localFunction, 'name', {value: name});
+          target[name] = new Proxy(localFunction, handlerExports);
+          locEnv.objPath.set(localFunction, locEnv.trueName[locEnv.requireLevel]);
+          locEnv.objName.set(localFunction, locEnv.objName.get(localFunction));
+
+        }
+      }
+    }
+
+    return Reflect.get(target, name);
+  },
+};
 
 module.exports = (env) => {
 	locEnv = env;
@@ -153,5 +192,12 @@ module.exports = (env) => {
     handlerGlobal : handlerGlobal,
     handlerExports : handlerExports,
     updateCounter : updateCounter,
+    handlerObjExport : handlerObjExport,
+    objNameSet : (result, path) => {
+      locEnv.objName.set(result, 'require(\'' + path + '\')');
+    },
+    objPathSet : (result) => {
+      locEnv.objPath.set(result, locEnv.trueName[locEnv.requireLevel]);
+    },
 	}
 };
