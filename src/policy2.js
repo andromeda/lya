@@ -186,18 +186,16 @@ const handlerObjExport= {
           exportControl(locEnv.accessMatrix[locEnv.trueName[locEnv.requireLevel]], truename);
           
         }
-      } else {
+      } else if (typeof target[name] === 'function') {
         const localFunction = target[name];
-        const type = typeof localFunction;
-        if (type != 'number' && type != 'boolean' && type != 'symbol') {
-          Object.defineProperty(localFunction, 'name', {value: name});
-          target[name] = new Proxy(localFunction, handlerExports);
-          locEnv.objPath.set(localFunction, locEnv.trueName[locEnv.requireLevel]);
-          locEnv.objName.set(localFunction, locEnv.objName.get(localFunction));
 
-          // Undefined fix
-          readFunction(localFunction, locEnv.objName.get(target));
-        }
+        Object.defineProperty(localFunction, 'name', {value: name});
+        target[name] = new Proxy(localFunction, handlerExports);
+        locEnv.objPath.set(localFunction, locEnv.trueName[locEnv.requireLevel]);
+        locEnv.objName.set(localFunction, locEnv.objName.get(localFunction));
+
+        // Undefined fix
+        readFunction(localFunction, locEnv.objName.get(target));
       }
     }
 

@@ -176,19 +176,16 @@ const handlerObjExport= {
         // If we try to call a string that is not truename or truepath
         // We take the path that we are by using true_count
         // We need to print access to that variable
-      } else {
+      } else if (typeof target[name] === 'function') {
         const localFunction = target[name];
-        const type = typeof localFunction;
-        if (type != 'number' && type != 'boolean' && type != 'symbol' && type != 'string') {
-          Object.defineProperty(localFunction, 'name', {value: name});
-          target[name] = new Proxy(localFunction, handlerExports);
-          locEnv.objPath.set(localFunction, locEnv.trueName[locEnv.requireLevel]);
-          locEnv.objName.set(localFunction, locEnv.objName.get(localFunction));
 
-          // Undefined fix
-          readFunction(localFunction, locEnv.objName.get(target));
+        Object.defineProperty(localFunction, 'name', {value: name});
+        target[name] = new Proxy(localFunction, handlerExports);
+        locEnv.objPath.set(localFunction, locEnv.trueName[locEnv.requireLevel]);
+        locEnv.objName.set(localFunction, locEnv.objName.get(localFunction));
 
-        }
+        // Undefined fix
+        readFunction(localFunction, locEnv.objName.get(target));
       }
     }
 
