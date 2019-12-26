@@ -1,6 +1,6 @@
-The time of 0 is 13.51025 
-The time of 1 is 13.879249999999999 
-The time of 2 is 13.729467 
-The time of 3 is 14.280052 
-The time of 4 is 12.991443 
-The time of 6 is 13.745719999999999 
+The time of 0 is 11.984938999999999 
+The time of 1 is 13.216902 
+The time of 2 is 13.764035999999999 
+The time of 3 is 12.45786 
+The time of 4 is 13.088574 
+The time of 6 is 12.53937 
