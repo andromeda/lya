@@ -168,24 +168,6 @@ const handlerObjExport= {
         locEnv.objName.set(target[name], truename + '.' + name);
         locEnv.objPath.set(target[name], truepath);
 
-        // If we try to call a string that is not truename or truepath
-        // We take the path that we are by using true_count
-        // We need to print access to that variable
-      } else if (typeof target[name] === 'string') {
-        if (name != 'truename' && name != 'truepath') {
-          let truepath = locEnv.objPath.get(receiver);
-          let truename = locEnv.objName.get(receiver);
-          if (truename === undefined) {
-            truename = locEnv.objName.get(target);
-          }
-          if (truepath === undefined) {
-            truepath = locEnv.objPath.get(target);
-          }
-
-          truename = truename + '.' + name;
-          exportControl(locEnv.accessMatrix[locEnv.trueName[locEnv.requireLevel]], truename);
-          
-        }
       } else if (typeof target[name] === 'function') {
         const localFunction = target[name];
 
