@@ -1,8 +1,8 @@
-The time of 0 is 0.8411059999999999 
-The time of 1 is 3.32665 
-The time of 5 is 3.209049 
-The time of 2 is 3.284293 
-The time of 3 is 3.2446439999999996 
-The time of 4 is 3.3619879999999998 
-The time of 6 is 3.2613809999999996 
-The time of 7 is 3.340802 
+The time of 0 is 0.726883 
+The time of 1 is 3.092152 
+The time of 5 is 3.148781 
+The time of 2 is 3.536899 
+The time of 3 is 3.167115 
+The time of 4 is 3.217012 
+The time of 6 is 3.41444 
+The time of 7 is 3.778412 
