@@ -124,6 +124,7 @@ const updateCounter = (counter) => {
 // Read function so we print it in the export file
 // This is to catch the read
 const readFunction = (myFunc, name) => {
+  // TODO: fix myFunc.name
   name = name + '.' + myFunc.name;
   const currentPlace = locEnv.trueName[locEnv.requireLevel];
   let storedCalls = locEnv.accessMatrix[currentPlace];
