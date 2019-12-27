@@ -1,14 +1,6 @@
-lyaConfig = {
-  SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
-  analysisCh: 1,
-  removejson: ['toString'],
-};
-let lya = require("../../src/txfm.js");
-require = lya.configRequire(require, lyaConfig);
-
 require("./global-leakage.js")
 var test = require("tap").test
-var glob = require('glob')
+var glob = require('../')
 var assert = require("assert")
 var fs = require("fs")
 process.chdir(__dirname)

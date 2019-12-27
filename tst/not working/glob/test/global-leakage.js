@@ -5,7 +5,7 @@ var before = Object.keys(global).sort().filter(function (t) {
   return t !== '__coverage__' && t !== '__core-js_shared__'
 }).join(':')
 var assert = require('assert')
-var glob = require('glob')
+var glob = require('../')
 
 process.on('exit', function() {
   delete global.TAP_Global_Harness
