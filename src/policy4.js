@@ -159,8 +159,8 @@ const handlerObjExport= {
         }
         const localObject = target[name];
         target[name] = new Proxy(localObject, handlerObjExport);
-        locEnv.objName.set(target[name], truename + '.' + name);
-        locEnv.objPath.set(target[name], truepath);
+        locEnv.objName.set(localObject, truename + '.' + name);
+        locEnv.objPath.set(localObject, truepath);
 
       } else if (typeof target[name] === 'function') {
         const localFunction = target[name];
@@ -168,7 +168,7 @@ const handlerObjExport= {
         Object.defineProperty(localFunction, 'name', {value: name});
         target[name] = new Proxy(localFunction, handlerExports);
         locEnv.objPath.set(localFunction, locEnv.trueName[locEnv.requireLevel]);
-        locEnv.objName.set(localFunction, locEnv.objName.get(localFunction));
+        locEnv.objName.set(localFunction, locEnv.objName.get(target));
 
       }
     }
