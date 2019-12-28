@@ -2,10 +2,9 @@
 
 Multiple test cases. The working directory containts all the test cases that work fine and the not working directory contains the test cases that we need to fix. 
 
-We can check them against jalangi
+## We can check them against jalangi
 https://github.com/SRA-SiliconValley/jalangi
 
-docker run -t -i hrishikeshrt/jalangi /bin/bash
 A working docker container with jalangi installed:
 https://hub.docker.com/r/hrishikeshrt/jalangi
 
