@@ -9,5 +9,7 @@ A working docker container with jalangi installed:
 https://hub.docker.com/r/hrishikeshrt/jalangi
 
 docker pull hrishikeshrt/jalangi
+
 docker run -t -i hrishikeshrt/jalangi /bin/bash
+
 docker start -i "name of the create container"
