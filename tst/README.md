@@ -13,3 +13,11 @@ docker pull hrishikeshrt/jalangi
 docker run -t -i hrishikeshrt/jalangi /bin/bash
 
 docker start -i "name of the create container"
+
+## TODO:
+
+Compare with Jalangi on a very simple analysis:
+* built-ins -- identify what built-in functionality a module is using
+* globals -- identify which global variables a module is accessing
+
+_On top of that, we should have an example of runtime code evaluation. My suspition is that J2 cannot detect runtime code evaluation the same way we can (by wrapping objects), but we should verify._
