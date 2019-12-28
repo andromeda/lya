@@ -1,19 +1,14 @@
 # Description of Test Cases
 
-## chalk 
-	- t1 => simple test case to demonstate that the import works with lya
-	- t2 => more test cases 
-	- error => things to fix in chalk
+Multiple test cases. The working directory containts all the test cases that work fine and the not working directory contains the test cases that we need to fix. 
 
-## commander 
-	- t1 => simple test case to demonstate that the import works with lya
+We can check them against jalangi
+https://github.com/SRA-SiliconValley/jalangi
 
-## lodash 
-	- t1 => simple test case to demonstate that the import works with lya
-	- t2 => expanded test to cover most usecases of lodash
-	- t3 => official test from lodash repo // Needs fix
+docker run -t -i hrishikeshrt/jalangi /bin/bash
+A working docker container with jalangi installed:
+https://hub.docker.com/r/hrishikeshrt/jalangi
 
-## t6
-	- Runs mod1 which will loop and randomly call either mod3 (50%) or mod4 (50%)
-	and runs mod2 which will loop and randomly call either mod3 (75%) or mod4 (25%).
-	This is for time analysis.					
+docker pull hrishikeshrt/jalangi
+docker run -t -i hrishikeshrt/jalangi /bin/bash
+docker start -i "name of the create container"
