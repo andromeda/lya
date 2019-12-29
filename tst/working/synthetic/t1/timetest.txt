@@ -6,3 +6,5 @@ The time of 3 is 3.048012
 The time of 4 is 3.135388 
 The time of 6 is 3.2178929999999997 
 The time of 7 is 3.515352 
+The time of 8 is 3.851374 
+The time of 8 is 3.373472 

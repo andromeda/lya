@@ -8,3 +8,11 @@ The time of 6 is 9.812204999999999
 The time of 7 is 10.059968 
 The time of 7 is 18.433563 
 The time of 8 is 10.104061999999999 
+The time of 8 is 10.316098 
+The time of 8 is 9.736592 
+The time of 8 is 11.043349 
+The time of 8 is 10.380467999999999 
+The time of 8 is 9.562787 
+The time of 8 is 9.601011999999999 
+The time of 8 is 10.296759 
+The time of 8 is 11.351699 
