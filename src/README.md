@@ -34,6 +34,7 @@ stop it from exec.
 * [Policy 6](./policy6.js) - RWE: A read/ write/ execute analysis
 * [Policy 7](./policy7.js) - Enforcement-RWE: If check if we try to access a module outside dynamic.json or if we try
 to access a value diff than before(R and try RE, E and we try RW etc)
+* [Policy 8](./policy8.js) - A simple true false analysis that tracks the access of the global object (console.log,Math etc). 
 
 ## TODO
 
