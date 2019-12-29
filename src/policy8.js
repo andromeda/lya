@@ -11,23 +11,37 @@ const RequireTrue = {
   apply: function(target, thisArg, argumentsList) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
     const origReqModuleName = argumentsList[0];
-    locEnv.accessMatrix[currentName]['require(\'' + origReqModuleName + '\')'] = true;
     return Reflect.apply(...arguments);
   },
 };
 
 const exportControl = (storedCalls, truename) => {
+  if (storedCalls === 'undefined') {
+      storedCalls = {};
+      storedCalls[truename] = true;
+    } else {
+      storedCalls[truename] = true;
+    }
 };
 
 const exportFuncControl = (storedCalls, truename, arguments) => {
+  
     return Reflect.apply(...arguments);
 };
 
 const onModuleControlFunc = (storedCalls, truename, arguments) => {
+  if (Object.prototype.hasOwnProperty.
+        call(storedCalls, truename) === false) {
+      storedCalls[truename] = true;
+    }
     return Reflect.apply(...arguments);
 };
 
 const onModuleControl = (storedCalls, truename) => {
+  if (Object.prototype.hasOwnProperty.
+        call(storedCalls, truename) === false) {
+      storedCalls[truename] = true;
+    }
 };
 
 // The handler of the global variable
@@ -147,7 +161,6 @@ module.exports = (env) => {
     handlerGlobal : handlerGlobal,
     handlerExports : handlerExports,
     updateCounter : updateCounter,
-    readFunction : readFunction,
     handlerObjExport : handlerObjExport,
     objNameSet : (result, path) => {
       locEnv.objName.set(result, 'require(\'' + path + '\')');

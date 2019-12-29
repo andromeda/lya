@@ -61,7 +61,7 @@ const env = {
 // 5) Enforcement Analysis
 // 6) RWE Analysis
 // 7) RWE Enforcement
-let userChoice = (lyaConfig.analysisCh && [1, 2, 3, 4, 5, 6, 7].includes(lyaConfig.analysisCh))? lyaConfig.analysisCh : 1
+let userChoice = (lyaConfig.analysisCh && [1, 2, 3, 4, 5, 6, 7, 8].includes(lyaConfig.analysisCh))? lyaConfig.analysisCh : 1
 
 // You import the right policy depenting on the choice
 // of the user.
