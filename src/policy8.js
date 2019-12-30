@@ -11,6 +11,7 @@ const RequireTrue = {
   apply: function(target, thisArg, argumentsList) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
     const origReqModuleName = argumentsList[0];
+    locEnv.accessMatrix[currentName]['require(\'' + origReqModuleName + '\')'] = true;
     return Reflect.apply(...arguments);
   },
 };
