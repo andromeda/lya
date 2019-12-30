@@ -1,0 +1,18 @@
+Time on 3d-raytrace
+
+Jalangi 
+real    0m1.358s
+user    0m1.488s
+sys     0m0.040s
+
+Pure 
+real    0m0.081s
+user    0m0.068s
+sys     0m0.012s
+
+lya 
+real    0m0.150s
+user    0m0.148s
+sys     0m0.004s
+
+thank god!
