@@ -6,9 +6,22 @@ let locEnv;
 // suffix for our own metadata
 const endName = '@name';
 
+// @storedCalls it is a table that contains all the analysis data
+// @truename the name of the current function, object etc that we want to add to
+// the table 
+// Given those two inputs we can update the analysis data that are stored in storedCalls
+const updateAnalysisData = (storedCalls, truename, arguments) => {
+  if (Object.prototype.hasOwnProperty.
+        call(storedCalls, truename) === false) {
+      storedCalls[truename] = 1;
+    } else {
+      storedCalls[truename]++;
+    }
+};
 
-// The handler of require of Counter case_2
-const RequireCounter= {
+// This the handler of the require function. Every time a "require" is used to load up a module
+// this handler is called. It updates the analysis data that are stored in the accessMatrix table.
+const requireHandler= {
   apply: function(target) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
     const nameReq = target.name + '(\'' + arguments[2][0] +// In arguments[2][0]
@@ -19,63 +32,16 @@ const RequireCounter= {
   },
 };
 
-const exportControl = (storedCalls, truename) => {
-	if (storedCalls === 'undefined') {
-      storedCalls = {};
-      storedCalls[truename] = 1;
-    } else {
-      if (storedCalls[truename] === undefined) {// Why this undef?
-        storedCalls[truename] = 1;
-      } else {
-        storedCalls[truename]++;
-      }
-    }
-};
-
-const exportFuncControl = (storedCalls, truename, arguments) => {
-	if (Object.prototype.hasOwnProperty.
-        call(storedCalls, truename) === false) {
-      storedCalls[truename] = 1;
-    } else {
-      storedCalls[truename]++;
-    }
-
-    return Reflect.apply(...arguments);	
-};
-
-const onModuleControlFunc = (storedCalls, truename, arguments) => {
-	if (Object.prototype.hasOwnProperty.
-        call(storedCalls, truename) === false) {
-      storedCalls[truename] = 1;
-    } else {
-      storedCalls[truename]++;
-    }
-
-    return Reflect.apply(...arguments);	
-}
-
-const onModuleControl = (storedCalls, truename) => {
-	if (Object.prototype.hasOwnProperty.
-        call(storedCalls, truename) === false) {
-      storedCalls[truename] = 1;
-    } else {
-      storedCalls[truename]++;
-    }
-};
-
-// The handler of the global variable
-// Every time we access the global variabe in order to declare or call
-// a variable, then we can print it on the export file. It doesnt work
-// if it isn't called like global.xx
-// y global.y
-const handlerGlobal= {
+// The handler of the global variable.Every time we access the global variabe in order to declare 
+// or call a variable, then we can print it on the export file.
+const globalHandler= {
   get: function(target, name) {
     // XXX[target] != 'undefined'
     if (typeof name === 'string'){
       if (typeof target[name+endName] != 'undefined') {
         const currentName = locEnv.trueName[locEnv.requireLevel];
         const nameToShow = target[name+endName];
-        onModuleControl(locEnv.accessMatrix[currentName], nameToShow);
+        updateAnalysisData(locEnv.accessMatrix[currentName], nameToShow);
       }
     }
     
@@ -89,7 +55,7 @@ const handlerGlobal= {
       // In order to exist a disticton between the values we declared ourselfs
       // We declare one more field with key value that stores the name
       Object.defineProperty(target, name+endName, {value: nameToStore});
-      onModuleControl(locEnv.accessMatrix[currentName], nameToStore);
+      updateAnalysisData(locEnv.accessMatrix[currentName], nameToStore);
 
       return result;
     }
@@ -98,34 +64,38 @@ const handlerGlobal= {
   },
 };
 
-// ****************************
-// Handlers of Proxies
-// The handler of the functions
-const handler= {
+// The handler of the all the function that are called inside a module. Every time we
+// load a module with require it first execute all the code and then prepary and exports 
+// all the export data. We use this handler to catch all the code that is executed on the 
+// module.
+const moduleHandler= {
   apply: function(target) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
+    updateAnalysisData(locEnv.accessMatrix[currentName],target.name);
 
-    return onModuleControlFunc(locEnv.accessMatrix[currentName],
-        target.name, arguments);
+    return Reflect.apply(...arguments); 
   },
   get: function(target, name) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
-    onModuleControl(locEnv.accessMatrix[currentName], target.name);
+    updateAnalysisData(locEnv.accessMatrix[currentName], target.name);
 
     return Reflect.get(target, name);
   },
 };
 
-// The handler of the imported libraries
-const handlerExports= {
+// The handler of the functions on the export module. Every time we require a module 
+// and we have exports, we wrap them in a handler. Each time we call a function from inside
+// exports this is the handler that we wrap the function.
+const exportsFuncHandler= {
   apply: function(target, thisArg, argumentsList) {
     let truename;
 
     truename = locEnv.objName.get(target);
     const currentName = locEnv.objPath.get(target);
     truename = truename + '.' + target.name;
+    updateAnalysisData(locEnv.accessMatrix[currentName], truename);
 
-    return exportFuncControl(locEnv.accessMatrix[currentName], truename, arguments);
+    return Reflect.apply(...arguments); 
   },
 };
 
@@ -149,7 +119,10 @@ const readFunction = (myFunc, name) => {
   }
 }
 
-const handlerObjExport= {
+// This is the handler of the export object. Every time we require a module, and it has
+// export data we wrap those data in this handler. So this is the first layer of the 
+// export data wraping.
+const exportHandler= {
   get: function(target, name, receiver) {
     if (typeof target[name] != 'undefined' && typeof name === 'string') { // + udnefined
       // If we try to grab an object we wrap it in this proxy
@@ -164,7 +137,7 @@ const handlerObjExport= {
           truepath = locEnv.objPath.get(target);
         }
         const localObject = target[name];
-        target[name] = new Proxy(localObject, handlerObjExport);
+        target[name] = new Proxy(localObject, exportHandler);
         locEnv.objName.set(localObject, truename + '.' + name);
         locEnv.objPath.set(localObject, truepath);
 
@@ -172,7 +145,7 @@ const handlerObjExport= {
         const localFunction = target[name];
 
         Object.defineProperty(localFunction, 'name', {value: name});
-        target[name] = new Proxy(localFunction, handlerExports);
+        target[name] = new Proxy(localFunction, exportsFuncHandler);
         locEnv.objPath.set(localFunction, locEnv.trueName[locEnv.requireLevel]);
         locEnv.objName.set(localFunction, locEnv.objName.get(target));
 
@@ -188,17 +161,11 @@ const handlerObjExport= {
 module.exports = (env) => {
 	locEnv = env;
 	return {
-		require : RequireCounter,
-		exportControl : exportControl,
-		exportFuncControl : exportFuncControl,
-		onModuleControlFunc : onModuleControlFunc,
-		onModuleControl : onModuleControl,
-    handler : handler,
-    handlerGlobal : handlerGlobal,
-    handlerExports : handlerExports,
+		require : requireHandler,
+    moduleHandler : moduleHandler,
+    globalHandler : globalHandler,
     updateCounter : updateCounter,
-    readFunction : readFunction,
-    handlerObjExport : handlerObjExport,
+    exportHandler : exportHandler,
     objNameSet : (result, path) => {
       locEnv.objName.set(result, 'require(\'' + path + '\')');
     },

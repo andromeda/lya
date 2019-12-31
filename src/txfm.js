@@ -68,18 +68,12 @@ let userChoice = (lyaConfig.analysisCh && [1, 2, 3, 4, 5, 6, 7, 8].includes(lyaC
 let policy = require('./policy' + userChoice + '.js')(env);;
 
 // We wrap the global variable in a proxy
-global = new Proxy(global, policy.handlerGlobal);
+global = new Proxy(global, policy.globalHandler);
 
 // Case handler
 // Returns the right require handler for the case
 const mainRequire = (original) => {
   return new Proxy(original, policy.require);
-};
-
-// We incriment and declare the ness things
-// This is for handlerExports
-const exportFuncControl = (storedCalls, truename, arguments) => {
-  return policy.exportFuncControl(storedCalls, truename, arguments);
 };
 
 // The handler of compiledWrapper
@@ -124,7 +118,7 @@ const proxyWrap = function(handler, obj) {
 // We declare the data on the same time to pass them inside wrapped function
 const createGlobal = (name, finalDecl) => {
   if (global[name] != undefined) {
-    globalProxies[name] = proxyWrap(policy.handler, global[name]);
+    globalProxies[name] = proxyWrap(policy.moduleHandler, global[name]);
     finalDecl = 'let ' + name + ' = pr.' + name +';\n' + finalDecl;
   }
 
@@ -137,7 +131,7 @@ const createGlobal = (name, finalDecl) => {
 const createStaticGlobal = (name, finalDecl, upValue) => {
   if (global[upValue][name] != undefined) {
     const nameToShow = upValue + '.' + name;
-    globalProxies[nameToShow] = proxyWrap(policy.handler, global[upValue][name]);
+    globalProxies[nameToShow] = proxyWrap(policy.moduleHandler, global[upValue][name]);
     // We save the declared wraped functions in new local
     finalDecl += nameToShow + ' = pr["' + nameToShow +'"];\n';
     // And we change the name to a better one
@@ -283,13 +277,13 @@ Module.prototype.require = function(...args) {
   if ( objName.has(result) === false ) {
     policy.objNameSet(result,path);
     policy.objPathSet(result);
-    result = new Proxy(result, policy.handlerObjExport);
+    result = new Proxy(result, policy.exportHandler);
     if (requireLevel !=0){
       requireLevel--;
       policy.updateCounter(requireLevel);
     }
   } else {
-    result = new Proxy(result, policy.handlerObjExport);
+    result = new Proxy(result, policy.exportHandler);
     policy.objNameSet(result,path);
     policy.objPathSet(result);
   }
