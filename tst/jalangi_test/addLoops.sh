@@ -6,9 +6,9 @@ input="./LIST"
 echo "We are going to add the loops to the begining of all programs in sunspider"
 while IFS= read -r line
 do
-        name=$line.js
+	name=$line.js
 	echo "This file first $name"
-    	sed -i "1s/^/for (var i = 0; i < 100; i++) {\n/" $name 
+   	sed -i "1s/^/for (var loopiiii = 0; loopiiii < 100; loopiiii++) {\n/" $name 
 	sed -i "\$a}" $name 
 done < "$input"
 
