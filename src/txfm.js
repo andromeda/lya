@@ -146,10 +146,11 @@ const createStaticGlobal = (name, finalDecl, upValue) => {
   return finalDecl;
 };
 
+// We cant wrap it in a proxy cause they are numbers -- Math.PI
 const createConstantGlobal = (name, finalDecl, upValue) => {
   if (global[upValue][name] != undefined) {
     const nameToShow = upValue + '.' + name;
-    globalProxies[nameToShow] = proxyWrap(policy.moduleHandler, global[upValue][name]);
+    globalProxies[nameToShow] =  global[upValue][name];
     // We save the declared wraped functions in new local
     finalDecl += nameToShow + ' = pr["' + nameToShow +'"];\n';
   }
@@ -190,7 +191,7 @@ const createFinalDecl = () => {
     }
   }
 
-  // This is for the constant global Data --Math.PI, Nath.LOG2E etc
+  // This is for the constant global Data --Math.PI, Math.LOG2E etc
   for (const upValue in cglobals) {
     if (Object.prototype.hasOwnProperty.call(cglobals, upValue)) {
       const globalVariables = cglobals[upValue];
