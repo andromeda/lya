@@ -5,4 +5,5 @@ analysisCh: 8,
 let lya = require("../../src/txfm.js");
 require = lya.configRequire(require, lyaConfig);
 
-require("./3d-morph.js");
+// Require all sunspider tests
+// require("./3d-morph.js");
