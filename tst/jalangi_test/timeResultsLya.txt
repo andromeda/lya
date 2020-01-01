@@ -1,145 +1,103 @@
 The name of file 3d-cube.js
-
-real	0m10.304s
-user	0m8.652s
-sys	0m1.704s
+FATAL ERROR: CALL_AND_RETRY_LAST Allocation failed - JavaScript heap out of memory
+ 1: node::Abort() [node]
+ 2: 0x121a2cc [node]
+ 3: v8::Utils::ReportOOMFailure(char const*, bool) [node]
+ 4: v8::internal::V8::FatalProcessOutOfMemory(char const*, bool) [node]
+ 5: v8::internal::Factory::NewFillerObject(int, bool, v8::internal::AllocationSpace) [node]
+ 6: v8::internal::Runtime_AllocateInTargetSpace(int, v8::internal::Object**, v8::internal::Isolate*) [node]
+ 7: 0x38ca1400463d
+Command terminated by signal 6
+442.37user 3.11system 5:33.03elapsed 133%CPU (0avgtext+0avgdata 1797412maxresident)k
+0inputs+8outputs (0major+446723minor)pagefaults 0swaps
 The name of file 3d-morph.js
-
-real	0m0.435s
-user	0m0.424s
-sys	0m0.012s
+10.56user 0.04system 0:10.62elapsed 99%CPU (0avgtext+0avgdata 87116maxresident)k
+0inputs+8outputs (0major+17258minor)pagefaults 0swaps
 The name of file 3d-raytrace.js
-
-real	0m0.145s
-user	0m0.136s
-sys	0m0.012s
+2.17user 0.03system 0:02.07elapsed 107%CPU (0avgtext+0avgdata 97080maxresident)k
+0inputs+8outputs (0major+28701minor)pagefaults 0swaps
 The name of file access-binary-trees.js
-
-real	0m0.073s
-user	0m0.060s
-sys	0m0.012s
+0.51user 0.02system 0:00.52elapsed 101%CPU (0avgtext+0avgdata 38052maxresident)k
+0inputs+8outputs (0major+4530minor)pagefaults 0swaps
 The name of file access-fannkuch.js
-
-real	0m0.077s
-user	0m0.072s
-sys	0m0.004s
+0.36user 0.00system 0:00.36elapsed 100%CPU (0avgtext+0avgdata 31492maxresident)k
+0inputs+8outputs (0major+2733minor)pagefaults 0swaps
 The name of file access-nbody.js
-
-real	0m0.170s
-user	0m0.164s
-sys	0m0.008s
+3.66user 0.00system 0:03.65elapsed 100%CPU (0avgtext+0avgdata 36072maxresident)k
+0inputs+8outputs (0major+4152minor)pagefaults 0swaps
 The name of file access-nsieve.js
-
-real	0m0.075s
-user	0m0.072s
-sys	0m0.000s
+0.21user 0.02system 0:00.25elapsed 97%CPU (0avgtext+0avgdata 51124maxresident)k
+0inputs+8outputs (0major+19099minor)pagefaults 0swaps
 The name of file bitops-3bit-bits-in-byte.js
-
-real	0m0.070s
-user	0m0.044s
-sys	0m0.024s
+0.17user 0.00system 0:00.19elapsed 89%CPU (0avgtext+0avgdata 30944maxresident)k
+0inputs+8outputs (0major+2666minor)pagefaults 0swaps
 The name of file bitops-bits-in-byte.js
-
-real	0m0.073s
-user	0m0.072s
-sys	0m0.000s
+0.26user 0.01system 0:00.27elapsed 100%CPU (0avgtext+0avgdata 31116maxresident)k
+0inputs+8outputs (0major+2679minor)pagefaults 0swaps
 The name of file bitops-bitwise-and.js
-
-real	0m0.075s
-user	0m0.072s
-sys	0m0.004s
+0.22user 0.00system 0:00.23elapsed 99%CPU (0avgtext+0avgdata 32108maxresident)k
+0inputs+8outputs (0major+2881minor)pagefaults 0swaps
 The name of file bitops-nsieve-bits.js
-
-real	0m0.074s
-user	0m0.072s
-sys	0m0.000s
+1.11user 0.02system 0:01.13elapsed 100%CPU (0avgtext+0avgdata 49648maxresident)k
+0inputs+8outputs (0major+7268minor)pagefaults 0swaps
 The name of file controlflow-recursive.js
-
-real	0m0.072s
-user	0m0.064s
-sys	0m0.008s
+0.24user 0.01system 0:00.25elapsed 100%CPU (0avgtext+0avgdata 31840maxresident)k
+0inputs+8outputs (0major+2886minor)pagefaults 0swaps
 The name of file crypto-aes.js
-
-real	0m0.162s
-user	0m0.152s
-sys	0m0.012s
+5.44user 0.14system 0:04.81elapsed 116%CPU (0avgtext+0avgdata 55728maxresident)k
+0inputs+8outputs (0major+64746minor)pagefaults 0swaps
 The name of file crypto-md5.js
-
-real	0m0.073s
-user	0m0.068s
-sys	0m0.004s
+0.21user 0.01system 0:00.20elapsed 110%CPU (0avgtext+0avgdata 35684maxresident)k
+0inputs+8outputs (0major+4078minor)pagefaults 0swaps
 The name of file crypto-sha1.js
-
-real	0m0.073s
-user	0m0.068s
-sys	0m0.004s
+0.18user 0.01system 0:00.20elapsed 100%CPU (0avgtext+0avgdata 33784maxresident)k
+0inputs+8outputs (0major+3363minor)pagefaults 0swaps
 The name of file date-format-tofte.js
 undefined:1
 Y()
 ^
 
 ReferenceError: Y is not defined
-    at eval (eval at onModuleControlFunc (/home/lya/src/policy8.js:39:20), <anonymous>:1:1)
-    at onModuleControlFunc (/home/lya/src/policy8.js:39:20)
-    at Object.apply (/home/lya/src/policy8.js:89:12)
-    at Date.formatDate (/home/lya/tst/jalangi_test/sunspider/date-format-tofte.js:453:26)
-    at Object.<anonymous> (/home/lya/tst/jalangi_test/sunspider/date-format-tofte.js:468:28)
-    at Object.apply (/home/lya/src/txfm.js:94:20)
-    at Module._compile (module.js:570:32)
-    at Object.Module._extensions..js (module.js:579:10)
-    at Module.load (module.js:487:32)
-    at tryModuleLoad (module.js:446:12)
-
-real	0m0.070s
-user	0m0.064s
-sys	0m0.004s
+    at eval (eval at apply (/home/grigorisntousakis/Dropbox/thesis/lya/src/policy8.js:72:20), <anonymous>:1:1)
+    at eval (<anonymous>)
+    at Object.apply (/home/grigorisntousakis/Dropbox/thesis/lya/src/policy8.js:72:20)
+    at Date.formatDate (/home/grigorisntousakis/Dropbox/thesis/lya/tst/jalangi_test/sunspider/date-format-tofte.js:455:26)
+    at Object.<anonymous> (/home/grigorisntousakis/Dropbox/thesis/lya/tst/jalangi_test/sunspider/date-format-tofte.js:470:28)
+    at Object.apply (/home/grigorisntousakis/Dropbox/thesis/lya/src/txfm.js:94:20)
+    at Module._compile (module.js:643:30)
+    at Object.Module._extensions..js (module.js:654:10)
+    at Module.load (module.js:556:32)
+    at tryModuleLoad (module.js:499:12)
+Command exited with non-zero status 1
+0.04user 0.00system 0:00.05elapsed 98%CPU (0avgtext+0avgdata 30484maxresident)k
+0inputs+8outputs (0major+2495minor)pagefaults 0swaps
 The name of file date-format-xparb.js
-
-real	0m0.289s
-user	0m0.264s
-sys	0m0.032s
+6.94user 0.23system 0:06.90elapsed 104%CPU (0avgtext+0avgdata 170260maxresident)k
+0inputs+8outputs (0major+63863minor)pagefaults 0swaps
 The name of file math-cordic.js
-
-real	0m0.075s
-user	0m0.072s
-sys	0m0.000s
+0.50user 0.00system 0:00.48elapsed 105%CPU (0avgtext+0avgdata 33960maxresident)k
+0inputs+8outputs (0major+3442minor)pagefaults 0swaps
 The name of file math-partial-sums.js
-
-real	0m0.335s
-user	0m0.328s
-sys	0m0.008s
+7.27user 0.05system 0:06.90elapsed 106%CPU (0avgtext+0avgdata 34668maxresident)k
+0inputs+8outputs (0major+3634minor)pagefaults 0swaps
 The name of file math-spectral-norm.js
-
-real	0m0.075s
-user	0m0.064s
-sys	0m0.008s
+0.24user 0.00system 0:00.26elapsed 96%CPU (0avgtext+0avgdata 33916maxresident)k
+0inputs+8outputs (0major+3444minor)pagefaults 0swaps
 The name of file regexp-dna.js
-
-real	0m0.080s
-user	0m0.076s
-sys	0m0.004s
+0.64user 0.00system 0:00.65elapsed 99%CPU (0avgtext+0avgdata 40456maxresident)k
+0inputs+8outputs (0major+10286minor)pagefaults 0swaps
 The name of file string-base64.js
-
-real	0m0.119s
-user	0m0.112s
-sys	0m0.008s
+1.44user 0.01system 0:01.45elapsed 100%CPU (0avgtext+0avgdata 64312maxresident)k
+0inputs+8outputs (0major+11143minor)pagefaults 0swaps
 The name of file string-fasta.js
-
-real	0m0.094s
-user	0m0.092s
-sys	0m0.004s
+1.48user 0.01system 0:01.43elapsed 104%CPU (0avgtext+0avgdata 35192maxresident)k
+0inputs+8outputs (0major+3822minor)pagefaults 0swaps
 The name of file string-tagcloud.js
-
-real	0m0.149s
-user	0m0.140s
-sys	0m0.012s
+1.86user 0.03system 0:01.87elapsed 101%CPU (0avgtext+0avgdata 95724maxresident)k
+0inputs+8outputs (0major+29450minor)pagefaults 0swaps
 The name of file string-unpack-code.js
-
-real	0m0.138s
-user	0m0.140s
-sys	0m0.000s
+10.16user 0.17system 0:09.98elapsed 103%CPU (0avgtext+0avgdata 105284maxresident)k
+0inputs+8outputs (0major+123315minor)pagefaults 0swaps
 The name of file string-validate-input.js
-
-real	0m0.070s
-user	0m0.064s
-sys	0m0.004s
+0.06user 0.00system 0:00.07elapsed 98%CPU (0avgtext+0avgdata 32660maxresident)k
+0inputs+8outputs (0major+3175minor)pagefaults 0swaps
