@@ -1,3 +1,7 @@
+#!/bin/bash
+
+# set -e
+
 rm timeResultsPure.txt
 rm timeResultsLya.txt
 cd sunspider
@@ -9,7 +13,7 @@ do
 	echo "******************************"
   	echo "We are processing this: $name"
   	echo "The name of file $name" >> timetests.txt
-  	(/usr/bin/time node $name) >> "toRemove.txt" 2>> "timetests.txt"
+  	(time node $name) >> "toRemove.txt" 2>> "timetests.txt"
 
 done < "$input"
 
@@ -30,7 +34,7 @@ do
   	echo "We are processing this: $name"
   	sed -i "s/${prevname}/${name}/" main.js
   	echo "The name of file $name" >> timeResultsLya.txt
-  	(/usr/bin/time node main.js) >> "toRemove.txt" 2>> "timeResultsLya.txt"
+  	(time node main.js) >> "toRemove.txt" 2>> "timeResultsLya.txt"
   	prevname=$name
 
 done < "$input"

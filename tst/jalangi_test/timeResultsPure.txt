@@ -1,78 +1,130 @@
 The name of file 3d-cube.js
-1.85user 0.85system 0:02.64elapsed 102%CPU (0avgtext+0avgdata 143504maxresident)k
-0inputs+14288outputs (0major+30924minor)pagefaults 0swaps
+
+real	0m8.505s
+user	0m6.780s
+sys	0m1.772s
 The name of file 3d-morph.js
-0.04user 0.01system 0:00.05elapsed 98%CPU (0avgtext+0avgdata 31900maxresident)k
-0inputs+0outputs (0major+2862minor)pagefaults 0swaps
+
+real	0m0.077s
+user	0m0.064s
+sys	0m0.012s
 The name of file 3d-raytrace.js
-0.06user 0.01system 0:00.06elapsed 118%CPU (0avgtext+0avgdata 35476maxresident)k
-0inputs+40outputs (0major+3937minor)pagefaults 0swaps
+
+real	0m0.073s
+user	0m0.068s
+sys	0m0.008s
 The name of file access-binary-trees.js
-0.05user 0.00system 0:00.05elapsed 101%CPU (0avgtext+0avgdata 31220maxresident)k
-0inputs+0outputs (0major+2786minor)pagefaults 0swaps
+
+real	0m0.062s
+user	0m0.056s
+sys	0m0.004s
 The name of file access-fannkuch.js
-0.05user 0.00system 0:00.05elapsed 98%CPU (0avgtext+0avgdata 31084maxresident)k
-0inputs+0outputs (0major+2615minor)pagefaults 0swaps
+
+real	0m0.065s
+user	0m0.064s
+sys	0m0.000s
 The name of file access-nbody.js
-0.05user 0.00system 0:00.05elapsed 101%CPU (0avgtext+0avgdata 32148maxresident)k
-0inputs+0outputs (0major+2954minor)pagefaults 0swaps
+
+real	0m0.064s
+user	0m0.056s
+sys	0m0.008s
 The name of file access-nsieve.js
-0.05user 0.00system 0:00.05elapsed 94%CPU (0avgtext+0avgdata 31464maxresident)k
-0inputs+0outputs (0major+2708minor)pagefaults 0swaps
+
+real	0m0.063s
+user	0m0.056s
+sys	0m0.004s
 The name of file bitops-3bit-bits-in-byte.js
-0.04user 0.00system 0:00.05elapsed 100%CPU (0avgtext+0avgdata 30656maxresident)k
-0inputs+0outputs (0major+2562minor)pagefaults 0swaps
+
+real	0m0.058s
+user	0m0.052s
+sys	0m0.004s
 The name of file bitops-bits-in-byte.js
-0.03user 0.01system 0:00.04elapsed 100%CPU (0avgtext+0avgdata 30492maxresident)k
-0inputs+0outputs (0major+2564minor)pagefaults 0swaps
+
+real	0m0.060s
+user	0m0.060s
+sys	0m0.000s
 The name of file bitops-bitwise-and.js
-0.05user 0.00system 0:00.05elapsed 98%CPU (0avgtext+0avgdata 30692maxresident)k
-0inputs+0outputs (0major+2548minor)pagefaults 0swaps
+
+real	0m0.059s
+user	0m0.048s
+sys	0m0.008s
 The name of file bitops-nsieve-bits.js
-0.04user 0.00system 0:00.05elapsed 98%CPU (0avgtext+0avgdata 30724maxresident)k
-0inputs+0outputs (0major+2550minor)pagefaults 0swaps
+
+real	0m0.062s
+user	0m0.052s
+sys	0m0.008s
 The name of file controlflow-recursive.js
-0.04user 0.01system 0:00.05elapsed 96%CPU (0avgtext+0avgdata 30428maxresident)k
-0inputs+0outputs (0major+2604minor)pagefaults 0swaps
+
+real	0m0.060s
+user	0m0.060s
+sys	0m0.000s
 The name of file crypto-aes.js
-0.06user 0.00system 0:00.06elapsed 108%CPU (0avgtext+0avgdata 33728maxresident)k
-0inputs+8outputs (0major+3394minor)pagefaults 0swaps
+
+real	0m0.066s
+user	0m0.064s
+sys	0m0.000s
 The name of file crypto-md5.js
-0.05user 0.00system 0:00.05elapsed 100%CPU (0avgtext+0avgdata 30656maxresident)k
-0inputs+0outputs (0major+2650minor)pagefaults 0swaps
+
+real	0m0.062s
+user	0m0.060s
+sys	0m0.000s
 The name of file crypto-sha1.js
-0.04user 0.00system 0:00.05elapsed 100%CPU (0avgtext+0avgdata 30924maxresident)k
-0inputs+0outputs (0major+2633minor)pagefaults 0swaps
+
+real	0m0.062s
+user	0m0.056s
+sys	0m0.004s
 The name of file date-format-tofte.js
-0.05user 0.00system 0:00.05elapsed 103%CPU (0avgtext+0avgdata 32708maxresident)k
-0inputs+0outputs (0major+3155minor)pagefaults 0swaps
+
+real	0m0.067s
+user	0m0.060s
+sys	0m0.004s
 The name of file date-format-xparb.js
-0.09user 0.03system 0:00.12elapsed 108%CPU (0avgtext+0avgdata 34512maxresident)k
-0inputs+232outputs (0major+3603minor)pagefaults 0swaps
+
+real	0m0.154s
+user	0m0.124s
+sys	0m0.036s
 The name of file math-cordic.js
-0.04user 0.00system 0:00.05elapsed 101%CPU (0avgtext+0avgdata 31048maxresident)k
-0inputs+0outputs (0major+2676minor)pagefaults 0swaps
+
+real	0m0.064s
+user	0m0.060s
+sys	0m0.004s
 The name of file math-partial-sums.js
-0.06user 0.00system 0:00.05elapsed 119%CPU (0avgtext+0avgdata 33748maxresident)k
-0inputs+0outputs (0major+3288minor)pagefaults 0swaps
+
+real	0m0.071s
+user	0m0.060s
+sys	0m0.008s
 The name of file math-spectral-norm.js
-0.05user 0.00system 0:00.05elapsed 101%CPU (0avgtext+0avgdata 30976maxresident)k
-0inputs+0outputs (0major+2737minor)pagefaults 0swaps
+
+real	0m0.063s
+user	0m0.060s
+sys	0m0.000s
 The name of file regexp-dna.js
-0.04user 0.00system 0:00.05elapsed 100%CPU (0avgtext+0avgdata 30596maxresident)k
-0inputs+592outputs (0major+2584minor)pagefaults 0swaps
+
+real	0m0.068s
+user	0m0.064s
+sys	0m0.000s
 The name of file string-base64.js
-0.04user 0.01system 0:00.05elapsed 103%CPU (0avgtext+0avgdata 33076maxresident)k
-0inputs+96outputs (0major+3135minor)pagefaults 0swaps
+
+real	0m0.066s
+user	0m0.060s
+sys	0m0.004s
 The name of file string-fasta.js
-0.06user 0.00system 0:00.06elapsed 101%CPU (0avgtext+0avgdata 33276maxresident)k
-0inputs+0outputs (0major+3192minor)pagefaults 0swaps
+
+real	0m0.080s
+user	0m0.072s
+sys	0m0.008s
 The name of file string-tagcloud.js
-0.07user 0.00system 0:00.07elapsed 106%CPU (0avgtext+0avgdata 37368maxresident)k
-0inputs+616outputs (0major+4323minor)pagefaults 0swaps
+
+real	0m0.103s
+user	0m0.100s
+sys	0m0.004s
 The name of file string-unpack-code.js
-0.06user 0.00system 0:00.06elapsed 103%CPU (0avgtext+0avgdata 35148maxresident)k
-0inputs+0outputs (0major+3748minor)pagefaults 0swaps
+
+real	0m0.080s
+user	0m0.072s
+sys	0m0.008s
 The name of file string-validate-input.js
-0.04user 0.00system 0:00.04elapsed 100%CPU (0avgtext+0avgdata 29892maxresident)k
-0inputs+0outputs (0major+2418minor)pagefaults 0swaps
+
+real	0m0.057s
+user	0m0.052s
+sys	0m0.004s
