@@ -6,6 +6,17 @@ let locEnv;
 // suffix for our own metadata
 const endName = '@name';
 
+// @storedCalls it is a table that contains all the analysis data
+// @truename the name of the current function, object etc that we want to add to
+// the table 
+// Given those two inputs we can update the analysis data that are stored in storedCalls
+const updateAnalysisData = (storedCalls, truename) => {
+  if (Object.prototype.hasOwnProperty.
+        call(storedCalls, truename) === false) {
+      storedCalls[truename] = true;
+    }
+};
+
 // This the handler of the require function. Every time a "require" is used to load up a module
 // this handler is called. It updates the analysis data that are stored in the accessMatrix table.
 const requireHandler = {
@@ -17,35 +28,6 @@ const requireHandler = {
   },
 };
 
-const exportControl = (storedCalls, truename) => {
-  if (storedCalls === 'undefined') {
-      storedCalls = {};
-      storedCalls[truename] = true;
-    } else {
-      storedCalls[truename] = true;
-    }
-};
-
-const exportFuncControl = (storedCalls, truename, arguments) => {
-  
-    return Reflect.apply(...arguments);
-};
-
-const onModuleControlFunc = (storedCalls, truename, arguments) => {
-  if (Object.prototype.hasOwnProperty.
-        call(storedCalls, truename) === false) {
-      storedCalls[truename] = true;
-    }
-    return Reflect.apply(...arguments);
-};
-
-const onModuleControl = (storedCalls, truename) => {
-  if (Object.prototype.hasOwnProperty.
-        call(storedCalls, truename) === false) {
-      storedCalls[truename] = true;
-    }
-};
-
 // The handler of the global variable.Every time we access the global variabe in order to declare 
 // or call a variable, then we can print it on the export file.
 const globalHandler= {
@@ -55,7 +37,7 @@ const globalHandler= {
       if (typeof target[name+endName] != 'undefined') {
         const currentName = locEnv.trueName[locEnv.requireLevel];
         const nameToShow = target[name+endName];
-        onModuleControl(locEnv.accessMatrix[currentName], nameToShow);
+        updateAnalysisData(locEnv.accessMatrix[currentName], nameToShow);
       }
     }
 
@@ -69,7 +51,7 @@ const globalHandler= {
       // In order to exist a disticton between the values we declared ourselfs
       // We declare one more field with key value that stores the name
       Object.defineProperty(target, name+endName, {value: nameToStore});
-      onModuleControl(locEnv.accessMatrix[currentName], nameToStore);
+      updateAnalysisData(locEnv.accessMatrix[currentName], nameToStore);
 
       return result;
     }
@@ -85,13 +67,13 @@ const globalHandler= {
 const moduleHandler= {
   apply: function(target) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
+    updateAnalysisData(locEnv.accessMatrix[currentName],target.name);
 
-    return onModuleControlFunc(locEnv.accessMatrix[currentName],
-        target.name, arguments);
+    return Reflect.apply(...arguments);
   },
   get: function(target, name) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
-    onModuleControl(locEnv.accessMatrix[currentName], target.name);
+    updateAnalysisData(locEnv.accessMatrix[currentName], target.name);
 
     return Reflect.get(target, name);
   },
@@ -107,8 +89,8 @@ const exportsFuncHandler= {
     truename = locEnv.objName.get(target);
     const currentName = locEnv.objPath.get(target);
     truename = truename + '.' + target.name;
-    //TODO: fix the currentName
-    return exportFuncControl(locEnv.accessMatrix[currentName], truename, arguments);
+
+    return Reflect.apply(...arguments);
   },
 };
 
