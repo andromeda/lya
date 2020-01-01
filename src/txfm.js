@@ -39,9 +39,13 @@ let finalDecl = ' ';
 const objName = new WeakMap();
 const objPath = new WeakMap();
 
+// @globals.json contains all the functions we want to wrap in a proxy
+// @staticGlobals.json contains all the global variables that contain static functions
+// @constantGlobals.json has all the constants of the static variables 
 // We read and store the data of the json file
 const globals = require('./globals.json');
 const sglobals = require('./staticGlobals.json');
+const cglobals = require('./constantGlobals.json');
 // const jsonPrototypeData = require('./prototypeGlobals.json');
 
 // We make a test on fragment
@@ -142,6 +146,17 @@ const createStaticGlobal = (name, finalDecl, upValue) => {
   return finalDecl;
 };
 
+const createConstantGlobal = (name, finalDecl, upValue) => {
+  if (global[upValue][name] != undefined) {
+    const nameToShow = upValue + '.' + name;
+    globalProxies[nameToShow] = proxyWrap(policy.moduleHandler, global[upValue][name]);
+    // We save the declared wraped functions in new local
+    finalDecl += nameToShow + ' = pr["' + nameToShow +'"];\n';
+  }
+
+  return finalDecl;
+};
+
 // // We use it to pass the static global data inside module
 // const createPrototypeGlobal = (name, finalDecl, upValue) => {
 //   if (global[upValue][name] != undefined) {
@@ -174,6 +189,20 @@ const createFinalDecl = () => {
       }
     }
   }
+
+  // This is for the constant global Data --Math.PI, Nath.LOG2E etc
+  for (const upValue in cglobals) {
+    if (Object.prototype.hasOwnProperty.call(cglobals, upValue)) {
+      const globalVariables = cglobals[upValue];
+      for (const declName in globalVariables) {
+        if (Object.prototype.hasOwnProperty.call(globalVariables, declName)) {
+          const name = globalVariables[declName];
+          finalDecl = createConstantGlobal(name, finalDecl, upValue);
+        }
+      }
+    }
+  }
+
 
   // This is for the static global Data --Math,JSON etc
   // for (const upValue in jsonPrototypeData) {
