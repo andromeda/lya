@@ -8,7 +8,7 @@ while IFS= read -r line
 do
         name=$line.js
 	echo "This file first $name"
-    	sed -i "1s/^/for (i = 0; i < 5; i++) {\n/" $name 
+    	sed -i "1s/^/for (var i = 0; i < 100; i++) {\n/" $name 
 	sed -i "\$a}" $name 
 done < "$input"
 
