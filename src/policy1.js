@@ -79,6 +79,15 @@ const moduleHandler= {
   },
 };
 
+const globalConstHandler= {
+  get: function(target, name) {
+    const currentName = locEnv.trueName[locEnv.requireLevel];
+    updateAnalysisData(locEnv.accessMatrix[currentName], target[name+name]);
+
+    return Reflect.get(target, name);
+  },
+};
+
 // The handler of the functions on the export module. Every time we require a module 
 // and we have exports, we wrap them in a handler. Each time we call a function from inside
 // exports this is the handler that we wrap the function.
@@ -169,6 +178,7 @@ module.exports = (env) => {
     moduleHandler : moduleHandler,
     updateCounter : updateCounter,
     exportHandler : exportHandler,
+    globalConstHandler : globalConstHandler,
     objNameSet : (result, path) => {
       locEnv.objName.set(result, 'require(\'' + path + '\')');
     },

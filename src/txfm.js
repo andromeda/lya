@@ -74,6 +74,10 @@ let policy = require('./policy' + userChoice + '.js')(env);;
 // We wrap the global variable in a proxy
 global = new Proxy(global, policy.globalHandler);
 
+// A proxy to use it in Math.PI etc
+globalProxies['proxyExportHandler'] = policy.globalConstHandler;
+
+
 // Case handler
 // Returns the right require handler for the case
 const mainRequire = (original) => {
@@ -153,6 +157,7 @@ const createConstantGlobal = (name, finalDecl, upValue) => {
     globalProxies[nameToShow] =  global[upValue][name];
     // We save the declared wraped functions in new local
     finalDecl += nameToShow + ' = pr["' + nameToShow +'"];\n';
+    finalDecl += nameToShow + name + ' = "' + nameToShow + '";\n';
   }
 
   return finalDecl;
@@ -202,6 +207,8 @@ const createFinalDecl = () => {
         }
       }
     }
+    finalDecl += upValue + ' = new Proxy(' + upValue + ', pr["proxyExportHandler"]);\n';  
+
   }
 
 

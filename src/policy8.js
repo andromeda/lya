@@ -136,6 +136,15 @@ const exportHandler= {
   },
 };
 
+const globalConstHandler= {
+  get: function(target, name) {
+    const currentName = locEnv.trueName[locEnv.requireLevel];
+    updateAnalysisData(locEnv.accessMatrix[currentName], target[name+name]);
+
+    return Reflect.get(target, name);
+  },
+};
+
 module.exports = (env) => {
 	locEnv = env;
 	return {
@@ -144,6 +153,7 @@ module.exports = (env) => {
     globalHandler : globalHandler,
     updateCounter : updateCounter,
     exportHandler : exportHandler,
+    globalConstHandler : globalConstHandler,
     objNameSet : (result, path) => {
       locEnv.objName.set(result, 'require(\'' + path + '\')');
     },
