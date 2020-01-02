@@ -1,3 +1,4 @@
+for (var loopiiii = 0; loopiiii < 100; loopiiii++) {
 /*
  * Copyright (C) 2004 Baron Schwartz <baron at sequent dot org>
  *
@@ -415,4 +416,5 @@ for (i = 0; i < 4000; ++i) {
     var longFormat = date.dateFormat("l, F d, Y g:i:s A");
     date.setTime(date.getTime() + 84266956);
     console.log(date.toUTCString());
+}
 }

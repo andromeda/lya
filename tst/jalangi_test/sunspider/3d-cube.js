@@ -1,3 +1,4 @@
+for (var loopiiii = 0; loopiiii < 20; loopiiii++) {
 // 3D Cube Rotation
 // http://www.speich.net/computer/moztesting/3d.htm
 // Created by Simon Speich
@@ -337,3 +338,4 @@ Origin = null;
 Testing = null;
 LoopTime = null;
 DisplArea = null;
+}

@@ -1,3 +1,4 @@
+for (var loopiiii = 0; loopiiii < 100; loopiiii++) {
 // Copyright (c) 2004 by Arthur Langereis (arthur_ext at domain xfinitegames, tld com
 
 var result = 0;
@@ -36,3 +37,4 @@ return sum;
 sum = TimeFunc(fast3bitlookup);
 console.log(sum);
 
+}

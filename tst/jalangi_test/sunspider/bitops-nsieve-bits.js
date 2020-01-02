@@ -1,3 +1,4 @@
+for (var loopiiii = 0; loopiiii < 100; loopiiii++) {
 // The Great Computer Language Shootout
 //  http://shootout.alioth.debian.org
 //
@@ -33,3 +34,4 @@ function sieve() {
 
 var result = sieve();
 
+}

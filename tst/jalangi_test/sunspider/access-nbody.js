@@ -1,3 +1,4 @@
+for (var loopiiii = 0; loopiiii < 100; loopiiii++) {
 /* The Great Computer Language Shootout
    http://shootout.alioth.debian.org/
    contributed by Isaac Gouy */
@@ -167,4 +168,5 @@ for ( var n = 3; n <= 24; n *= 2 ) {
         ret = bodies.energy();
         console.log(ret);
     })();
+}
 }

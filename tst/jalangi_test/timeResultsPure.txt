@@ -1,87 +1,130 @@
 The name of file 3d-cube.js
-FATAL ERROR: CALL_AND_RETRY_LAST Allocation failed - JavaScript heap out of memory
- 1: node::Abort() [node]
- 2: 0x121a2cc [node]
- 3: v8::Utils::ReportOOMFailure(char const*, bool) [node]
- 4: v8::internal::V8::FatalProcessOutOfMemory(char const*, bool) [node]
- 5: v8::internal::Factory::NewFillerObject(int, bool, v8::internal::AllocationSpace) [node]
- 6: v8::internal::Runtime_AllocateInTargetSpace(int, v8::internal::Object**, v8::internal::Isolate*) [node]
- 7: 0x3907b240463d
-Command terminated by signal 6
-324.78user 3.67system 4:10.76elapsed 130%CPU (0avgtext+0avgdata 1796520maxresident)k
-2512inputs+8outputs (15major+445758minor)pagefaults 0swaps
+
+real	2m24.837s
+user	2m18.556s
+sys	0m7.440s
 The name of file 3d-morph.js
-0.50user 0.00system 0:00.51elapsed 97%CPU (0avgtext+0avgdata 37224maxresident)k
-0inputs+0outputs (0major+4410minor)pagefaults 0swaps
+
+real	0m1.325s
+user	0m1.312s
+sys	0m0.012s
 The name of file 3d-raytrace.js
-1.00user 0.01system 0:00.93elapsed 108%CPU (0avgtext+0avgdata 71164maxresident)k
-0inputs+0outputs (0major+13843minor)pagefaults 0swaps
+
+real	0m1.160s
+user	0m1.148s
+sys	0m0.028s
 The name of file access-binary-trees.js
-0.52user 0.00system 0:00.52elapsed 100%CPU (0avgtext+0avgdata 37496maxresident)k
-0inputs+0outputs (0major+4417minor)pagefaults 0swaps
+
+real	0m0.585s
+user	0m0.588s
+sys	0m0.012s
 The name of file access-fannkuch.js
-0.34user 0.00system 0:00.34elapsed 99%CPU (0avgtext+0avgdata 31160maxresident)k
-0inputs+0outputs (0major+2689minor)pagefaults 0swaps
+
+real	0m0.539s
+user	0m0.528s
+sys	0m0.008s
 The name of file access-nbody.js
-1.38user 0.01system 0:01.38elapsed 101%CPU (0avgtext+0avgdata 36260maxresident)k
-0inputs+0outputs (0major+4052minor)pagefaults 0swaps
+
+real	0m1.842s
+user	0m1.844s
+sys	0m0.008s
 The name of file access-nsieve.js
-0.19user 0.03system 0:00.21elapsed 104%CPU (0avgtext+0avgdata 50904maxresident)k
-0inputs+0outputs (0major+19042minor)pagefaults 0swaps
+
+real	0m0.312s
+user	0m0.268s
+sys	0m0.052s
 The name of file bitops-3bit-bits-in-byte.js
-0.15user 0.00system 0:00.17elapsed 93%CPU (0avgtext+0avgdata 30588maxresident)k
-0inputs+0outputs (0major+2576minor)pagefaults 0swaps
+
+real	0m0.226s
+user	0m0.212s
+sys	0m0.008s
 The name of file bitops-bits-in-byte.js
-0.25user 0.01system 0:00.26elapsed 100%CPU (0avgtext+0avgdata 30748maxresident)k
-0inputs+0outputs (0major+2585minor)pagefaults 0swaps
+
+real	0m0.474s
+user	0m0.468s
+sys	0m0.004s
 The name of file bitops-bitwise-and.js
-0.19user 0.00system 0:00.20elapsed 99%CPU (0avgtext+0avgdata 30600maxresident)k
-0inputs+0outputs (0major+2546minor)pagefaults 0swaps
+
+real	0m0.241s
+user	0m0.228s
+sys	0m0.012s
 The name of file bitops-nsieve-bits.js
-0.24user 0.00system 0:00.25elapsed 96%CPU (0avgtext+0avgdata 32912maxresident)k
-0inputs+0outputs (0major+3087minor)pagefaults 0swaps
+
+real	0m0.365s
+user	0m0.352s
+sys	0m0.012s
 The name of file controlflow-recursive.js
-0.23user 0.00system 0:00.24elapsed 96%CPU (0avgtext+0avgdata 30880maxresident)k
-0inputs+0outputs (0major+2704minor)pagefaults 0swaps
+
+real	0m0.351s
+user	0m0.352s
+sys	0m0.004s
 The name of file crypto-aes.js
-0.23user 0.00system 0:00.20elapsed 115%CPU (0avgtext+0avgdata 39684maxresident)k
-0inputs+0outputs (0major+5153minor)pagefaults 0swaps
+
+real	0m0.296s
+user	0m0.292s
+sys	0m0.012s
 The name of file crypto-md5.js
-0.20user 0.00system 0:00.19elapsed 110%CPU (0avgtext+0avgdata 35712maxresident)k
-0inputs+0outputs (0major+4058minor)pagefaults 0swaps
+
+real	0m0.279s
+user	0m0.272s
+sys	0m0.008s
 The name of file crypto-sha1.js
-0.17user 0.01system 0:00.18elapsed 100%CPU (0avgtext+0avgdata 33660maxresident)k
-0inputs+0outputs (0major+3304minor)pagefaults 0swaps
+
+real	0m0.279s
+user	0m0.268s
+sys	0m0.008s
 The name of file date-format-tofte.js
-0.49user 0.00system 0:00.47elapsed 105%CPU (0avgtext+0avgdata 34192maxresident)k
-0inputs+0outputs (0major+3540minor)pagefaults 0swaps
+
+real	0m1.038s
+user	0m1.036s
+sys	0m0.004s
 The name of file date-format-xparb.js
-2.44user 0.13system 0:02.47elapsed 103%CPU (0avgtext+0avgdata 133640maxresident)k
-0inputs+0outputs (0major+28445minor)pagefaults 0swaps
+
+real	0m5.146s
+user	0m4.800s
+sys	0m0.368s
 The name of file math-cordic.js
-0.32user 0.00system 0:00.29elapsed 111%CPU (0avgtext+0avgdata 33376maxresident)k
-0inputs+0outputs (0major+3305minor)pagefaults 0swaps
+
+real	0m0.403s
+user	0m0.388s
+sys	0m0.012s
 The name of file math-partial-sums.js
-1.42user 0.03system 0:00.81elapsed 179%CPU (0avgtext+0avgdata 34896maxresident)k
-0inputs+0outputs (0major+3602minor)pagefaults 0swaps
+
+real	0m1.116s
+user	0m1.116s
+sys	0m0.000s
 The name of file math-spectral-norm.js
-0.23user 0.00system 0:00.23elapsed 102%CPU (0avgtext+0avgdata 33436maxresident)k
-0inputs+0outputs (0major+3323minor)pagefaults 0swaps
+
+real	0m0.344s
+user	0m0.348s
+sys	0m0.004s
 The name of file regexp-dna.js
-0.61user 0.02system 0:00.63elapsed 99%CPU (0avgtext+0avgdata 40240maxresident)k
-0inputs+0outputs (0major+10372minor)pagefaults 0swaps
+
+real	0m0.805s
+user	0m0.792s
+sys	0m0.012s
 The name of file string-base64.js
-0.22user 0.00system 0:00.22elapsed 101%CPU (0avgtext+0avgdata 46584maxresident)k
-0inputs+0outputs (0major+6512minor)pagefaults 0swaps
+
+real	0m0.414s
+user	0m0.404s
+sys	0m0.016s
 The name of file string-fasta.js
-0.90user 0.01system 0:00.84elapsed 108%CPU (0avgtext+0avgdata 33500maxresident)k
-0inputs+0outputs (0major+3345minor)pagefaults 0swaps
+
+real	0m1.674s
+user	0m1.676s
+sys	0m0.004s
 The name of file string-tagcloud.js
-1.00user 0.03system 0:01.00elapsed 103%CPU (0avgtext+0avgdata 99600maxresident)k
-0inputs+0outputs (0major+30462minor)pagefaults 0swaps
+
+real	0m1.690s
+user	0m1.676s
+sys	0m0.024s
 The name of file string-unpack-code.js
-0.95user 0.01system 0:00.96elapsed 100%CPU (0avgtext+0avgdata 59500maxresident)k
-0inputs+0outputs (0major+9878minor)pagefaults 0swaps
+
+real	0m1.272s
+user	0m1.248s
+sys	0m0.028s
 The name of file string-validate-input.js
-0.04user 0.00system 0:00.05elapsed 94%CPU (0avgtext+0avgdata 30124maxresident)k
-0inputs+0outputs (0major+2486minor)pagefaults 0swaps
+
+real	0m0.077s
+user	0m0.076s
+sys	0m0.008s

@@ -1,3 +1,4 @@
+for (var loopiiii = 0; loopiiii < 100; loopiiii++) {
 /* The Great Computer Language Shootout
    http://shootout.alioth.debian.org/
    contributed by Isaac Gouy */
@@ -66,3 +67,4 @@ var ret = fannkuch(n);
 console.log(ret);
 
 
+}

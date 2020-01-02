@@ -1,3 +1,4 @@
+for (var loopiiii = 0; loopiiii < 100; loopiiii++) {
 /*
  * A JavaScript implementation of the Secure Hash Algorithm, SHA-1, as defined
  * in FIPS PUB 180-1
@@ -223,3 +224,4 @@ for (var i = 0; i <4; i++) {
 
 var sha1Output = hex_sha1(plainText);
 console.log(sha1Output);
+}

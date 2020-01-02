@@ -1,3 +1,4 @@
+for (var loopiiii = 0; loopiiii < 100; loopiiii++) {
 // The Great Computer Language Shootout
 //  http://shootout.alioth.debian.org
 //
@@ -88,3 +89,4 @@ console.log(ret);
 ret = fastaRandom(5*count*1000, HomoSap);
 console.log(ret);
 
+}

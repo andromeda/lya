@@ -1,3 +1,4 @@
+for (var loopiiii = 0; loopiiii < 100; loopiiii++) {
 /*
  * Copyright (C) Rich Moore.  All rights reserved.
  *
@@ -99,3 +100,4 @@ function cordic( runs ) {
 }
 
 cordic(25000);
+}

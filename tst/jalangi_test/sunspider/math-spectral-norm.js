@@ -1,3 +1,4 @@
+for (var loopiiii = 0; loopiiii < 100; loopiiii++) {
 // The Great Computer Language Shootout
 // http://shootout.alioth.debian.org/
 //
@@ -48,4 +49,5 @@ function spectralnorm(n) {
 
 for (var i = 6; i <= 48; i *= 2) {
     console.log(spectralnorm(i));
+}
 }

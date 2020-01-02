@@ -1,3 +1,4 @@
+for (var loopiiii = 0; loopiiii < 100; loopiiii++) {
 
 /*
  * Copyright (C) 2007 Apple Inc.  All rights reserved.
@@ -264,3 +265,4 @@ function makeTagCloud(tagInfo)
 var tagcloud = makeTagCloud(tagInfo);
 console.log(tagcloud);
 tagInfo = null;
+}

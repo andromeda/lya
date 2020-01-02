@@ -1,3 +1,4 @@
+for (var loopiiii = 0; loopiiii < 100; loopiiii++) {
 // Copyright (c) 2004 by Arthur Langereis (arthur_ext at domain xfinitegames, tld com)
 
 
@@ -24,3 +25,4 @@ return sum;
 
 result = TimeFunc(bitsinbyte);
 console.log(result);
+}

@@ -1,130 +1,171 @@
 The name of file 3d-cube.js
 
-real	0m9.441s
-user	0m9.268s
-sys	0m0.380s
+real	3m8.284s
+user	3m2.492s
+sys	0m7.940s
 The name of file 3d-morph.js
 
-real	0m0.773s
-user	0m0.800s
-sys	0m0.032s
+real	0m48.719s
+user	0m48.784s
+sys	0m0.016s
 The name of file 3d-raytrace.js
 
-real	0m1.309s
-user	0m1.444s
-sys	0m0.032s
+real	1m0.301s
+user	1m0.408s
+sys	0m0.068s
 The name of file access-binary-trees.js
 
-real	0m0.451s
-user	0m0.488s
-sys	0m0.028s
+real	0m21.587s
+user	0m21.612s
+sys	0m0.052s
 The name of file access-fannkuch.js
 
-real	0m1.802s
-user	0m1.852s
-sys	0m0.016s
+real	2m38.710s
+user	2m38.752s
+sys	0m0.028s
 The name of file access-nbody.js
 
-real	0m0.993s
-user	0m1.068s
-sys	0m0.024s
+real	1m1.260s
+user	1m1.336s
+sys	0m0.032s
 The name of file access-nsieve.js
 
-real	0m0.707s
-user	0m0.736s
-sys	0m0.024s
+real	0m44.370s
+user	0m44.332s
+sys	0m0.124s
 The name of file bitops-3bit-bits-in-byte.js
 
-real	0m0.722s
-user	0m0.740s
-sys	0m0.028s
+real	0m55.151s
+user	0m55.156s
+sys	0m0.044s
 The name of file bitops-bits-in-byte.js
 
-real	0m1.007s
-user	0m1.028s
-sys	0m0.020s
+real	1m20.807s
+user	1m20.824s
+sys	0m0.024s
 The name of file bitops-bitwise-and.js
 
-real	0m0.756s
-user	0m0.748s
-sys	0m0.024s
+real	0m54.653s
+user	0m54.648s
+sys	0m0.020s
 The name of file bitops-nsieve-bits.js
 
-real	0m0.938s
-user	0m0.976s
-sys	0m0.012s
+real	1m15.676s
+user	1m15.716s
+sys	0m0.016s
 The name of file controlflow-recursive.js
 
-real	0m0.539s
-user	0m0.560s
-sys	0m0.028s
+real	0m34.597s
+user	0m34.620s
+sys	0m0.044s
 The name of file crypto-aes.js
 
-real	0m1.159s
-user	0m1.288s
-sys	0m0.032s
+real	0m48.867s
+user	0m48.984s
+sys	0m0.048s
 The name of file crypto-md5.js
 
-real	0m0.883s
-user	0m1.000s
-sys	0m0.024s
+real	0m36.812s
+user	0m36.884s
+sys	0m0.064s
 The name of file crypto-sha1.js
 
-real	0m0.738s
-user	0m0.824s
-sys	0m0.036s
-The name of file date-format-tofte.js
-
-real	0m6.680s
-user	0m6.876s
+real	0m35.608s
+user	0m35.672s
 sys	0m0.068s
+The name of file date-format-tofte.js
+/home/jalangi2/src/js/runtime/analysis.js:515
+            throw tmp;
+            ^
+
+SyntaxError: Unexpected token (1:16)
+    at Parser.pp.raise (/home/jalangi2/node_modules/acorn/dist/acorn.js:920:13)
+    at Parser.pp.unexpected (/home/jalangi2/node_modules/acorn/dist/acorn.js:1483:8)
+    at Parser.pp.parseExprAtom (/home/jalangi2/node_modules/acorn/dist/acorn.js:330:12)
+    at Parser.pp.parseExprSubscripts (/home/jalangi2/node_modules/acorn/dist/acorn.js:225:19)
+    at Parser.pp.parseMaybeUnary (/home/jalangi2/node_modules/acorn/dist/acorn.js:204:17)
+    at Parser.pp.parseExprOps (/home/jalangi2/node_modules/acorn/dist/acorn.js:151:19)
+    at Parser.pp.parseMaybeConditional (/home/jalangi2/node_modules/acorn/dist/acorn.js:133:19)
+    at Parser.pp.parseMaybeAssign (/home/jalangi2/node_modules/acorn/dist/acorn.js:110:19)
+    at Parser.pp.parseExpression (/home/jalangi2/node_modules/acorn/dist/acorn.js:86:19)
+    at Parser.pp.parseStatement (/home/jalangi2/node_modules/acorn/dist/acorn.js:1753:23)
+
+real	4m39.538s
+user	4m40.048s
+sys	0m1.760s
 The name of file date-format-xparb.js
 
-real	0m0.835s
-user	0m0.948s
-sys	0m0.076s
+real	0m27.332s
+user	0m27.104s
+sys	0m0.564s
 The name of file math-cordic.js
 
-real	0m1.144s
-user	0m1.200s
-sys	0m0.008s
+real	1m39.490s
+user	1m39.516s
+sys	0m0.036s
 The name of file math-partial-sums.js
 
-real	0m0.628s
-user	0m0.644s
-sys	0m0.048s
+real	0m34.574s
+user	0m34.620s
+sys	0m0.020s
 The name of file math-spectral-norm.js
 
-real	0m0.733s
-user	0m0.760s
-sys	0m0.040s
+real	0m53.279s
+user	0m53.332s
+sys	0m0.032s
 The name of file regexp-dna.js
 
-real	0m0.242s
-user	0m0.256s
-sys	0m0.024s
+real	0m1.005s
+user	0m1.048s
+sys	0m0.012s
 The name of file string-base64.js
 
-real	0m0.666s
-user	0m0.720s
-sys	0m0.044s
+real	0m30.446s
+user	0m30.528s
+sys	0m0.048s
 The name of file string-fasta.js
 
-real	0m0.634s
-user	0m0.680s
+real	0m39.124s
+user	0m39.172s
 sys	0m0.032s
 The name of file string-tagcloud.js
 
-real	0m6.693s
-user	0m6.772s
-sys	0m0.100s
+real	5m36.538s
+user	5m36.612s
+sys	0m1.292s
 The name of file string-unpack-code.js
 
-real	0m0.531s
-user	0m0.584s
-sys	0m0.040s
+real	0m13.758s
+user	0m13.796s
+sys	0m0.068s
 The name of file string-validate-input.js
 
-real	0m0.305s
-user	0m0.352s
-sys	0m0.032s
+real	0m0.353s
+user	0m0.392s
+sys	0m0.048s
+The name of file 3d-cube.js
+The name of file 3d-morph.js
+The name of file 3d-raytrace.js
+The name of file access-binary-trees.js
+The name of file access-fannkuch.js
+The name of file access-nbody.js
+The name of file access-nsieve.js
+The name of file bitops-3bit-bits-in-byte.js
+The name of file bitops-bits-in-byte.js
+The name of file bitops-bitwise-and.js
+The name of file bitops-nsieve-bits.js
+The name of file controlflow-recursive.js
+The name of file crypto-aes.js
+The name of file crypto-md5.js
+The name of file crypto-sha1.js
+The name of file date-format-tofte.js
+The name of file date-format-xparb.js
+The name of file math-cordic.js
+The name of file math-partial-sums.js
+The name of file math-spectral-norm.js
+The name of file regexp-dna.js
+The name of file string-base64.js
+The name of file string-fasta.js
+The name of file string-tagcloud.js
+The name of file string-unpack-code.js
+The name of file string-validate-input.js

@@ -1,3 +1,4 @@
+for (var loopiiii = 0; loopiiii < 100; loopiiii++) {
 function arrayExists(array, x) {
     for (var i = 0; i < array.length; i++) {
         if (array[i] == x) return true;
@@ -298,3 +299,4 @@ for (i = 0; i < 500; ++i) {
     //console.log(date.toUTCString());
 }
 
+}

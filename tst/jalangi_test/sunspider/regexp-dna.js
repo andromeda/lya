@@ -1,3 +1,4 @@
+for (var loopiiii = 0; loopiiii < 100; loopiiii++) {
 // The Computer Language Shootout
 // http://shootout.alioth.debian.org/
 //
@@ -1712,3 +1713,4 @@ for(k in subs)
 
 console.log(dnaInput);
  // search string, replacement string, flags
+}

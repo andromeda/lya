@@ -1,3 +1,4 @@
+for (var loopiiii = 0; loopiiii < 100; loopiiii++) {
 // The Computer Language Shootout
 // http://shootout.alioth.debian.org/
 // contributed by Isaac Gouy
@@ -22,4 +23,5 @@ for ( var i = 3; i <= 5; i++ ) {
     console.log(ack(3,i));
     console.log(fib(17.0+i));
     console.log(tak(3*i+3,2*i+2,i+1));
+}
 }

@@ -1,3 +1,4 @@
+for (var loopiiii = 0; loopiiii < 100; loopiiii++) {
 /* ***** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
@@ -134,3 +135,4 @@ for ( var i = 8192; i <= 16384; i *= 2 ) {
 }
 
 toBinaryTable = null;
+}

@@ -1,3 +1,4 @@
+for (var loopiiii = 0; loopiiii < 100; loopiiii++) {
 /*
  * A JavaScript implementation of the RSA Data Security, Inc. MD5 Message
  * Digest Algorithm, as defined in RFC 1321.
@@ -286,3 +287,4 @@ for (var i = 0; i <4; i++) {
 var md5Output = hex_md5(plainText);
 console.log(md5Output);
 
+}

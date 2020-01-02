@@ -1,3 +1,4 @@
+for (var loopiiii = 0; loopiiii < 100; loopiiii++) {
 /*
  * Copyright (C) 2007 Apple Inc.  All rights reserved.
  *
@@ -29,3 +30,4 @@ for (var i = 0; i < 600000; i++)
 
 var result = bitwiseAndValue;
 console.log(result);
+}

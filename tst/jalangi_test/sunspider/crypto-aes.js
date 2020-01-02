@@ -1,3 +1,4 @@
+for (var loopiiii = 0; loopiiii < 100; loopiiii++) {
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 
 /*
@@ -423,3 +424,4 @@ var cipherText = AESEncryptCtr(plainText, password, 256);
 console.log(cipherText);
 var decryptedText = AESDecryptCtr(cipherText, password, 256);
 console.log(decryptedText);
+}

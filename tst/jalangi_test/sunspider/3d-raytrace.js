@@ -1,3 +1,4 @@
+for (var loopiiii = 0; loopiiii < 100; loopiiii++) {
 /*
  * Copyright (C) 2007 Apple Inc.  All rights reserved.
  *
@@ -441,3 +442,4 @@ for (var y = 0; y < size; y++) {\n\
 testOutput = arrayToCanvasCommands(raytraceScene());
 console.log(testOutput);
 
+}
