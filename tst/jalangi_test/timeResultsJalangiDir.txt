@@ -1,0 +1,20 @@
+The name of file crypto-aes.js
+
+real	0m0.370s
+user	0m0.368s
+sys	0m0.012s
+The name of file crypto-md5.js
+
+real	0m0.350s
+user	0m0.352s
+sys	0m0.000s
+The name of file crypto-sha1.js
+
+real	0m0.354s
+user	0m0.352s
+sys	0m0.004s
+The name of file date-format-tofte.js
+
+real	0m1.137s
+user	0m1.124s
+sys	0m0.016s
