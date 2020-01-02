@@ -60,6 +60,16 @@ user	0m0.332s
 sys	0m0.040s
 The name of file crypto-aes.js
 
-real	0m0.751s
-user	0m0.852s
+real	0m0.746s
+user	0m0.848s
+sys	0m0.040s
+The name of file crypto-md5.js
+
+real	0m0.646s
+user	0m0.732s
+sys	0m0.044s
+The name of file crypto-sha1.js
+
+real	0m0.502s
+user	0m0.564s
 sys	0m0.044s

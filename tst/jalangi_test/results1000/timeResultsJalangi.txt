@@ -59,18 +59,17 @@ real	0m35.835s
 user	0m35.848s
 sys	0m0.052s
 The name of file crypto-aes.js
-/home/jalangi2/src/js/instrument/esnstrument.js:1952
-                throw ex;
-                ^
 
-SyntaxError: Unexpected token (1:16)
-    at Parser.pp.raise (/home/jalangi2/node_modules/acorn/dist/acorn.js:920:13)
-    at Parser.pp.unexpected (/home/jalangi2/node_modules/acorn/dist/acorn.js:1483:8)
-    at Parser.pp.parseExprAtom (/home/jalangi2/node_modules/acorn/dist/acorn.js:330:12)
-    at Parser.pp.parseExprSubscripts (/home/jalangi2/node_modules/acorn/dist/acorn.js:225:19)
-    at Parser.pp.parseMaybeUnary (/home/jalangi2/node_modules/acorn/dist/acorn.js:204:17)
-    at Parser.pp.parseExprOps (/home/jalangi2/node_modules/acorn/dist/acorn.js:151:19)
-    at Parser.pp.parseMaybeConditional (/home/jalangi2/node_modules/acorn/dist/acorn.js:133:19)
-    at Parser.pp.parseMaybeAssign (/home/jalangi2/node_modules/acorn/dist/acorn.js:110:19)
-    at Parser.pp.parseExpression (/home/jalangi2/node_modules/acorn/dist/acorn.js:86:19)
-    at Parser.pp.parseStatement (/home/jalangi2/node_modules/acorn/dist/acorn.js:1753:23)
+real	0m47.531s
+user	0m47.644s
+sys	0m0.052s
+The name of file crypto-md5.js
+
+real	0m34.910s
+user	0m34.972s
+sys	0m0.072s
+The name of file crypto-sha1.js
+
+real	0m38.867s
+user	0m38.924s
+sys	0m0.056s
