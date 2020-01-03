@@ -4,3 +4,5 @@ The time of 5 is 24045.915199
 The time of 2 is 24397.196753 
 The time of 3 is 24052.902551 
 The time of 4 is 23995.74408 
+The time of 6 is 24132.580766 
+The time of 7 is 24241.167688999998 
