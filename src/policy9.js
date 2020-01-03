@@ -9,7 +9,9 @@ const endName = '@name';
 // @storedCalls it is a table that contains all the analysis data
 // @truename the name of the current function, object etc that we want to add to
 // the table 
-// Given those two inputs we can update the analysis data that are stored in storedCalls
+// @inputType the type of the inputs of the function ~> as a string
+// @outputType the type of the output of the function ~> as a string
+// Update the analysis data that are stored in storedCalls
 const updateAnalysisData = (storedCalls, truename, inputType, outputType) => {
   const saveData = 'input: ' + inputType + ' => output: ' + outputType; 
   if (Object.prototype.hasOwnProperty.
