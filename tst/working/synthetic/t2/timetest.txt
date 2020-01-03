@@ -6,3 +6,12 @@ The time of 3 is 7.025777
 The time of 4 is 5.160254 
 The time of 6 is 5.6249139999999995 
 The time of 7 is 5.442939 
+The time of 3 is 4.6790329999999996 
+The time of 9 is 7.08575 
+The time of 9 is 8.949201 
+The time of 9 is 8.276945 
+The time of 9 is 6.493569 
+The time of 8 is 4.651622 
+The time of 1 is 4.635599 
+The time of 9 is 7.171094999999999 
+The time of 9 is 4.4636499999999995 
