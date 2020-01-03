@@ -17,6 +17,10 @@ const updateAnalysisData = (storedCalls, truename, inputType, outputType) => {
   if (Object.prototype.hasOwnProperty.
         call(storedCalls, truename) === false) {
       storedCalls[truename] = saveData;
+  } else {
+    if (storedCalls[truename] != saveData) {
+      storedCalls[truename] += ' || ' + saveData;
+    }
   }
 };
 
