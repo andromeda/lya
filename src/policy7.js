@@ -43,7 +43,7 @@ const problemCheck = (line, char) => {
 };
 
 // The handler of require of Enforcement
-const EnforcementCheck= {
+const EnforcementCheck = {
   apply: function(target) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
     const nameReq = target.name + '(\'' + arguments[2][0] +// In arguments[2][0]
@@ -59,32 +59,12 @@ const EnforcementCheck= {
   },
 };
 
-const exportControl = (storedCalls, truename) => {
-  if ((Object.prototype.hasOwnProperty.call(storedCalls, truename) === false ||
-    problemCheck(storedCalls[truename],'R')) && !global.end) {
-      throw new Error('Something went badly wrong in ' + truename);
-    }
-}
-
-const exportFuncControl = (storedCalls, truename, arguments) => {
-  if ((Object.prototype.hasOwnProperty.call(storedCalls, truename) === false ||
-    problemCheck(storedCalls[truename],'E')) && !global.end) {
-      throw new Error('Something went badly wrong in ' + truename);
-    }
-
-    return Reflect.apply(...arguments);
-}
-
-const onModuleControlFunc = (storedCalls, truename, arguments) => {
-  if ((Object.prototype.hasOwnProperty.call(storedCalls, truename) === false ||
-    problemCheck(storedCalls[truename],'E')) && !global.end) {
-      throw new Error('Something went badly wrong!');
-    }
-
-    return Reflect.apply(...arguments);
-}
-
-const onModuleControl = (storedCalls, truename, mode) => {
+// @storedCalls it is a table that contains all the analysis data
+// @truename the name of the current function, object etc that we want to add to
+// the table 
+// @mode the mode of the current access (R,W or E)
+// Given those two inputs we can update the analysis data that are stored in storedCalls
+const CheckAnalysisData = (storedCalls, truename, mode) => {
   if ((Object.prototype.hasOwnProperty.call(storedCalls, truename) === false ||
     problemCheck(storedCalls[truename], mode)) && !global.end) {
       throw new Error('Something went badly wrong in ' + truename);
@@ -93,13 +73,13 @@ const onModuleControl = (storedCalls, truename, mode) => {
 
 // The handler of the global variable.Every time we access the global variabe in order to declare 
 // or call a variable, then we can print it on the export file.
-const globalHandler= {
+const globalHandler = {
   get: function(target, name) {
     // XXX[target] != 'undefined'
     if (typeof target[name+endName] != 'undefined') {
       const currentName = locEnv.trueName[locEnv.requireLevel];
       const nameToShow = target[name+endName];
-      onModuleControl(dynamicObj[currentName], nameToShow, 'R');
+      CheckAnalysisData(dynamicObj[currentName], nameToShow, 'R');
     }
 
     return Reflect.get(target, name);
@@ -112,7 +92,7 @@ const globalHandler= {
       // In order to exist a disticton between the values we declared ourselfs
       // We declare one more field with key value that stores the name
       Object.defineProperty(target, name+endName, {value: nameToStore});
-      onModuleControl(dynamicObj[currentName], nameToStore, 'W');
+      CheckAnalysisData(dynamicObj[currentName], nameToStore, 'W');
 
       return result;
     }
@@ -125,16 +105,16 @@ const globalHandler= {
 // load a module with require it first execute all the code and then prepary and exports 
 // all the export data. We use this handler to catch all the code that is executed on the 
 // module.
-const moduleHandler= {
+const moduleHandler = {
   apply: function(target) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
+    CheckAnalysisData(dynamicObj[currentName], target.name, 'E');
 
-    return onModuleControlFunc(dynamicObj[currentName],
-          target.name, arguments);
+    return Reflect.apply(...arguments);
   },
   get: function(target, name) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
-    onModuleControl(dynamicObj[currentName], target.name, 'R');
+    CheckAnalysisData(dynamicObj[currentName], target.name, 'R');
 
     return Reflect.get(target, name);
   },
@@ -143,16 +123,16 @@ const moduleHandler= {
 // The handler of the functions on the export module. Every time we require a module 
 // and we have exports, we wrap them in a handler. Each time we call a function from inside
 // exports this is the handler that we wrap the function.
-const exportsFuncHandler= {
+const exportsFuncHandler = {
   apply: function(target, thisArg, argumentsList) {
     let truename;
 
     truename = locEnv.objName.get(target);
     const currentName = locEnv.objPath.get(target);
     truename = truename + '.' + target.name;
+    CheckAnalysisData(dynamicObj[currentName], truename, 'E');
 
-    return exportFuncControl(dynamicObj[currentName],
-          truename, arguments);
+    return Reflect.apply(...arguments);
   },
 };
 
@@ -178,7 +158,7 @@ const readFunction = (myFunc, name) => {
 // This is the handler of the export object. Every time we require a module, and it has
 // export data we wrap those data in this handler. So this is the first layer of the 
 // export data wraping.
-const exportHandler= {
+const exportHandler = {
   get: function(target, name, receiver) {
     if (typeof target[name] != 'undefined' && typeof name === 'string') { // + udnefined
       // If we try to grab an object we wrap it in this proxy
@@ -211,8 +191,10 @@ const exportHandler= {
   },
 };
 
-const globalConstHandler= {
+const globalConstHandler = {
   get: function(target, name) {
+    const currentName = locEnv.trueName[locEnv.requireLevel];
+    CheckAnalysisData(dynamicObj[currentName], target[name+name], 'R');
 
     return Reflect.get(target, name);
   },

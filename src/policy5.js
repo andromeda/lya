@@ -174,6 +174,8 @@ const exportHandler= {
 
 const globalConstHandler= {
   get: function(target, name) {
+    const currentName = locEnv.trueName[locEnv.requireLevel];
+    updateAnalysisData(dynamicObj[currentName], target[name+name]);
 
     return Reflect.get(target, name);
   },
