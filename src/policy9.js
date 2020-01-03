@@ -18,7 +18,7 @@ const updateAnalysisData = (storedCalls, truename, inputType, outputType) => {
         call(storedCalls, truename) === false) {
       storedCalls[truename] = saveData;
   } else {
-    if (storedCalls[truename] != saveData) {
+    if (!storedCalls[truename].includes(saveData)) {
       storedCalls[truename] += ' || ' + saveData;
     }
   }
