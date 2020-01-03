@@ -169,6 +169,9 @@ const exportHandler = {
   },
 };
 
+// This is the handler of the global constanst variables, like Math.PI etc. We store the name 
+// in the same object but we use a different name, for example, for Math.PI we store the 
+// name "Math.PI" in the object Math.PIPI. That way we can have accurate name analysis.
 const globalConstHandler = {
   get: function(target, name) {
     const currentName = locEnv.trueName[locEnv.requireLevel];

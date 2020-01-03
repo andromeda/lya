@@ -39,7 +39,7 @@ const updateAnalysisData = (storedCalls, truename) => {
 }
 
 // The handler of require of Enforcement
-const EnforcementCheck= {
+const EnforcementCheck = {
   apply: function(target) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
     const nameReq = target.name + '(\'' + arguments[2][0] +// In arguments[2][0]
@@ -55,7 +55,7 @@ const EnforcementCheck= {
 
 // The handler of the global variable.Every time we access the global variabe in order to declare 
 // or call a variable, then we can print it on the export file.
-const globalHandler= {
+const globalHandler = {
   get: function(target, name) {
     // XXX[target] != 'undefined'
     if (typeof target[name+endName] != 'undefined') {
@@ -87,7 +87,7 @@ const globalHandler= {
 // load a module with require it first execute all the code and then prepary and exports 
 // all the export data. We use this handler to catch all the code that is executed on the 
 // module.
-const moduleHandler= {
+const moduleHandler = {
   apply: function(target) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
     updateAnalysisData(dynamicObj[currentName], target.name);
@@ -105,7 +105,7 @@ const moduleHandler= {
 // The handler of the functions on the export module. Every time we require a module 
 // and we have exports, we wrap them in a handler. Each time we call a function from inside
 // exports this is the handler that we wrap the function.
-const exportsFuncHandler= {
+const exportsFuncHandler = {
   apply: function(target, thisArg, argumentsList) {
     let truename;
 
@@ -139,7 +139,7 @@ const readFunction = (myFunc, name) => {
 // This is the handler of the export object. Every time we require a module, and it has
 // export data we wrap those data in this handler. So this is the first layer of the 
 // export data wraping. 
-const exportHandler= {
+const exportHandler = {
   get: function(target, name, receiver) {
     if (typeof target[name] != 'undefined' && typeof name === 'string') { // + udnefined
       // If we try to grab an object we wrap it in this proxy
@@ -172,7 +172,10 @@ const exportHandler= {
   },
 };
 
-const globalConstHandler= {
+// This is the handler of the global constanst variables, like Math.PI etc. We store the name 
+// in the same object but we use a different name, for example, for Math.PI we store the 
+// name "Math.PI" in the object Math.PIPI. That way we can have accurate name analysis.
+const globalConstHandler = {
   get: function(target, name) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
     updateAnalysisData(dynamicObj[currentName], target[name+name]);
