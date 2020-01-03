@@ -66,7 +66,8 @@ const env = {
 // 6) RWE Analysis
 // 7) RWE Enforcement
 // 8) Global Object Analysis
-let userChoice = (lyaConfig.analysisCh && [1, 2, 3, 4, 5, 6, 7, 8].includes(lyaConfig.analysisCh))? lyaConfig.analysisCh : 1
+// 9) TypeOf Export Object Analysis
+let userChoice = (lyaConfig.analysisCh && [1, 2, 3, 4, 5, 6, 7, 8, 9].includes(lyaConfig.analysisCh))? lyaConfig.analysisCh : 1
 
 // You import the right policy depenting on the choice
 // of the user.
