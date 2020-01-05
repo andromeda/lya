@@ -387,11 +387,36 @@ The wrappers depend on the intended goal:
 \section{Implementation: Lya}
 \label{impl}
 
-We implemented \sys for version 
-We show where other implementations would diverge in table 1
+We implemented \sys for version 8.9.4 of the Node.js runtime.
+Node.js is a runtime that bun
+
+in about 1.5K lines of JavaScript.
+We summarize where other implementations would diverge in table 1
+
+Individual analysis are implemented using a set of templates that provide initial constructs (see below).
+The difference between them, \ie the amount of code that is unique to each analysis, is about 20--30 lines.
 
 The following subsections outline how module systems handle modules at runtime, by exemplifying the internals of Node.js.
 It sketches the Node.js runtime~\sx{a}, the use of the module system~\sx{b}, and the internals of how module loading works~\sx{c}.
+
+In practice, the aforementioned dialysis stages can be implemented in two different ways.
+The first is as a modified version of the runtime, where 
+No-op analyses correspond to the default execution
+  either 
+It is introduced as a backward-compatible, drop-in replacement of the language's module system.
+It can be imported as an application-specific module (\eg \ttt{ignis} package) or can be bundled with a custom language runtime (\eg \sys-powered Lua) replacing its system-wide module system.
+
+We went with the latter approach, providing \sys as a library, to simplify its evaluation and its comparison with the vanilla runtime (both in terms of performance and correctness).
+However, we have found there are significant opportunities for performance optimization and gains in development complexity by choosing the former approach;
+  we expand on these at the end of this section~\sx{opportunities}.
+% get second argument, no need to pass arguments around, tricky to 
+% carefull hardcoding of paths, because \sys's code itself is split into modules
+% We found it useful to add a function for white- and black-listing, as a set of regular expressions.
+% Regular expressions where useful because internally libraries are identified via library identifiers that correspond to file-system paths.
+% Originally intended as an aid to \sys's development and debugging, it proved useful enough for writing analysis A1--4 that decided to expose it to users.
+% This is useful, for example, when...
+% The configuration object accepts \ttt{only} and \ttt{not} that contain sets of regular expressions;
+
 
 (1) why node.js
 (2) Create a table of compatibility and show individual aspects
@@ -505,21 +530,112 @@ After evaluation, invoking the compiled function generates the value that is ass
 Before returning the value of \ttt{module.exports}, \sys transforms it according to the explicit segment of the (PIC??) corresponding to the module being loaded.
 Finally, the results of the entire process are placed into the module cache for later use.
 
-\
+\subsection{Limitations}
 
-\section{Evaluation}
+% FIXME: Talk about the inability to 
+A limitation of our implementation is that it cannot analyze the library importing \sys---usually, the top-level program entry-point equivalent to \ttt{main}.
+This is because \sys cannot transform the context of that file
+As a result, \sys as-is cannot be applied to, say, to analyze single-file programs---a common pattern in scripting languages often used for quick-and-dirty tasks.
+The simplest workaround here is to create an auxiliary file that imports \sys, and then import the single-file script (which, in most scripting languages would invoke it).
+
+
+
+\section{Evaluation and Experience}
 \label{eval}
+
+\sys's  development achieves goals~\goal{1--3}~\sx{goals}, demonstrating that it is indeed feasible to construct a framework that operates at the level of modules, 
+does not force developers to learn a new language, and that it can be implemented as a library around an existing runtime.
+Despite the fact that it operates at coarser granularity, as shown earlier~\sx{impl} \sys can express analyses that generate results useful in several practical scenarios.
+
+In this section, we are interested in zooming into \sys's performance characteristics~\goal{4}.
+At a high level, we are interested in three questions:
+(i) the overheads of the \sys's underlying building blocks;
+(ii) the overhead of different analysis on real libraries and how this compares with production dynamic analysis frameworks; and
+(iii) evaluation of \sys's behavior using our analyses on realistic, multi-library applications.
+% For the first question, we use  synthetic micro-benchmarks that built to stress key elements of the system and confirm it works correctly~\sx{micro}.
+% For the second question, we use real libraries and compare them with an analysis written in Jalangi~\sx{meso}.
+% For the third question, we use a combination of real applications~\sx{macro}.
+
+Several takeaways are worth highlighting.
+\fixme{TODO after we have the results.}
+
+Experiments were run on a moderate server with 4GB of memory and 2 Intel Core2 Duo E8600 CPUs clocked at 3.33GHz.
+In terms of software, we used Docker version 18.09.7 running \fixme{a minimal Ubuntu XXX version}, Jalangi \fixme{vXXX}, Node.js v8.9.4 (bundled with V8 v6.1.534.50, LibUV v1.15.0, and npm v6.4.1), all atop a Debian Linux with kernel v4.4.0-134.
+We run our software experiments within a Docker container to simplify the setup of the Jalangi framework.
 
 \subsection{Micro-benchmarks}
 \label{micro}
 
+\sys's micro-benchmark suite was designed with two goals in mind.
+
+The first goal was to test key properties of each analysis and confirm it outputs the expected results.
+For example, to better understand performance diagnosis policy and confirm it works correctly, we craft a library that contains four other libraries with pre-defined bottlenecks.
+The library can perform one of three operations, depending on its current state:
+  (i) invoke a call to a module it imports,
+  (ii) busy-wait, or
+  (iii) respond to calls by returning a value.
+
+The second goal was to identify understand \sys bottlenecks in a controlled environment, 
+Both of these goals would have been difficult to achieve outside a synthetic environment, as we do not fully understand applications we haven't written ourselves.
+
+\begin{table}[t]
+\center
+\footnotesize
+\setlength\tabcolsep{3pt}
+\caption{
+  \footnotesize{
+    \textbf{Synthetic Micro-benchmarks}.
+    Broadly, the requirements of module dialysis can be broken down into to five elementary requirements.
+  }
+}
+\begin{tabular*}{\columnwidth}{l @{\extracolsep{\fill}} llllllll}
+\toprule
+                                & Lua     & JavaScript  & Ruby   &      &      &      &      &         \\
+\midrule
+Instrument \ttiny{import}s      &         &             &        &      &      &      &      &         \\
+Walk objects                    &         &             &        &      &      &      &      &         \\
+Shadow variables                &         &             &        &      &      &      &      &         \\
+Wrap values                     &         &             &        &      &      &      &      &         \\
+Global names                    &         &             &        &      &      &      &      &         \\
+\bottomrule
+\end{tabular*}
+\label{tab:compatibility}
+\vspace{-5mm}
+\end{table}
+
+
+t1    0.696719      3.433219       3.456324    3.264275    3.225375    3.629768    4.201675    3.786415
+t2    1.307968      4.806233       4.547337    4.631335    4.812661    4.769355    5.197067    4.977848
+t3    5.94999       4.784134       4.245242    4.846751    4.097349    4.38602    4.478904    4.475653
+t4    18.286143     11.202162      10.241839    9.541254    10.435567    10.285686    10.557981    10.68798
+t5    24214.89589   24721.45699    24574.01965    24502.74046    24519.45243    24645.79223    24448.94942    24456.74015
+
+Table~\ref{} depicts the results of the four analysis applied to these benchmarks.
+We decided to report all combinations of analyses and benchmarks, but in practice not all are useful---\eg some modules do not feature interesting access or performance patterns.
+Currently, these benchmarks return the results we expect, but they did help with the identification of problems such as 
+These be
+Load is visible at the application level (left), but the lack of detail does not help determine which modules must be scaled out.
+Module-level data, collected by \sys' coordinator (right), reveal that \ttt{m3} receives the majority of the load.
+
+To understand the costs of proxy interposition, we measure the time to access deeply-nested properties of two versions of an object:
+  unmodified and proxy-wrapped.
+Paths to the properties (\eg \ttt{a.b.c.$\ldots$}) are random but generated prior to running the experiment.
+We construct 500MB-sized objects, each with a fanout of 8 fields nested for 12 levels.
+The proxy-wrapped version introduces interposition at every level.
+Traversing one million 12-edge paths (\ie root to leaves) averages 167.2ms and 595.7ms for the unmodified and proxy-wrapped versions, respectively.
+
+We emphasize that this is an artificially constructed benchmark stressing worst-case overheads nowhere near an normal execution:
+  for comparison, the transformation of these objects itself took nearly 16 seconds ($10^3\times$ more than what we experienced with real modules).
+The takeaway is that \sys-inherent overheads due to interposition are unlikely to be the bottleneck of an analysis.
+
 \subsection{Single-module Benchmarks}
 \label{meso}
+
 
 \subsection{End-to-End Benchmarks}
 \label{macro}
 
-\section{Discussion and Limitations}
+\section{Discussion}
 \label{diss}
 
 Library dialysis, as implemented in \sys, depends on a few features available in the programming language.
