@@ -31,6 +31,7 @@
 
 \newcommand{\cf}[1]{(\emph{Cf}.\S\ref{#1})}
 \newcommand{\sx}[1]{(\S\ref{#1})}
+\newcommand{\tb}[1]{(Tab.\ref{tab:#1})}
 \newcommand{\sys}{{\scshape Lya}\xspace}
 \newcommand{\toy}{{\tt lya.js}\xspace}
 
@@ -748,14 +749,46 @@ Wrap values                     &         &             &        &      &      &
 Global names                    &         &             &        &      &      &      &      &         \\
 \bottomrule
 \end{tabular*}
-\label{tab:compatibility}
+\label{tab:compat}
 \vspace{-5mm}
 \end{table}
+
+The techniques presented in this paper are applicable to any programming language.
+We chose the JavaScript ecosystem to evaluate the feasibility of our approach, primarily because
+  (i) it boasts the largest collection of libraries (and number of problems)~\cite{modulecounts} and
+	(ii) we had prior experience by writing two systems that make extensive use of dynamic analysis---more sophisticated versions of analyses \fixme{XX} and \fixme{XX}.
+In this section, we discuss the requirements for building \sys over other runtime environments.
+% FIXME: All these features have to have been discussed earlier
+
+By operating on library boundaries, program dialysis makes use of five key features available in a programming language~\tb{compat}.
+All major programming languages can support these five features in a variety of ways, as described below.
+
+First, \sys replaces the implementation of the import statement (\eg \ttt{require});
+  this feature is important for compatibility reasons---otherwise developers would have to replace all import statements in a deeply nested tree.
+If this is a function (\eg JavaScript, Scheme, Racket \etc) then replacement can be easily achieved by replacing its definition.
+If this is a special-keyword statement such as \ttt{import}, this can be achieved by a rewriting rule that replaces import with a special function;
+% This is simplified by the fact that the import syntax is trivial.
+
+Second, \sys makes extensive use of weak maps to support to check for equality and, more frequently, for checking for cycles during object traversal (which requires equality).
 
 
 Dynamic languages have features---\eg name (re-)binding, value introspection, dynamic code evaluation, and access interposition---that enable runtime transformations~\cite{aop, metaobject}.
 They conveniently unify module identification with interposition: % used for performance monitoring and replica construction:
   a single function or function-like operator locates a module, interprets it, and applies transformations before exposing its interface in the caller context.
+
+Other dynamic languages such as Lua, Ruby, and Python conveniently unify module identification with runtime interposition:
+% used for performance monitoring and replica construction:
+  a single function or function-like operator locates a module, interprets it, and applies transformations before exposing its interface in the caller context.
+All these languages offer runtime capabilities such as name (re-)binding, value introspection, name interception, and access interposition.
+% Languages such as Smalltalk and Lisp that treat ``everything'' as an object or a  function, need to interpose through object wrappers or function closures, respectively.
+
+Compiled languages such as Haskell, OCaml, and Rust would apply transformations using compile-time metaprogramming facilities.
+Examples include templates (\eg Template Haskell) and macro expansions (\eg Rust's macro system).
+Such facilities would alleviate the runtime overhead of transformations, improving program startup times;
+  however, they would not affect the overhead of contract evaluation, as this is still a runtime operation.
+Static type checking could further aid developers by issuing warnings of incompatible privilege settings.
+Contrary to OSMLC, there is no need for support from the runtime linker~\cite[\S VII]{breakapp:ndss:2018} because compartments do not execute as separate processes.
+
 
 \subsection{When to Use Dialysis}
 \label{principles}
