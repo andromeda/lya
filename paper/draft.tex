@@ -42,6 +42,8 @@
 \newcommand{\Ass}{Reassembly\xspace}    % 
 \newcommand{\dia}{\fra, \ana, and \ass}
 
+\newcommand{\goal}[1]{(\textbf{G#1})\xspace}
+
 \newcommand{\nv}[1]{[{\color{cyan}#1 --- Nikos}]}
 \newcommand{\review}[1]{{\color{red}#1}}
 \newcommand{\TODO}[1]{\hl{\textbf{TODO:} #1}\xspace}
@@ -309,20 +311,17 @@ The next section describes program dialysis, a new program analysis technique th
 \section{The Design of Program Dialysis}
 \label{design}
 
-Dialysis detects and scales out bottlenecked components by interposing on the application's module boundaries.
-It is introduced as a backward-compatible, drop-in replacement of the language's module system.
-It can be imported as an application-specific module (\eg \ttt{ignis} package) or can be bundled with a custom language runtime (\eg \sys-powered Lua) replacing its system-wide module system.
-Dialysis starts by dynamically modifying the function that imports libraries: \eat{for locating and loading a module.}
-  instead of simply locating and loading a module, the function yields to \sys, which applies a series of transformation steps to modules, with the goal of interposing on their boundaries.
+Dialysis starts by dynamically modifying the functionality of the module system that is responsible for importing and loading libraries:
+  instead of simply locating a library in the filesystem and loading it, it yields control to \sys which applies a series of transformation steps to libraries, with the goal of interposing at their boundaries.
 We start with a three-step overview of dialysis~\sx{overview}, highlighting the challenges that arise in the process.
-We next describe each one of these steps in more detail
+We next describe each one of these steps in more detail~(\S\ref{one}--\ref{three}).
 
 \subsection{Overview}
 \label{overview}
 
-This section presents the design of 
 % FIXME: add user data
-At a high level, module dialysis works at three stages:
+At a high level, the goal of program dialysis is to \fra the program at the boundaries of third-party modules, apply transformations that insert analysis-specific machinery, and then carefully \ass individual components to maintain the original semantics.
+ In more detail, these three phases are as follows:
 
 \begin{itemize}
   
@@ -332,46 +331,53 @@ At a high level, module dialysis works at three stages:
     Different analysis can operate at different granularities, and has to solve challenges such as multi-module and dedublication.
 
   \item \Ana:
-It then sets a specific analysis up by wrapping and transforming each module interface, its surrounding environment, as well as the values passing through the module boundary.
-Programmatic transformations walk and transform each one of these values based on their type:
-  the module interface is usually a complex (but singular) object; the surrounding environment treats 
-This phase requires solving several challenges, including enumerating and tracking all points of entry into and exit out of a library.
-It also requires providing 
- in a backwards compatible fashion.
+    It then sets a specific analysis up by wrapping and transforming each module interface, its surrounding environment, as well as the values passing through the module boundary.
+    Programmatic transformations walk and transform each one of these values based on their type:
+      the module interface is usually a complex (but singular) object; the surrounding environment treats 
+    This phase requires solving several challenges, including enumerating and tracking all points of entry into and exit out of a library.
+    It also requires providing 
+     in a backwards compatible fashion.
 
   \item \Ass:
-  Finally, it re-assembles individual modified modules back into the original structure.
-  This creates several challenges, the most important of which is the treatment of the module cache---a mechanism for avoiding multiple loads of the same module .
-  Since a single library can now correspond to many different wrappers, each modified to capture different  analysis fragments, the cache needs to be augmented to ensure the right analysis fragment clicks at the right place during the re-assembly of the dependency tree.
+    Finally, it re-assembles individual modified modules back into the original structure.
+    This creates several challenges, the most important of which is the treatment of the module cache---a mechanism for avoiding multiple loads of the same module .
+    Since a single library can now correspond to many different wrappers, each modified to capture different  analysis fragments, the cache needs to be augmented to ensure the right analysis fragment clicks at the right place during the re-assembly of the dependency tree.
 
 \end{itemize}
 
-% \textbf{Core Language}
-% a few is not the same as 
-Transformations are used pervasively throughout \sys, and are abstracted via a few parametrizable templates.
-Templates map different types of values (List.~\ref{core-tx}) to a generic handler for each type.
-%given a value, a template will transform it using a handler matching its type
-% Templates match, 
-% \hl{match} between different \hl{value} % what are values
-%    \emph{types} and define generic handlers for each type.
-Transformations have these handlers parametrized to achieve concrete goals such as monitoring, serialization, and scale-out.
-Simplified instances are described in the following two sections (\S\ref{profiling}--\ref{core}).
+Program runtime transformations such as the ones applied in the second phase are used pervasively throughout \sys.
 
-Transformations can be applied to any value in the language, such as an object returned from a module or an exception about to be sent across the network.
-The general case of such a value is a directed acyclic graph (DAG).
-The types of its vertices can be coarsely grouped into primitives, functions, and objects.
-Objects map strings to other values, pointing to other vertices in the DAG.
+% , such as an object returned from a module or an exception about to be sent across the network.
+Transformations can be applied to any value in the language. 
+The most general value is an object, a bag of records holding key-value fields;
+  other value types include primitives, functions, and booleans.
 % Listing~\ref{core-tx} presents a simplified core of the language.
-Transformations start by walking the DAG from the root vertex and processing component values based on their types.
-They do not mutate original values, but first copy them, apply transformations to the copies, and return copies to the caller.
-They only partially explore the object graph, as they do not peak through function closure environments.
-Fortunately, this aligns well with our goal of monitoring activity at module boundaries and ignoring module-internal activity.
+Transformations walk objects from their root, processing component values based on their types (Fig.~\ref{fig:txfm}).
+More specifically,
+  (i) \emph{function} values are wrapped by closures specific to the goal of the transformation; % on the function's arguments and return values;
+  (ii) \emph{object} values are recursively transformed, with their getter and setter methods replaced similar to function values; % and at times combining return results; and
+  (iii) \emph{primitive} values are either transformed directly or copied unmodified and wrapped with an access interposition mechanism.
+% Usually transformations do not mutate original values, but first copy them, apply transformations to the copies, and return copies to the caller.
 
-As an example, consider transforming the \ttt{crypto} module~\sx{solution}.
-\sys traverses the object returned by \ttt{crypto} and replaces functions such as \ttt{pbkdf2} with wrappers whose specifics depend on the intended goal:
-  profiling wrappers call the original function in between statistics collection, and RPC wrappers forward the call to a remote replica.
+The program transformations described earlier~\sx{overview} are in \sys  abstracted by a set of parametrizable skeletons.
+These skeletons provide hooks for end-developers writing analyses.
+Specifically, they map types of values (\eg \ttt{Number}s, \ttt{Function}s) to generic hooks for each type. 
+These hooks are then extended or rewritten by developers to
+
+For example, consider transforming a \ttt{Math} object with the goal of profiling its interfaces or generating a remote interface (Fig.~\ref{fig:lib}\emph{a,b}).
+\sys traverses the object returned by \ttt{Math} and replaces functions such as \ttt{div} with wrappers.
+The wrappers depend on the intended goal:
+  profiling wrappers would record invocation statistics, and RPC wrappers would forward calls to a remote replica.
 
 
+\subsection{Disassembly}
+\label{one}
+
+\subsection{Transformation}
+\label{two}
+
+\subsection{Reassembly}
+\label{three}
 
 
 % \section{Applications of Analysis}
