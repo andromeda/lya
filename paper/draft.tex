@@ -631,6 +631,19 @@ The takeaway is that \sys-inherent overheads due to interposition are unlikely t
 \subsection{Single-module Benchmarks}
 \label{meso}
 
+\begin{figure*}[t]
+  \centering
+   \includegraphics[width=0.95\textwidth]{./figs/meso.pdf}
+  \caption{
+    \textbf{Analysis overheads.}
+    The plot compares a series of modules from single-library programs taken from Jalangi between three setups:
+		(i) Vanilla JavaScript, (ii) global-use analysis using Jalangi, (iii) global-use analysis using \sys.
+    Global-use analysis is a relatively simple analysis that tracks accesses of global variables in the program~\cf{meso}.
+  }
+  \label{fig:meso}
+  \vspace{-3mm}
+\end{figure*}
+
 
 \subsection{End-to-End Benchmarks}
 \label{macro}
