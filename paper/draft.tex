@@ -585,30 +585,54 @@ Both of these goals would have been difficult to achieve outside a synthetic env
 \caption{
   \footnotesize{
     \textbf{Synthetic Micro-benchmarks}.
-    Broadly, the requirements of module dialysis can be broken down into to five elementary requirements.
+		Applying the four analyses on a series of synthetic micro-benchmarks, created to stress different features.
   }
 }
-\begin{tabular*}{\columnwidth}{l @{\extracolsep{\fill}} llllllll}
+\begin{tabular*}{\columnwidth}{l @{\extracolsep{\fill}} ll lll}
 \toprule
-                                & Lua     & JavaScript  & Ruby   &      &      &      &      &         \\
+              &   Base    &  SA     & PD       &   TIC    &   LSR     \\
 \midrule
-Instrument \ttiny{import}s      &         &             &        &      &      &      &      &         \\
-Walk objects                    &         &             &        &      &      &      &      &         \\
-Shadow variables                &         &             &        &      &      &      &      &         \\
-Wrap values                     &         &             &        &      &      &      &      &         \\
-Global names                    &         &             &        &      &      &      &      &         \\
+something1    &           &  0.70   &    3.43  &   3.46   &   3.26    \\
+something2    &           &  1.31   &    4.81  &   4.55   &   4.63    \\
+something3    &           &  5.95   &    4.78  &   4.25   &   4.85    \\
+something4    &           &  18.29  &   11.20  &   10.24  &   9.54    \\
+something5    &           &  24214  &   24721  &   24574  &   24502   \\
 \bottomrule
 \end{tabular*}
-\label{tab:compatibility}
+\label{tab:synthetic}
 \vspace{-5mm}
 \end{table}
 
+\begin{table}[t]
+\center
+\footnotesize
+\setlength\tabcolsep{3pt}
+\caption{
+  \footnotesize{
+    \textbf{Applying \sys to single-library programs}.
+		\fixme{Execution time of four test suites against }
+  }
+}
+\begin{tabular*}{\columnwidth}{l @{\extracolsep{\fill}} ll lll}
+\toprule
+                    & Base   &  SA   & PD     &   TIC   & LSR     \\
+\midrule
+Classnames~\cite{}  &  2.72  & 6.62  &  6.61  &  6.10   & 5.94    \\
+Debug~\cite{}       & 31.39  & 33.54 &  33.94 &  33.96  & 33.04   \\
+% Minimist\\
+~~~-t1              & 31.46  & 60.13 &  60.00 &  56.62  & 56.72   \\
+~~~-t2              & 19.17  & 59.77 &  60.75 &  57.15  & 57.79   \\
+~~~-t3              & 21.64  & 205.2 &  205.53&  132.25 & 137.84  \\
+~~~-t4              & 20.69  & 59.70 &  60.75 &  59.92  & 56.60   \\
+~~~-t5              & 20.49  & 70.48 &  72.20 &  64.71  & 66.03   \\
+Moment~\cite{}      & 31.73  & 48.04 &  49.23 &  44.95  & 46.12   \\
+yargs~\cite{}       & 13.42  & 13.00 &  14.41 &  13.47  & 13.48   \\
+\bottomrule
+\end{tabular*}
+\label{tab:meso}
+\vspace{-5mm}
+\end{table}
 
-t1    0.696719      3.433219       3.456324    3.264275    3.225375    3.629768    4.201675    3.786415
-t2    1.307968      4.806233       4.547337    4.631335    4.812661    4.769355    5.197067    4.977848
-t3    5.94999       4.784134       4.245242    4.846751    4.097349    4.38602    4.478904    4.475653
-t4    18.286143     11.202162      10.241839    9.541254    10.435567    10.285686    10.557981    10.68798
-t5    24214.89589   24721.45699    24574.01965    24502.74046    24519.45243    24645.79223    24448.94942    24456.74015
 
 Table~\ref{} depicts the results of the four analysis applied to these benchmarks.
 We decided to report all combinations of analyses and benchmarks, but in practice not all are useful---\eg some modules do not feature interesting access or performance patterns.
@@ -648,8 +672,54 @@ The takeaway is that \sys-inherent overheads due to interposition are unlikely t
 \subsection{End-to-End Benchmarks}
 \label{macro}
 
+\begin{table}[t]
+\center
+\footnotesize
+\setlength\tabcolsep{3pt}
+\caption{
+  \footnotesize{
+    \textbf{Applying \sys to three large applications}.
+		\fixme{Highlight some things}
+  }
+}
+\begin{tabular*}{\columnwidth}{l @{\extracolsep{\fill}} lll}
+\toprule
+                    & Koa    & Moeda   &  Terminalizer \\
+\midrule
+ Size (KB)          & 41M    &  29M    &   262M        \\
+ LoC                & 127K   &  79K    &   39K         \\
+ Top-level modules  &  24    &  7      &    33         \\
+ Total Modules      &  432   &  260    &    1084       \\
+ Lya detects:       &  1507  &   729   &     2355      \\
+ Baseline           &  xx    &         &               \\
+ A1 (TF)            &        &         &               \\
+ A3 (HF)            &        &         &               \\
+ A8 (Types)         &        &         &               \\     
+\bottomrule
+\end{tabular*}
+\label{tab:macro}
+\vspace{-5mm}
+\end{table}
+
+
+
+Highly popular applications---for example, Koa.js and Terminalizer have 28.3K and 8.7K stars stars on GitHub, respectively.
+Applying \sys to these applications generates much larger analayses
+For example, the performance diagnosis analysis hooks reports timing characteristics for 
+
+The difference between the modules detected statically (by running \ttt{npm ls}) and the ones observed by \sys is due to a few different reasons.
+One is that an analysis does not report accesses if a 
+\sys analyzes modules that are part of the standard library too (some of which have themselves internal dependencies), which are not shown by \ttt{npm}.
+Our post-processing counts by module name (\ie squashes duplicate reports by 
+This can affect the results of multiple imports with the same name at different parts of the tree that would indeed correspond to different.
+For example, importing two different versions of a library at two different parts of the dependency tree will result in to two different with the same name.
+It also squashes cache entries that correspond to one module imported by multiple modules, which would create separate entries in \sys's augmented cache, but would result in a single count for Tab.~\ref{macro} (for \sys's treatment of the module cache, see~\S\ref{cache}).
+Confirming that \sys performs correctly under these scenarios is one part of the motivation behind the synthetic micro-benchmarks shown earlier~\sx{micro}.
+
+
 \section{Discussion}
 \label{diss}
+
 
 Library dialysis, as implemented in \sys, depends on a few features available in the programming language.
 In this section we describe how to develop the same solution on other environments.
@@ -683,7 +753,6 @@ Global names                    &         &             &        &      &      &
 \end{table}
 
 
-\heading{Dynamic Language Interpretation}
 Dynamic languages have features---\eg name (re-)binding, value introspection, dynamic code evaluation, and access interposition---that enable runtime transformations~\cite{aop, metaobject}.
 They conveniently unify module identification with interposition: % used for performance monitoring and replica construction:
   a single function or function-like operator locates a module, interprets it, and applies transformations before exposing its interface in the caller context.
@@ -781,6 +850,8 @@ corser
 approach towards coarse-grained
 This is achieved using a set of programmatic \emph{transformations} parametrizable by optional \emph{distribution recipes}.
 These operate at module boundaries during runtime to collect profiling information, detect bottlenecked components, and dynamically separate and coalesce parts of the application.
+
+We want to emphasize that \sys is open source, available to experiment with more applications and analyses
 
 % \section*{Acknowledgments}
 % Martin
