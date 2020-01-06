@@ -389,8 +389,19 @@ The wrappers depend on the intended goal:
 \subsection{Disassembly}
 \label{one}
 
-\subsection{Transformation}
-\label{two}
+\begin{figure}[t]
+\centering 
+\includegraphics[width=0.45\textwidth]{./figs/lya_shadowing.pdf}
+\caption{
+  \textbf{Shadowing segments.}
+  \textmd{
+  Cross-module variable name resolution (left) augmented with \sys (green boxes), which interjects non-bypassable steps resolving to \sys-augmented values (right-top: implicit module imports; right-bottom: explicit import).
+  }
+  \vspace{-4mm}
+}
+\label{fig:shadowing}
+\end{figure}
+
 
 \subsection{Reassembly}
 \label{three}
