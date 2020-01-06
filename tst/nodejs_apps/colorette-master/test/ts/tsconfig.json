@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": "../..",
+    "paths": {
+      "colorette": ["colorette.js", "colorette.d.ts"]
+    },
+    "noEmit": true
+  }
+}
