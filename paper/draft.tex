@@ -487,6 +487,19 @@ The module system is implemented in the \ttt{module} built-in module~\sx{c}, whi
 \subsection{Implementation of the Module System}
 \label{c}
 
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.99\textwidth]{./figs/lya_ex.pdf}
+\vspace{-2mm}
+\caption{
+  \textbf{Example transformations.}
+   Applying runtime transformations (b) and context rebinding (c, d) on a simple \ttt{Math} object~\cf{impl}.
+}
+\label{fig:tx2}
+\vspace{-2mm}
+\end{figure*}
+
+
 At a very high level, loading a fresh module with \ttt{require("foo");} corresponds to the following five stages:
 
 \begin{enumerate}
