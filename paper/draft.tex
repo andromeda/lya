@@ -29,6 +29,8 @@
 \newcommand{\ttiny}[1]{\texttt{\footnotesize #1}}
 \newcommand{\tcn}[1]{}
 
+\definecolor{cdb}{rgb}{0.37, 0.62, 0.63} % cadet blue
+
 \newcommand{\cf}[1]{(\emph{Cf}.\S\ref{#1})}
 \newcommand{\sx}[1]{(\S\ref{#1})}
 \newcommand{\tb}[1]{(Tab.\ref{tab:#1})}
@@ -359,6 +361,19 @@ More specifically,
   (ii) \emph{object} values are recursively transformed, with their getter and setter methods replaced similar to function values; % and at times combining return results; and
   (iii) \emph{primitive} values are either transformed directly or copied unmodified and wrapped with an access interposition mechanism.
 % Usually transformations do not mutate original values, but first copy them, apply transformations to the copies, and return copies to the caller.
+
+\begin{figure}[t]
+\raggedleft 
+\includegraphics[width=0.45\textwidth]{./figs/lya_base.pdf}
+\caption{
+  \textbf{Base transformation.}
+  \textmd{
+  The algorithm (simplified) is presented in functional style to simplify variable binding; types (object, list, function, and primitive), used for pattern matching, are shown in light {\color{cdb} \emph{turquoise}}~\cf{bt}.
+  }
+}
+\label{fig:base}
+\end{figure}
+
 
 The program transformations described earlier~\sx{overview} are in \sys  abstracted by a set of parametrizable skeletons.
 These skeletons provide hooks for end-developers writing analyses.
