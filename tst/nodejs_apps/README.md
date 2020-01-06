@@ -4,5 +4,6 @@ We can use this popular nodejs apps to demonstrate that Lya works and produce va
 
 ## Colorette
 
-> https://github.com/jorgebucaran/colorette
-Colorette is a Node.js library for embellishing your CLI tools with colors and styles using ANSI escape codes.
+> Colorette is a Node.js library for embellishing your CLI tools with colors and styles using ANSI escape codes.
+https://github.com/jorgebucaran/colorette
+
