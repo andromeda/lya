@@ -2,6 +2,8 @@
 
 We can use this popular nodejs apps to demonstrate that Lya works and produce valuable dynamic analysis.
 
+> https://github.com/sqreen/awesome-nodejs-projects
+
 ## Colorette
 
 > Colorette is a Node.js library for embellishing your CLI tools with colors and styles using ANSI escape codes.
