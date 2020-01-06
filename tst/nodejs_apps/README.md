@@ -4,6 +4,7 @@ We can use this popular nodejs apps to demonstrate that Lya works and produce va
 
 > https://github.com/sqreen/awesome-nodejs-projects
 > https://github.com/sindresorhus/awesome-nodejs
+> https://medium.mybridge.co/45-amazing-node-js-open-source-for-the-past-year-v-2019-c774d750e925
 
 ## Colorette
 
