@@ -782,10 +782,11 @@ In the second part of this section, we reflect on some of the current limitation
                                 & Lua     & JavaScript  & Ruby   &      &      &      &      &         \\
 \midrule
 Instrument \ttiny{import}s      &         &             &        &      &      &      &      &         \\
-Walk objects                    &         &             &        &      &      &      &      &         \\
-Shadow variables                &         &             &        &      &      &      &      &         \\
+Traverse objects                &         &             &        &      &      &      &      &         \\
 Wrap values                     &         &             &        &      &      &      &      &         \\
-Global names                    &         &             &        &      &      &      &      &         \\
+(Weak) Maps                     &         &             &        &      &      &      &      &         \\
+Shadow variables                &         &             &        &      &      &      &      &         \\
+% Global names                    &         &             &        &      &      &      &      &         \\
 \bottomrule
 \end{tabular*}
 \label{tab:compat}
@@ -802,31 +803,40 @@ In this section, we discuss the requirements for building \sys over other runtim
 By operating on library boundaries, program dialysis makes use of five key features available in a programming language~\tb{compat}.
 All major programming languages can support these five features in a variety of ways, as described below.
 
-First, \sys replaces the implementation of the import statement (\eg \ttt{require});
-  this feature is important for compatibility reasons---otherwise developers would have to replace all import statements in a deeply nested tree.
-If this is a function (\eg JavaScript, Scheme, Racket \etc) then replacement can be easily achieved by replacing its definition.
-If this is a special-keyword statement such as \ttt{import}, this can be achieved by a rewriting rule that replaces import with a special function;
+First, \sys replaces the implementation of the import statement (\eg \ttt{require}).
+% This feature is important for compatibility reasons---otherwise developers would have to replace all import statements in their applications.
+If this statement is a function (\eg JavaScript, Scheme, Racket \etc) then replacement can be easily achieved by replacing its definition.
+If this statement is a special non-function keyword such as \ttt{import}, this can be achieved by a rewriting rule that replaces import with a special function;
 % This is simplified by the fact that the import syntax is trivial.
 
-Second, \sys makes extensive use of weak maps to support to check for equality and, more frequently, for checking for cycles during object traversal (which requires equality).
+\sys also needs the ability to interpose on values and transform their components.
+This is relatively easy in languages that provide meta-programming capabilities.
+Dynamic programming languages offer runtime reflection and conveniently expose object accesses as (over-loadable) functions---\eg \ttt{Proxy} objects in JavaScript, metatables in Lua, metaclasses in Python, and direct-accessor metaprogramming Ruby.
+Compiled languages such as Haskell, OCaml, and Rust would apply transformations with static metaprogramming facilities, traversing and transforming objects at compile time.
+Examples include templates and macro expansions such as Haskell's Template Haskell and Rust's macro system.
+And some languages, such as Haskell, Java, and Julia, provide both static and dynamic reflection capabilities, allowing considerable freedom in the choice of implementation.
+% Fifth, \sys makes extensive use of interposition which is also available in different programming languages.
+% Static programming languages provide different types of support for 
 
+\sys makes extensive use of weak maps to support to check for object equality.
+Examples of uses include checking for cycles during object traversal and checking whether an object has already been wrapped.
+Hash tables that are indexed by reference are supported in virtually all programming languages.
+An additional feature useful in garbage-collected languages would be for these (copies of) references to not affect the reclamation of original objects.
+Languages either support the ability to create such a weak reference from a normal reference (\eg Python's weak references), or provide structures that automatically hold weak versions of these references (\eg JavaScript's Weak Map).
 
-Dynamic languages have features---\eg name (re-)binding, value introspection, dynamic code evaluation, and access interposition---that enable runtime transformations~\cite{aop, metaobject}.
-They conveniently unify module identification with interposition: % used for performance monitoring and replica construction:
+Finally, \sys makes extensive use of variable shadowing to hide access to the original, unmodified versions of values.
+This is a feature that is universally available in programming languages;\footnote{
+  A notable exception is the scripting language CoffeeScript, which can mimic the same feature using function scope.
+}
+Deferences in scoping rules---\ie what the shadowed variable ends up referring to upon execution---do not affect the usefulness of this feature, although we have found lexical scoping easier than dynamic scoping.
+
+To conclude, all major languages provide enough facilities to support the dialysis---albeit with a different level of convenience.
+Dynamic languages have features---\eg name (re-)binding, value introspection, dynamic code evaluation, and access interposition---that enable runtime transformations.
+Runtime transformations conveniently unify module identification with interposition:
   a single function or function-like operator locates a module, interprets it, and applies transformations before exposing its interface in the caller context.
-
-Other dynamic languages such as Lua, Ruby, and Python conveniently unify module identification with runtime interposition:
-% used for performance monitoring and replica construction:
-  a single function or function-like operator locates a module, interprets it, and applies transformations before exposing its interface in the caller context.
-All these languages offer runtime capabilities such as name (re-)binding, value introspection, name interception, and access interposition.
-% Languages such as Smalltalk and Lisp that treat ``everything'' as an object or a  function, need to interpose through object wrappers or function closures, respectively.
-
-Compiled languages such as Haskell, OCaml, and Rust would apply transformations using compile-time metaprogramming facilities.
-Examples include templates (\eg Template Haskell) and macro expansions (\eg Rust's macro system).
-Such facilities would alleviate the runtime overhead of transformations, improving program startup times;
-  however, they would not affect the overhead of contract evaluation, as this is still a runtime operation.
-Static type checking could further aid developers by issuing warnings of incompatible privilege settings.
-Contrary to OSMLC, there is no need for support from the runtime linker~\cite[\S VII]{breakapp:ndss:2018} because compartments do not execute as separate processes.
+Compiled languages such as Haskell, OCaml, and Rust apply transformations using compile-time metaprogramming facilities.
+Compile time transformations alleviate much of the runtime overhead of transformations, improving program startup times;
+  and type checking could further aid developers by issuing warnings of incompatible privilege settings.
 
 
 \subsection{When to Use Dialysis}
