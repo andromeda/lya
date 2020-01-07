@@ -16,3 +16,7 @@ https://github.com/jorgebucaran/colorette
 ## KoaJs Examples
 > A repository containing small examples to illustrate the use of Koa for creating web applications and other HTTP servers.
 https://github.com/koajs/examples
+
+## POKÉDEX GO
+> Facebook Messenger Bot to get Pokémon infos like weaknesses easy and fast. All the infos a Pokémon trainer needs to take over the gyms in the wild.
+https://github.com/zwacky/pokedex-go
