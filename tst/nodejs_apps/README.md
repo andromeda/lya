@@ -20,3 +20,7 @@ https://github.com/koajs/examples
 ## POKÉDEX GO
 > Facebook Messenger Bot to get Pokémon infos like weaknesses easy and fast. All the infos a Pokémon trainer needs to take over the gyms in the wild.
 https://github.com/zwacky/pokedex-go
+
+## Moeda
+> A foreign exchange rates and currency conversion using cli
+https://github.com/thompsonemerson/moeda
