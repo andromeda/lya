@@ -2,7 +2,7 @@
 
 ## mkdirp
         - t1 => simple test case
-        - t2 => test cases from mkdirp repo -- without using tap
+        - mkdirp-master => test cases from mkdirp repo
 
 ## yards
         - t1 => simple test case -- pass
@@ -23,3 +23,6 @@
 
 ## classnames
 	- repo => all the test from the repo pass
+
+## yargs
+	- repo => all the tests from the repo
