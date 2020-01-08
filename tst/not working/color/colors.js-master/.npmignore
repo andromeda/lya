@@ -1,0 +1,5 @@
+# Development files
+/tests/
+/.travis.yml
+/screenshots
+*.sw*
