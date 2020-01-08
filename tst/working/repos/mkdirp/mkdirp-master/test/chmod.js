@@ -1,12 +1,11 @@
-if (parseInt(process.env.npm_config_key) != 0) {
-    lyaConfig = {
+lyaConfig = {
     SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
-    analysisCh: parseInt(process.env.npm_config_key),
-    removejson: ['hasOwnProperty','Promise'],
-    };
-    let lya = require("../../../../../../src/txfm.js");
-    require = lya.configRequire(require, lyaConfig);
-}
+    analysisCh: 1,
+    removejson: ['Buffer','hasOwnProperty','Promise'],
+};
+let lya = require("../../../../../src/txfm.js");
+require = lya.configRequire(require, lyaConfig);
+
 const time = process.hrtime();
 
 var mkdirp = require('../').mkdirp;
