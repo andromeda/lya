@@ -1,3 +1,10 @@
+lyaConfig = {
+    SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
+    analysisCh: 1,
+};
+let lya = require("../lya/txfm.js");
+require = lya.configRequire(require, lyaConfig);
+
 const c = require("..")
 const equal = require("testmatrix").equal
 

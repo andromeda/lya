@@ -1,0 +1,103 @@
+{
+  "main": {
+    "require('./helpers.js')": true,
+    "require('../package.json')": true,
+    "require('../lib/currencies.json')": true,
+    "require('./moeda.js')": true,
+    "require('https')": true,
+    "require('stream')": true,
+    "require('url')": true,
+    "require('querystring')": true,
+    "require('duplexer3')": true,
+    "require('is-stream')": true,
+    "require('get-stream')": true,
+    "require('timed-out')": true,
+    "require('url-parse-lax')": true,
+    "require('lowercase-keys')": true,
+    "require('is-redirect')": true,
+    "require('unzip-response')": true,
+    "require('create-error-class')": true,
+    "require('is-retry-allowed')": true,
+    "require('safe-buffer')": true,
+    "Object": true,
+    "require('./package')": true,
+    "Error": true,
+    "require('ora')": true,
+    "require('cli-spinners')": true,
+    "require('log-symbols')": true,
+    "require('money')": true,
+    "require('chalk')": true,
+    "bound consoleCall": true,
+    "String": true,
+    "": true,
+    "require('dns')": true,
+    "Promise": true,
+    "setImmediate": true,
+    "JSON.parse": true
+  },
+  "helpers.js": {
+    "Object": true,
+    "require('chalk')": true,
+    "require('./templates.js')": true,
+    "Set": true,
+    "RegExp": true
+  },
+  "index.js": {
+    "Object": true,
+    "require('escape-string-regexp')": true,
+    "require('ansi-styles')": true,
+    "require('color-convert')": true,
+    "require('./conversions')": true,
+    "require('./route')": true,
+    "Map": true,
+    "require('supports-color')": true,
+    "require('os')": true,
+    "require('has-flag')": true,
+    "require('events')": true,
+    "require('stream')": true,
+    "require('./buffer-stream')": true,
+    "require('url')": true,
+    "require('prepend-http')": true,
+    "require('zlib')": true,
+    "require('capture-stack-trace')": true,
+    "Error": true,
+    "require('buffer')": true,
+    "require('chalk')": true,
+    "require('cli-cursor')": true,
+    "require('restore-cursor')": true,
+    "require('onetime')": true,
+    "require('mimic-fn')": true,
+    "require('signal-exit')": true,
+    "require('assert')": true,
+    "require('./signals.js')": true,
+    "require('./spinners.json')": true,
+    "String": true
+  },
+  "conversions.js": {
+    "Object": true,
+    "require('color-name')": true
+  },
+  "route.js": {
+    "Object": true,
+    "require('./conversions')": true
+  },
+  "templates.js": {
+    "Object": true,
+    "Map": true
+  },
+  "moeda.js": {
+    "Object": true,
+    "require('got')": true,
+    "require('http')": true
+  },
+  "buffer-stream.js": {
+    "Object": true,
+    "require('stream')": true
+  },
+  "signals.js": {
+    "Object": true
+  },
+  "money.js": {
+    "Object": true
+  }
+}
