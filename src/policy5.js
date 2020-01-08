@@ -141,9 +141,10 @@ const readFunction = (myFunc, name) => {
 // export data wraping. 
 const exportHandler = {
   get: function(target, name, receiver) {
-    if (typeof target[name] != 'undefined' && typeof name === 'string') { // + udnefined
+    const type = typeof target[name];
+    if (type != 'undefined' && type === 'string') { // + udnefined
       // If we try to grab an object we wrap it in this proxy
-      if (typeof target[name] === 'object') {
+      if (type === 'object') {
 
         let truepath = locEnv.objPath.get(receiver);
         let truename = locEnv.objName.get(receiver);
@@ -157,7 +158,7 @@ const exportHandler = {
         target[name] = new Proxy(localObject, exportHandler);
         locEnv.objName.set(localObject, truename + '.' + name);
         locEnv.objPath.set(localObject, truepath);
-      }  else if (typeof target[name] === 'function') {
+      }  else if (type === 'function') {
         const localFunction = target[name];
 
         Object.defineProperty(localFunction, 'name', {value: name});
