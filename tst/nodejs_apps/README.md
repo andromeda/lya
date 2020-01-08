@@ -24,3 +24,8 @@ https://github.com/zwacky/pokedex-go
 ## Moeda
 > A foreign exchange rates and currency conversion using cli
 https://github.com/thompsonemerson/moeda
+
+## Terminalizer
+> Record your terminal and generate animated gif images or share a web player link terminalizer.com
+https://github.com/faressoft/terminalizer
+ 
