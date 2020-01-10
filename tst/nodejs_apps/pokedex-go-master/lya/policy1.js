@@ -125,7 +125,6 @@ const readFunction = (myFunc, name) => {
 // export data we wrap those data in this handler. So this is the first layer of the 
 // export data wraping. 
 const m = new WeakMap();
-const n = new WeakMap();
 const exportHandler = {
   get: function(target, name, receiver) {
     const type = typeof target[name];
@@ -133,10 +132,7 @@ const exportHandler = {
       // If we try to grab an object we wrap it in this proxy
       if (type  === 'object') {
         // FIXME
-        if (m.has(target[name])) {
-          return Reflect.get(target, name);;
-        }
-        m.set(target[name], true); 
+        
         let truepath = locEnv.objPath.get(receiver);
         let truename = locEnv.objName.get(receiver);
         if (truename === undefined) {
@@ -152,12 +148,7 @@ const exportHandler = {
 
       } else if (type === 'function') {
         const localFunction = target[name];
-        //console.log(typeof target[name])
-        if (n.has(target[name])) {
-          readFunction(target[name], locEnv.objName.get(target));
-            return Reflect.get(target, name);;
-        }
-        n.set(target[name], true); 
+
         Object.defineProperty(localFunction, 'name', {value: name});
         target[name] = new Proxy(localFunction, exportsFuncHandler);
         locEnv.objPath.set(localFunction, locEnv.trueName[locEnv.requireLevel]);

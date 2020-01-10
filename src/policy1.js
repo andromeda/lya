@@ -139,11 +139,12 @@ const exportHandler = {
         if (truepath === undefined) {
           truepath = locEnv.objPath.get(target);
         }
-        const localObject = target[name];
-        target[name] = new Proxy(localObject, exportHandler);
+        //const localObject = target[name];
+        const localObject = new Proxy(target[name], exportHandler);
         locEnv.objName.set(localObject, truename + '.' + name);
         locEnv.objPath.set(localObject, truepath);
 
+        return localObject;
       } else if (type === 'function') {
         const localFunction = target[name];
 

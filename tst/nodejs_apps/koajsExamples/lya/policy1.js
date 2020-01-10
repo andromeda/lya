@@ -125,17 +125,17 @@ const readFunction = (myFunc, name) => {
 // export data we wrap those data in this handler. So this is the first layer of the 
 // export data wraping. 
 const m = new WeakMap();
-const n = new WeakMap();
 const exportHandler = {
   get: function(target, name, receiver) {
     const type = typeof target[name];  
     if (type != 'undefined' && typeof name === 'string') { // + udnefined
       // If we try to grab an object we wrap it in this proxy
-      if (typeof target[name] === 'object') {
+      if (type === 'object') {
         // FIXME
         if (m.has(target[name])) {
           return Reflect.get(target, name);;
         }
+
         m.set(target[name], true); 
         let truepath = locEnv.objPath.get(receiver);
         let truename = locEnv.objName.get(receiver);
@@ -146,17 +146,12 @@ const exportHandler = {
           truepath = locEnv.objPath.get(target);
         }
         const localObject = target[name];
-        target[name] = new Proxy(localObject, exportHandler);
+        //target[name] = new Proxy(localObject, exportHandler);
         locEnv.objName.set(localObject, truename + '.' + name);
         locEnv.objPath.set(localObject, truepath);
-      } else if (typeof target[name] === 'function') {
-      	//console.log(typeof target[name])
-      	if (n.has(target[name])) {
-      		readFunction(target[name], locEnv.objName.get(target));
-          	return Reflect.get(target, name);;
-        }
-        n.set(target[name], true); 
+      } else if (type === 'function') {
         const localFunction = target[name];
+
         Object.defineProperty(localFunction, 'name', {value: name});
         target[name] = new Proxy(localFunction, exportsFuncHandler);
         locEnv.objPath.set(localFunction, locEnv.trueName[locEnv.requireLevel]);
