@@ -14,8 +14,11 @@ const argv = process.argv.slice(2)
 helpers(argv)
 
 const command = {
-  amount: argv[0] || 1,
-  from: argv[1] || 'USD',
-  to: (argv.length > 2) ? process.argv.slice(4) : ['USD', 'EUR', 'GBP', 'BRL']
+  amount: 1,
+  from: 'USD',
+  to: ['USD', 'EUR', 'GBP', 'BRL']
 }
-moeda(command)
+
+//for (i = 0; i < 1000; i++) {
+  moeda(command)
+//}
