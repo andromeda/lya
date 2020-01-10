@@ -123,11 +123,13 @@ const readFunction = (myFunc, name) => {
 
 // This is the handler of the export object. Every time we require a module, and it has
 // export data we wrap those data in this handler. So this is the first layer of the 
-// export data wraping. 
+// export data wraping.
+const m = new WeakMap();
+const n = new WeakMap();
 const exportHandler = {
   get: function(target, name, receiver) {
     const type = typeof target[name];
-      if (type != 'undefined' && typeof name === 'string' && type === 'function') { // + udnefined
+      if (type != 'undefined' && typeof name === 'string') { // + udnefined
       // If we try to grab an object we wrap it in this proxy
       if (type  === 'object') {
         // FIXME
