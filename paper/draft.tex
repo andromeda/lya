@@ -278,53 +278,73 @@ At the same time, it is not critical to analyze behavior \emph{within} the event
 Both \ttt{fs} and \ttt{http} are libraries part of the standard library and built into the runtime environment.
 % The key issue underlying the \ttt{event-stream} attack is that any third-party fragment of an application has unrestricted access to the functionality available to the rest of application.
 
-To address such problems, several recent proposals suggest analyzing third-party modules dynamically to identify malicious behavior.
+To address such problems, several recent proposals suggest analyzing third-party modules dynamically to identify malicious behavior~\cite{}.
 % FIXME more about the policy, tracking arguments too
 A simple ``allow-deny'' security analysis indicating the resources touched by that library would have revealed access to the and access .
 Examples of interfaces outside the \ttt{http} and \ttt{fs} libraries include the ability to use global variables, import other libraries, and access the cache of the loaded modules---all of which are easily available to any third-party that is part of an application.
 
-\emph{
-This use case highlights the need to \fixme{analyze} all the observable behavior \emph{around} a library, without necessarily caring about fine-grained library-internal analysis.
-}
+% \emph{
+% This case highlights the need to \fixme{analyze} all the observable behavior \emph{around} a library, without necessarily caring about fine-grained library-internal analysis.
+% }
 
 \heading{Performance Diagnosis}
-Developers use various techniques to understand such problems.
-For example, collected traces can be replayed against off-line versions of the system and statistical profiling can identify hot code-paths.
-These techniques, however, require some degree of \emph{manual} effort:
-  capturing traces, setting up testbeds, replaying traces, analyzing statistics, and debugging performance are all tedious and time-consuming tasks.
-Pervasiveness of third-party modules and heavy code reuse in modern applications compound the challenge, as the causes may lie deep in the dependency chain.
+Diagnosing performance problems is a difficult task, exacerbated by the heavy use of third-party libraries.
+Libraries are written by authors with different education backgrounds, quality standards, and, most importantly, needs:
+  it's not unusual for a weekend project solving a local need to end up as a critical dependency among several open source projects~\cite{}.
+Maintenance and rewriting can cause performance regressions between two versions of a library.
+% FIXME: Garbage collection
+Worse even, the fact that one library changes a dependency to a different implementation can cause severe performance pathologies to upstream projects---that is, while the interface remains the same due to an intermediate layer of abstraction, performance characteristics change dramatically~\cite{evhaus}.
 
-Once provided with a few recipes, \sys starts monitoring the performance of the corresponding modules in order to detect bottlenecked modules.
-A key observation is the semantic isomorphism between calling a function and passing a message~\cite{scheme:98, duality:79}.
-This allows viewing a series of calls as a stream of messages. % that 
-% at each module boundary 
-Module boundaries can be viewed as (virtual) queues of messages that await processing.
-% and applying windowed average operations on a 
+As a concrete example, consider the \ttt{minimatch} library, a regular-expression-based file-matching utility susceptible to long delays because of pathological regular expressions that involve backtracking.
+Pathological inputs reaching \ttt{minimatch}, even if benign, can cause significant performance degradation.
+The source of this degradation can lie deep in the dependency chain of the application~\cite{crosby2003denial}, but also affect logically unrelated parts competing for the same resource (\ie CPU).
+
+The research community has proposed several possible mitigations~\cite{}, all critically depending on detecting and attributing the slowdown to the bottlenecked component.
+An analysis 
+% A key observation is the semantic isomorphism between calling a function and passing a message
+% This allows viewing a series of calls as a stream of messages.
+% Module boundaries can be viewed as (virtual) queues of messages that await processing.
+treating library invocation boundaries as message queues~\cite{scheme:98, duality:79}.
 Overwhelming a module causes its ingress queue to grow.
-% MM: related to the sync vs. async
-% As the queue grows due to module overloading, new messages will be processed only after all other messages have been processed.
-At some point, the waiting time of newly-arrived messages becomes longer than the time to send the messages to a remote copy of the module, run the call there, and return the results back to their intended recipient.
-% Intuitively, it makes sense to schedule a queue on a remote processor when the wait time at the end of the queue becomes longer than scheduling the message to a remote queue.
+At some point, the waiting time of newly-arrived messages becomes longer than sending messages to a library replica.
+Profiling is accomplished by wrapping module interfaces with logic that generates a model of the current workload.
+Each module boundary collects its own statistics based on a combination of recipes and instructions from the coordinator.
+Profile generation can operate at a high resolution in time and space:
+  (i) at every function call entering a module, and (ii) on thousands of modules across an application.
 
-To make this concrete, we are introducing
 
-\heading{Type and Invariant Checking}
+% ATTRIBUTION
+% Interestingly, profiling functions running at each boundary cannot ``see through'' libraries in order to attribute load among a library and its dependencies correctly.
+% For example, an agent at the outermost boundary \ttt{A} of a dependency tree \ttt{A}$\rightarrow$\ttt{B}$\rightarrow$\ttt{C} does not know how much of the latency\eat{ is \ttt{A}-internal and how much} comes from \ttt{B}. % or \ttt{B}'s dependency, \ttt{C}.
+% 
+
+% \emph{
+% This case highlights the need to \fixme{analyze} all the observable behavior \emph{around} a library, without necessarily caring about fine-grained library-internal analysis.
+% }
+
+\heading{Invariant Discovery}
 Extracting type invariants is helpful in a variety of ways---type safety is an important property and types are lightweight annotations that can be quickly and efficiently checked.
 Dynamic analysis can be used to generate type assertions or invariants
 For example
+e.
+For example, types identify program invariants to be preserved during code modifications, to generate marshalling and marshalling wrappers, or even to guide library synthesis and regeneration.
+This is especially problematic in dynamic programming languages:
+  in the absence of type signatures, there is not much one can say about a \ttt{http.request} object.
 
-To make this concrete, we are using
+To make this concrete, consider the case of the \ttt{gRPC} library for serializing and de-serializing objects.
+Given a ---say, a simple bignum library or a crypto---a developer has to first run the library manually, take note of the result, and then write a protocol buffer specification file declaring the type; %, common in distributed systems
+if the type changes, because of a library version change or because of changes in the .
+
 The static type system is defined as a variant of a simply-typed lambda calculus augmented with union types.
+A simple approach would be to define a very simple type system that captures the type of a value by observing the execution of the program---after all, the types are dynamically checked!
+The analysis could also capture union types, for cases where it observes that a variable is at times witnessed to hold values of different types---although a single program tends to make calls of the same type signature across its entire lifetime~\cite{daikon}.
+The analysis could also do some type ``unpacking'' to deconstruct a type to its structural primitives---for example, noting that an object of type user is comprised of two strings (first and last name) and a number (age).
 
-\heading{Learning, Synthesis, and Regeneration}
-Extracting type invariants is helpful in a variety of ways---type safety is an important property and types are lightweight annotations that can be quickly and efficiently checked.
-Dynamic analysis can be used to generate type assertions or invariants
-For example
-The approach has been pioneered by systems such as 
+% would need to be able 
+% to capture structural subtitling---that is the piecewise 
 
-To make this concrete, we are using
-The static type system is defined as a variant of a simply-typed lambda calculus augmented with union types.
 
+% \heading{Learning, Synthesis, and Regeneration}
 
 \subsection{Design Goals}
 
