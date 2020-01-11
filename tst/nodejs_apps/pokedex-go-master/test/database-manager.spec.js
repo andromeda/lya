@@ -12,7 +12,7 @@ const _ = require('lodash');
 const databaseManager = require('../src/database-manager');
 const POKEMONS = require('../db/pokemons.json');
 const TYPES = require('../db/types.json');
-
+for (var i=0; i <1000; i++) {
 describe('database manager', () => {
 
     it('should find the right modifiers', () => {
@@ -87,4 +87,4 @@ describe('database manager', () => {
 
 	});
 
-});
+});}

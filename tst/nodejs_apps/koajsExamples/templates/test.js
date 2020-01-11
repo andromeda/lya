@@ -2,6 +2,7 @@ const app = require('./app');
 const server = app.listen();
 const request = require('supertest').agent(server);
 
+for (var i; i<10; i++) {
 describe('Templates', function() {
   after(function() {
     server.close();
@@ -15,4 +16,4 @@ describe('Templates', function() {
       .expect('<p>Tobi is a 3 year old ferret.</p>', done);
     });
   });
-});
+});}

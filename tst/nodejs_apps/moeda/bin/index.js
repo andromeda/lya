@@ -19,6 +19,6 @@ const command = {
   to: ['USD', 'EUR', 'GBP', 'BRL']
 }
 
-//for (i = 0; i < 1000; i++) {
-  moeda(command)
-//}
+for (var i=0; i<1000; i++) {
+moeda(command)
+}

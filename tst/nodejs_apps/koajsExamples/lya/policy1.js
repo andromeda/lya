@@ -128,7 +128,7 @@ const m = new WeakMap();
 const exportHandler = {
   get: function(target, name, receiver) {
     const type = typeof target[name];  
-    if (type != 'undefined' && typeof name === 'string') { // + udnefined
+    if (type != 'undefined' && typeof name === 'string' && type === 'function') { // + udnefined
       // If we try to grab an object we wrap it in this proxy
       if (type === 'object') {
         // FIXME

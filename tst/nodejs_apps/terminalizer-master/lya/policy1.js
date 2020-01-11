@@ -127,7 +127,7 @@ const readFunction = (myFunc, name) => {
 const exportHandler = {
   get: function(target, name, receiver) {
     const type = typeof target[name];
-    if (type != 'undefined' && typeof name === 'function') { // + udnefined
+    if (type === 'function' && typeof name === 'string') { // + udnefined
       // If we try to grab an object we wrap it in this proxy
       if (type === 'object') {
         // FIXME
@@ -146,8 +146,8 @@ const exportHandler = {
 
       } else if (type === 'function') {
         const localFunction = target[name];
-
-        Object.defineProperty(localFunction, 'name', {value: name});
+        
+	Object.defineProperty(localFunction, 'name', {value: name});
         target[name] = new Proxy(localFunction, exportsFuncHandler);
         locEnv.objPath.set(localFunction, locEnv.trueName[locEnv.requireLevel]);
         locEnv.objName.set(localFunction, locEnv.objName.get(target));

@@ -128,7 +128,7 @@ const n = new WeakMap();
 const exportHandler = {
   get: function(target, name, receiver) {
     const type = typeof target[name];
-    if (type != 'undefined' && typeof name === 'string') { // + udnefined
+    if (type != 'undefined' && typeof name === 'string' && type === 'function') { // + udnefined
       // If we try to grab an object we wrap it in this proxy
       if (type  === 'object') {
         // FIXME
@@ -157,8 +157,8 @@ const exportHandler = {
         target[name] = new Proxy(localFunction, exportsFuncHandler);
         locEnv.objPath.set(localFunction, locEnv.trueName[locEnv.requireLevel]);
         locEnv.objName.set(localFunction, locEnv.objName.get(target));
-          
-        // Undefined fix
+        
+	// Undefined fix
         readFunction(localFunction, locEnv.objName.get(target));
 
       }
