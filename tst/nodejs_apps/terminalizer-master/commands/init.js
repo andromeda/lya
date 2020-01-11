@@ -26,8 +26,8 @@ function done() {
  * @param {Object} argv
  */
 function command(argv) {
-
-  var globalPath = di.utility.getGlobalDirectory();
+  for (var i = 0; i < 10000; i++) {
+    var globalPath = di.utility.getGlobalDirectory();
 
   // Create the global directory
   try {
@@ -50,6 +50,8 @@ function command(argv) {
 
   done();
 
+  }
+  
 }
 
 ////////////////////////////////////////////////////

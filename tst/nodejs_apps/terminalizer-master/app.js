@@ -91,6 +91,7 @@ try {
   // Parse the command line arguments
   yargs.parse();
 
+
 } catch (error) {
 
   // Print the error

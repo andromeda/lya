@@ -1,7 +1,7 @@
 'use strict';
 global.lyaConfig = {
     SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
-    analysisCh: 1,
+    analysisCh: 9,
     removejson: ["Buffer","hasOwnProperty","propertyIsEnumerable","Symbol","Uint8Array","DataView","Map","Promise","Set","WeakMap","toString"],	
 };
 let lya = require("../lya/txfm.js");
@@ -12,9 +12,9 @@ const _ = require('lodash');
 const databaseManager = require('../src/database-manager');
 const POKEMONS = require('../db/pokemons.json');
 const TYPES = require('../db/types.json');
-for (var i=0; i <1000; i++) {
-describe('database manager', () => {
 
+describe('database manager', () => {
+for (var i=0; i <2; i++) {
     it('should find the right modifiers', () => {
 		const MODIFIERS = ['EFFECTIVE', 'NOT_EFFECTIVE'];
 		const promises$ = Object.keys(POKEMONS)
@@ -87,4 +87,4 @@ describe('database manager', () => {
 
 	});
 
-});}
+}});
