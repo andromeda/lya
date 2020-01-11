@@ -574,40 +574,33 @@ Late-bound, library-local variables mentioned during context creation are the re
 Returning the library's value to its consumer comprises interpreting the library, linking it with the custom context, and applying a final transformation to its return value.
 % TODO: (for intro!) ..to attenuate the privilege exercised by the library's consumer
 The goal of the final transformation is to track activity at the boundary;
-  for some analyses, \sys needs to also augment the values going through the library's interface---including continuation functions passed as arguments to the library's methods.
+  for some analyses, \sys needs to additionally augment the values going through the library's interface---including continuation functions passed as arguments to the library's methods.
 
+The final transformation is applied for every new consumer of the library.
+This is because the system needs to distinguish between all different boundaries of the same library, explained in the next section~\sx{three}.
+  
 
-
-
-
-
-
-
-
-
-
-
-
-
-\subsection{Reassembly}
+\subsection{Re-assembly}
 \label{three}
 
+To successfully reassemble the application, \sys needs to ensure that cross-references between libraries resolve correctly.
+The central mechanism for resolution is the library cache.
 
-% \section{Applications of Analysis}
-% \label{apps}
+To support multiple wrappers for a single cached library, the cache is extended by two levels reaching a total of three.
+The reason for adding the two levels is that libraries are usually governed by a single context analysis but multiple interface analyses, one for each of their consumers.
+A context transformation is applied at most a few times (usually only once), whereas a return-value transformation is applied on every \ttt{import}.
+Thus, the first level is indexed by library identifiers (as before); the second by context analysis; and the third by analysis of the \ttt{export}ed interfaces.
+% The first level is indexed by library identifiers as before, the second level is indexed by implicit segments, and the third level is indexed by explicit segments.
+For each library, the second level contains a collection of entries corresponding to mostly-transformed libraries, and the third level contains fully transformed libraries.
+Mostly-transformed libraries have gone through the entire transformation pipeline except for the last stage:
+  they have been interpreted and have had their context transformed and linked, but their return value has not been processed to track analysis of its interface.
 
+% A single augmented object (such as \ttt{Object}) may need to be shared among multiple files in a library, or even multiple libraries within a package directory.
+A special entry is reserved the original library value~\sx{two}, so that subsequent transformations can skip loading the library from disk.
+When a library is already loaded, \sys indexes by context analysis to retrieve the transformed library instance corresponding to this analysis.
+It then applies a transformation to the library's return value.
+New libraries are inserted into the second-level cache right after evaluation of the interpreted function.
 
-\section{Implementation: Lya}
-\label{impl}
-
-We implemented \sys for version 8.9.4 of the Node.js runtime.
-Node.js is a runtime that bun
-
-in about 1.5K lines of JavaScript.
-We summarize where other implementations would diverge in table 1
-
-Individual analysis are implemented using a set of templates that provide initial constructs (see below).
-The difference between them, \ie the amount of code that is unique to each analysis, is about 20--30 lines.
 
 The following subsections outline how module systems handle modules at runtime, by exemplifying the internals of Node.js.
 It sketches the Node.js runtime~\sx{a}, the use of the module system~\sx{b}, and the internals of how module loading works~\sx{c}.
