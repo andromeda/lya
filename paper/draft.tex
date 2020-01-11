@@ -472,6 +472,64 @@ The precise techniques for achieving this will be made clear in the next section
 \end{figure}
 
 
+\subsection{Transformation}
+\label{two}
+
+For each analyzed library, \sys needs to place hooks all around its boundary---not just its interface.
+This is achieved in three logical steps:
+(i) transforming the variable context, a mapping from names to values, within which the library will be interpreted,
+(ii) interpreting the library within this context, so that all names resolve to \sys-augmented values, and
+(iii) transforming the return value, \ie the library interface, once the interpretation is complete.
+Before discussing \emph{where} each transformation are applied, however, it makes sense to see \emph{how} they are applied.
+
+\heading{Transformations}
+% , such as an object returned from a module or an exception about to be sent across the network.
+Transformations can be applied to any value in the language, which can generally be a primitive, a function, or a compound value---say, a list of values or an object of key-value pairs.
+% Listing~\ref{core-tx} presents a simplified core of the language.
+Transformations walk compound values from their root, processing component values based on their types (Fig.~\ref{fig:base}).
+More specifically,
+  (i) \emph{function} values are wrapped by closures that contain analysis-specific hooks; % on the function's arguments and return values;
+  (ii) \emph{object} and \emph{list} values are recursively transformed, with their getter and setter methods replaced similar to function values; % and at times combining return results; and
+  (iii) \emph{primitive} values are either transformed directly or copied unmodified and wrapped with an access interposition mechanism.
+To avoid cycles during the walk, values are added to map that is consulted at the beginning of each recursive call.
+% Usually transformations do not mutate original values, but first copy them, apply transformations to the copies, and return copies to the caller.
+
+
+% \sys's transformations boil down to a base form \ttt{BT} that augments \emph{objects} with runtime security monitors.
+% At a high level, \ttt{BT} takes an object $O$ and a \pc $\sigma$ and returns a new object $O'$.
+% Every field $f$ of $O$ is wrapped with a method $f'$ defined to enclose $f$.
+% At runtime, $f'$ checks $\sigma$:
+%  if the access is allowed, it forwards the call to $f$;
+%  otherwise, it raises an exception.
+% % Appendix: An example result is shown in the appendix.~\ref{fig:bt2}.
+% 
+% To achieve this transformation, \sys walks the object graph from the root and processes component values based on their types (Fig.~\ref{fig:base}).
+% Rather than mutating original values, it copies them, applies transformations on the copies, and returns copies to the caller:
+% 
+% % Listing~\ref{core-tx} presents a simplified core of the language.
+% 
+% \begin{itemize}
+% \item
+%   \emph{function} values are wrapped by a closure that forwards arguments to the original function if allowed to do so.
+% \item
+%   \emph{object} values are recursively transformed, with their getter and setter methods replaced similar to function values.
+% \item
+%   \emph{primitive} values are copied unmodified and wrapped with an access interposition mechanism.
+% \end{itemize}
+
+Direct field accesses, such as assignments, require custom detection upon dereference.
+To achieve this, \sys wraps fields with an interposition mechanism;
+  this mechanism essentially treats direct field accesses as function calls (see \S\ref{impl} for implementation details and \S\ref{reqs} for equivalents in other environments).
+% Examples of such mechanisms include \ttt{Proxy} objects (JavaScript), metatables (Lua), metaclasses (Python), and direct-accessor metaprogramming (Ruby).
+\sys's wrappers detect and record changes to any of the object's fields, transforming values as needed.
+For example, if a field in a transformed object is assigned a new value, that value itself has to be be transformed before being attached to the \fixme{tree}.
+
+\sys allows toggling analyses on/off, changing analysis, or chaining multiple analysis during the execution of the program.
+To achieve this, it maintains a handle to the root of both the unprocessed and the newly processed values, for further processing:
+  the unprocessed value is used to create objects, at runtime, that run a different analysis;
+  the new value is used to revoke or chain analyses, a feature not explored further in this paper.
+
+
 \subsection{Reassembly}
 \label{three}
 
