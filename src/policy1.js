@@ -130,7 +130,8 @@ const m1 = new WeakMap();
 const exportHandler = {
   get: function(target, name, receiver) {
     const type = typeof target[name];
-    if (type != 'undefined' && target[name] != null && typeof name === 'string' && (!(target[name] instanceof RegExp))) { // + udnefined
+    if (type != 'undefined' && target[name] != null && typeof name === 'string' &&
+        (!(target[name] instanceof RegExp))) { // + udnefined
       // If we try to grab an object we wrap it in this proxy
       if (type === 'object') {
         if ((!(Object.entries(target[name]).length === 0))) {
