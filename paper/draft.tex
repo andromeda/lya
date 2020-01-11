@@ -416,26 +416,47 @@ The most important challenge during this phase the treatment of the library cach
 \caption{
   \textbf{Base transformation.}
   \textmd{
-  The algorithm (simplified) is presented in functional style to simplify variable binding; types (object, list, function, and primitive), used for pattern matching, are shown in light {\color{cdb} \emph{turquoise}}~\cf{bt}.
+  The algorithm (simplified) is presented in functional style to simplify variable binding; types (object, list, function, and primitive), used for pattern matching, are shown in light {\color{cdb} \emph{turquoise}}~\cf{bt}. The meta-function $\alpha$ stands for the locations of analysis hooks.
   }
 }
 \label{fig:base}
 \end{figure}
 
+% To transform a module, \sys augments several steps of the module loading process (Fig.~\ref{fig:pipeline}) using a base transformation that wraps an object with a security monitor~\sx{bt}.
+% It starts by intercepting calls to the \ttt{require} function~\sx{import}, which locates the module's source code and \pc.
+% It then constructs a custom context based on the \pc's implicit segment~\sx{context}.
+% It then encloses the module in a closure to leverage local variable resolution in order to link the custom context with the module~\sx{enclosure}.
+% After source interpretation, \sys transforms the resulting value by consulting the \pc's explicit segment~\sx{final}, updates the \sys-augmented module cache~\sx{cache}, and returns the value to the consumer.
+% The following subsections detail these steps.
 
-The program transformations described earlier~\sx{overview} are in \sys  abstracted by a set of parametrizable skeletons.
-These skeletons provide hooks for end-developers writing analyses.
-Specifically, they map types of values (\eg \ttt{Number}s, \ttt{Function}s) to generic hooks for each type. 
-These hooks are then extended or rewritten by developers to
-
-For example, consider transforming a \ttt{Math} object with the goal of profiling its interfaces or generating a remote interface (Fig.~\ref{fig:lib}\emph{a,b}).
-\sys traverses the object returned by \ttt{Math} and replaces functions such as \ttt{div} with wrappers.
-The wrappers depend on the intended goal:
-  profiling wrappers would record invocation statistics, and RPC wrappers would forward calls to a remote replica.
-
-
-\subsection{Disassembly}
+\subsection{Dismantling}
 \label{one}
+
+When the dialysis starts along with the rest of the program, it first loads the analysis hooks provided by the developer. 
+Among other things, \sys needs to determine which library boundaries are of interest and what the granularity of the analysis is going to be.
+For the former, developers may have specified a subset of libraries whose boundaries are of interest or a subset of libraries that should \emph{not} be analyzed.
+For the latter, it checks the constructs that---for example, whether the analysis includes global variables, library-local constructs, standard libraries \etc
+
+It then dynamically replaces the implementation of\ttt{import}:
+  rather than simply locating and loading a library, the function yields to \sys.
+
+\sys checks the cache~\sx{three} to determine (i) if the library has already been loaded, and (ii) whether it has been loaded with the same analysis hooks.
+If both are determined true, \sys retrieves the cached version of the library and returns the transformed \ttt{export}ed value.
+If the library was loaded with a different analysis---say because there are different analyses applied to different parts of a dependency tree---\sys constructs the appropriate analysis and applies a transformation pass on a cached copy of the unmodified library~\sx{three}.
+% \omit{---the common case---}
+Otherwise, \sys first invokes the built-in library loader to locate the library.
+
+The process of loading new libraries includes (i) a phase of reading the necessary files as source code and (ii) a phase of interpreting them, interspersed by applications of transformations.
+Reading files returns a string representation of the code; interpretation uses the language's runtime evaluation primitives to convert the code to an in-memory object.
+A series of transformations is applied before and after interpretation~\sx{two}.
+
+Some analyses may themselves make use of global variables, libraries, and other analyzable constructs.
+\sys must note not to include these constructs in the ones 
+% The analysis language is embedded in the source language, thus \sys makes use of the language's built-in evaluation primitives to interpret the \pc specification file.
+Dialysis frameworks may want to add analysis-specific keywords not provided by the language.
+To achieve this, \fixme{we} wrap each analysis hook with a function whose body starts by defining the expected keywords.
+The precise techniques for achieving this will be made clear in the next section~\sx{two}, after covering transformations;
+  the key to remember is that analysis are loaded from disk as source files, similar to libraries.
 
 \begin{figure}[t]
 \centering 
