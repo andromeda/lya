@@ -529,6 +529,65 @@ To achieve this, it maintains a handle to the root of both the unprocessed and t
   the unprocessed value is used to create objects, at runtime, that run a different analysis;
   the new value is used to revoke or chain analyses, a feature not explored further in this paper.
 
+\heading{Context Transformation}
+To be able to track an analysis at the library boundary, \sys needs to provide each library with values that are augmented with interposition wrappers---and do this for all of the names a library to which a library has access.
+
+To achieve this, \sys first needs to prepare a transformed copy of the library's outer context.
+Semantically, the context is a map from variable names to their values.
+Thus, \sys creates an auxiliary hash table mapping names to transformed values.
+Names correspond to any name that, by the language definition, is accessible by the library and resolves to a value outside that library, such as globals, built-ins, module-locals, \etc.
+Transformed values are created by applying the base transformation \ttt{BT} over values in the context, adding the provided analysis hooks.
+
+%% FIXME: 
+%% While user-defined global variables are stored in well-known locations,\footnote{
+%%   For example, \ttt{globals} in JavaScript and \ttt{\_G} in Lua.
+%% } traversing the global scope for built-in values is generally not possible.
+%% To solve this problem, \sys collects such values by resolving well-known names hard-coded in a list;
+%%   different lists exist for different environments and versions of the language.
+%% Using this list, \sys creates a list of pointers to unmodified values. % upon startup.
+
+Care must be taken with library-local variables. % that refer to library-specific information such as \ttt{\_\_name\_\_} in Python~\sx{bg1}.
+These are accessible from anywhere within the scope of a library (similar to global variables), but resolve to a different value for each library.
+Examples include the library's absolute filename, its \ttt{export}ed values, and whether the library is invoked as the application's \ttt{main} library~\sx{bg1}.
+Attempting to access library-local variables directly from within \sys's scope will fail subtly, as they will end up resolving to library-local values of \sys \emph{itself}---and specifically, the module within \sys that is applying the transformation.
+\sys solves this problem by leaving the value empty and deferring binding for later from within the scope of the library (see below).
+
+\heading{Context Linking}
+To link the library with the newly transformed version of its context, \sys wraps the library---still an uninterpreted string of source code---with a closure.
+The closure's body starts with a prologue of the form:
+\begin{verbatim}
+  pint = ctx.print
+  error = ctx.error
+  ...
+\end{verbatim}
+These statements shadow global variable names by redefining them as local ones.
+The closure accepts an argument \ttt{ctx}, which will be the customized context created earlier, assigning its entries to their respective variable names.
+The prologue executes before everything else in the library.
+% When the closure is applied to the customized context, the library's return value is recovered in a side-effectful manner (as in the unmodified library system) by reading the library's \ttt{exports} variable---that is, the closure does not end with an explicit \ttt{return}.
+This technique leverages lexical scoping to inject a non-bypassable step in the variable name resolution process.
+Instead of resolving to variables in the context, resolution will first ``hit'' library-local values augmented with analysis monitors.
+
+Late-bound, library-local variables mentioned during context creation are the result of applying \fixme{\ttt{BT}} over variable names in the current scope;
+  these names are now bound to the correct library-local values.
+
+\heading{Library Interface Transformation}
+Returning the library's value to its consumer comprises interpreting the library, linking it with the custom context, and applying a final transformation to its return value.
+% TODO: (for intro!) ..to attenuate the privilege exercised by the library's consumer
+The goal of the final transformation is to track activity at the boundary;
+  for some analyses, \sys needs to also augment the values going through the library's interface---including continuation functions passed as arguments to the library's methods.
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 \subsection{Reassembly}
 \label{three}
