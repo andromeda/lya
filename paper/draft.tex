@@ -244,8 +244,9 @@ The library cache serves a dual purpose:
   by avoiding to locate already loaded libraries, it improves performance and maintains the consistency of stateful libraries.
 Recursive imports are handled in depth-first way, and if cyclical dependencies are possible they are resolved by pointing to the cache.
 An increasingly common feature is to allow different versions of the same library to co-exist in a program, in order to avoid a choice between mutually exclusive options---a paradoxical situation known as ``dependency hell''.
-As a result, a single \ttt{import} \emph{name} does not necessarily resolve to the same library every time
-The dual of this situation is also possible, in which two different library names might resolve to the same identifier (in which case the second will be redirected to the cache).
+As a result, a single \ttt{import} \ttt{lib} does not necessarily resolve to the same (version of the) library \ttt{lib} every time.
+The dual of this situation is also possible, in which two different library names may resolve to the same identifier (in which case the second will be redirected to the cache).
+These features complicate library-level analysis, especially in interpreted programming languages.
 
 
 % Several details:
@@ -257,33 +258,34 @@ The dual of this situation is also possible, in which two different library name
 
 Having reviewed the building blocks and underlying techniques that power modularity, we now turn to examples of dynamic analysis that today are difficult or require specialized solutions:
   (i) an allow/deny security analysis,
-  (ii) a profiling analysis showing hot modules,
+  (ii) a profiling analysis showing hot libraries,
   (iii) a synthesis-oriented analysis on input-output data, and
   (iv) an analysis enforcing a static union-based type system at runtime.
 These examples illuminate key design requirements for \sys's implementation of module-level dynamic analysis.
 
 \heading{Security Analysis}
-Today's ubiquitous reliance on third-party modules has led to an explosion of supply-chain attacks~\cite{maass2016theory, lauinger2017thou, long2015owasp, cadariu2015tracking, breakapp:plos:2017, snyk}.
-Both bugs and malicious code in imported modules provide attack vectors that are exploitable long after modules reach their end-users.
-As development-time module boundaries do not exist at runtime, modules end up executing with no meaningful isolation or privilege separation guarantees between each other and the trusted portions of an application.
-The popularity of certain libraries---depended upon by tens of thousands of other libraries or applications---allows vulnerabilities deep in the dependency graph to affect a great number of applications~\cite{kuppusamy2016diplomat, leftpad, npmstudy:19}.
+The pervasive reliance on third-party libraries has led to an explosion of supply-chain attacks~\cite{long2015owasp, maass2016theory, snyk, lauinger2017thou}.
+Both bugs and malicious code in imported libraries create attack vectors, exploitable long after libraries reach their end-users.
+As library boundaries do not exist at runtime, libraries end up executing with no meaningful isolation or privilege separation guarantees between each other and the trusted portions of a program.
+Popular libraries, depended upon by tens of thousands of other libraries or applications, allow vulnerabilities deep in the dependency graph to affect a great number of applications~\cite{leftpad, npmstudy:19}.
 Discovered vulnerabilities are becoming harder to eradicate, as updates are fetched automatically~\cite{npmFailure} and module unpublishing is becoming a multi-step process to avoid breaking applications~\cite{npmUnpublish}.
-Worst of all,\omit{package developers accidentally publishing their security} leaked publishing tokens allow anyone to update packages with code that will eventually reach end-users via package updates~\cite{eslint1, eslint2}.
+Worst of all, leaked publishing tokens allow attackers to update packages with code that will eventually reach end-users via package updates~\cite{eslint1}.
 
-Recent work~\cite{dld:08, sandcrust, tsampas2017towards, breakapp:ndss:2018} has shown that 
-The key issue underlying the \ttt{event-stream} attack is that any third-party fragment of an application has unrestricted access to the functionality available to the rest of application. % and is exploitable.
-Some of this functionality is \emph{explicitly} provided by other libraries such as \ttt{fs} and \ttt{http}.
-Other functionality is \emph{implicitly} provided by the programming language;
-  examples include the ability to use global variables, import modules, and access the cache of the loaded modules.
-Both explicitly and implicitly provided functionality is exploitable by third-party code.
-While it may be needed for the application to function as a whole, it is not necessarily needed by \ttt{event-stream}.
-% However, not \emph{all} of this capability is needed by \emph{all} of the modules during \emph{all} of the time.
-MLC shows great promise, as it can
-(i) retrofit security into \emph{legacy} systems not designed with security as their primary concern,
-(ii) protect against a plethora of \emph{real} attacks stemming from defective, subverted, and malicious elements, and
-(iii) shield against attacker-controlled components with \emph{unknown} vulnerabilities and powerful \emph{runtime} code evaluation. % (\eg \texttt{eval}).
+As a concrete example, consider the recent event-stream incident~\cite{es1, es2}, in which a maintainer of a highly popular library inserted code for stealing Bitcoin wallet credentials from a program using that library.
+As event-stream activated its malicious behavior only on production---\ie not during testing or development---it is critical to be able to toggle the behavior of the system
+At the same time, it is not critical to analyze behavior \emph{within} the event-stream library itself:
+  if any data exfiltration is happening, this will require calling out of the library and into the network---in event-stream's case, using the \ttt{fs} library to modify a different library and then use \ttt{http} from the second library.
+Both \ttt{fs} and \ttt{http} are libraries part of the standard library and built into the runtime environment.
+% The key issue underlying the \ttt{event-stream} attack is that any third-party fragment of an application has unrestricted access to the functionality available to the rest of application.
 
-To make this concrete, we are introducing
+To address such problems, several recent proposals suggest analyzing third-party modules dynamically to identify malicious behavior.
+% FIXME more about the policy, tracking arguments too
+A simple ``allow-deny'' security analysis indicating the resources touched by that library would have revealed access to the and access .
+Examples of interfaces outside the \ttt{http} and \ttt{fs} libraries include the ability to use global variables, import other libraries, and access the cache of the loaded modules---all of which are easily available to any third-party that is part of an application.
+
+\emph{
+This use case highlights the need to \fixme{analyze} all the observable behavior \emph{around} a library, without necessarily caring about fine-grained library-internal analysis.
+}
 
 \heading{Performance Diagnosis}
 Developers use various techniques to understand such problems.
