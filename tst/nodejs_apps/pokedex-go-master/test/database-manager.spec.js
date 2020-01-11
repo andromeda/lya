@@ -1,7 +1,7 @@
 'use strict';
 global.lyaConfig = {
     SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
-    analysisCh: 9,
+    analysisCh: 1,
     removejson: ["Buffer","hasOwnProperty","propertyIsEnumerable","Symbol","Uint8Array","DataView","Map","Promise","Set","WeakMap","toString"],	
 };
 let lya = require("../lya/txfm.js");

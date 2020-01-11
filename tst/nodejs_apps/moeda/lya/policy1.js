@@ -91,7 +91,9 @@ const exportsFuncHandler = {
     truename = truename + '.' + target.name;
     updateAnalysisData(locEnv.accessMatrix[currentName], truename);
 
+
     return Reflect.apply(...arguments);
+    
   },
 };
 
@@ -128,13 +130,12 @@ const m1 = new WeakMap();
 const exportHandler = {
   get: function(target, name, receiver) {
     const type = typeof target[name];
-    if (type != 'undefined' && typeof name === 'string') { // + udnefined
+    if (type != 'undefined' && target[name] != null && typeof name === 'string' && (!(target[name] instanceof RegExp))) { // + udnefined
       // If we try to grab an object we wrap it in this proxy
       if (type === 'object') {
         // We first return the obj to check that is not wraped in a proxy
-        let result = Reflect.get(target, name);
-        if (m1.has(result)) {
-          return result;
+        if (m1.has(target[name])) {
+          return Reflect.get(target, name);
         }
 
         let truepath = locEnv.objPath.get(receiver);
@@ -145,10 +146,9 @@ const exportHandler = {
         if (truepath === undefined) {
           truepath = locEnv.objPath.get(target);
         }
-
         const localObject = target[name];
 
-        target[name] = new Proxy(result, exportHandler);
+        target[name] = new Proxy(target[name], exportHandler);
         locEnv.objName.set(localObject, truename + '.' + name);
         locEnv.objPath.set(localObject, truepath);
 
@@ -158,21 +158,20 @@ const exportHandler = {
         return result;
       } else if (type === 'function') {
         // We first return the obj to check that is not wraped in a proxy
-        let result = Reflect.get(target, name);
-        const localFunction = target[name];
-
-        if (!m1.has(result)){
+        let localFunction = target[name];
+        if (!m1.has(target[name])){
           Object.defineProperty(localFunction, 'name', {value: name});
           target[name] = new Proxy(localFunction, exportsFuncHandler);
-          result = Reflect.get(target, name);
-          m1.set(result, true);
         }
-          locEnv.objPath.set(localFunction, locEnv.trueName[locEnv.requireLevel]);
-          locEnv.objName.set(localFunction, locEnv.objName.get(target));
+          
+        locEnv.objPath.set(localFunction, locEnv.trueName[locEnv.requireLevel]);
+        locEnv.objName.set(localFunction, locEnv.objName.get(target));
           
         // Undefined fix
         readFunction(localFunction, locEnv.objName.get(target));
 
+        result = Reflect.get(target, name);
+        m1.set(result, true);
         return result;
       }
     }
