@@ -211,17 +211,47 @@ Before describing these examples, however, we offer a brief refresher on the abs
 \subsection{Background on Module Systems}
 \label{bg1}
 
-languages provide module systems
+A library, package, or module---we use these terms interchangeably---is a development-time construct for encapsulating reusable functionality.
+This functionality falls into two categories:
+  it either (i) comes bundled with the language, possibly wrapping operating-system interfaces such as the file-system in a way that is system-agnostic and conforms to the language's conventions,
+  or (ii) is provided by other developers sharing code others might find useful.
+Fig.~\ref{mod} depicts the basic structure of a modern program, in which the \ttt{math} library provides a set of four elementary operations.
 
-closely coupled with the runtime
+From a developer's perspective, \ttt{import}ing a library makes its functionality usable by the calling code. 
+What this means is that some of the library's functionality is bound to a variable name that becomes available in the scope of the caller.
+This is provided through a form of \ttt{export}ing, where the library developer expresses which values should become available to the importing code.
+The definition of a value depends on the semantics of the language, but for now we can assume it's either a primitive value, a list of values, a function, or an object mapping string keys to values.
+Internally, the library might import other libraries, cause side-effects to the file-system and the network, or even be implemented in multiple languages.
+% , as shown on line \fixme{XX},
+% closely coupled with the runtime
+% and in some cases features its own mini-language, as is the case in Scheme and Standard ML.
 
-A module uses a \ttt{import} function and returns an export .
-Intuitively a map
+From the language's perspective, the loading process is achieved in several steps. 
+In compiled programming languages libraries might be used to enable separate compilation, in which case an additional linking phase connects the resulting object files.
+Interpreted languages involve a somewhat convoluted process that combines loading, interpretation, and linking.
+This process starts by locating the library in the file system or across the network,\footnote{
+  Examples of run-time environments featuring network loading include V8 and deno, for executing JavaScript and TypeScript respectively.
+}
+by resolving relative or absolute identifiers.
+% The library is assigned a unique identifier.
+The content of the library is then read and wrapped in a way that resolves library-local names such as \ttt{\_\_name\_\_} in Python and \ttt{\_\_filename} in JavaScript to meaningful values.
+The wrapper is then interpreted and evaluated using the language's interpreter, which might result to side-effects---for example, a \ttt{process.exit} in the library's top-level scope will exit the entire program.
+Finally, the value returned bound to the \ttt{export}ed interface or returned from this interpretation (depending on the language) will be made available to the scope of code calling \ttt{import}.
 
-Several details:
-  same module at multiple levels, and the module cache
-  sometime it's the same, some times it;s not
-  module resolution algorithm
+There is significant variation, but a few features are common across many implementations.
+A library cache maintains a mapping from library identifiers---often absolute paths---to returned \ttt{export} values.
+The library cache serves a dual purpose:
+  by avoiding to locate already loaded libraries, it improves performance and maintains the consistency of stateful libraries.
+Recursive imports are handled in depth-first way, and if cyclical dependencies are possible they are resolved by pointing to the cache.
+An increasingly common feature is to allow different versions of the same library to co-exist in a program, in order to avoid a choice between mutually exclusive options---a paradoxical situation known as ``dependency hell''.
+As a result, a single \ttt{import} \emph{name} does not necessarily resolve to the same library every time
+The dual of this situation is also possible, in which two different library names might resolve to the same identifier (in which case the second will be redirected to the cache).
+
+
+% Several details:
+%   same module at multiple levels, and the module cache
+%   sometime it's the same, some times it;s not
+%   module resolution algorithm
 
 \subsection{Motivating Examples}
 
