@@ -130,32 +130,35 @@ const m1 = new WeakMap();
 const exportHandler = {
   get: function(target, name, receiver) {
     const type = typeof target[name];
-    if (type != 'undefined' && target[name] != null && typeof name === 'string' && (!(target[name] instanceof RegExp))) { // + udnefined
+    if (type != 'undefined' && target[name] != null && typeof name === 'string' &&
+        (!(target[name] instanceof RegExp))) { // + udnefined
       // If we try to grab an object we wrap it in this proxy
       if (type === 'object') {
-        // We first return the obj to check that is not wraped in a proxy
-        if (m1.has(target[name])) {
-          return Reflect.get(target, name);
+        if ((!(Object.entries(target[name]).length === 0))) {
+          // We first return the obj to check that is not wraped in a proxy
+          if (m1.has(target[name])) {
+            return Reflect.get(target, name);
+          }
+
+          let truepath = locEnv.objPath.get(receiver);
+          let truename = locEnv.objName.get(receiver);
+          if (truename === undefined) {
+            truename = locEnv.objName.get(target);
+          }
+          if (truepath === undefined) {
+            truepath = locEnv.objPath.get(target);
+          } 
+          const localObject = target[name];
+
+          target[name] = new Proxy(target[name], exportHandler);
+          locEnv.objName.set(localObject, truename + '.' + name);
+          locEnv.objPath.set(localObject, truepath);
+
+          result = Reflect.get(target, name);
+          m1.set(result, true);
+
+          return result; 
         }
-
-        let truepath = locEnv.objPath.get(receiver);
-        let truename = locEnv.objName.get(receiver);
-        if (truename === undefined) {
-          truename = locEnv.objName.get(target);
-        }
-        if (truepath === undefined) {
-          truepath = locEnv.objPath.get(target);
-        }
-        const localObject = target[name];
-
-        target[name] = new Proxy(target[name], exportHandler);
-        locEnv.objName.set(localObject, truename + '.' + name);
-        locEnv.objPath.set(localObject, truepath);
-
-        result = Reflect.get(target, name);
-        m1.set(result, true);
-
-        return result;
       } else if (type === 'function') {
         // We first return the obj to check that is not wraped in a proxy
         let localFunction = target[name];

@@ -313,9 +313,10 @@ Module.prototype.require = function(...args) {
   let result = originalRequire.apply(this, args);
   // If false that means that we pass from here for the 
   // first time.
-  if (typeof result !="boolean" ) {
-      if (objName.has(result) === false) {
-      policy.objNameSet(result, path);
+  const type = typeof result;
+  if (type != 'boolean' && type != 'symbol' && type != 'number' && type != 'string') {
+    if ( objName.has(result) === false ) {
+      policy.objNameSet(result,path);
       policy.objPathSet(result);
       result = new Proxy(result, policy.exportHandler);
       if (requireLevel !=0){
@@ -328,7 +329,6 @@ Module.prototype.require = function(...args) {
       policy.objPathSet(result);
     }
   }
-
   return result;
 };
 
