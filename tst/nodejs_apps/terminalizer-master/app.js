@@ -5,7 +5,7 @@
  */
 lyaConfig = {
     SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
-    analysisCh: 9,
+    analysisCh: 1,
     removejson: ['unescape','Buffer','toString'],
 };
 let lya = require("./lya/txfm.js");

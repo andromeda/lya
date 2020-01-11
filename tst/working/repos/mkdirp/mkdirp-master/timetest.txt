@@ -15,3 +15,7 @@ The time of NaN is 84.08308699999999
 The time of NaN is 81.514907 
 The time of NaN is 138.65527 
 The time of NaN is 136.96183299999998 
+The time of NaN is 129.197833 
+The time of NaN is 140.71965 
+The time of NaN is 141.07561099999998 
+The time of NaN is 130.304141 

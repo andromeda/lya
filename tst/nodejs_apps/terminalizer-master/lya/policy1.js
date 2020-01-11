@@ -90,7 +90,7 @@ const exportsFuncHandler = {
     const currentName = locEnv.objPath.get(target);
     truename = truename + '.' + target.name;
     updateAnalysisData(locEnv.accessMatrix[currentName], truename);
-
+    
     return Reflect.apply(...arguments);
   },
 };
@@ -124,13 +124,19 @@ const readFunction = (myFunc, name) => {
 // This is the handler of the export object. Every time we require a module, and it has
 // export data we wrap those data in this handler. So this is the first layer of the 
 // export data wraping. 
+const m1 = new WeakMap();
 const exportHandler = {
   get: function(target, name, receiver) {
     const type = typeof target[name];
-    if (type === 'function' && typeof name === 'string') { // + udnefined
+    if (type != 'undefined' && typeof name === 'string') { // + udnefined
       // If we try to grab an object we wrap it in this proxy
       if (type === 'object') {
-        // FIXME
+        // We first return the obj to check that is not wraped in a proxy
+        let result = Reflect.get(target, name);
+        if (m1.has(result)) {
+          return result;
+        }
+
         let truepath = locEnv.objPath.get(receiver);
         let truename = locEnv.objName.get(receiver);
         if (truename === undefined) {
@@ -139,22 +145,35 @@ const exportHandler = {
         if (truepath === undefined) {
           truepath = locEnv.objPath.get(target);
         }
+
         const localObject = target[name];
-        target[name] = new Proxy(localObject, exportHandler);
+
+        target[name] = new Proxy(target[name], exportHandler);
         locEnv.objName.set(localObject, truename + '.' + name);
         locEnv.objPath.set(localObject, truepath);
 
+        result = Reflect.get(target, name);
+        m1.set(result, true);
+
+        return result;
       } else if (type === 'function') {
+        // We first return the obj to check that is not wraped in a proxy
+        let result = Reflect.get(target, name);
         const localFunction = target[name];
         
-	Object.defineProperty(localFunction, 'name', {value: name});
-        target[name] = new Proxy(localFunction, exportsFuncHandler);
-        locEnv.objPath.set(localFunction, locEnv.trueName[locEnv.requireLevel]);
-        locEnv.objName.set(localFunction, locEnv.objName.get(target));
+        if (!m1.has(result)){
+          Object.defineProperty(localFunction, 'name', {value: name});
+          target[name] = new Proxy(localFunction, exportsFuncHandler);
+          result = Reflect.get(target, name);
+          m1.set(result, true);
+        }
+          locEnv.objPath.set(localFunction, locEnv.trueName[locEnv.requireLevel]);
+          locEnv.objName.set(localFunction, locEnv.objName.get(target));
           
         // Undefined fix
         readFunction(localFunction, locEnv.objName.get(target));
 
+        return result;
       }
     }
 
@@ -175,9 +194,9 @@ const globalConstHandler = {
 };
 
 module.exports = (env) => {
-	locEnv = env;
-	return {
-		require : requireHandler,
+  locEnv = env;
+  return {
+    require : requireHandler,
     globalHandler : globalHandler,
     moduleHandler : moduleHandler,
     updateCounter : updateCounter,
@@ -189,5 +208,5 @@ module.exports = (env) => {
     objPathSet : (result) => {
       locEnv.objPath.set(result, locEnv.trueName[locEnv.requireLevel]);
     },
-	}
+  }
 };

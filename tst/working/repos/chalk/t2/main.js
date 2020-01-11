@@ -3,7 +3,7 @@ lyaConfig = {
   analysisCh: 1,
   removejson: ['unescape']
 };
-let lya = require("../../../../src/txfm.js");
+let lya = require("../../../../../src/txfm.js");
 require = lya.configRequire(require, lyaConfig);
 
 const chalk = require('chalk');

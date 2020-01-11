@@ -3,7 +3,7 @@ lyaConfig = {
   analysisCh: 1,
   removejson: ['Promise','Buffer','toString','hasOwnProperty','Symbol'],
 };
-let lya = require("../../../../src/txfm.js");
+let lya = require("../../../../../src/txfm.js");
 require = lya.configRequire(require, lyaConfig);
 var t = require('tap')
 var glob = require('../')

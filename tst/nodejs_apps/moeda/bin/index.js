@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 lyaConfig = {
     SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
-    analysisCh: 9,
+    analysisCh: 1,
     removejson: ["unescape","Buffer"],	
 };
 let lya = require("../lya/txfm.js");
@@ -19,6 +19,6 @@ const command = {
   to: ['USD', 'EUR', 'GBP', 'BRL']
 }
 
-for (var i=0; i<1000; i++) {
+//for (var i=0; i<1000; i++) {
 moeda(command)
-}
+//}
