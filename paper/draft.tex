@@ -34,8 +34,13 @@
 \newcommand{\cf}[1]{(\emph{Cf}.\S\ref{#1})}
 \newcommand{\sx}[1]{(\S\ref{#1})}
 \newcommand{\tb}[1]{(Tab.\ref{tab:#1})}
+\newcommand{\rf}[1]{\ref{#1}}
+\newcommand{\se}[1]{\S\ref{#1}}
+\newcommand{\fg}[1]{Fig.~\ref{#1}}
+
 \newcommand{\sys}{{\scshape Lya}\xspace}
 \newcommand{\toy}{{\tt lya.js}\xspace}
+
 
 \newcommand{\fra}{fragmentation\xspace} % fracture
 \newcommand{\ana}{analysis\xspace}      % 
@@ -44,6 +49,10 @@
 \newcommand{\Ana}{Analysis\xspace}      % 
 \newcommand{\Ass}{Reassembly\xspace}    % 
 \newcommand{\dia}{\fra, \ana, and \ass}
+
+% FIXME:
+\newcommand{\pc}{PIC\xspace}
+\newcommand{\pcs}{\pc{}s\xspace}
 
 \newcommand{\goal}[1]{(\textbf{G#1})\xspace}
 
@@ -367,52 +376,39 @@ The next section describes program dialysis, a new program analysis technique th
 \label{design}
 
 Dialysis starts by dynamically modifying the functionality of the module system that is responsible for importing and loading libraries:
-  instead of simply locating a library in the filesystem and loading it, it yields control to \sys which applies a series of transformation steps to libraries, with the goal of interposing at their boundaries.
-We start with a three-step overview of dialysis~\sx{overview}, highlighting the challenges that arise in the process.
-We next describe each one of these steps in more detail~(\S\ref{one}--\ref{three}).
+  instead of simply locating and loading a library from the file-system, it yields control to \sys, which applies a series of transformations to libraries with the goal of interposing at their boundaries.
+We start with an overview of dialysis~\sx{overview}, highlighting several key challenges, followed by a detailed description of each step~(\S\ref{one}--\ref{three}).
 
 \subsection{Overview}
 \label{overview}
 
 % FIXME: add user data
-At a high level, the goal of program dialysis is to \fra the program at the boundaries of third-party modules, apply transformations that insert analysis-specific machinery, and then carefully \ass individual components to maintain the original semantics.
- In more detail, these three phases are as follows:
+At a high level, the goal of program dialysis is to dismantle the program at the boundaries of third-party libraries, apply transformations that insert analysis-specific machinery, and then carefully assemble individual components to maintain the original semantics.
+ In more detail:
 
 \begin{itemize}
   
-  \item \Fra:
-    It first starts by recursively dis-assembling programs into their library dependencies---pieces of software implement a computation or functionality.
-    This is essentially achieved by instrumenting the import statements and walking the program's recursive dependency structure.
-    Different analysis can operate at different granularities, and has to solve challenges such as multi-module and dedublication.
+  \item \textbf{Dismantling:}
+Dialysis starts by recursively dismantling a program into its dependencies. % ---pieces of software implement a computation or functionality.
+This is achieved by re-wiring the language's \ttt{import} functionality to go through \sys, resulting in \sys walking the program's recursive dependency structure at runtime.
+During this phase, \sys has to determine the granularity of the analysis (\eg top-level libraries, a specific library \etc) in order to apply transformations at the correct level and mapping provided analysis hooks to the corresponding libraries.
 
-  \item \Ana:
-    It then sets a specific analysis up by wrapping and transforming each module interface, its surrounding environment, as well as the values passing through the module boundary.
-    Programmatic transformations walk and transform each one of these values based on their type:
-      the module interface is usually a complex (but singular) object; the surrounding environment treats 
-    This phase requires solving several challenges, including enumerating and tracking all points of entry into and exit out of a library.
-    It also requires providing 
-     in a backwards compatible fashion.
+  \item \textbf{Transformation:}
+It then sets up the provided analysis, by transforming each library interface, its surrounding environment, and possibly the values passing through the library boundary.
+Programmatic transformations walk and wrap each one of these values based on their type.
+% the library interface is usually a complex (but singular) object;
+% the surrounding environment provides names to multiple ``implicitely'' imported libraries, functionality provided by the language.
+This phase requires solving several challenges, including enumerating all points of entry into and exit out of a library, 
+and swapping original values externally available to a library with ones that are wrapped with interposition mechanisms.
 
-  \item \Ass:
-    Finally, it re-assembles individual modified modules back into the original structure.
-    This creates several challenges, the most important of which is the treatment of the module cache---a mechanism for avoiding multiple loads of the same module .
-    Since a single library can now correspond to many different wrappers, each modified to capture different  analysis fragments, the cache needs to be augmented to ensure the right analysis fragment clicks at the right place during the re-assembly of the dependency tree.
+  \item \textbf{Re-assembly}
+Finally, dialysis re-assembles individual modified libraries back into the program's original structure.
+The most important challenge during this phase the treatment of the library cache~\sx{bg1}:
+  since a single library can now correspond to many different wrappers, each modified to capture a small fragment of the overall analysis, the cache needs to be augmented to ensure the right analysis fragment clicks at the right place during the re-assembly of the dependency tree.
 
 \end{itemize}
 
-Program runtime transformations such as the ones applied in the second phase are used pervasively throughout \sys.
-
-% , such as an object returned from a module or an exception about to be sent across the network.
-Transformations can be applied to any value in the language. 
-The most general value is an object, a bag of records holding key-value fields;
-  other value types include primitives, functions, and booleans.
-% Listing~\ref{core-tx} presents a simplified core of the language.
-Transformations walk objects from their root, processing component values based on their types (Fig.~\ref{fig:txfm}).
-More specifically,
-  (i) \emph{function} values are wrapped by closures specific to the goal of the transformation; % on the function's arguments and return values;
-  (ii) \emph{object} values are recursively transformed, with their getter and setter methods replaced similar to function values; % and at times combining return results; and
-  (iii) \emph{primitive} values are either transformed directly or copied unmodified and wrapped with an access interposition mechanism.
-% Usually transformations do not mutate original values, but first copy them, apply transformations to the copies, and return copies to the caller.
+% Program runtime transformations such as the ones applied in the second phase are used pervasively throughout \sys.
 
 \begin{figure}[t]
 \raggedleft 
