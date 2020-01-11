@@ -100,7 +100,7 @@ const updateCounter = (counter) => {
 const exportHandler = {
   get: function(target, name, receiver) {
     const type = typeof target[name];
-    if (type != 'undefined' && type === 'function') { // + udnefined
+    if (type === 'function' && typeof name === 'string') { // + udnefined
       // If we try to grab an object we wrap it in this proxy
       if (type === 'object') {
         // FIXME
