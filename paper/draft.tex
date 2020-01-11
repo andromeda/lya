@@ -130,12 +130,12 @@ Modifying the application's runtime environment such as the interpreter is cumbe
 Tools that virtualize execution~\cite{pin, valgrind, jalangi, roadrunner} have high performance costs---for example, Jalangi~\cite{jalangi} and RoadRunner~\cite{roadrunner} report No-Op analysis on the order of 26--32$\times$ and 52$\times$, respectively.
 % Problem-specific solutions require significant investment outside the language's mental model---for example,  each ---as a case in point, Jalangi reports XX overhed (exact overheads always depend on the specific analysis).
 
-Both effort and performance costs are severely compounded by the use of third-party libraries---development-time constructs usually glued together without a full understanding of their internals.
-Their ubiquity is a recent phenomenon enabled by zero-cost code sharing~\cite{libs}
+Effort and performance costs are severely compounded by the use of third-party libraries, usually glued together without a full understanding of their internals.
+This is a recent phenomenon enabled by zero-cost code sharing~\cite{libs}:
 % Libraries are used pervasively today to lower development costs and improve software quality, 
 % This over-reliance to third-party libraries is a recent phenomenon, 
-  with the proliferation of language-specific package repositories, the effort of publishing and that of using a library are essentially zero.
-As a result, applications frequently count hundreds of libraries, each often containing only a few lines of code~\cite{leftpad, npmstudy:19}. % how to say thousands of them depend on a 11-line lib?
+  language-specific package repositories eliminate the cost of publishing and using a library.
+As a result, applications frequently count hundreds of libraries~\cite{npmstudy:19}, with each often only a few lines long~\cite{leftpad, npmstudy:19}. % how to say thousands of them depend on a 11-line lib?
 Library-oriented analysis adds to the challenges of prior tools as
   (i) library boundaries disappear at runtime, and
   (ii) coarse-grained, high-level language semantics misalign with fine-grained, low-level instrumentation.
@@ -200,7 +200,7 @@ Aside from the aforementioned sections (\S\ref{bg}--\ref{impl}), the paper discu
 \section{Background, Examples, and Goals}
 \label{bg}
 
-A single application today often incorporates multiple libraries\footnote{We use the terms ``library'', ``package'', and ``module'' interchangeably.} written and published by several different authors.
+A single application today often incorporates multiple libraries written and published by several different authors.
 To make the difficulties of analyzing such library-overreliant more concrete, we describe several example analysis that are often needed by the authors of third-party libraries.
 These examples illustrate key requirements for the design of a framework for analyzing applications at the boundaries of modules.
 Before describing these examples, however, we offer a brief refresher on the abstractions and corresponding internals of module systems~\sx{bg1}.
@@ -208,7 +208,7 @@ Before describing these examples, however, we offer a brief refresher on the abs
 % The emerging development process should (and to a certain extent, does) simplify the development and testing process;
 %   unfortunately, good abstractions are sealed (\ie they do not leak between abstraction layers), which makes the inspection of a library difficult.
 
-\subsection{Background on Modules and Module Systems}
+\subsection{Background on Module Systems}
 \label{bg1}
 
 languages provide module systems
