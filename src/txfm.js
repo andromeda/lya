@@ -314,7 +314,7 @@ Module.prototype.require = function(...args) {
   // If false that means that we pass from here for the 
   // first time.
   const type = typeof result;
-  if (type != 'boolean' && type != 'symbol' && type != 'number') {
+  if (type != 'boolean' && type != 'symbol' && type != 'number' && type != 'string') {
     if ( objName.has(result) === false ) {
       policy.objNameSet(result,path);
       policy.objPathSet(result);
