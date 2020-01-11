@@ -313,18 +313,21 @@ Module.prototype.require = function(...args) {
   let result = originalRequire.apply(this, args);
   // If false that means that we pass from here for the 
   // first time.
-  if ( objName.has(result) === false ) {
-    policy.objNameSet(result,path);
-    policy.objPathSet(result);
-    result = new Proxy(result, policy.exportHandler);
-    if (requireLevel !=0){
-      requireLevel--;
-      policy.updateCounter(requireLevel);
+  const type = typeof result;
+  if (type != 'boolean' && type != 'symbol' && type != 'number' && type != 'string') {
+    if ( objName.has(result) === false ) {
+      policy.objNameSet(result,path);
+      policy.objPathSet(result);
+      result = new Proxy(result, policy.exportHandler);
+      if (requireLevel !=0){
+        requireLevel--;
+        policy.updateCounter(requireLevel);
+      }
+    } else {
+      result = new Proxy(result, policy.exportHandler);
+      policy.objNameSet(result,path);
+      policy.objPathSet(result);
     }
-  } else {
-    result = new Proxy(result, policy.exportHandler);
-    policy.objNameSet(result,path);
-    policy.objPathSet(result);
   }
   return result;
 };
