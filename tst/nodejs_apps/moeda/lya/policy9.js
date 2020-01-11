@@ -117,7 +117,6 @@ const exportHandler = {
         locEnv.objName.set(localObject, truename + '.' + name);
         locEnv.objPath.set(localObject, truepath);
         
-        return localObject;
       } else if (type === 'function') {
         const localFunction = target[name];
 
