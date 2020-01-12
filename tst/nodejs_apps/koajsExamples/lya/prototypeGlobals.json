@@ -1,0 +1,14 @@
+{
+	"Object": [
+		"isPrototypeOf",
+		"propertyIsEnumerable"
+	],
+	"Number": [
+		"toExponential",
+		"toFixed",
+		"toLocaleString",
+		"toPrecision",
+		"toString",
+		"valueOf"
+	]
+}

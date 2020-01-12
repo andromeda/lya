@@ -1,0 +1,125 @@
+The name of file 3d-cube.js
+
+real	2m32.816s
+user	2m26.436s
+sys	0m7.532s
+The name of file 3d-morph.js
+
+real	0m1.408s
+user	0m1.384s
+sys	0m0.028s
+The name of file 3d-raytrace.js
+
+real	0m1.189s
+user	0m1.180s
+sys	0m0.032s
+The name of file access-binary-trees.js
+
+real	0m0.652s
+user	0m0.664s
+sys	0m0.004s
+The name of file access-fannkuch.js
+
+real	0m0.617s
+user	0m0.608s
+sys	0m0.012s
+The name of file access-nbody.js
+
+real	0m1.814s
+user	0m1.812s
+sys	0m0.012s
+The name of file access-nsieve.js
+
+real	0m0.386s
+user	0m0.360s
+sys	0m0.036s
+The name of file bitops-3bit-bits-in-byte.js
+
+real	0m0.288s
+user	0m0.280s
+sys	0m0.008s
+The name of file bitops-bits-in-byte.js
+
+real	0m0.550s
+user	0m0.520s
+sys	0m0.032s
+The name of file bitops-bitwise-and.js
+
+real	0m0.313s
+user	0m0.308s
+sys	0m0.008s
+The name of file bitops-nsieve-bits.js
+
+real	0m0.440s
+user	0m0.436s
+sys	0m0.004s
+The name of file controlflow-recursive.js
+
+real	0m0.423s
+user	0m0.424s
+sys	0m0.008s
+The name of file crypto-aes.js
+
+real	0m0.370s
+user	0m0.368s
+sys	0m0.012s
+The name of file crypto-md5.js
+
+real	0m0.350s
+user	0m0.352s
+sys	0m0.000s
+The name of file crypto-sha1.js
+
+real	0m0.354s
+user	0m0.352s
+sys	0m0.004s
+The name of file date-format-xparb.js
+
+real	0m5.343s
+user	0m4.992s
+sys	0m0.376s
+The name of file math-cordic.js
+
+real	0m0.463s
+user	0m0.460s
+sys	0m0.004s
+The name of file math-partial-sums.js
+
+real	0m1.208s
+user	0m1.196s
+sys	0m0.016s
+The name of file math-spectral-norm.js
+
+real	0m0.406s
+user	0m0.404s
+sys	0m0.012s
+The name of file regexp-dna.js
+
+real	0m0.879s
+user	0m0.868s
+sys	0m0.016s
+The name of file string-base64.js
+
+real	0m0.484s
+user	0m0.480s
+sys	0m0.012s
+The name of file string-fasta.js
+
+real	0m1.729s
+user	0m1.720s
+sys	0m0.016s
+The name of file string-tagcloud.js
+
+real	0m1.746s
+user	0m1.716s
+sys	0m0.040s
+The name of file string-unpack-code.js
+
+real	0m1.322s
+user	0m1.308s
+sys	0m0.020s
+The name of file string-validate-input.js
+
+real	0m0.149s
+user	0m0.144s
+sys	0m0.012s
