@@ -610,22 +610,42 @@ New libraries are inserted into the second-level cache right after evaluation of
 \caption{
   \textbf{Example transformations.}
    Applying runtime transformations (b) and context rebinding (c, d) on a simple \ttt{Math} object~\cf{impl}.
+\fixme{No UX!}
 }
 \label{fig:tx2}
 \vspace{-2mm}
 \end{figure*}
 
 
-At a very high level, loading a fresh module with \ttt{require("foo");} corresponds to the following five stages:
+This section details our implementation of \sys for server-side JavaScript (SSJ) in about 1.5K lines of code on top of version 8.9.4 of the Node.js runtime.
+We start with the internals of \sys's Node.js implementation~\sx{impl1}, and then describe the three analyses built on \sys~\sx{impl2}.
+We postpone discussion of how other environments diverge from JavaScript for later~\S\ref{reqs}.
 
-\begin{enumerate}
-% \def\labelenumi{\arabic{enumi}.}
-\item Resolution: identify the file to which the module specified corresponds, and locate it in the filesystem.
-\item Loading: depending on the file type, use the corresponding loader (\eg V8 compiler for \ttt{js}, \ttt{JSON.parse} for \ttt{json} \etc).
-\item Wrapping: wrap the module so that module-globals get encapsulated and Node.js globals (\eg \ttt{require}) get resolved.
-\item Evaluation: evaluate the wrapped module in the current context, so that global names and top-level objects get resolved correctly.
-\item Caching: add the module to a handful of module-related cache structures, for purposes of consistency and performance.
-\end{enumerate}
+In practice, the aforementioned dialysis stages can be implemented in two different ways.
+The first is to implement \sys as a modified version of the runtime (\eg \sys-powered JavaScript) in which several stages of its library-loading facility have been augmented in-place with the techniques described earlier.
+The second approach is to implement as a third-party library (\eg the \ttt{lya} package) available by the language's package manager.
+
+With both approaches, \sys feels to users as a backward-compatible, drop-in replacement of SSJ's module system---but the second approach has several benefits.
+It does not require \sys's users to add a second runtime whose sole purpose is to run analyses;
+  it removes \sys's creators and maintainers from the critical path of updates between the runtime developers and its users; 
+  and it simplifies \sys's evaluation and comparison with the vanilla runtime (both in terms of performance and correctness).
+% However, we have found there are significant opportunities for performance optimization and gains in development complexity by choosing the former approach;
+%   we expand on in the discussion section~\sx{reqs}.
+
+% It sketches the Node.js runtime~\sx{a}, the use of the module system~\sx{b}, and the internals of how module loading works~\sx{c}.
+
+\subsection{System Implementation}
+\label{impl1}
+
+
+Node.js' module system is implemented entirely in JavaScript.
+It exposes \ttt{require}, a global-looking function for importing modules.
+At a high level, loading a fresh module with \ttt{require("foo");} corresponds to the following five stages:
+(1) Resolution: identify the file to which the module specified corresponds, and locate it in the filesystem.
+(2) Loading: depending on the file type, use the corresponding loader (\eg V8 compiler for \ttt{js}, \ttt{JSON.parse} for \ttt{json} \etc).
+(3) Wrapping: wrap the module so that module-globals get encapsulated and Node.js globals (\eg \ttt{require}) get resolved.
+(4) Evaluation: evaluate the wrapped module in the current context, so that global names and top-level objects get resolved correctly.
+(5) Caching: add the module to a handful of module-related cache structures, for purposes of consistency and performance.
 
 % The resolution algorithm is somewhat convoluted, because it depends on several different facts (including the type of the file requested, whether it is a globally installed, whether it is a directory \etc).
 % It does not require any \sys support beyond copying the directory that contains the source code of the all the modules onto the remote host.
@@ -639,19 +659,16 @@ True globals remaining are
   (ii) Node.js-specific globals (\eg \ttt{console}, \ttt{process}, \ttt{timer}).
 These globals require further interposition.
 
-% \begin{lstlisting}[language=js,mathescape,upquote=true]
-% // Node.js will wrap a module with a function,
-% // so as to bring certain names into scope
-% // before compiling/evaluating code.
-% let wrapped = "function (" +
-%         "exports, require, module, " +
-%         "__filename, __dirname, CTX) {" +
-%     "let Math = CTX.Math" +
-%     "let console = CTX.console" +
-%     //...[more definitions]
-%     moduleSource +
-%   "});"
-% \end{lstlisting}
+% \begin{verbatim}
+% let lib = `
+%  function (exports, require, module,
+%            __filename, __dirname, CTX) {
+%    let Math = CTX.Math
+%    let console = CTX.console
+%    //...[more definitions]
+%    ${moduleSource}
+%  });`;
+% \end{verbatim}
 
 
 \sys hooks into the wrapper function (the last variable in the function definition, \ttt{CTX}).
