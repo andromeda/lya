@@ -223,11 +223,26 @@ Before describing these examples, however, we offer a brief refresher on the abs
 \subsection{Background on Module Systems}
 \label{bg1}
 
+\begin{figure}[t]
+\raggedleft 
+\includegraphics[width=0.45\textwidth]{./figs/lya_ex1.pdf}
+\caption{
+  \textbf{Example of a library import.}
+  \textmd{
+    The code on the left imports the \ttt{simple-math} library, which imports a \ttt{log} library and exports a simple \ttt{Math} object.
+    Several names resolve to functionality provided by the programming language:
+      names \ttt{import} and \ttt{export} resolve to library-local values; \ttt{print} resolves to a global value.
+  }
+}
+\label{fig:base}
+\end{figure}
+
+
 A library, package, or module---we use these terms interchangeably---is a development-time construct for encapsulating reusable functionality.
 This functionality falls into two categories:
   it either (i) comes bundled with the language, possibly wrapping operating-system interfaces such as the file-system in a way that is system-agnostic and conforms to the language's conventions,
   or (ii) is provided by other developers sharing code others might find useful.
-Fig.~\ref{mod} depicts the basic structure of a modern program, in which the \ttt{math} library provides a set of four elementary operations.
+Fig.~\ref{mod} depicts the basic structure of a modern program, in which the \ttt{Math} library provides a set of four elementary operations.
 
 From a developer's perspective, \ttt{import}ing a library makes its functionality usable by the calling code. 
 What this means is that some of the library's functionality is bound to a variable name that becomes available in the scope of the caller.
