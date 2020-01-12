@@ -8,6 +8,9 @@
 \usepackage{color}
 \usepackage{booktabs}
 \usepackage{graphicx}
+\usepackage{alltt}
+\usepackage{amssymb}
+\usepackage{amsmath}
 
 \usepackage{caption}
 \captionsetup[figure]{font=footnotesize,name={Fig.},labelfont={bf, footnotesize}}
@@ -322,11 +325,6 @@ Profile generation can operate at a high resolution in time and space:
   (i) at every function call entering a module, and (ii) on thousands of modules across an application.
 
 
-% ATTRIBUTION
-% Interestingly, profiling functions running at each boundary cannot ``see through'' libraries in order to attribute load among a library and its dependencies correctly.
-% For example, an agent at the outermost boundary \ttt{A} of a dependency tree \ttt{A}$\rightarrow$\ttt{B}$\rightarrow$\ttt{C} does not know how much of the latency\eat{ is \ttt{A}-internal and how much} comes from \ttt{B}. % or \ttt{B}'s dependency, \ttt{C}.
-% 
-
 % \emph{
 % This case highlights the need to \fixme{analyze} all the observable behavior \emph{around} a library, without necessarily caring about fine-grained library-internal analysis.
 % }
@@ -556,8 +554,8 @@ Attempting to access library-local variables directly from within \sys's scope w
 To link the library with the newly transformed version of its context, \sys wraps the library---still an uninterpreted string of source code---with a closure.
 The closure's body starts with a prologue of the form:
 \begin{verbatim}
-  pint = ctx.print
-  error = ctx.error
+  local pint = ctx.print
+  local error = ctx.error
   ...
 \end{verbatim}
 These statements shadow global variable names by redefining them as local ones.
@@ -602,69 +600,8 @@ It then applies a transformation to the library's return value.
 New libraries are inserted into the second-level cache right after evaluation of the interpreted function.
 
 
-The following subsections outline how module systems handle modules at runtime, by exemplifying the internals of Node.js.
-It sketches the Node.js runtime~\sx{a}, the use of the module system~\sx{b}, and the internals of how module loading works~\sx{c}.
-
-In practice, the aforementioned dialysis stages can be implemented in two different ways.
-The first is as a modified version of the runtime, where 
-No-op analyses correspond to the default execution
-  either 
-It is introduced as a backward-compatible, drop-in replacement of the language's module system.
-It can be imported as an application-specific module (\eg \ttt{ignis} package) or can be bundled with a custom language runtime (\eg \sys-powered Lua) replacing its system-wide module system.
-
-We went with the latter approach, providing \sys as a library, to simplify its evaluation and its comparison with the vanilla runtime (both in terms of performance and correctness).
-However, we have found there are significant opportunities for performance optimization and gains in development complexity by choosing the former approach;
-  we expand on these at the end of this section~\sx{opportunities}.
-% get second argument, no need to pass arguments around, tricky to 
-% carefull hardcoding of paths, because \sys's code itself is split into modules
-% We found it useful to add a function for white- and black-listing, as a set of regular expressions.
-% Regular expressions where useful because internally libraries are identified via library identifiers that correspond to file-system paths.
-% Originally intended as an aid to \sys's development and debugging, it proved useful enough for writing analysis A1--4 that decided to expose it to users.
-% This is useful, for example, when...
-% The configuration object accepts \ttt{only} and \ttt{not} that contain sets of regular expressions;
-
-
-(1) why node.js
-(2) Create a table of compatibility and show individual aspects
-
-\heading{Module System}
-Node.js' module system is implemented entirely in JavaScript.
-It exposes \ttt{require}, a global-looking function for importing modules.
-\fixme{Figure} above demonstrates the use of \ttt{require}.
-
-% \begin{lstlisting}[language=js,mathescape,upquote=true]
-% // -------------- [./main.js] -------------
-% // importing point
-% let Point = require("./point.js");
-% Point.create(1, 1).print(); // => [1, 1]
-% 
-% // -------------- [./point.js] ------------
-% let Point = function Point (x, y) {
-%     this.x = x; this.y = y;
-% };
-% Point.prototype.print = function print () {
-%   console.log([this.x, this.y]);
-% };
-% module.exports = {
-%     create:  function create (x, y) {
-%         return new Point(x, y);
-%     }
-% };
-% \end{lstlisting}
-
-In the example above, the main module (\ttt{main.js}) imports the \ttt{point.js} module using the \ttt{require} statement (line 3)
-Functionality from the exporting module (\ttt{point.js}) that is expected to become available to the importing module (\ttt{main.js}) is assigned to a special \ttt{module.exports} object (line 13);
-  the rest is module-private functionality.
-Files and modules are in one-to-one correspondence (each file is treated as a separate module).
-Method \ttt{require} is synchronous (\ie blocking):
-  it will block execution until the module specified is loaded.
-% ---and can be used to load built-in modules such as \ttt{http} and \ttt{fs}.
-The module system is implemented in the \ttt{module} built-in module~\sx{c}, which locates, wraps, compiles, and executes the specified file.
-
-\sys hooks into \ttt{module} and alters the return value of the \ttt{require} call that imports \ttt{point.js} (line 3).
-
-\subsection{Implementation of the Module System}
-\label{c}
+\section{Implementation of Dialysis for SSJ}
+\label{impl}
 
 \begin{figure*}[t]
 \centering
