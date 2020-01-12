@@ -677,43 +677,80 @@ For example, \ttt{console} in the context of the module will be an \sys-created 
 Evaluation of the module passes an additional value to this function, which is the modified context.
 As a result, any changes to the top-level objects and any global variables are accessible from the within the module.
 
-% \begin{lstlisting}[language=js,mathescape,upquote=true]
-% //Input: module ID e.g., absolute filepath
-% let load = function (ID) {
-%   if (cache[ID]) {
-%      return cache[ID];
-%   }
-%   let m = {
-%     exports: {}, id: ID, dir: path.resolve(ID)
-%   };
-%   let cm = v8.compile(wrapped);
-%   let ii = iris.getImplicit(ID);
-%   let c = iris.freshContext(ii);
-%   cm(m.exports, this.require, m, ID, m.dir, c);
-%   let ei = iris.getExplicit(ID);
-%   m.exports = iris.wrap(m.exports, [ei] );
-%   cache[ID] = m;
-%   return m.exports;
-% }
-% \end{lstlisting}
+% get second argument, no need to pass arguments around, tricky to 
+% carefull hardcoding of paths, because \sys's code itself is split into modules
+% We found it useful to add a function for white- and black-listing, as a set of regular expressions.
+% Regular expressions where useful because internally libraries are identified via library identifiers that correspond to file-system paths.
+% Originally intended as an aid to \sys's development and debugging, it proved useful enough for writing analysis A1--4 that decided to expose it to users.
+% This is useful, for example, when...
+% The configuration object accepts \ttt{only} and \ttt{not} that contain sets of regular expressions;
 
-The \ttt{load} method in the \ttt{Module} module combines evaluation (line 10) and caching (line 14) of the wrapped module.
-After evaluation, invoking the compiled function generates the value that is assigned to \ttt{module.exports} from within the module (line 12).
-\sys passes a freshly constructed context at that invocation, modified according to the implicit segment of the (PIC??) corresponding to the module being loaded.
-Before returning the value of \ttt{module.exports}, \sys transforms it according to the explicit segment of the (PIC??) corresponding to the module being loaded.
-Finally, the results of the entire process are placed into the module cache for later use.
-
-\subsection{Limitations}
-
-% FIXME: Talk about the inability to 
-A limitation of our implementation is that it cannot analyze the library importing \sys---usually, the top-level program entry-point equivalent to \ttt{main}.
-This is because \sys cannot transform the context of that file
-As a result, \sys as-is cannot be applied to, say, to analyze single-file programs---a common pattern in scripting languages often used for quick-and-dirty tasks.
-The simplest workaround here is to create an auxiliary file that imports \sys, and then import the single-file script (which, in most scripting languages would invoke it).
+%% TODO: implementation
+%% The program transformations described earlier~\sx{overview} are in \sys  abstracted by a set of parametrizable skeletons.
+%% These skeletons provide hooks for end-developers writing analyses.
+%% Specifically, they map types of values (\eg \ttt{Number}s, \ttt{Function}s) to generic hooks for each type. 
+%% These hooks are then extended or rewritten by developers to
 
 
+Fig.~\ref{fig:tx2}\emph{a--d} exemplifies our transformation techniques in the context of JavaScript.
+\sys traverses a \ttt{Math} object, replaces functions such as \ttt{div} with wrappers; it also creates a modified version of the surrounding context and binds it to the library.
+The precise wrappers depend on the intended analysis, reviewed next.
 
-\section{Evaluation and Experience}
+
+\subsection{Individual Analyses}
+\label{impl2}
+
+Individual analysis are implemented using a set of templates that provide initial constructs (see below).
+\sys offers a small utility library to reduce boilerplate code for pattern-matching on types.
+As a result, code that is specific to individual analyses averages about 20--30 lines.
+
+\heading{Security Analysis}
+To address the security concerns of third-party libraries, we develop a concrete \ttt{RWX} policy for analyzing accesses.
+The language of the analysis is given in the following grammar:
+
+\begin{alltt}
+  str:  <identifier in JS>
+  libs: [ str ]
+  path: str `.` path
+  mode: P{ R | W | X }
+  body: { [ path: mode ]: path \(\in\) mods}
+  analysis:  mods body
+\end{alltt}
+
+\heading{Performance Diagnosis}
+
+\begin{equation}
+\label{eq:2}
+R_{new} =
+\begin{cases}
+  R +1, & \varrho\times\sum_{i=1}^t{w_il_i} > \delta + \delta_0  \\
+  R -1,  & \varrho\times\sum_{i=1}^t{w_il_i}  < \delta + a * \delta_0
+\end{cases}
+\end{equation}
+
+Scale-in (\ie $-1$) might not seem as important, but constrained environments benefit from quick re-allocation.
+However, after scale-in, the system often ends up just scaling out the same module.
+To avoid such oscillation, a small reclamation delay $a$ increases the system's confidence that the workload has moved away from a specific pattern.
+
+% ATTRIBUTION
+Interestingly, profiling functions running at each boundary cannot ``see through'' libraries in order to attribute load among a library and its dependencies correctly.
+For example, an agent at the outermost boundary \ttt{A} of a dependency tree \ttt{A}$\rightarrow$\ttt{B}$\rightarrow$\ttt{C} does not know how much of the latency
+% \eat{ is \ttt{A}-internal and how much}
+comes from \ttt{B}. % or \ttt{B}'s dependency, \ttt{C}.
+
+
+\heading{Invariant Discovery}
+Describe specific type system
+
+% \subsection{Limitations}
+% 
+% % FIXME: Talk about the inability to 
+% A limitation of our implementation is that it cannot analyze the library importing \sys---usually, the top-level program entry-point equivalent to \ttt{main}.
+% This is because \sys cannot transform the context of that file
+% As a result, \sys as-is cannot be applied to, say, to analyze single-file programs---a common pattern in scripting languages often used for quick-and-dirty tasks.
+% The simplest workaround here is to create an auxiliary file that imports \sys, and then import the single-file script (which, in most scripting languages would invoke it).
+
+\section{Evaluation}
 \label{eval}
 
 \sys's  development achieves goals~\goal{1--3}~\sx{goals}, demonstrating that it is indeed feasible to construct a framework that operates at the level of modules, 
