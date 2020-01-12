@@ -1,9 +1,53 @@
+% TODO: tempted to term this "Module-aware dynamic fragmentation, analysis, and reassembly" as Dialysis or refracture
+% CFP: https://www.usenix.org/conference/atc20/call-for-papers
 \documentclass[letterpaper,twocolumn,10pt]{article}
 \usepackage{usenix2019_v3}
 
-\usepackage{tikz}
-\usepackage{amsmath}
+\usepackage{soul}
+\usepackage{xspace}
+\usepackage{color}
+\usepackage{booktabs}
+\usepackage{graphicx}
 
+\usepackage{caption}
+\captionsetup[figure]{font=footnotesize,name={Fig.},labelfont={bf, footnotesize}}
+\captionsetup[table]{font=footnotesize,name={Tab.},labelfont={bf, footnotesize}, skip=2pt, aboveskip=2pt}
+\captionsetup{font=footnotesize,labelfont={bf, footnotesize}, belowskip=2pt}
+
+\usepackage{enumitem}
+\setlist{noitemsep,leftmargin=10pt,topsep=2pt,parsep=2pt,partopsep=2pt}
+
+\def\omit#1{}
+\def\eg{{\em e.g.}, }
+\def\ie{{\em i.e.}, }
+\def\etc{{\em etc.}\xspace}
+\def\vs{{\em vs.}\xspace}
+% \newcommand{\heading}[1]{\vspace{4pt}\noindent\textbf{#1}\enspace}
+% No vspace, coz Usenix class already has paragraph space
+\newcommand{\heading}[1]{\vspace{2pt}\noindent\textbf{#1}\enspace}
+\newcommand{\ttt}[1]{\texttt{#1}}
+\newcommand{\ttiny}[1]{\texttt{\footnotesize #1}}
+\newcommand{\tcn}[1]{}
+
+\newcommand{\cf}[1]{(\emph{Cf}.\S\ref{#1})}
+\newcommand{\sx}[1]{(\S\ref{#1})}
+\newcommand{\sys}{{\scshape Lya}\xspace}
+\newcommand{\toy}{{\tt lya.js}\xspace}
+
+\newcommand{\fra}{fragmentation\xspace} % fracture
+\newcommand{\ana}{analysis\xspace}      % 
+\newcommand{\ass}{reassembly\xspace}    % 
+\newcommand{\Fra}{Fragmentation\xspace} % fracture
+\newcommand{\Ana}{Analysis\xspace}      % 
+\newcommand{\Ass}{Reassembly\xspace}    % 
+\newcommand{\dia}{\fra, \ana, and \ass}
+
+\newcommand{\nv}[1]{[{\color{cyan}#1 --- Nikos}]}
+\newcommand{\review}[1]{{\color{red}#1}}
+\newcommand{\TODO}[1]{\hl{\textbf{TODO:} #1}\xspace}
+\newcommand{\todo}[1]{\hl{#1}\xspace}
+\newcommand{\fixme}[1]{{\color{red}#1}}
+\newcommand{\tc}{(\todo{cite})\xspace}
 %-------------------------------------------------------------------------------
 \begin{document}
 %-------------------------------------------------------------------------------
@@ -12,30 +56,599 @@
 \date{}
 
 % make title bold and 14 pt font (Latex default is non-bold, 16 pt)
-\title{\Large \bf Module-aware Fracture and Recombination for Dynamic Analysis}
+\title{\Large \bf Dynamic Program Dialysis with Lya}
 
 %for single author (just remove % characters)
 \author{
-{\rm Grigoris Ntousakis}\\
-Technical University of Crete
-\and
-{\rm Nikos Vasilakis}\\
-Massachusetts Institute of Technology
+{\rm Anonymous Author(s)}\\
+\normalsize{Submission \#225, 12 pages}\\
+% \normalsize{Additional Anonymized Material: \href{https://git.io/JvfCf}{https://git.io/JvfCf}.}
+% {\rm Grigoris Ntousakis}\\
+% Technical University of Crete
+% \and
+% {\rm Nikos Vasilakis}\\
+% Massachusetts Institute of Technology
 }
 
 \maketitle
 
 \begin{abstract}
-  One two three
+
+% Such library over-reliance is a recent trend: % in software engineering:
+Applications today rely on hundreds of libraries, to the point where code written by their nominal developers is only a small fraction of their total line count.
+% On the surface, such reliance is beneficial, 
+Despite its benefits, this over-reliance creates many challenges, precisely due to the lack of knowledge of and visibility into library internals---for example, in the presence of deeply-nested third-party code, security auditing and performance profiling, already challenging in monolithic applications, become extremely difficult.
+
+To address these challenges, we present \emph{program dialysis}, a novel dynamic-analysis technique specifically tailored to applications with many third-party libraries.
+Combining name shadowing, context wrapping, and transformation of the underlying dependency graph, program dialysis automates dynamic \fra, \ana, and \ass of programs at the level of individual libraries during program execution.
+% is a general technique that
+It bolts onto existing languages, enabling analysis expressions in the source language, with only a few lines of analysis-specific code.
+Our dialysis prototype, \sys, targets the JavaScript ecosystem counting over 1M libraries used on the web, server, and mobile.
+We develop a series of case-studies to motivate \sys's design, and demonstrate how \sys allows the analysis of both individual libraries as well as multi-libraries application programs with low developer effort and performance overhead:
+  insightful analyses can be expressed in 10--20 lines of code, add a virtually imperceptible increase in the load latency of individual libraries, and scale to real applications with hundreds of libraries.
+
+% Module dialysis can be bolted on existing language runtime environments in a language-agnostic fashion 
+% % By leveraging the ubiquity of third-party modules in today's applications
+% Such modules can be part of third-party packages or of the language's standard library;
+%   the latter is important for resources that are part of the broader environment where the application is executing, such as the operating system and the network.
+
+% Operating at this level of granularity has several benefits:
+%   (i) it allows bolting library dialysis itself as a library onto existing runtime environments that do not feature dynamic analysis,
+%   (ii) it supports analysis expressions directly in the same language, tools, and abstractions as the host application language---eschewing low-level instrumentation, and %developers can use their tools 
+%   (iii) it features low performance overheads, to the point that has the potential to be used online.
+% % FIXME: It depends on the analysis
+% % Due to the in the host language and at a coarser granularity than full-fledged dynamic analysis, module dialysis 
+% % Operating at the granularity of library has several benefits: (i) ease (ii) performance (iii) while still getting 
+% %In a sense, modules are the right level of abstraction 
 \end{abstract}
 
 \section{Introduction}
+\label{intro}
 
-Some citations to ensure we can see them~\cite{Christophe:2015:DAU:2819009.2819180, Keil:2013:EDA:2508168.2508176, Lehmann:2019:WFD:3297858.3304068, Sun:2018:EDA:3178372.3179527}.
+Dynamic analysis is a type of program analysis performed by (and while) executing a program, with the goal of extracting information about the program and its execution.
+Such information may include the ability to infer execution invariants, check security constraints, and extract performance characteristics~\cite{analysis:10}.
+Contrary to other types of analysis, its key benefits make it the primary (or only) candidate in a variety of scenarios---namely, ones that require:
+  (i) current runtime information, such as profiling information, in view of changing load patterns~\cite{staticdynamic},
+  (ii) accurate visibility into the execution, devoid of abstraction or approximation~\cite{staticdynamic},
+  (iii) Turing-complete policies, where policies themselves are programs~\cite{contracts1, contracts2, contracts3},
+  (iv) dynamic or runtime-reflection features, such as the ones present in Python and JavaScript~\cite{jsanalysis1, jsanalysis2}.
 
+% Where dynamic analysis shines is
+% Dynamic analysis occupies a clear spot in the space of analysis has clear strengths and weaknesses.
+% Examples of information not analyzable statically include runtime code evaluation, runtime introspection and reflection, as well as multi-lingual support.
+% Dynamic analysis is a particularly good fit for the analysis of dynamic languages.
+
+Unfortunately, reaping these benefits comes with significant costs in terms of developer effort or runtime performance.
+Manually instrumenting a program requires a good understanding of its internals. % instruction sets?
+External tools such as instrumentation frameworks~\cite{pin, valgrind} and performance tracing tools~\cite{perf, dtrace} only add to the curve, as they feature their own language for specifying analyses. % usually different from the application's language.
+Modifying the application's runtime environment such as the interpreter is cumbersome, error-prone, and requires development in a language that is different than that of the program.
+Tools that virtualize execution~\cite{pin, valgrind, jalangi, roadrunner} have high performance costs---for example, Jalangi~\cite{jalangi} and RoadRunner~\cite{roadrunner} report No-Op analysis on the order of 26--32$\times$ and 52$\times$, respectively.
+% Problem-specific solutions require significant investment outside the language's mental model---for example,  each ---as a case in point, Jalangi reports XX overhed (exact overheads always depend on the specific analysis).
+
+Both effort and performance costs are severely compounded by the use of third-party libraries---development-time constructs usually glued together without a full understanding of their internals.
+Their ubiquity is a recent phenomenon enabled by zero-cost code sharing~\cite{libs}
+% Libraries are used pervasively today to lower development costs and improve software quality, 
+% This over-reliance to third-party libraries is a recent phenomenon, 
+  with the proliferation of language-specific package repositories, the effort of publishing and that of using a library are essentially zero.
+As a result, applications frequently count hundreds of libraries, each often containing only a few lines of code~\cite{leftpad, npmstudy:19}. % how to say thousands of them depend on a 11-line lib?
+Library-oriented analysis adds to the challenges of prior tools as
+  (i) library boundaries disappear at runtime, and
+  (ii) coarse-grained, high-level language semantics misalign with fine-grained, low-level instrumentation.
+
+To address these challenges, we propose a novel approach to dynamic analysis, termed \emph{dialysis}\footnote{
+  A method of deconstruction into elements often for the purposes of removing waste products or altering piecewise components.
+  From ancient Greek {\scriptsize $\delta\iota\acute{\alpha}$} (di\'{a}, ``inter-, through'') and {\scriptsize $\lambda\acute{\tilde{\upsilon}}\epsilon\iota\nu$} (lúein, ``to loosen'').
+} and implemented in \sys.
+Program dialysis is a general technique, applicable to any programming language, that enables dynamic fragmentation, analysis, and re-assembly of applications at the level of individual libraries. 
+It operates during program execution, automating wrapping and transformation of the program's dependency graph, and allowing developers to extract meaningful insights with only a few lines of analysis-specific code
+By operating at the granularity of libraries, dialysis has several benefits over prior work: %full-fledged dynamic analysis:
+  (i) it allows bolting library dialysis itself as a library onto existing runtime environments with no dynamic analysis,
+  (ii) it supports analysis expressions using the same language, tools, and abstractions as the host program language,
+  (iii) it features significantly low runtime performance overheads, enabling the potential for toggling its use in production environments.
+
+% (i) at a somewhat coarser granularity, but still offering insights---and in a semantics-aware way tailored to the programming language.
+% (ii) bolt on
+% Our approach is applicable to any language that supports some notion of modularity, runtime introspection, and .
+% It plugs into the module-loading capability of the runtime system to insert key hooks for inserting 
+% After the parsing and interpretation phases of module loading complete, 
+%  which are then parsed and interpreted and 
+% Surprisingly, as we show in this paper, this architecture requires \emph{no} modifications to the language runtime---that is, it is backward-compatible with vanilla unmodified language runtime environments.
+% 
+% Its key strategy is to fracture applications at the boundaries of modules, instrument their interfaces (including direct accesses) using meta-programming capabilities, and recombine them 
+% By combining visiiblity into both built-in and third-party modules, \sys can get gather important information for 
+% at a much lower cost---both in terms of runtime performance and developer effort.
+% 
+% % to enable module-aware dynamic analysis are general
+% To achieve this, module-aware dynamic analysis leverages several techniques.
+% It plugs into the module manager;
+% wraps interfaces
+% (i) bolt on, meaning
+% (ii) high-performance, and 
+% (iii) low effort 
+% 
+% As shown later, these capabilities are generally available in all dynamic programming languages---\eg 
+
+To demonstrate its effectiveness, we evaluate \sys on the JavaScript ecosystem (>1.2M libraries~\cite{modulecounts}). % and unusually high code-reuse~\cite{npmstudy:19}. %, and a pressing need for usable dynamic analysis~\cite{}.
+We develop a diverse set of analyses that target practical information about a program:
+  an allow/deny security analysis,
+  a profiling analysis showing bottlenecked modules,
+  a synthesis-oriented analysis on input-output data, and
+  an analysis enforcing a static union-based type system at runtime.
+This set of analyses drives the design requirements for \sys, and highlights dialysis as a middle ground between coarse- and fine-grained analysis.
+We evaluate \sys at three different levels:
+  (i) synthetic micro-benchmarks that test certain aspects and confirm the correctness of our analyses in a controlled environment;
+  (ii) single-module meso-benchmarks that allow comparison with dynamic analysis frameworks; and
+  (iii) end-to-end full-application macro-benchmarks that show behavior of \sys on realistic workloads. 
+\S\ref{bg}--\ref{eval} present our key contributions:
+\begin{itemize}
+\item \S\ref{bg} characterizes the shared needs of four case-study multi-module analyses whose needs remain mostly unmet by general-purpose analysis frameworks.
+\item \S\ref{design} presents the design of the bolt-on module-oriented dynamic analysis~\sx{design}, which meets the requirements of the four case-study analyses.
+\item \S\ref{impl} discusses our implementation, \sys, as a pluggable library for the JavaScript ecosystem, as well as the implementation of the four analyses.
+\item \S\ref{eval} evaluates \sys showing it expresses insightful analyses succinctly, adds minimal overheads over the baseline runtime, and scales to hundreds of modules.
+\end{itemize}
+
+Aside from the aforementioned sections (\S\ref{bg}--\ref{impl}), the paper discusses \sys's limitations and its application to other languages~\sx{diss};
+  it compares with related prior work in the literature~\sx{rw};
+  and closes with appropriate conclusions~\sx{end}.
+
+
+\section{Background, Examples, and Goals}
+\label{bg}
+
+A single application today often incorporates multiple libraries\footnote{We use the terms ``library'', ``package'', and ``module'' interchangeably.} written and published by several different authors.
+To make the difficulties of analyzing such library-overreliant more concrete, we describe several example analysis that are often needed by the authors of third-party libraries.
+These examples illustrate key requirements for the design of a framework for analyzing applications at the boundaries of modules.
+Before describing these examples, however, we offer a brief refresher on the abstractions and corresponding internals of module systems~\sx{bg1}.
+
+% The emerging development process should (and to a certain extent, does) simplify the development and testing process;
+%   unfortunately, good abstractions are sealed (\ie they do not leak between abstraction layers), which makes the inspection of a library difficult.
+
+\subsection{Background on Modules and Module Systems}
+\label{bg1}
+
+languages provide module systems
+
+closely coupled with the runtime
+
+A module uses a \ttt{import} function and returns an export .
+Intuitively a map
+
+Several details:
+  same module at multiple levels, and the module cache
+  sometime it's the same, some times it;s not
+  module resolution algorithm
+
+\subsection{Motivating Examples}
+
+Having reviewed the building blocks and underlying techniques that power modularity, we now turn to examples of dynamic analysis that today are difficult or require specialized solutions:
+  (i) an allow/deny security analysis,
+  (ii) a profiling analysis showing hot modules,
+  (iii) a synthesis-oriented analysis on input-output data, and
+  (iv) an analysis enforcing a static union-based type system at runtime.
+These examples illuminate key design requirements for \sys's implementation of module-level dynamic analysis.
+
+\heading{Security Analysis}
+Today's ubiquitous reliance on third-party modules has led to an explosion of supply-chain attacks~\cite{maass2016theory, lauinger2017thou, long2015owasp, cadariu2015tracking, breakapp:plos:2017, snyk}.
+Both bugs and malicious code in imported modules provide attack vectors that are exploitable long after modules reach their end-users.
+As development-time module boundaries do not exist at runtime, modules end up executing with no meaningful isolation or privilege separation guarantees between each other and the trusted portions of an application.
+The popularity of certain libraries---depended upon by tens of thousands of other libraries or applications---allows vulnerabilities deep in the dependency graph to affect a great number of applications~\cite{kuppusamy2016diplomat, leftpad, npmstudy:19}.
+Discovered vulnerabilities are becoming harder to eradicate, as updates are fetched automatically~\cite{npmFailure} and module unpublishing is becoming a multi-step process to avoid breaking applications~\cite{npmUnpublish}.
+Worst of all,\omit{package developers accidentally publishing their security} leaked publishing tokens allow anyone to update packages with code that will eventually reach end-users via package updates~\cite{eslint1, eslint2}.
+
+Recent work~\cite{dld:08, sandcrust, tsampas2017towards, breakapp:ndss:2018} has shown that 
+The key issue underlying the \ttt{event-stream} attack is that any third-party fragment of an application has unrestricted access to the functionality available to the rest of application. % and is exploitable.
+Some of this functionality is \emph{explicitly} provided by other libraries such as \ttt{fs} and \ttt{http}.
+Other functionality is \emph{implicitly} provided by the programming language;
+  examples include the ability to use global variables, import modules, and access the cache of the loaded modules.
+Both explicitly and implicitly provided functionality is exploitable by third-party code.
+While it may be needed for the application to function as a whole, it is not necessarily needed by \ttt{event-stream}.
+% However, not \emph{all} of this capability is needed by \emph{all} of the modules during \emph{all} of the time.
+MLC shows great promise, as it can
+(i) retrofit security into \emph{legacy} systems not designed with security as their primary concern,
+(ii) protect against a plethora of \emph{real} attacks stemming from defective, subverted, and malicious elements, and
+(iii) shield against attacker-controlled components with \emph{unknown} vulnerabilities and powerful \emph{runtime} code evaluation. % (\eg \texttt{eval}).
+
+To make this concrete, we are introducing
+
+\heading{Performance Diagnosis}
+Developers use various techniques to understand such problems.
+For example, collected traces can be replayed against off-line versions of the system and statistical profiling can identify hot code-paths.
+These techniques, however, require some degree of \emph{manual} effort:
+  capturing traces, setting up testbeds, replaying traces, analyzing statistics, and debugging performance are all tedious and time-consuming tasks.
+Pervasiveness of third-party modules and heavy code reuse in modern applications compound the challenge, as the causes may lie deep in the dependency chain.
+
+Once provided with a few recipes, \sys starts monitoring the performance of the corresponding modules in order to detect bottlenecked modules.
+A key observation is the semantic isomorphism between calling a function and passing a message~\cite{scheme:98, duality:79}.
+This allows viewing a series of calls as a stream of messages. % that 
+% at each module boundary 
+Module boundaries can be viewed as (virtual) queues of messages that await processing.
+% and applying windowed average operations on a 
+Overwhelming a module causes its ingress queue to grow.
+% MM: related to the sync vs. async
+% As the queue grows due to module overloading, new messages will be processed only after all other messages have been processed.
+At some point, the waiting time of newly-arrived messages becomes longer than the time to send the messages to a remote copy of the module, run the call there, and return the results back to their intended recipient.
+% Intuitively, it makes sense to schedule a queue on a remote processor when the wait time at the end of the queue becomes longer than scheduling the message to a remote queue.
+
+To make this concrete, we are introducing
+
+\heading{Type and Invariant Checking}
+Extracting type invariants is helpful in a variety of ways---type safety is an important property and types are lightweight annotations that can be quickly and efficiently checked.
+Dynamic analysis can be used to generate type assertions or invariants
+For example
+
+To make this concrete, we are using
+The static type system is defined as a variant of a simply-typed lambda calculus augmented with union types.
+
+\heading{Learning, Synthesis, and Regeneration}
+Extracting type invariants is helpful in a variety of ways---type safety is an important property and types are lightweight annotations that can be quickly and efficiently checked.
+Dynamic analysis can be used to generate type assertions or invariants
+For example
+The approach has been pioneered by systems such as 
+
+To make this concrete, we are using
+The static type system is defined as a variant of a simply-typed lambda calculus augmented with union types.
+
+
+\subsection{Design Goals}
+
+We have briefly introduced four motivating analyses for extracting information about an application's dependencies.
+While the challenges behind these analyses share several characteristics, today they remain largely unaddressed by dynamic analyses frameworks due to a combination of factors:
+  these frameworks either require highly specialized solutions often outside the core language,
+  do not leverage or offer semantic information at the level of module boundaries, or
+  lead to a high (often impractical) performance overheads due to the high granularity of their analyses.
+To summarize, these applications would appear to be served well by a system that:
+\begin{itemize}
+  \item \textbf{(G1)} Operates at the level of modules, leveraging both the semantics and performance potential that this level of granularity potentially offers.
+  \item \textbf{(G2)} Does not require learning a new tool or language, but rather allows developers to express their analyses on the same language as the program.
+  \item \textbf{(G3)} Can be implemented as a library that bolts onto an existing language runtime environment.
+\end{itemize}
+
+The next section describes program dialysis, a new program analysis technique that satisfies these goals, in a language-agnostic manner~\sx{design};
+  the section following that describes a concrete implementation for the server-side JavaScript ecosystem~\sx{impl}.
+
+\section{The Design of Program Dialysis}
+\label{design}
+
+Dialysis detects and scales out bottlenecked components by interposing on the application's module boundaries.
+It is introduced as a backward-compatible, drop-in replacement of the language's module system.
+It can be imported as an application-specific module (\eg \ttt{ignis} package) or can be bundled with a custom language runtime (\eg \sys-powered Lua) replacing its system-wide module system.
+Dialysis starts by dynamically modifying the function that imports libraries: \eat{for locating and loading a module.}
+  instead of simply locating and loading a module, the function yields to \sys, which applies a series of transformation steps to modules, with the goal of interposing on their boundaries.
+We start with a three-step overview of dialysis~\sx{overview}, highlighting the challenges that arise in the process.
+We next describe each one of these steps in more detail
+
+\subsection{Overview}
+\label{overview}
+
+This section presents the design of 
+% FIXME: add user data
+At a high level, module dialysis works at three stages:
+
+\begin{itemize}
+  
+  \item \Fra:
+    It first starts by recursively dis-assembling programs into their library dependencies---pieces of software implement a computation or functionality.
+    This is essentially achieved by instrumenting the import statements and walking the program's recursive dependency structure.
+    Different analysis can operate at different granularities, and has to solve challenges such as multi-module and dedublication.
+
+  \item \Ana:
+It then sets a specific analysis up by wrapping and transforming each module interface, its surrounding environment, as well as the values passing through the module boundary.
+Programmatic transformations walk and transform each one of these values based on their type:
+  the module interface is usually a complex (but singular) object; the surrounding environment treats 
+This phase requires solving several challenges, including enumerating and tracking all points of entry into and exit out of a library.
+It also requires providing 
+ in a backwards compatible fashion.
+
+  \item \Ass:
+  Finally, it re-assembles individual modified modules back into the original structure.
+  This creates several challenges, the most important of which is the treatment of the module cache---a mechanism for avoiding multiple loads of the same module .
+  Since a single library can now correspond to many different wrappers, each modified to capture different  analysis fragments, the cache needs to be augmented to ensure the right analysis fragment clicks at the right place during the re-assembly of the dependency tree.
+
+\end{itemize}
+
+% \textbf{Core Language}
+% a few is not the same as 
+Transformations are used pervasively throughout \sys, and are abstracted via a few parametrizable templates.
+Templates map different types of values (List.~\ref{core-tx}) to a generic handler for each type.
+%given a value, a template will transform it using a handler matching its type
+% Templates match, 
+% \hl{match} between different \hl{value} % what are values
+%    \emph{types} and define generic handlers for each type.
+Transformations have these handlers parametrized to achieve concrete goals such as monitoring, serialization, and scale-out.
+Simplified instances are described in the following two sections (\S\ref{profiling}--\ref{core}).
+
+Transformations can be applied to any value in the language, such as an object returned from a module or an exception about to be sent across the network.
+The general case of such a value is a directed acyclic graph (DAG).
+The types of its vertices can be coarsely grouped into primitives, functions, and objects.
+Objects map strings to other values, pointing to other vertices in the DAG.
+% Listing~\ref{core-tx} presents a simplified core of the language.
+Transformations start by walking the DAG from the root vertex and processing component values based on their types.
+They do not mutate original values, but first copy them, apply transformations to the copies, and return copies to the caller.
+They only partially explore the object graph, as they do not peak through function closure environments.
+Fortunately, this aligns well with our goal of monitoring activity at module boundaries and ignoring module-internal activity.
+
+As an example, consider transforming the \ttt{crypto} module~\sx{solution}.
+\sys traverses the object returned by \ttt{crypto} and replaces functions such as \ttt{pbkdf2} with wrappers whose specifics depend on the intended goal:
+  profiling wrappers call the original function in between statistics collection, and RPC wrappers forward the call to a remote replica.
+
+
+
+
+% \section{Applications of Analysis}
+% \label{apps}
+
+
+\section{Implementation: Lya}
+\label{impl}
+
+We implemented \sys for version 
+We show where other implementations would diverge in table 1
+
+The following subsections outline how module systems handle modules at runtime, by exemplifying the internals of Node.js.
+It sketches the Node.js runtime~\sx{a}, the use of the module system~\sx{b}, and the internals of how module loading works~\sx{c}.
+
+(1) why node.js
+(2) Create a table of compatibility and show individual aspects
+
+\heading{Module System}
+Node.js' module system is implemented entirely in JavaScript.
+It exposes \ttt{require}, a global-looking function for importing modules.
+\fixme{Figure} above demonstrates the use of \ttt{require}.
+
+% \begin{lstlisting}[language=js,mathescape,upquote=true]
+% // -------------- [./main.js] -------------
+% // importing point
+% let Point = require("./point.js");
+% Point.create(1, 1).print(); // => [1, 1]
+% 
+% // -------------- [./point.js] ------------
+% let Point = function Point (x, y) {
+%     this.x = x; this.y = y;
+% };
+% Point.prototype.print = function print () {
+%   console.log([this.x, this.y]);
+% };
+% module.exports = {
+%     create:  function create (x, y) {
+%         return new Point(x, y);
+%     }
+% };
+% \end{lstlisting}
+
+In the example above, the main module (\ttt{main.js}) imports the \ttt{point.js} module using the \ttt{require} statement (line 3)
+Functionality from the exporting module (\ttt{point.js}) that is expected to become available to the importing module (\ttt{main.js}) is assigned to a special \ttt{module.exports} object (line 13);
+  the rest is module-private functionality.
+Files and modules are in one-to-one correspondence (each file is treated as a separate module).
+Method \ttt{require} is synchronous (\ie blocking):
+  it will block execution until the module specified is loaded.
+% ---and can be used to load built-in modules such as \ttt{http} and \ttt{fs}.
+The module system is implemented in the \ttt{module} built-in module~\sx{c}, which locates, wraps, compiles, and executes the specified file.
+
+\sys hooks into \ttt{module} and alters the return value of the \ttt{require} call that imports \ttt{point.js} (line 3).
+
+\subsection{Implementation of the Module System}
+\label{c}
+
+At a very high level, loading a fresh module with \ttt{require("foo");} corresponds to the following five stages:
+
+\begin{enumerate}
+% \def\labelenumi{\arabic{enumi}.}
+\item Resolution: identify the file to which the module specified corresponds, and locate it in the filesystem.
+\item Loading: depending on the file type, use the corresponding loader (\eg V8 compiler for \ttt{js}, \ttt{JSON.parse} for \ttt{json} \etc).
+\item Wrapping: wrap the module so that module-globals get encapsulated and Node.js globals (\eg \ttt{require}) get resolved.
+\item Evaluation: evaluate the wrapped module in the current context, so that global names and top-level objects get resolved correctly.
+\item Caching: add the module to a handful of module-related cache structures, for purposes of consistency and performance.
+\end{enumerate}
+
+% The resolution algorithm is somewhat convoluted, because it depends on several different facts (including the type of the file requested, whether it is a globally installed, whether it is a directory \etc).
+% It does not require any \sys support beyond copying the directory that contains the source code of the all the modules onto the remote host.
+\sys interposes on all of these steps to facilitate transformations.
+Wrapping (3) and evaluation (4) are particularly interesting, because they allow \sys to interpose at the module boundary during runtime.
+Before a module's code is evaluated, the Node.js module loader wraps the module so that
+  (i) it keeps top-level variables (defined with \ttt{var}, \ttt{const} or \ttt{let}) scoped to the module rather than the global object; and
+  (ii) it provides some global-looking variables that are actually specific to the module, such as the \ttt{module} and \ttt{exports} objects that the implementor can use to export values from the module and convenience variables---such as \ttt{\_\_filename} and \ttt{\_\_dirname}  containing the module's absolute filename and directory path, respectively.
+True globals remaining are
+  (i) the global objects as defined by the EcmaScript standard (\eg \ttt{Object}, \ttt{Function}, \ttt{Math}); and
+  (ii) Node.js-specific globals (\eg \ttt{console}, \ttt{process}, \ttt{timer}).
+These globals require further interposition.
+
+% \begin{lstlisting}[language=js,mathescape,upquote=true]
+% // Node.js will wrap a module with a function,
+% // so as to bring certain names into scope
+% // before compiling/evaluating code.
+% let wrapped = "function (" +
+%         "exports, require, module, " +
+%         "__filename, __dirname, CTX) {" +
+%     "let Math = CTX.Math" +
+%     "let console = CTX.console" +
+%     //...[more definitions]
+%     moduleSource +
+%   "});"
+% \end{lstlisting}
+
+
+\sys hooks into the wrapper function (the last variable in the function definition, \ttt{CTX}).
+This trivial source-to-source transformation re-defines global variables as module-locals and initializes them with \sys-augmented values.
+For example, \ttt{console} in the context of the module will be an \sys-created object that allows \sys to interpose on it.
+Evaluation of the module passes an additional value to this function, which is the modified context.
+As a result, any changes to the top-level objects and any global variables are accessible from the within the module.
+
+% \begin{lstlisting}[language=js,mathescape,upquote=true]
+% //Input: module ID e.g., absolute filepath
+% let load = function (ID) {
+%   if (cache[ID]) {
+%      return cache[ID];
+%   }
+%   let m = {
+%     exports: {}, id: ID, dir: path.resolve(ID)
+%   };
+%   let cm = v8.compile(wrapped);
+%   let ii = iris.getImplicit(ID);
+%   let c = iris.freshContext(ii);
+%   cm(m.exports, this.require, m, ID, m.dir, c);
+%   let ei = iris.getExplicit(ID);
+%   m.exports = iris.wrap(m.exports, [ei] );
+%   cache[ID] = m;
+%   return m.exports;
+% }
+% \end{lstlisting}
+
+The \ttt{load} method in the \ttt{Module} module combines evaluation (line 10) and caching (line 14) of the wrapped module.
+After evaluation, invoking the compiled function generates the value that is assigned to \ttt{module.exports} from within the module (line 12).
+\sys passes a freshly constructed context at that invocation, modified according to the implicit segment of the (PIC??) corresponding to the module being loaded.
+Before returning the value of \ttt{module.exports}, \sys transforms it according to the explicit segment of the (PIC??) corresponding to the module being loaded.
+Finally, the results of the entire process are placed into the module cache for later use.
+
+\
+
+\section{Evaluation}
+\label{eval}
+
+\subsection{Micro-benchmarks}
+\label{micro}
+
+\subsection{Single-module Benchmarks}
+\label{meso}
+
+\subsection{End-to-End Benchmarks}
+\label{macro}
+
+\section{Discussion and Limitations}
+\label{diss}
+
+Library dialysis, as implemented in \sys, depends on a few features available in the programming language.
+In this section we describe how to develop the same solution on other environments.
+In the second part of this section, we reflect on some of the current limitations of the system.
+
+\subsection{Applying to Other Environments}
+
+\begin{table}[t]
+\center
+\footnotesize
+\setlength\tabcolsep{3pt}
+\caption{
+  \footnotesize{
+    \textbf{Language features used and their availability in other languages}.
+    Broadly, the requirements of module dialysis can be broken down into to five elementary requirements.
+  }
+}
+\begin{tabular*}{\columnwidth}{l @{\extracolsep{\fill}} llllllll}
+\toprule
+                                & Lua     & JavaScript  & Ruby   &      &      &      &      &         \\
+\midrule
+Instrument \ttiny{import}s      &         &             &        &      &      &      &      &         \\
+Walk objects                    &         &             &        &      &      &      &      &         \\
+Shadow variables                &         &             &        &      &      &      &      &         \\
+Wrap values                     &         &             &        &      &      &      &      &         \\
+Global names                    &         &             &        &      &      &      &      &         \\
+\bottomrule
+\end{tabular*}
+\label{tab:compatibility}
+\vspace{-5mm}
+\end{table}
+
+
+\heading{Dynamic Language Interpretation}
+Dynamic languages have features---\eg name (re-)binding, value introspection, dynamic code evaluation, and access interposition---that enable runtime transformations~\cite{aop, metaobject}.
+They conveniently unify module identification with interposition: % used for performance monitoring and replica construction:
+  a single function or function-like operator locates a module, interprets it, and applies transformations before exposing its interface in the caller context.
+
+\subsection{When to Use Dialysis}
+\label{principles}
+Dynamic analysis is a general analysis technique that discovering facts about programs;
+  dialysis can be thought as a specif
+While full-fledged dynamic analysis can provide full visibility into , it may result in higher performance overheads and developer effort.
+
+Dialysis deconstructs programs only at the library boundaries, at a granularity well-suited for several tasks.
+By viewing the program's surrounding environment as libraries---which is the case in all high-level programming languages---dialysis can expand its coverage to the operating system, file system, network and other ``ambient'' services.
+
+Another use is in the existence of multi-language applications---wrappers and FFI.
+
+
+\section{Related Work}
+\label{rw}
+
+In this section, we compare \sys to previously proposed systems in several categories.
+For a comparison between dialysis and dynamic analysis, we refer the reader to the previous section~\sx{principles}.
+
+% \heading{Dynamic Analysis Systems}
+There are several dynamic analysis frameworks for JavaScript~\cite{javascript1, javascript2, javascript3, mugshot, jalangi}.
+The two most popular, Jalangi~\cite{jalangi} and Mugshot~\cite{mugshot}, are fine-grained code-level instrumentation tools.
+On top of analysis, their heavy instrumentation is powerful enough to record and replay entire program executions.
+This power comes at a significant performance cost---typically 2--3 order-of-magnitude slowdown---as they need to virtualize the entire execution environment:
+  source-code-level rewriting every expression corresponding to a profiling event in the original program needs is resolves to a profiling function call.
+They are also not embeddable in existing applications in a runtime-agnostic manner.
+These features are contrary to \sys, which leverages fairly basic programming-language techniques such as variable shadowing and context transformation during library loading to insert analysis hooks completely transparently to the runtime environment.
+
+NodeProf~\cite{javascript3} is a fine-grained dynamic analysis implemented using Truffle~\cite{} and running on top of Graal.js [28], a Node.js-compatible runtime.
+NodeProf stands at a different point in the analysis design space---more powerful than \sys, but with significantly more effort.
+It statically instruments the program's AST (rather than the code), making it easier to maintain compared to source changes but assuming some knowledge of the Graal and Truffle APIs and requiring recompilation of the Java hooks.
+Different from \sys, it leverages AST extraction and manipulation to build, which is not available in many languages and may be limit by dynamic features such as reflection and JITing.
+Nevertheless, NodeProf's approach shares similarities with \sys, including decoupling from the source code, overheads lower than code instrumentation, and can on/off toggling during execution.
+%FIXME: Lya is also limited (i) by dynamic features such as reflection, because they're gonna hit the wrapper and (ii) the equality and other primitive operators
+
+Aran~\cite{javascript1}, an implementation sketch of proxy-based analysis, leverages JavaScript's \ttt{with} primitive to wrap custom contexts.
+\sys works at the module boundaries (at a potentially coarser granularity) without any special language constructs.
+
+JSConTest2~\cite{javascript2} is a dynamic \emph{access} analysis framework, similar to \sys's analysis \fixme{A2}, build around proxies.
+It allows users to write access control contracts, policies that execute at runtime.
+It illustrates the need for a general-purpose framework such as \sys, as many of JSConTest2's access permission contracts are 
+Our evaluation shows that this analysis (and others) can be implemented on top of \sys with significantly less effort.
+
+
+\heading{Dynamic Analysis for WebAssembly}
+Related to JavaScript is WebAssembly, a standardized subset of JavaScript target, designed to serve as a compilation target.
+The first dynamic analysis framework for WebAssembly, Wasabi~\cite{wasabi}, shares some of the same goals with \sys---\eg lowering the effort required to write analyses, and providing hooks for observation rather than manipulation.
+Wasabi is also programmable in JavaScript (which, however, is not its target language), a similarity to \sys that is mostly accidental:
+  Wasabi needs to be provide a high-level analysis scripting interface and chose JavaScript;
+  whereas our explicit goal is to write analysis in the same language as the program~\sx{goals}---that is, dialysis implemented for Python would be using Python abstractions.
+Contrary to \sys, Wasabi instruments binaries statically, \ie ahead-of-time, and aims on heavyweight instrumentation.
+
+
+
+\heading{Dynamic Instrumentation}
+Dialysis is related to dynamic instrumentation frameworks~\cite{pin, valgrind} that wrap incrementally parts of the program to extract information.
+Pin~\cite{pin} and Valgrind~\cite{valgrind} translate basic blocks of the program just before their execution;
+  \sys starts by wrapping a library during import, adding a small overhead on its loading time.
+This overhead is only a small fraction of the time required to locate and load the module from disk.
+However, these systems operate at a much lower level (binary) than \sys, and are not available to high-level runtime environments as a pluggable library.
+
+DiSL~\cite{disl} and RoadRunner~\cite{roadrunner} are systems for instrumenting JVM byte code.
+These too work at a lower level than \sys, 
+
+\heading{Program Transformations}
+% Add our work
+Module dialysis builds on aspect-oriented programming (AOP), a programming model where program points map to actions taken at these points~\cite{aop}.
+Both approaches lower complexity by mapping multiple points across the program to the same actions, but dialysis does not alter the program's control flow.
+Moreover, AOP works on languages that were already designed to support it, whereas module dialysis is explicitly designed to bolt onto existing languages.
+
+More generally AOP is related to metaobjects~\cite{metaobject}, objects that manipulate object structure, and which enable a program to access to its own internal structure, including rewriting itself as it executes.
+While \sys makes extensive use of metaobjects to traverse, understand, wrap, and rewrite interfaces, it shields developers from building the required metaobject infrastructure.
+% self element
+
+\heading{Fracture and Recombination}
+Dialysis draws inspiration directly from program fracture and recombination (PFR)~\cite{fracture1, fracture3}, a line of work less tied to program analysis and more towards program synthesis and automated patch generation.
+PFR breaks up multiple programs into many components with the goal of exchanging functionality between donor-donee pairs of programs.
+Contrary to PFR, dialysis operates on single programs, avoids breaking semantics, and leverages the existence of components with (mostly) explicit boundaries in the guise of libraries or modules.
+
+\section{Conclusion}
+\label{end}
+
+Recent trends in software engineering have led to unprecedented levels of third-party code re-use.
+Applications today routinely pull together hundreds of libraries, making their analysis difficult 
+
+due to the very same abstraction and modularity principles that have benefited software engineering for decades.
+
+security auditing and performance profiling---already challenging in monolithic applications---become extremely difficult in the presence of deeply-nested third-party code.
+
+This paper introduces \emph{module dialysis}, an approach 
+corser
+approach towards coarse-grained
+This is achieved using a set of programmatic \emph{transformations} parametrizable by optional \emph{distribution recipes}.
+These operate at module boundaries during runtime to collect profiling information, detect bottlenecked components, and dynamically separate and coalesce parts of the application.
 
 % \section*{Acknowledgments}
-% 
+% Martin
 % \section*{Availability}
 
 \bibliographystyle{plain}
