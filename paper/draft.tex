@@ -189,8 +189,8 @@ To demonstrate its effectiveness, we evaluate \sys on the JavaScript ecosystem (
 We develop a diverse set of analyses that target practical information about a program:
   an allow/deny security analysis,
   a profiling analysis showing bottlenecked modules,
-  a synthesis-oriented analysis on input-output data, and
-  an analysis enforcing a static union-based type system at runtime.
+% a synthesis-oriented analysis on input-output data,
+  and an analysis extracting invariants around a static union-based type system at runtime.
 This set of analyses drives the design requirements for \sys, and highlights dialysis as a middle ground between coarse- and fine-grained analysis.
 We evaluate \sys at three different levels:
   (i) synthetic micro-benchmarks that test certain aspects and confirm the correctness of our analyses in a controlled environment;
@@ -198,9 +198,9 @@ We evaluate \sys at three different levels:
   (iii) end-to-end full-application macro-benchmarks that show behavior of \sys on realistic workloads. 
 \S\ref{bg}--\ref{eval} present our key contributions:
 \begin{itemize}
-\item \S\ref{bg} characterizes the shared needs of four case-study multi-module analyses whose needs remain mostly unmet by general-purpose analysis frameworks.
-\item \S\ref{design} presents the design of the bolt-on module-oriented dynamic analysis~\sx{design}, which meets the requirements of the four case-study analyses.
-\item \S\ref{impl} discusses our implementation, \sys, as a pluggable library for the JavaScript ecosystem, as well as the implementation of the four analyses.
+\item \S\ref{bg} characterizes the shared needs of three case-study multi-module analyses whose needs remain mostly unmet by general-purpose analysis frameworks.
+\item \S\ref{design} presents the design of the bolt-on module-oriented dynamic analysis~\sx{design}, which meets the requirements of the three case-study analyses.
+\item \S\ref{impl} discusses our implementation, \sys, as a pluggable library for the JavaScript ecosystem, as well as the implementation of the three analyses.
 \item \S\ref{eval} evaluates \sys showing it expresses insightful analyses succinctly, adds minimal overheads over the baseline runtime, and scales to hundreds of modules.
 \end{itemize}
 
@@ -229,50 +229,50 @@ Before describing these examples, however, we offer a brief refresher on the abs
 \caption{
   \textbf{Example of a library import.}
   \textmd{
-    The code on the left imports the \ttt{simple-math} library, which imports a \ttt{log} library and exports a simple \ttt{Math} object.
+    The program on the left imports the \ttt{simple-math} library, shown right, which imports a \ttt{log} library and exports a simple \ttt{Math} object.
     Several names resolve to functionality provided by the programming language:
       names \ttt{import} and \ttt{export} resolve to library-local values; \ttt{print} resolves to a global value.
   }
 }
-\label{fig:base}
+\label{fig:ex1}
 \end{figure}
 
 
-A library, package, or module---we use these terms interchangeably---is a development-time construct for encapsulating reusable functionality.
+A library, package, or module---we use these terms interchangeably---is a development-time construct encapsulating reusable functionality.
 This functionality falls into two categories:
-  it either (i) comes bundled with the language, possibly wrapping operating-system interfaces such as the file-system in a way that is system-agnostic and conforms to the language's conventions,
-  or (ii) is provided by other developers sharing code others might find useful.
-Fig.~\ref{mod} depicts the basic structure of a modern program, in which the \ttt{Math} library provides a set of four elementary operations.
+  it either (i) comes bundled with the language, possibly wrapping operating-system interfaces, such as the file-system, in a way that is system-agnostic and conforms to the language's conventions,
+  or (ii) provided by other developers sharing code others might find useful.
+Fig.~\ref{fig:ex1} shows a \ttt{simple-math} library (right) imported by a program (left).
 
-From a developer's perspective, \ttt{import}ing a library makes its functionality usable by the calling code. 
-What this means is that some of the library's functionality is bound to a variable name that becomes available in the scope of the caller.
-This is provided through a form of \ttt{export}ing, where the library developer expresses which values should become available to the importing code.
-The definition of a value depends on the semantics of the language, but for now we can assume it's either a primitive value, a list of values, a function, or an object mapping string keys to values.
-Internally, the library might import other libraries, cause side-effects to the file-system and the network, or even be implemented in multiple languages.
+From a developer's perspective, \ttt{import}ing a library makes its functionality available to the calling code by means of binding its functionality to a name in the caller's scope.
+% What this means is that some of the library's functionality is bound to a variable name that becomes available in the scope of the caller.
+This is achieved by some form of \ttt{export}ing, where the library developer expresses which values should become available to the \ttt{import}ing code.
+The definition of a value depends on the semantics of the language; for now we can assume it's either a primitive value, a list of values, a function, or an object mapping string keys to values.
+Internally, the library may \ttt{import} other libraries, cause side-effects to the file-system or the network, or even be implemented in multiple languages.
 % , as shown on line \fixme{XX},
 % closely coupled with the runtime
 % and in some cases features its own mini-language, as is the case in Scheme and Standard ML.
 
-From the language's perspective, the loading process is achieved in several steps. 
-In compiled programming languages libraries might be used to enable separate compilation, in which case an additional linking phase connects the resulting object files.
-Interpreted languages involve a somewhat convoluted process that combines loading, interpretation, and linking.
-This process starts by locating the library in the file system or across the network,\footnote{
-  Examples of run-time environments featuring network loading include V8 and deno, for executing JavaScript and TypeScript respectively.
-}
+From the programming language's perspective, the process of \ttt{import}ing a library is achieved in several steps. 
+Compiled languages support separate compilation, where source files are compiled individually, followed by a runtime-linking phase that loads and links the resulting object files.
+Interpreted languages involve a somewhat convoluted process that combines runtime loading, interpretation, and linking.
+This process starts by locating the library in the file system % or across the network,\footnote{
+%   Examples of run-time environments featuring network loading include V8 and deno, for executing JavaScript and TypeScript respectively.
+% }
 by resolving relative or absolute identifiers.
 % The library is assigned a unique identifier.
 The content of the library is then read and wrapped in a way that resolves library-local names such as \ttt{\_\_name\_\_} in Python and \ttt{\_\_filename} in JavaScript to meaningful values.
-The wrapper is then interpreted and evaluated using the language's interpreter, which might result to side-effects---for example, a \ttt{process.exit} in the library's top-level scope will exit the entire program.
-Finally, the value returned bound to the \ttt{export}ed interface or returned from this interpretation (depending on the language) will be made available to the scope of code calling \ttt{import}.
+The wrapper is then interpreted and evaluated using the language's interpreter, which might result to side-effects---for example, a \ttt{process.exit()} in the library's top-level scope will exit the entire program.
+Finally, the value bound to the \ttt{export}ed interface or returned from this interpretation (depending on the language) is made available to the scope of the  \ttt{import}ing code.
 
 There is significant variation, but a few features are common across many implementations.
-A library cache maintains a mapping from library identifiers---often absolute paths---to returned \ttt{export} values.
-The library cache serves a dual purpose:
-  by avoiding to locate already loaded libraries, it improves performance and maintains the consistency of stateful libraries.
-Recursive imports are handled in depth-first way, and if cyclical dependencies are possible they are resolved by pointing to the cache.
+A library cache maintains a mapping from library identifiers, often absolute paths, to returned \ttt{export} values.
+The cache serves a dual purpose:
+  by avoiding locating already loaded libraries, it improves performance and ensures the consistency of any library-internal state.
+Recursive imports are handled in a depth-first way, and when cyclical dependencies are possible they are resolved by pointing to the cache.
 An increasingly common feature is to allow different versions of the same library to co-exist in a program, in order to avoid a choice between mutually exclusive options---a paradoxical situation known as ``dependency hell''.
-As a result, a single \ttt{import} \ttt{lib} does not necessarily resolve to the same (version of the) library \ttt{lib} every time.
-The dual of this situation is also possible, in which two different library names may resolve to the same identifier (in which case the second will be redirected to the cache).
+As a result, a single \ttt{import} \ttt{l} does not necessarily resolve to the same (version of the) library \ttt{l} every time.
+The dual of this is also possible: two different library names may resolve to the same identifier (in which case the second will be redirected to the cache).
 These features complicate library-level analysis, especially in interpreted programming languages.
 
 
@@ -285,9 +285,9 @@ These features complicate library-level analysis, especially in interpreted prog
 
 Having reviewed the building blocks and underlying techniques that power modularity, we now turn to examples of dynamic analysis that today are difficult or require specialized solutions:
   (i) an allow/deny security analysis,
-  (ii) a profiling analysis showing hot libraries,
-  (iii) a synthesis-oriented analysis on input-output data, and
-  (iv) an analysis enforcing a static union-based type system at runtime.
+  (ii) a performance-profiling analysis showing bottlenecked libraries, and
+% (iii) a synthesis-oriented analysis on input-output data, and
+  (iii) an analysis extracting runtime type invariants.
 These examples illuminate key design requirements for \sys's implementation of module-level dynamic analysis.
 
 \heading{Security Analysis}
@@ -370,7 +370,7 @@ The analysis could also do some type ``unpacking'' to deconstruct a type to its 
 
 \subsection{Design Goals}
 
-We have briefly introduced four motivating analyses for extracting information about an application's dependencies.
+We have briefly introduced three motivating analyses for extracting information about an application's dependencies.
 While the challenges behind these analyses share several characteristics, today they remain largely unaddressed by dynamic analyses frameworks due to a combination of factors:
   these frameworks either require highly specialized solutions often outside the core language,
   do not leverage or offer semantic information at the level of module boundaries, or
@@ -810,7 +810,7 @@ Both of these goals would have been difficult to achieve outside a synthetic env
 \caption{
   \footnotesize{
     \textbf{Synthetic Micro-benchmarks}.
-		Applying the four analyses on a series of synthetic micro-benchmarks, created to stress different features.
+		Applying the three analyses on a series of synthetic micro-benchmarks, created to stress different features.
   }
 }
 \begin{tabular*}{\columnwidth}{l @{\extracolsep{\fill}} ll lll}
@@ -835,7 +835,7 @@ something5    &           &  24214  &   24721  &   24574  &   24502   \\
 \caption{
   \footnotesize{
     \textbf{Applying \sys to single-library programs}.
-		\fixme{Execution time of four test suites against }
+		\fixme{Execution time of eight test suites against }
   }
 }
 \begin{tabular*}{\columnwidth}{l @{\extracolsep{\fill}} ll lll}
@@ -859,7 +859,7 @@ yargs~\cite{}       & 13.42  & 13.00 &  14.41 &  13.47  & 13.48   \\
 \end{table}
 
 
-Table~\ref{} depicts the results of the four analysis applied to these benchmarks.
+Table~\ref{} depicts the results of the three analysis applied to these benchmarks.
 We decided to report all combinations of analyses and benchmarks, but in practice not all are useful---\eg some modules do not feature interesting access or performance patterns.
 Currently, these benchmarks return the results we expect, but they did help with the identification of problems such as 
 These be
