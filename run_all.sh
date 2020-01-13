@@ -5,13 +5,7 @@ cd ./colorette
 
 npm --key=0 test > /dev/null
 npm --key=1 test > /dev/null
-npm --key=5 test > /dev/null
-npm --key=2 test > /dev/null
-npm --key=3 test > /dev/null
 npm --key=4 test > /dev/null
-npm --key=6 test > /dev/null
-npm --key=7 test > /dev/null
-npm --key=8 test > /dev/null
 npm --key=9 test > /dev/null
 echo "We all test for colorette"
 
@@ -20,13 +14,7 @@ cd ../mkdirp/repo/
 
 npm --key=0 test > /dev/null 2>> /dev/null
 npm --key=1 test > /dev/null 2>> /dev/null
-npm --key=5 test > /dev/null 2>> /dev/null
-npm --key=2 test > /dev/null 2>> /dev/null
-npm --key=3 test > /dev/null 2>> /dev/null
 npm --key=4 test > /dev/null 2>> /dev/null
-npm --key=6 test > /dev/null 2>> /dev/null
-npm --key=7 test > /dev/null 2>> /dev/null
-npm --key=8 test > /dev/null 2>> /dev/null
 npm --key=9 test > /dev/null 2>> /dev/null
 echo "We all test for colorette"
 
@@ -35,13 +23,7 @@ cd ../../chalk/repo
 
 npm --key=0 test > /dev/null
 npm --key=1 test > /dev/null
-npm --key=5 test > /dev/null
-npm --key=2 test > /dev/null
-npm --key=3 test > /dev/null
 npm --key=4 test > /dev/null
-npm --key=6 test > /dev/null
-npm --key=7 test > /dev/null
-npm --key=8 test > /dev/null
 npm --key=9 test > /dev/null
 echo "We all test for chalk"
 
