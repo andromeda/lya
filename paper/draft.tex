@@ -621,14 +621,14 @@ New libraries are inserted into the second-level cache right after evaluation of
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=0.99\textwidth]{./figs/lya_ex.pdf}
+\includegraphics[width=0.99\textwidth]{./figs/lya_ex2.pdf}
 \vspace{-2mm}
 \caption{
   \textbf{Example transformations.}
    Applying runtime transformations (b) and context rebinding (c, d) on a simple \ttt{Math} object~\cf{impl}.
 \fixme{No UX!}
 }
-\label{fig:tx2}
+\label{fig:ex2}
 \vspace{-2mm}
 \end{figure*}
 
@@ -708,7 +708,7 @@ As a result, any changes to the top-level objects and any global variables are a
 %% These hooks are then extended or rewritten by developers to
 
 
-Fig.~\ref{fig:tx2}\emph{a--d} exemplifies our transformation techniques in the context of JavaScript.
+Fig.~\ref{fig:ex2}\emph{a--d} exemplifies our transformation techniques in the context of JavaScript.
 \sys traverses a \ttt{Math} object, replaces functions such as \ttt{div} with wrappers; it also creates a modified version of the surrounding context and binds it to the library.
 The precise wrappers depend on the intended analysis, reviewed next.
 
