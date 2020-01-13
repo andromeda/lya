@@ -320,26 +320,25 @@ Examples of interfaces outside the \ttt{http} and \ttt{fs} libraries include the
 
 \heading{Performance Diagnosis}
 Diagnosing performance problems is a difficult task, exacerbated by the heavy use of third-party libraries.
-Libraries are written by authors with different education backgrounds, quality standards, and, most importantly, needs:
-  it's not unusual for a weekend project solving a local need to end up as a critical dependency among several open source projects~\cite{cheapcomplexity}.
+Libraries are written by authors with different education, backgrounds, quality standards, and, most importantly, needs:
+  it is not unusual for a weekend project solving a local need to end up as a critical dependency among several open-source projects~\cite{cheapcomplexity}.
 Maintenance and rewriting can also cause performance regressions between two versions of a library;
 % FIXME: Garbage collection
-  worse even, the fact that a library changes one of its dependencies can cause severe performance pathologies to upstream projects---that is, while an interface remains the same due to an intermediate layer of abstraction, performance characteristics can change dramatically~\cite{jest}.
+  worse even, the fact that a library changes one of its dependencies can cause severe performance pathologies to upstream projects---that is, while an interface remains the same due to an intermediate layer of abstraction, its performance can change dramatically~\cite{jest}.
 
 As a concrete example, consider the \ttt{minimatch} library, a regular-expression-based file-matching utility susceptible to long delays due to regular expressions that involve backtracking~\cite{minimatch}.
-Pathological inputs reaching \ttt{minimatch}, even if benign, can cause significant performance degradation~\cite{redos} deep in the dependency chain that can also affect other parts competing for the same resource~\cite{evp}.
-Developers use various techniques to understand such problems---for example, they collect and replay traces against off-line versions of the system, or use statistical profiling to identify hot code-paths.
+Pathological inputs reaching \ttt{minimatch}, even if benign, can cause significant performance degradation~\cite{redos} deep in the dependency chain, affecting also other parts of the program competing for the same resources~\cite{evp}.
+Developers use various techniques to understand such problems---\eg collecting and replaying traces against off-line versions of the system, or using statistical profiling to identify hot code-paths.
 These techniques, however, require significant \emph{manual} effort:
-  capturing traces, setting up testbeds, replaying traces, analyzing statistics, and debugging performance are all tedious and time-consuming tasks, compounded by the difficulties of mapping the results to the right third-party libraries.
+  capturing traces, setting up test-beds, replaying traces, analyzing statistics, and debugging performance are all tedious and time-consuming tasks, compounded by the difficulties of mapping the results to the right third-party libraries.
 
-Having the ability to quickly detect a slowdown and attribute it to a bottlenecked component is key, by toggling on/off a profiling analysis that operates at library boundaries.
-The analysis would wrap library interfaces with logic that generates a model of the current workload.
-Profiling can operate at a high resolution in time and space:
-  (i) at every function call entering a library, and (ii) on hundreds of libraries across an application.
-but does not need to track detailed operations such as direct variable accesses.
+Switching on a library-level profiling analysis % that operates at library boundaries
+  would quickly detect a slowdown and attribute it to the bottlenecked \ttt{minimatch}.
+Wrapping library interfaces with profiling logic would collectively construct a model of the current workload.
+Such profiling could operate at a high resolution in time and space---at every function call entering a library and on hundreds of libraries across an application---but does not need to track detailed operations such as direct variable accesses.
 % An analysis could treat library invocation boundaries as message queues~\cite{scheme:98, duality:79} growing when a library gets overwhelmed.
 % At some point, the waiting time of newly-arrived messages becomes longer than sending messages to a library replica.
-Each library wrapper would collect profiling statistics at its own boundary, updating a global structure ordering the libraries' overall needs.
+Each library wrapper can collect profiling statistics at its own boundary, aggregating summaries into a global structure ordering libraries by resource consumption.
 
 
 % \emph{
@@ -347,21 +346,23 @@ Each library wrapper would collect profiling statistics at its own boundary, upd
 % }
 
 \heading{Type Invariant Discovery}
-Extracting typing information is helpful in a variety of ways, as type safety is an important property helpful in variety of scenarios. 
+Extracting type information in a program is helpful in a variety of different ways. %, as type safety is an important property helpful in variety of scenarios. 
 %and types are lightweight annotations that can be quickly and efficiently checked.
-For example, types can be used to (i) identify program invariants to be preserved during code modifications, (ii) generate (machine-checkable) program documentation, or (ii) guide program synthesis and regeneration~\cite{daikon}.
-This is especially problematic in dynamic programming languages:
-  in the absence of static type signatures, there is not much one can say about a object \ttt{o} without executing it and introspecting its properties.
+For example, types can be used to (i) identify program invariants to be preserved during code modifications, (ii) generate (machine-checkable) program documentation, or (iii) guide program synthesis and regeneration~\cite{daikon}.
+This is especially important in dynamic programming languages:
+  in the absence of static type signatures, there is not much one can say about an object without executing it and inspecting its properties.
 
 As a case in point, consider the \ttt{gRPC} library for serializing and de-serializing objects~\cite{grpc}.
-Given a value returned from a library call---say, a bignum or crypto library---a developer has to first run the library manually, take note of the result, and then write a protocol buffer specification file declaring the type; %, common in distributed systems
-if the type changes, because of a library version change or because of changes in the .
+To use it, developers have to provide a protocol-buffer specification describing the types of values that will be serialized.
+Given a library---say, bignum or crypto---a developer has to first call it manually, take note of the result's type, and then fill in the protobuf spec. %, common in distributed systems
+This process has to be repeated with every change, often due to library updates or changes in the consuming program's structure.
 
-Dynamic analysis can be used to generate type assertions or invariants.
-The static type system is defined as a variant of a simply-typed lambda calculus augmented with union types.
-A simple approach would be to define a very simple type system that captures the type of a value by observing the execution of the program---after all, the types are dynamically checked!
-The analysis could also capture union types, for cases where it observes that a variable is at times witnessed to hold values of different types---although a single program tends to make calls of the same type signature across its entire lifetime~\cite{daikon}.
-The analysis could also do some type ``unpacking'' to deconstruct a type to its structural primitives---for example, noting that an object of type user is comprised of two strings (first and last name) and a number (age).
+Dynamic analysis can be used to discover such type assertions or invariants.
+The analysis would consult the (static) definition of a type \emph{system}, capturing the type of values at the library boundaries by observing the execution of the program.
+%% TODO: such as the simply-typed lambda calculus augmented with objects and union types.
+Additionally, it would need to support expressions of type unions, for when it witnesses variables holding values of different types, and the decomposing of complex types to their elementary building blocks.
+The former would be captured by sum types---although, in practice, a single program tends to make calls of the same type signature across its entire lifetime~\cite{daikon}.
+For the latter, the analysis would perform ``unpacking'' to deconstruct a type to its structural primitives---for example, noting that an object of type \ttt{user} is comprised of two \ttt{string}s (first and last name) and a \ttt{number} (age).
 
 % would need to be able 
 % to capture structural subtitling---that is the piecewise 
@@ -374,16 +375,17 @@ The analysis could also do some type ``unpacking'' to deconstruct a type to its 
 We have briefly introduced three motivating analyses for extracting information about an application's dependencies.
 While the challenges behind these analyses share several characteristics, today they remain largely unaddressed by dynamic analyses frameworks due to a combination of factors:
   these frameworks either require highly specialized solutions often outside the core language,
-  do not leverage or offer semantic information at the level of module boundaries, or
+  do not leverage or offer semantic information at the level of library boundaries, or
   lead to a high (often impractical) performance overheads due to the high granularity of their analyses.
 To summarize, these applications would appear to be served well by a system that:
 \begin{itemize}
-  \item \textbf{(G1)} Operates at the level of modules, leveraging both the semantics and performance potential that this level of granularity potentially offers.
-  \item \textbf{(G2)} Does not require learning a new tool or language, but rather allows developers to express their analyses on the same language as the program.
-  \item \textbf{(G3)} Can be implemented as a library that bolts onto an existing language runtime environment.
+  \item \textbf{(G1)} Operates at the level of libraries, leveraging both the semantics and performance potential that this level of granularity can potentially offer.
+  \item \textbf{(G2)} Does not require learning a new tool or language, but rather allows developers to express their analyses in the same language as the program.
+  \item \textbf{(G3)} Can be implemented as a library that bolts analyses onto an existing language runtime environment.
+% \item \textbf{(G4)} It does not incur prohibitive overheads, such that it can be switched on and off selectively during runtime execution.
 \end{itemize}
 
-The next section describes program dialysis, a new program analysis technique that satisfies these goals, in a language-agnostic manner~\sx{design};
+The next section describes program dialysis, a new analysis technique that satisfies these goals, in a language-agnostic manner~\sx{design};
   the section following that describes a concrete implementation for the server-side JavaScript ecosystem~\sx{impl}.
 
 \section{The Design of Program Dialysis}
