@@ -7,7 +7,6 @@ describe('Blog', function() {
   after(function() {
     server.close();
   });
-
   describe('GET /', function() {
     it('should see title "Posts"', function(done) {
       request

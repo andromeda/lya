@@ -1,10 +1,14 @@
-lyaConfig = {
-  SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
-  analysisCh: 1,
-  removejson: ['Promise','Buffer','toString','hasOwnProperty','Symbol'],
-};
-let lya = require("../../../../../src/txfm.js");
-require = lya.configRequire(require, lyaConfig);
+if (parseInt(process.env.npm_config_key) != 0) {
+	global.lyaConfig = {
+	SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
+	analysisCh: parseInt(process.env.npm_config_key),
+ 	POLICY: '../tst/working/repos/classnames/tests/dynamic.json',
+ 	removejson: ['Promise','Buffer','toString','hasOwnProperty','Symbol'],
+	};
+	let lya = require("../../../../../src/txfm.js");
+	require = lya.configRequire(require, lyaConfig);
+}
+
 var t = require('tap')
 var glob = require('../')
 var common = require('../common.js')

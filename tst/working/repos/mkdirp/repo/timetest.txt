@@ -1,0 +1,4 @@
+The time of 0 is 116.367086 
+The time of 1 is 1959.5256499999998 
+The time of 4 is 1392.644294 
+The time of 9 is 1252.002112 

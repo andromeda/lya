@@ -1,10 +1,16 @@
-global.lyaConfig = {
-  SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
-  analysisCh: 1,
-  removejson: ['unescape']
-};
-let lya = require("../../../../../../src/txfm.js");
-require = lya.configRequire(require, lyaConfig);
+if (parseInt(process.env.npm_config_key) != 0) {
+	global.lyaConfig = {
+	SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
+	analysisCh: parseInt(process.env.npm_config_key),
+ 	POLICY: '../tst/working/repos/classnames/tests/dynamic.json',
+ 	removejson: ['unescape']
+	};
+	let lya = require("../../../../../../src/txfm.js");
+	require = lya.configRequire(require, lyaConfig);
+}
+// We start to count time for the tests
+const time = process.hrtime();
+const fs = require('fs');
 
 import test from 'ava';
 
@@ -105,3 +111,10 @@ test('don\'t emit RGB codes if level is 0', t => {
 	t.is(new chalk.Instance({level: 0}).hex('#FF0000')('hello'), 'hello');
 	t.is(new chalk.Instance({level: 0}).bgHex('#FF0000')('hello'), 'hello');
 });
+
+const diff = process.hrtime(time);
+const thisTime = (diff[0] * 1e9 + diff[1]) * 1e-6;
+var logger = fs.createWriteStream('timebind.txt', {
+  flags: 'a' // 'a' means appending (old data will be preserved)
+})
+logger.write('The time of ' + parseInt(process.env.npm_config_key) + ' is ' + thisTime + ' \n', 'utf-8');
