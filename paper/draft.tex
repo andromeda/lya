@@ -29,6 +29,8 @@
 \newcommand{\ttiny}[1]{\texttt{\footnotesize #1}}
 \newcommand{\tcn}[1]{}
 
+\definecolor{cdb}{rgb}{0.37, 0.62, 0.63} % cadet blue
+
 \newcommand{\cf}[1]{(\emph{Cf}.\S\ref{#1})}
 \newcommand{\sx}[1]{(\S\ref{#1})}
 \newcommand{\tb}[1]{(Tab.\ref{tab:#1})}
@@ -360,6 +362,19 @@ More specifically,
   (iii) \emph{primitive} values are either transformed directly or copied unmodified and wrapped with an access interposition mechanism.
 % Usually transformations do not mutate original values, but first copy them, apply transformations to the copies, and return copies to the caller.
 
+\begin{figure}[t]
+\raggedleft 
+\includegraphics[width=0.45\textwidth]{./figs/lya_base.pdf}
+\caption{
+  \textbf{Base transformation.}
+  \textmd{
+  The algorithm (simplified) is presented in functional style to simplify variable binding; types (object, list, function, and primitive), used for pattern matching, are shown in light {\color{cdb} \emph{turquoise}}~\cf{bt}.
+  }
+}
+\label{fig:base}
+\end{figure}
+
+
 The program transformations described earlier~\sx{overview} are in \sys  abstracted by a set of parametrizable skeletons.
 These skeletons provide hooks for end-developers writing analyses.
 Specifically, they map types of values (\eg \ttt{Number}s, \ttt{Function}s) to generic hooks for each type. 
@@ -374,8 +389,19 @@ The wrappers depend on the intended goal:
 \subsection{Disassembly}
 \label{one}
 
-\subsection{Transformation}
-\label{two}
+\begin{figure}[t]
+\centering 
+\includegraphics[width=0.45\textwidth]{./figs/lya_shadowing.pdf}
+\caption{
+  \textbf{Shadowing segments.}
+  \textmd{
+  Cross-module variable name resolution (left) augmented with \sys (green boxes), which interjects non-bypassable steps resolving to \sys-augmented values (right-top: implicit module imports; right-bottom: explicit import).
+  }
+  \vspace{-4mm}
+}
+\label{fig:shadowing}
+\end{figure}
+
 
 \subsection{Reassembly}
 \label{three}
@@ -460,6 +486,19 @@ The module system is implemented in the \ttt{module} built-in module~\sx{c}, whi
 
 \subsection{Implementation of the Module System}
 \label{c}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.99\textwidth]{./figs/lya_ex.pdf}
+\vspace{-2mm}
+\caption{
+  \textbf{Example transformations.}
+   Applying runtime transformations (b) and context rebinding (c, d) on a simple \ttt{Math} object~\cf{impl}.
+}
+\label{fig:tx2}
+\vspace{-2mm}
+\end{figure*}
+
 
 At a very high level, loading a fresh module with \ttt{require("foo");} corresponds to the following five stages:
 
@@ -727,8 +766,9 @@ In this section we describe how to develop the same solution on other environmen
 In the second part of this section, we reflect on some of the current limitations of the system.
 
 \subsection{Applying to Other Environments}
+\label{reqs}
 
-\begin{table}[t]
+\begin{table*}[t]
 \center
 \footnotesize
 \setlength\tabcolsep{3pt}
@@ -738,20 +778,23 @@ In the second part of this section, we reflect on some of the current limitation
     Broadly, the requirements of module dialysis can be broken down into to five elementary requirements.
   }
 }
-\begin{tabular*}{\columnwidth}{l @{\extracolsep{\fill}} llllllll}
+\begin{tabular*}{\textwidth}{l @{\extracolsep{\fill}} lll ll}
 \toprule
-                                & Lua     & JavaScript  & Ruby   &      &      &      &      &         \\
+             &  Instrument \ttiny{import}s  & Traverse objects      & Wrap values         & (Weak) Maps       & Shadow variables      \\
 \midrule
-Instrument \ttiny{import}s      &         &             &        &      &      &      &      &         \\
-Walk objects                    &         &             &        &      &      &      &      &         \\
-Shadow variables                &         &             &        &      &      &      &      &         \\
-Wrap values                     &         &             &        &      &      &      &      &         \\
-Global names                    &         &             &        &      &      &      &      &         \\
+Lua          &                              &                       &                     &                   &                       \\
+JavaScript   &                              &                       &                     &                   &                       \\
+Python       &                              &                       &                     &                   &                       \\
+Ruby         &                              &                       &                     &                   &                       \\
+Haskell      &                              &                       &                     &                   &                       \\
+OCaml        &                              &                       &                     &                   &                       \\
+Rust         &                              &                       &                     &                   &                       \\
+Java         &                              &                       &                     &                   &                       \\
 \bottomrule
 \end{tabular*}
 \label{tab:compat}
 \vspace{-5mm}
-\end{table}
+\end{table*}
 
 The techniques presented in this paper are applicable to any programming language.
 We chose the JavaScript ecosystem to evaluate the feasibility of our approach, primarily because
@@ -763,44 +806,76 @@ In this section, we discuss the requirements for building \sys over other runtim
 By operating on library boundaries, program dialysis makes use of five key features available in a programming language~\tb{compat}.
 All major programming languages can support these five features in a variety of ways, as described below.
 
-First, \sys replaces the implementation of the import statement (\eg \ttt{require});
-  this feature is important for compatibility reasons---otherwise developers would have to replace all import statements in a deeply nested tree.
-If this is a function (\eg JavaScript, Scheme, Racket \etc) then replacement can be easily achieved by replacing its definition.
-If this is a special-keyword statement such as \ttt{import}, this can be achieved by a rewriting rule that replaces import with a special function;
+First, \sys replaces the implementation of the import statement (\eg \ttt{require}).
+% This feature is important for compatibility reasons---otherwise developers would have to replace all import statements in their applications.
+If this statement is a function (\eg JavaScript, Scheme, Racket \etc) then replacement can be easily achieved by replacing its definition.
+If this statement is a special non-function keyword such as \ttt{import}, this can be achieved by a rewriting rule that replaces import with a special function;
 % This is simplified by the fact that the import syntax is trivial.
 
-Second, \sys makes extensive use of weak maps to support to check for equality and, more frequently, for checking for cycles during object traversal (which requires equality).
+\sys also needs the ability to interpose on values and transform their components.
+This is relatively easy in languages that provide meta-programming capabilities.
+Dynamic programming languages offer runtime reflection and conveniently expose object accesses as (over-loadable) functions---\eg \ttt{Proxy} objects in JavaScript, metatables in Lua, metaclasses in Python, and direct-accessor meta-programming Ruby.
+Compiled languages such as Haskell, OCaml, and Rust would apply transformations with static metaprogramming facilities, traversing and transforming objects at compile time.
+Examples include templates and macro expansions such as Haskell's Template Haskell and Rust's macro system.
+And some languages, such as Haskell, Java, and Julia, provide both static and dynamic reflection capabilities, allowing considerable freedom in the choice of implementation.
+% Fifth, \sys makes extensive use of interposition which is also available in different programming languages.
+% Static programming languages provide different types of support for 
 
+\sys makes extensive use of weak maps to support to check for object equality.
+Examples of uses include checking for cycles during object traversal and checking whether an object has already been wrapped.
+Hash tables that are indexed by reference are supported in virtually all programming languages.
+An additional feature useful in garbage-collected languages would be for these (copies of) references to not affect the reclamation of original objects.
+Languages either support the ability to create such a weak reference from a normal reference (\eg Python's weak references), or provide structures that automatically hold weak versions of these references (\eg JavaScript's Weak Map).
 
-Dynamic languages have features---\eg name (re-)binding, value introspection, dynamic code evaluation, and access interposition---that enable runtime transformations~\cite{aop, metaobject}.
-They conveniently unify module identification with interposition: % used for performance monitoring and replica construction:
+Finally, \sys makes extensive use of variable shadowing to hide access to the original, unmodified versions of values.
+This is a feature that is universally available in programming languages;\footnote{
+  A notable exception is the language CoffeeScript. %, which can mimic the same feature using function scope.
+}
+Deferences in scoping rules---\ie what the shadowed variable ends up referring to upon execution---do not affect the usefulness of this feature, although we have found lexical scoping easier than dynamic scoping.
+
+To conclude, all major languages provide enough facilities to support the dialysis---albeit with a different level of convenience.
+Dynamic languages have features---\eg name (re-)binding, value introspection, dynamic code evaluation, and access interposition---that enable runtime transformations.
+Runtime transformations conveniently unify module identification with interposition:
   a single function or function-like operator locates a module, interprets it, and applies transformations before exposing its interface in the caller context.
-
-Other dynamic languages such as Lua, Ruby, and Python conveniently unify module identification with runtime interposition:
-% used for performance monitoring and replica construction:
-  a single function or function-like operator locates a module, interprets it, and applies transformations before exposing its interface in the caller context.
-All these languages offer runtime capabilities such as name (re-)binding, value introspection, name interception, and access interposition.
-% Languages such as Smalltalk and Lisp that treat ``everything'' as an object or a  function, need to interpose through object wrappers or function closures, respectively.
-
-Compiled languages such as Haskell, OCaml, and Rust would apply transformations using compile-time metaprogramming facilities.
-Examples include templates (\eg Template Haskell) and macro expansions (\eg Rust's macro system).
-Such facilities would alleviate the runtime overhead of transformations, improving program startup times;
-  however, they would not affect the overhead of contract evaluation, as this is still a runtime operation.
-Static type checking could further aid developers by issuing warnings of incompatible privilege settings.
-Contrary to OSMLC, there is no need for support from the runtime linker~\cite[\S VII]{breakapp:ndss:2018} because compartments do not execute as separate processes.
+Compiled languages such as Haskell, OCaml, and Rust apply transformations using compile-time metaprogramming facilities.
+Compile time transformations alleviate much of the runtime overhead of transformations, improving program startup times;
+  and type checking could further aid developers by issuing warnings of incompatible privilege settings.
 
 
 \subsection{When to Use Dialysis}
 \label{principles}
-Dynamic analysis is a general analysis technique that discovering facts about programs;
-  dialysis can be thought as a specif
+Dynamic analysis is a general analysis technique that discovering facts about programs.
 While full-fledged dynamic analysis can provide full visibility into , it may result in higher performance overheads and developer effort.
+Dialysis can be thought as a coarser version of analysis stemming from the natural boundaries of libraries, a level of granularity that is just right for certain domains.
+Which are these cases exactly?
 
+The first class of  
+It is really a quick-and-dirty 
+As it quickly isolates homegrown code from standard libraries and third-party code, it is a help pin-point to 
+Its availability as a global module makes this trivial.
+% This is a particularly good match for dynamic programming languages that are already geared towards quick prototyping.
+
+The second is when the goal is to understand the behavior of third-party code.
+Dialysis plugs monitors all around a library, and in clearly delineated abstraction boundaries within that library where the signal-to-noise ratio is naturally expected to be high.
 Dialysis deconstructs programs only at the library boundaries, at a granularity well-suited for several tasks.
+Examples include the 
+N-version programming ---all of which would require a custom tool.
 By viewing the program's surrounding environment as libraries---which is the case in all high-level programming languages---dialysis can expand its coverage to the operating system, file system, network and other ``ambient'' services.
 
-Another use is in the existence of multi-language applications---wrappers and FFI.
+Dialysis is \emph{not appropriate} for monolithic programs or ones written in low-level languages such as C.
+These limitations is due to several reasons.
+First, C programs do not feature clear, ``impenetrable'' boundaries like the ones available in memory- and type-safe languages.
+An important feature of the wrapping techniques presented in this paper is that they can ---\ie the full observable behavior around a library.
+Unfortunately, this is not true in C where a library can forge a pointer and access arbitrary locations in its the program's address space.
+A related problem is the inability to traverse and wrap objects, due to lack of bounds.
+It is unclear how to wrap values without any kind of size information.\footnote{
+  Recent advances show promise: C-Strider~\cite{saur2016cstrider} and ptrSplit~\cite{ptrsplit:17} provide type-aware heap traversal for C programs.
+}
+% Finally, C is missing direct direct equivalents to \sys's requirements~\sx{reqs}
 
+That said, it is possible to apply dialysis in C programs that have first gone through a process of decomposition or component sanboxing---as is the case in compartmentalization, program slicing, and related areas.
+Additionally, many libraries in high-level programming languages today simply wrap C programs either directly or through a foreign-function interface.
+Dialysis can be used with these libraries, as it plugs into the abstractions provided by the high-level, wrapper interface.
 
 \section{Related Work}
 \label{rw}
