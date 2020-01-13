@@ -1,11 +1,14 @@
-lyaConfig = {
-    SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
-    analysisCh: 1,
+if (parseInt(process.env.npm_config_key) != 0) {
+	global.lyaConfig = {
+	SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
+	analysisCh: parseInt(process.env.npm_config_key),
+ 	POLICY: '../tst/working/repos/classnames/tests/dynamic.json',
     removejson: ['Buffer','hasOwnProperty','Promise'],
-};
-let lya = require("../../../../../../src/txfm.js");
-require = lya.configRequire(require, lyaConfig);
-
+	};
+	let lya = require("../../../../../../src/txfm.js");
+	require = lya.configRequire(require, lyaConfig);
+}
+// We start to count time for the tests
 const time = process.hrtime();
 
 var mkdirp = require('../').mkdirp;
