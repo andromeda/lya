@@ -31,6 +31,7 @@
 
 \newcommand{\cf}[1]{(\emph{Cf}.\S\ref{#1})}
 \newcommand{\sx}[1]{(\S\ref{#1})}
+\newcommand{\tb}[1]{(Tab.\ref{tab:#1})}
 \newcommand{\sys}{{\scshape Lya}\xspace}
 \newcommand{\toy}{{\tt lya.js}\xspace}
 
@@ -41,6 +42,8 @@
 \newcommand{\Ana}{Analysis\xspace}      % 
 \newcommand{\Ass}{Reassembly\xspace}    % 
 \newcommand{\dia}{\fra, \ana, and \ass}
+
+\newcommand{\goal}[1]{(\textbf{G#1})\xspace}
 
 \newcommand{\nv}[1]{[{\color{cyan}#1 --- Nikos}]}
 \newcommand{\review}[1]{{\color{red}#1}}
@@ -309,20 +312,17 @@ The next section describes program dialysis, a new program analysis technique th
 \section{The Design of Program Dialysis}
 \label{design}
 
-Dialysis detects and scales out bottlenecked components by interposing on the application's module boundaries.
-It is introduced as a backward-compatible, drop-in replacement of the language's module system.
-It can be imported as an application-specific module (\eg \ttt{ignis} package) or can be bundled with a custom language runtime (\eg \sys-powered Lua) replacing its system-wide module system.
-Dialysis starts by dynamically modifying the function that imports libraries: \eat{for locating and loading a module.}
-  instead of simply locating and loading a module, the function yields to \sys, which applies a series of transformation steps to modules, with the goal of interposing on their boundaries.
+Dialysis starts by dynamically modifying the functionality of the module system that is responsible for importing and loading libraries:
+  instead of simply locating a library in the filesystem and loading it, it yields control to \sys which applies a series of transformation steps to libraries, with the goal of interposing at their boundaries.
 We start with a three-step overview of dialysis~\sx{overview}, highlighting the challenges that arise in the process.
-We next describe each one of these steps in more detail
+We next describe each one of these steps in more detail~(\S\ref{one}--\ref{three}).
 
 \subsection{Overview}
 \label{overview}
 
-This section presents the design of 
 % FIXME: add user data
-At a high level, module dialysis works at three stages:
+At a high level, the goal of program dialysis is to \fra the program at the boundaries of third-party modules, apply transformations that insert analysis-specific machinery, and then carefully \ass individual components to maintain the original semantics.
+ In more detail, these three phases are as follows:
 
 \begin{itemize}
   
@@ -332,46 +332,53 @@ At a high level, module dialysis works at three stages:
     Different analysis can operate at different granularities, and has to solve challenges such as multi-module and dedublication.
 
   \item \Ana:
-It then sets a specific analysis up by wrapping and transforming each module interface, its surrounding environment, as well as the values passing through the module boundary.
-Programmatic transformations walk and transform each one of these values based on their type:
-  the module interface is usually a complex (but singular) object; the surrounding environment treats 
-This phase requires solving several challenges, including enumerating and tracking all points of entry into and exit out of a library.
-It also requires providing 
- in a backwards compatible fashion.
+    It then sets a specific analysis up by wrapping and transforming each module interface, its surrounding environment, as well as the values passing through the module boundary.
+    Programmatic transformations walk and transform each one of these values based on their type:
+      the module interface is usually a complex (but singular) object; the surrounding environment treats 
+    This phase requires solving several challenges, including enumerating and tracking all points of entry into and exit out of a library.
+    It also requires providing 
+     in a backwards compatible fashion.
 
   \item \Ass:
-  Finally, it re-assembles individual modified modules back into the original structure.
-  This creates several challenges, the most important of which is the treatment of the module cache---a mechanism for avoiding multiple loads of the same module .
-  Since a single library can now correspond to many different wrappers, each modified to capture different  analysis fragments, the cache needs to be augmented to ensure the right analysis fragment clicks at the right place during the re-assembly of the dependency tree.
+    Finally, it re-assembles individual modified modules back into the original structure.
+    This creates several challenges, the most important of which is the treatment of the module cache---a mechanism for avoiding multiple loads of the same module .
+    Since a single library can now correspond to many different wrappers, each modified to capture different  analysis fragments, the cache needs to be augmented to ensure the right analysis fragment clicks at the right place during the re-assembly of the dependency tree.
 
 \end{itemize}
 
-% \textbf{Core Language}
-% a few is not the same as 
-Transformations are used pervasively throughout \sys, and are abstracted via a few parametrizable templates.
-Templates map different types of values (List.~\ref{core-tx}) to a generic handler for each type.
-%given a value, a template will transform it using a handler matching its type
-% Templates match, 
-% \hl{match} between different \hl{value} % what are values
-%    \emph{types} and define generic handlers for each type.
-Transformations have these handlers parametrized to achieve concrete goals such as monitoring, serialization, and scale-out.
-Simplified instances are described in the following two sections (\S\ref{profiling}--\ref{core}).
+Program runtime transformations such as the ones applied in the second phase are used pervasively throughout \sys.
 
-Transformations can be applied to any value in the language, such as an object returned from a module or an exception about to be sent across the network.
-The general case of such a value is a directed acyclic graph (DAG).
-The types of its vertices can be coarsely grouped into primitives, functions, and objects.
-Objects map strings to other values, pointing to other vertices in the DAG.
+% , such as an object returned from a module or an exception about to be sent across the network.
+Transformations can be applied to any value in the language. 
+The most general value is an object, a bag of records holding key-value fields;
+  other value types include primitives, functions, and booleans.
 % Listing~\ref{core-tx} presents a simplified core of the language.
-Transformations start by walking the DAG from the root vertex and processing component values based on their types.
-They do not mutate original values, but first copy them, apply transformations to the copies, and return copies to the caller.
-They only partially explore the object graph, as they do not peak through function closure environments.
-Fortunately, this aligns well with our goal of monitoring activity at module boundaries and ignoring module-internal activity.
+Transformations walk objects from their root, processing component values based on their types (Fig.~\ref{fig:txfm}).
+More specifically,
+  (i) \emph{function} values are wrapped by closures specific to the goal of the transformation; % on the function's arguments and return values;
+  (ii) \emph{object} values are recursively transformed, with their getter and setter methods replaced similar to function values; % and at times combining return results; and
+  (iii) \emph{primitive} values are either transformed directly or copied unmodified and wrapped with an access interposition mechanism.
+% Usually transformations do not mutate original values, but first copy them, apply transformations to the copies, and return copies to the caller.
 
-As an example, consider transforming the \ttt{crypto} module~\sx{solution}.
-\sys traverses the object returned by \ttt{crypto} and replaces functions such as \ttt{pbkdf2} with wrappers whose specifics depend on the intended goal:
-  profiling wrappers call the original function in between statistics collection, and RPC wrappers forward the call to a remote replica.
+The program transformations described earlier~\sx{overview} are in \sys  abstracted by a set of parametrizable skeletons.
+These skeletons provide hooks for end-developers writing analyses.
+Specifically, they map types of values (\eg \ttt{Number}s, \ttt{Function}s) to generic hooks for each type. 
+These hooks are then extended or rewritten by developers to
+
+For example, consider transforming a \ttt{Math} object with the goal of profiling its interfaces or generating a remote interface (Fig.~\ref{fig:lib}\emph{a,b}).
+\sys traverses the object returned by \ttt{Math} and replaces functions such as \ttt{div} with wrappers.
+The wrappers depend on the intended goal:
+  profiling wrappers would record invocation statistics, and RPC wrappers would forward calls to a remote replica.
 
 
+\subsection{Disassembly}
+\label{one}
+
+\subsection{Transformation}
+\label{two}
+
+\subsection{Reassembly}
+\label{three}
 
 
 % \section{Applications of Analysis}
@@ -381,11 +388,36 @@ As an example, consider transforming the \ttt{crypto} module~\sx{solution}.
 \section{Implementation: Lya}
 \label{impl}
 
-We implemented \sys for version 
-We show where other implementations would diverge in table 1
+We implemented \sys for version 8.9.4 of the Node.js runtime.
+Node.js is a runtime that bun
+
+in about 1.5K lines of JavaScript.
+We summarize where other implementations would diverge in table 1
+
+Individual analysis are implemented using a set of templates that provide initial constructs (see below).
+The difference between them, \ie the amount of code that is unique to each analysis, is about 20--30 lines.
 
 The following subsections outline how module systems handle modules at runtime, by exemplifying the internals of Node.js.
 It sketches the Node.js runtime~\sx{a}, the use of the module system~\sx{b}, and the internals of how module loading works~\sx{c}.
+
+In practice, the aforementioned dialysis stages can be implemented in two different ways.
+The first is as a modified version of the runtime, where 
+No-op analyses correspond to the default execution
+  either 
+It is introduced as a backward-compatible, drop-in replacement of the language's module system.
+It can be imported as an application-specific module (\eg \ttt{ignis} package) or can be bundled with a custom language runtime (\eg \sys-powered Lua) replacing its system-wide module system.
+
+We went with the latter approach, providing \sys as a library, to simplify its evaluation and its comparison with the vanilla runtime (both in terms of performance and correctness).
+However, we have found there are significant opportunities for performance optimization and gains in development complexity by choosing the former approach;
+  we expand on these at the end of this section~\sx{opportunities}.
+% get second argument, no need to pass arguments around, tricky to 
+% carefull hardcoding of paths, because \sys's code itself is split into modules
+% We found it useful to add a function for white- and black-listing, as a set of regular expressions.
+% Regular expressions where useful because internally libraries are identified via library identifiers that correspond to file-system paths.
+% Originally intended as an aid to \sys's development and debugging, it proved useful enough for writing analysis A1--4 that decided to expose it to users.
+% This is useful, for example, when...
+% The configuration object accepts \ttt{only} and \ttt{not} that contain sets of regular expressions;
+
 
 (1) why node.js
 (2) Create a table of compatibility and show individual aspects
@@ -499,22 +531,196 @@ After evaluation, invoking the compiled function generates the value that is ass
 Before returning the value of \ttt{module.exports}, \sys transforms it according to the explicit segment of the (PIC??) corresponding to the module being loaded.
 Finally, the results of the entire process are placed into the module cache for later use.
 
-\
+\subsection{Limitations}
 
-\section{Evaluation}
+% FIXME: Talk about the inability to 
+A limitation of our implementation is that it cannot analyze the library importing \sys---usually, the top-level program entry-point equivalent to \ttt{main}.
+This is because \sys cannot transform the context of that file
+As a result, \sys as-is cannot be applied to, say, to analyze single-file programs---a common pattern in scripting languages often used for quick-and-dirty tasks.
+The simplest workaround here is to create an auxiliary file that imports \sys, and then import the single-file script (which, in most scripting languages would invoke it).
+
+
+
+\section{Evaluation and Experience}
 \label{eval}
+
+\sys's  development achieves goals~\goal{1--3}~\sx{goals}, demonstrating that it is indeed feasible to construct a framework that operates at the level of modules, 
+does not force developers to learn a new language, and that it can be implemented as a library around an existing runtime.
+Despite the fact that it operates at coarser granularity, as shown earlier~\sx{impl} \sys can express analyses that generate results useful in several practical scenarios.
+
+In this section, we are interested in zooming into \sys's performance characteristics~\goal{4}.
+At a high level, we are interested in three questions:
+(i) the overheads of the \sys's underlying building blocks;
+(ii) the overhead of different analysis on real libraries and how this compares with production dynamic analysis frameworks; and
+(iii) evaluation of \sys's behavior using our analyses on realistic, multi-library applications.
+% For the first question, we use  synthetic micro-benchmarks that built to stress key elements of the system and confirm it works correctly~\sx{micro}.
+% For the second question, we use real libraries and compare them with an analysis written in Jalangi~\sx{meso}.
+% For the third question, we use a combination of real applications~\sx{macro}.
+
+Several takeaways are worth highlighting.
+\fixme{TODO after we have the results.}
+
+Experiments were run on a moderate server with 4GB of memory and 2 Intel Core2 Duo E8600 CPUs clocked at 3.33GHz.
+In terms of software, we used Docker version 18.09.7 running \fixme{a minimal Ubuntu XXX version}, Jalangi \fixme{vXXX}, Node.js v8.9.4 (bundled with V8 v6.1.534.50, LibUV v1.15.0, and npm v6.4.1), all atop a Debian Linux with kernel v4.4.0-134.
+We run our software experiments within a Docker container to simplify the setup of the Jalangi framework.
 
 \subsection{Micro-benchmarks}
 \label{micro}
 
+\sys's micro-benchmark suite was designed with two goals in mind.
+
+The first goal was to test key properties of each analysis and confirm it outputs the expected results.
+For example, to better understand performance diagnosis policy and confirm it works correctly, we craft a library that contains four other libraries with pre-defined bottlenecks.
+The library can perform one of three operations, depending on its current state:
+  (i) invoke a call to a module it imports,
+  (ii) busy-wait, or
+  (iii) respond to calls by returning a value.
+
+The second goal was to identify understand \sys bottlenecks in a controlled environment, 
+Both of these goals would have been difficult to achieve outside a synthetic environment, as we do not fully understand applications we haven't written ourselves.
+
+\begin{table}[t]
+\center
+\footnotesize
+\setlength\tabcolsep{3pt}
+\caption{
+  \footnotesize{
+    \textbf{Synthetic Micro-benchmarks}.
+		Applying the four analyses on a series of synthetic micro-benchmarks, created to stress different features.
+  }
+}
+\begin{tabular*}{\columnwidth}{l @{\extracolsep{\fill}} ll lll}
+\toprule
+              &   Base    &  SA     & PD       &   TIC    &   LSR     \\
+\midrule
+something1    &           &  0.70   &    3.43  &   3.46   &   3.26    \\
+something2    &           &  1.31   &    4.81  &   4.55   &   4.63    \\
+something3    &           &  5.95   &    4.78  &   4.25   &   4.85    \\
+something4    &           &  18.29  &   11.20  &   10.24  &   9.54    \\
+something5    &           &  24214  &   24721  &   24574  &   24502   \\
+\bottomrule
+\end{tabular*}
+\label{tab:synthetic}
+\vspace{-5mm}
+\end{table}
+
+\begin{table}[t]
+\center
+\footnotesize
+\setlength\tabcolsep{3pt}
+\caption{
+  \footnotesize{
+    \textbf{Applying \sys to single-library programs}.
+		\fixme{Execution time of four test suites against }
+  }
+}
+\begin{tabular*}{\columnwidth}{l @{\extracolsep{\fill}} ll lll}
+\toprule
+                    & Base   &  SA   & PD     &   TIC   & LSR     \\
+\midrule
+Classnames~\cite{}  &  2.72  & 6.62  &  6.61  &  6.10   & 5.94    \\
+Debug~\cite{}       & 31.39  & 33.54 &  33.94 &  33.96  & 33.04   \\
+% Minimist\\
+~~~-t1              & 31.46  & 60.13 &  60.00 &  56.62  & 56.72   \\
+~~~-t2              & 19.17  & 59.77 &  60.75 &  57.15  & 57.79   \\
+~~~-t3              & 21.64  & 205.2 &  205.53&  132.25 & 137.84  \\
+~~~-t4              & 20.69  & 59.70 &  60.75 &  59.92  & 56.60   \\
+~~~-t5              & 20.49  & 70.48 &  72.20 &  64.71  & 66.03   \\
+Moment~\cite{}      & 31.73  & 48.04 &  49.23 &  44.95  & 46.12   \\
+yargs~\cite{}       & 13.42  & 13.00 &  14.41 &  13.47  & 13.48   \\
+\bottomrule
+\end{tabular*}
+\label{tab:meso}
+\vspace{-5mm}
+\end{table}
+
+
+Table~\ref{} depicts the results of the four analysis applied to these benchmarks.
+We decided to report all combinations of analyses and benchmarks, but in practice not all are useful---\eg some modules do not feature interesting access or performance patterns.
+Currently, these benchmarks return the results we expect, but they did help with the identification of problems such as 
+These be
+Load is visible at the application level (left), but the lack of detail does not help determine which modules must be scaled out.
+Module-level data, collected by \sys' coordinator (right), reveal that \ttt{m3} receives the majority of the load.
+
+To understand the costs of proxy interposition, we measure the time to access deeply-nested properties of two versions of an object:
+  unmodified and proxy-wrapped.
+Paths to the properties (\eg \ttt{a.b.c.$\ldots$}) are random but generated prior to running the experiment.
+We construct 500MB-sized objects, each with a fanout of 8 fields nested for 12 levels.
+The proxy-wrapped version introduces interposition at every level.
+Traversing one million 12-edge paths (\ie root to leaves) averages 167.2ms and 595.7ms for the unmodified and proxy-wrapped versions, respectively.
+
+We emphasize that this is an artificially constructed benchmark stressing worst-case overheads nowhere near an normal execution:
+  for comparison, the transformation of these objects itself took nearly 16 seconds ($10^3\times$ more than what we experienced with real modules).
+The takeaway is that \sys-inherent overheads due to interposition are unlikely to be the bottleneck of an analysis.
+
 \subsection{Single-module Benchmarks}
 \label{meso}
+
+\begin{figure*}[t]
+  \centering
+   \includegraphics[width=0.95\textwidth]{./figs/meso.pdf}
+  \caption{
+    \textbf{Analysis overheads.}
+    The plot compares a series of modules from single-library programs taken from Jalangi between three setups:
+		(i) Vanilla JavaScript, (ii) global-use analysis using Jalangi, (iii) global-use analysis using \sys.
+    Global-use analysis is a relatively simple analysis that tracks accesses of global variables in the program~\cf{meso}.
+  }
+  \label{fig:meso}
+  \vspace{-3mm}
+\end{figure*}
+
 
 \subsection{End-to-End Benchmarks}
 \label{macro}
 
-\section{Discussion and Limitations}
+\begin{table}[t]
+\center
+\footnotesize
+\setlength\tabcolsep{3pt}
+\caption{
+  \footnotesize{
+    \textbf{Applying \sys to three large applications}.
+		\fixme{Highlight some things}
+  }
+}
+\begin{tabular*}{\columnwidth}{l @{\extracolsep{\fill}} lll}
+\toprule
+                    & Koa    & Moeda   &  Terminalizer \\
+\midrule
+ Size (KB)          & 41M    &  29M    &   262M        \\
+ LoC                & 127K   &  79K    &   39K         \\
+ Top-level modules  &  24    &  7      &    33         \\
+ Total Modules      &  432   &  260    &    1084       \\
+ Lya detects:       &  1507  &   729   &     2355      \\
+ Baseline           &  xx    &         &               \\
+ A1 (TF)            &        &         &               \\
+ A3 (HF)            &        &         &               \\
+ A8 (Types)         &        &         &               \\     
+\bottomrule
+\end{tabular*}
+\label{tab:macro}
+\vspace{-5mm}
+\end{table}
+
+
+
+Highly popular applications---for example, Koa.js and Terminalizer have 28.3K and 8.7K stars stars on GitHub, respectively.
+Applying \sys to these applications generates much larger analayses
+For example, the performance diagnosis analysis hooks reports timing characteristics for 
+
+The difference between the modules detected statically (by running \ttt{npm ls}) and the ones observed by \sys is due to a few different reasons.
+One is that an analysis does not report accesses if a 
+\sys analyzes modules that are part of the standard library too (some of which have themselves internal dependencies), which are not shown by \ttt{npm}.
+Our post-processing counts by module name (\ie squashes duplicate reports by 
+This can affect the results of multiple imports with the same name at different parts of the tree that would indeed correspond to different.
+For example, importing two different versions of a library at two different parts of the dependency tree will result in to two different with the same name.
+It also squashes cache entries that correspond to one module imported by multiple modules, which would create separate entries in \sys's augmented cache, but would result in a single count for Tab.~\ref{macro} (for \sys's treatment of the module cache, see~\S\ref{cache}).
+Confirming that \sys performs correctly under these scenarios is one part of the motivation behind the synthetic micro-benchmarks shown earlier~\sx{micro}.
+
+
+\section{Discussion}
 \label{diss}
+
 
 Library dialysis, as implemented in \sys, depends on a few features available in the programming language.
 In this section we describe how to develop the same solution on other environments.
@@ -543,15 +749,46 @@ Wrap values                     &         &             &        &      &      &
 Global names                    &         &             &        &      &      &      &      &         \\
 \bottomrule
 \end{tabular*}
-\label{tab:compatibility}
+\label{tab:compat}
 \vspace{-5mm}
 \end{table}
 
+The techniques presented in this paper are applicable to any programming language.
+We chose the JavaScript ecosystem to evaluate the feasibility of our approach, primarily because
+  (i) it boasts the largest collection of libraries (and number of problems)~\cite{modulecounts} and
+	(ii) we had prior experience by writing two systems that make extensive use of dynamic analysis---more sophisticated versions of analyses \fixme{XX} and \fixme{XX}.
+In this section, we discuss the requirements for building \sys over other runtime environments.
+% FIXME: All these features have to have been discussed earlier
 
-\heading{Dynamic Language Interpretation}
+By operating on library boundaries, program dialysis makes use of five key features available in a programming language~\tb{compat}.
+All major programming languages can support these five features in a variety of ways, as described below.
+
+First, \sys replaces the implementation of the import statement (\eg \ttt{require});
+  this feature is important for compatibility reasons---otherwise developers would have to replace all import statements in a deeply nested tree.
+If this is a function (\eg JavaScript, Scheme, Racket \etc) then replacement can be easily achieved by replacing its definition.
+If this is a special-keyword statement such as \ttt{import}, this can be achieved by a rewriting rule that replaces import with a special function;
+% This is simplified by the fact that the import syntax is trivial.
+
+Second, \sys makes extensive use of weak maps to support to check for equality and, more frequently, for checking for cycles during object traversal (which requires equality).
+
+
 Dynamic languages have features---\eg name (re-)binding, value introspection, dynamic code evaluation, and access interposition---that enable runtime transformations~\cite{aop, metaobject}.
 They conveniently unify module identification with interposition: % used for performance monitoring and replica construction:
   a single function or function-like operator locates a module, interprets it, and applies transformations before exposing its interface in the caller context.
+
+Other dynamic languages such as Lua, Ruby, and Python conveniently unify module identification with runtime interposition:
+% used for performance monitoring and replica construction:
+  a single function or function-like operator locates a module, interprets it, and applies transformations before exposing its interface in the caller context.
+All these languages offer runtime capabilities such as name (re-)binding, value introspection, name interception, and access interposition.
+% Languages such as Smalltalk and Lisp that treat ``everything'' as an object or a  function, need to interpose through object wrappers or function closures, respectively.
+
+Compiled languages such as Haskell, OCaml, and Rust would apply transformations using compile-time metaprogramming facilities.
+Examples include templates (\eg Template Haskell) and macro expansions (\eg Rust's macro system).
+Such facilities would alleviate the runtime overhead of transformations, improving program startup times;
+  however, they would not affect the overhead of contract evaluation, as this is still a runtime operation.
+Static type checking could further aid developers by issuing warnings of incompatible privilege settings.
+Contrary to OSMLC, there is no need for support from the runtime linker~\cite[\S VII]{breakapp:ndss:2018} because compartments do not execute as separate processes.
+
 
 \subsection{When to Use Dialysis}
 \label{principles}
@@ -646,6 +883,8 @@ corser
 approach towards coarse-grained
 This is achieved using a set of programmatic \emph{transformations} parametrizable by optional \emph{distribution recipes}.
 These operate at module boundaries during runtime to collect profiling information, detect bottlenecked components, and dynamically separate and coalesce parts of the application.
+
+We want to emphasize that \sys is open source, available to experiment with more applications and analyses
 
 % \section*{Acknowledgments}
 % Martin
