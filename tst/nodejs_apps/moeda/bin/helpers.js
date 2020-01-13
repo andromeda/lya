@@ -10,7 +10,9 @@ const helpers = (argv) => {
 
   // help
   if (argv.indexOf('--help') !== -1 || argv.indexOf('-h') !== -1 || !argv.length) {
-    help()
+    //for ( var i=0; i<2000; i++) {
+        help()
+    //}
   }
 
   // currencies
@@ -25,7 +27,8 @@ const version = () => {
 }
 
 const help = () => {
-  console.log(`
+for (var i=0; i<50000; i++) {	 
+ console.log(`
   Usage
     $ moeda <amount> <currency> [<...currencies>]
 
@@ -38,7 +41,7 @@ const help = () => {
     or
 
     $ moeda 1 usd eur rub aud
-  `)
+  `)}
   process.exit(1)
 }
 
