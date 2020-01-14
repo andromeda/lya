@@ -156,7 +156,7 @@ To address these challenges, we propose a novel approach to dynamic analysis, te
   A method of deconstruction into elements often for the purposes of removing waste products or altering piecewise components.
   From ancient Greek {\scriptsize $\delta\iota\acute{\alpha}$} (di\'{a}, ``inter-, through'') and {\scriptsize $\lambda\acute{\tilde{\upsilon}}\epsilon\iota\nu$} (lúein, ``to loosen'').
 } and implemented in \sys.
-Program dialysis is a general technique, applicable to any programming language, that enables dynamic fragmentation, analysis, and re-assembly of applications at the level of individual libraries. 
+Program dialysis is a general technique, applicable to any programming language, that enables dynamic fragmentation, analysis, and reassembly of applications at the level of individual libraries. 
 It operates during program execution, automating wrapping and transformation of the program's dependency graph, and allowing developers to extract meaningful insights with only a few lines of analysis-specific code
 By operating at the granularity of libraries, dialysis has several benefits over prior work: %full-fledged dynamic analysis:
   (i) it allows bolting library dialysis itself as a library onto existing runtime environments with no dynamic analysis,
@@ -215,7 +215,8 @@ Aside from the aforementioned sections (\S\ref{bg}--\ref{impl}), the paper discu
 A single application today often incorporates multiple libraries written and published by several different authors.
 To make the difficulties of analyzing such library-overreliant more concrete, we describe several example analysis that are often needed by the authors of third-party libraries.
 These examples illustrate key requirements for the design of a framework for analyzing applications at the boundaries of modules.
-Before describing these examples, however, we offer a brief refresher on the abstractions and corresponding internals of module systems~\sx{bg1}.
+Before describing these examples, however, we offer a brief refresher on the %abstractions and corresponding
+  internals of module systems~\sx{bg1}.
 
 % The emerging development process should (and to a certain extent, does) simplify the development and testing process;
 %   unfortunately, good abstractions are sealed (\ie they do not leak between abstraction layers), which makes the inspection of a library difficult.
@@ -229,10 +230,11 @@ Before describing these examples, however, we offer a brief refresher on the abs
 \caption{
   \textbf{Example of a library import.}
   \textmd{
-    The program on the left imports the \ttt{simple-math} library, shown right, which imports a \ttt{log} library and exports a simple \ttt{Math} object.
-    Several names resolve to functionality provided by the programming language:
-      names \ttt{import} and \ttt{export} resolve to library-local values; \ttt{print} resolves to a global value.
+    The program on the left imports the \ttt{simple-math} library, shown right, which imports \ttt{log} and exports a \ttt{Math} object.
+    Several names are provided by the programming language:
+      \ttt{import} and \ttt{exports} resolve to library-local values; \ttt{print} resolves to a global value.
   }
+  \vspace{-8mm}
 }
 \label{fig:ex1}
 \end{figure}
@@ -399,15 +401,17 @@ We start with an overview of dialysis~\sx{overview}, highlighting several key ch
 \label{overview}
 
 % FIXME: add user data
-At a high level, the goal of program dialysis is to dismantle the program at the boundaries of third-party libraries, apply transformations that insert analysis-specific machinery, and then carefully assemble individual components to maintain the original semantics.
- In more detail:
+Program dialysis operates by
+  dismantling the program at the boundaries of libraries,
+  applying transformations that insert analysis-specific machinery, and then carefully 
+  reassembling individual components to maintain the original semantics:
 
 \begin{itemize}
   
   \item \textbf{Dismantling:}
 Dialysis starts by recursively dismantling a program into its dependencies. % ---pieces of software implement a computation or functionality.
-This is achieved by re-wiring the language's \ttt{import} functionality to go through \sys, resulting in \sys walking the program's recursive dependency structure at runtime.
-During this phase, \sys has to determine the granularity of the analysis (\eg top-level libraries, a specific library \etc) in order to apply transformations at the correct level and mapping provided analysis hooks to the corresponding libraries.
+This is achieved by re-wiring the language's \ttt{import} function to go through \sys, resulting in \sys walking the program's recursive dependency structure at runtime.
+During this phase, \sys has to determine the granularity of the analysis (\eg top-level libraries, a specific library \etc) in order to apply transformations at the correct level and map th provided analysis hooks to the corresponding libraries.
 
   \item \textbf{Transformation:}
 It then sets up the provided analysis, by transforming each library interface, its surrounding environment, and possibly the values passing through the library boundary.
@@ -417,10 +421,12 @@ Programmatic transformations walk and wrap each one of these values based on the
 This phase requires solving several challenges, including enumerating all points of entry into and exit out of a library, 
 and swapping original values externally available to a library with ones that are wrapped with interposition mechanisms.
 
-  \item \textbf{Re-assembly}
-Finally, dialysis re-assembles individual modified libraries back into the program's original structure.
-The most important challenge during this phase the treatment of the library cache~\sx{bg1}:
-  since a single library can now correspond to many different wrappers, each modified to capture a small fragment of the overall analysis, the cache needs to be augmented to ensure the right analysis fragment clicks at the right place during the re-assembly of the dependency tree.
+  \item \textbf{Reassembly}
+Finally, dialysis reassembles individual modified libraries back into the program's original structure.
+The most important challenge during this phase is the treatment of the library cache~\sx{bg1}.
+The cache needs to be augmented to support multiple wrappers per library, each capturing a small fragment of the overall analysis.
+% without breaking the program's semantics.
+% ensure every fragment finds its place during dependency reassembly, 
 
 \end{itemize}
 
@@ -432,8 +438,9 @@ The most important challenge during this phase the treatment of the library cach
 \caption{
   \textbf{Base transformation.}
   \textmd{
-  The algorithm (simplified) is presented in functional style to simplify variable binding; types (object, list, function, and primitive), used for pattern matching, are shown in light {\color{cdb} \emph{turquoise}}~\cf{bt}. The meta-function $\alpha$ stands for the locations of analysis hooks.
+  The algorithm (simplified) is presented in functional style to simplify variable binding; types (object, list, function, and primitive), used for pattern matching, are shown in light {\color{cdb} \emph{turquoise}}~\cf{two}. The functions $\alpha_1$, $\alpha_2$, and $\alpha_3$ stand for the locations of analysis hooks.
   }
+  \vspace{-4mm}
 }
 \label{fig:base}
 \end{figure}
@@ -448,31 +455,35 @@ The most important challenge during this phase the treatment of the library cach
 \subsection{Dismantling}
 \label{one}
 
-When the dialysis starts along with the rest of the program, it first loads the analysis hooks provided by the developer. 
-Among other things, \sys needs to determine which library boundaries are of interest and what the granularity of the analysis is going to be.
-For the former, developers may have specified a subset of libraries whose boundaries are of interest or a subset of libraries that should \emph{not} be analyzed.
-For the latter, it checks the constructs that---for example, whether the analysis includes global variables, library-local constructs, standard libraries \etc
+When a dialysis-augmented program starts, it first loads the analysis file provided by the developer. 
+The file may specify a subset of libraries whose boundaries are of interest or a subset of libraries that should \emph{not} be analyzed.
+Among other things, \sys needs to determine the library boundaries of interest and the granularity of analysis.
+To do this, it extracts a static approximation of the dependency graph by traversing library files.
+Using this graph, it processes the analysis file to extract a mapping from library identifiers to analysis hooks.
+It also checks for constructs not associated with libraries---for example, whether the analysis includes global variables, library-local constructs, standard libraries \etc
+\sys then proceeds to dynamically replace the implementation of \ttt{import} and launch the program:
+  rather than simply locating and loading a library, calls to \ttt{import} now yield to \sys.
 
-It then dynamically replaces the implementation of\ttt{import}:
-  rather than simply locating and loading a library, the function yields to \sys.
-
-\sys checks the cache~\sx{three} to determine (i) if the library has already been loaded, and (ii) whether it has been loaded with the same analysis hooks.
+For every invocation of \ttt{import} \sys checks the cache~\sx{three} to determine
+  (i) if the library has already been loaded, and
+  (ii) whether it has been loaded with the same analysis hooks.
 If both are determined true, \sys retrieves the cached version of the library and returns the transformed \ttt{export}ed value.
 If the library was loaded with a different analysis---say because there are different analyses applied to different parts of a dependency tree---\sys constructs the appropriate analysis and applies a transformation pass on a cached copy of the unmodified library~\sx{three}.
 % \omit{---the common case---}
 Otherwise, \sys first invokes the built-in library loader to locate the library.
 
-The process of loading new libraries includes (i) a phase of reading the necessary files as source code and (ii) a phase of interpreting them, interspersed by applications of transformations.
-Reading files returns a string representation of the code; interpretation uses the language's runtime evaluation primitives to convert the code to an in-memory object.
-A series of transformations is applied before and after interpretation~\sx{two}.
+The process of loading new libraries includes (i) a phase of reading the necessary source files and (ii) a phase of interpreting them, interspersed by applications of transformations~\sx{two}.
+Reading files returns a string representation of the code; interpretation uses the language's runtime evaluation primitives to convert the code into an in-memory object.
+% A series of transformations is applied before and after interpretation~\sx{two}.
 
+%FIXME: Need to start with both problems
 Some analyses may themselves make use of global variables, libraries, and other analyzable constructs.
-\sys must note not to include these constructs in the ones 
+As these will be part of the same execution context, \sys must note to avoid transforming and wrapping these constructs as part of the analysis.
 % The analysis language is embedded in the source language, thus \sys makes use of the language's built-in evaluation primitives to interpret the \pc specification file.
-Dialysis frameworks may want to add analysis-specific keywords not provided by the language.
-To achieve this, \fixme{we} wrap each analysis hook with a function whose body starts by defining the expected keywords.
+Dialysis frameworks may also want to add analysis-specific keywords not provided by the language.
+To achieve this, \sys wraps each analysis hook with a function whose body starts by defining the expected keywords.
 The precise techniques for achieving this will be made clear in the next section~\sx{two}, after covering transformations;
-  the key to remember is that analysis are loaded from disk as source files, similar to libraries.
+  the key point to remember is that analyses are initially represented as source strings, similar to libraries.
 
 \begin{figure}[t]
 \centering 
@@ -491,23 +502,28 @@ The precise techniques for achieving this will be made clear in the next section
 \subsection{Transformation}
 \label{two}
 
+%FIXME: Needs examples, especially the context
 For each analyzed library, \sys needs to place hooks all around its boundary---not just its interface.
 This is achieved in three logical steps:
-(i) transforming the variable context, a mapping from names to values, within which the library will be interpreted,
+(i) transforming library's context, a mapping from names to values that are available from outside library,
 (ii) interpreting the library within this context, so that all names resolve to \sys-augmented values, and
 (iii) transforming the return value, \ie the library interface, once the interpretation is complete.
-Before discussing \emph{where} each transformation are applied, however, it makes sense to see \emph{how} they are applied.
+Before discussing \emph{where} each transformation is applied, however, we show \emph{how} they are applied.
 
 \heading{Transformations}
 % , such as an object returned from a module or an exception about to be sent across the network.
-Transformations can be applied to any value in the language, which can generally be a primitive, a function, or a compound value---say, a list of values or an object of key-value pairs.
+\sys's transformations boil down to a base transform \ttt{wrap} that traverses and augments values with runtime analysis monitors.
+At a high level, \ttt{wrap} takes a value $v$ and an analysis fragment $\alpha$ and returns a new value $v'$ that has every one of its fields $f$ wrapped:
+   every $f$ is replaced with a method $f'$ that returns the result of calling $f$ after applying the analysis segment corresponding to $v$.
+
+More specifically, \ttt{wrap} can be applied to any value in the language, which can generally be a primitive, a function, or a compound value---say, a list of values or an object of key-value pairs.
 % Listing~\ref{core-tx} presents a simplified core of the language.
-Transformations walk compound values from their root, processing component values based on their types (Fig.~\ref{fig:base}).
-More specifically,
+Transformations walk compound values from their root, processing component values based on their types (Fig.~\ref{fig:base}):
+% More specifically,
   (i) \emph{function} values are wrapped by closures that contain analysis-specific hooks; % on the function's arguments and return values;
   (ii) \emph{object} and \emph{list} values are recursively transformed, with their getter and setter methods replaced similar to function values; % and at times combining return results; and
   (iii) \emph{primitive} values are either transformed directly or copied unmodified and wrapped with an access interposition mechanism.
-To avoid cycles during the walk, values are added to map that is consulted at the beginning of each recursive call.
+To avoid cycles during the walk, values are added to a map that is consulted at the beginning of each recursive call.
 % Usually transformations do not mutate original values, but first copy them, apply transformations to the copies, and return copies to the caller.
 
 
@@ -533,26 +549,27 @@ To avoid cycles during the walk, values are added to map that is consulted at th
 %   \emph{primitive} values are copied unmodified and wrapped with an access interposition mechanism.
 % \end{itemize}
 
-Direct field accesses, such as assignments, require custom detection upon dereference.
+Direct field accesses, such as assignments, require detection upon access.
 To achieve this, \sys wraps fields with an interposition mechanism;
   this mechanism essentially treats direct field accesses as function calls (see \S\ref{impl} for implementation details and \S\ref{reqs} for equivalents in other environments).
 % Examples of such mechanisms include \ttt{Proxy} objects (JavaScript), metatables (Lua), metaclasses (Python), and direct-accessor metaprogramming (Ruby).
-\sys's wrappers detect and record changes to any of the object's fields, transforming values as needed.
-For example, if a field in a transformed object is assigned a new value, that value itself has to be be transformed before being attached to the \fixme{tree}.
+Extending a transformed object with a value will start with the value's transformation.
+% \sys's wrappers detect and record changes to any of the object's fields, transforming values as needed.
+For example, if a field in a transformed object is assigned a new value, that value has to be be transformed before its to the object.
 
 \sys allows toggling analyses on/off, changing analysis, or chaining multiple analysis during the execution of the program.
 To achieve this, it maintains a handle to the root of both the unprocessed and the newly processed values, for further processing:
-  the unprocessed value is used to create objects, at runtime, that run a different analysis;
-  the new value is used to revoke or chain analyses, a feature not explored further in this paper.
+  the unprocessed value is used to create objects, at runtime, that run different analyses;
+  the new value is used to revoke or chain analyses together.
 
 \heading{Context Transformation}
-To be able to track an analysis at the library boundary, \sys needs to provide each library with values that are augmented with interposition wrappers---and do this for all of the names a library to which a library has access.
+To be able to track an analysis at the library boundary, \sys needs to provide each library with values that are augmented with interposition wrappers---and do this for all of the names to which a library has access.
 
 To achieve this, \sys first needs to prepare a transformed copy of the library's outer context.
 Semantically, the context is a map from variable names to their values.
 Thus, \sys creates an auxiliary hash table mapping names to transformed values.
-Names correspond to any name that, by the language definition, is accessible by the library and resolves to a value outside that library, such as globals, built-ins, module-locals, \etc.
-Transformed values are created by applying the base transformation \ttt{BT} over values in the context, adding the provided analysis hooks.
+Names correspond to any name that, by the language definition, is accessible by the library and resolves to a value outside that library, such as globals, built-ins, module-locals, \etc
+Transformed values are created by applying \ttt{wrap} to values in the context, adding the provided analysis hooks.
 
 %% FIXME: 
 %% While user-defined global variables are stored in well-known locations,\footnote{
@@ -564,7 +581,7 @@ Transformed values are created by applying the base transformation \ttt{BT} over
 
 Care must be taken with library-local variables. % that refer to library-specific information such as \ttt{\_\_name\_\_} in Python~\sx{bg1}.
 These are accessible from anywhere within the scope of a library (similar to global variables), but resolve to a different value for each library.
-Examples include the library's absolute filename, its \ttt{export}ed values, and whether the library is invoked as the application's \ttt{main} library~\sx{bg1}.
+Examples include the library's absolute filename as \ttt{\_\_name\_\_}, its \ttt{export}ed values, and whether the library is invoked as the application's \ttt{main} library~\sx{bg1}.
 Attempting to access library-local variables directly from within \sys's scope will fail subtly, as they will end up resolving to library-local values of \sys \emph{itself}---and specifically, the module within \sys that is applying the transformation.
 \sys solves this problem by leaving the value empty and deferring binding for later from within the scope of the library (see below).
 
@@ -577,32 +594,33 @@ The closure's body starts with a prologue of the form:
   ...
 \end{verbatim}
 These statements shadow global variable names by redefining them as local ones.
-The closure accepts an argument \ttt{ctx}, which will be the customized context created earlier, assigning its entries to their respective variable names.
+The closure accepts an argument \ttt{ctx} that will hold the customized context (see above), assigning its entries to their respective variable names.
 The prologue executes before everything else in the library.
 % When the closure is applied to the customized context, the library's return value is recovered in a side-effectful manner (as in the unmodified library system) by reading the library's \ttt{exports} variable---that is, the closure does not end with an explicit \ttt{return}.
-This technique leverages lexical scoping to inject a non-bypassable step in the variable name resolution process.
-Instead of resolving to variables in the context, resolution will first ``hit'' library-local values augmented with analysis monitors.
+This technique leverages lexical scoping to inject a non-bypassable step in the variable name resolution process:
+  instead of resolving to variables in the context, resolution will first ``hit'' library-local values augmented with analysis monitors.
 
-Late-bound, library-local variables mentioned during context creation are the result of applying \fixme{\ttt{BT}} over variable names in the current scope;
+Late-bound, \emph{library}-local variables, such as the absolute filename mentioned during context creation, are the result of applying \ttt{wrap} over variable names in the current scope;
   these names are now bound to the correct library-local values.
 
 \heading{Library Interface Transformation}
-Returning the library's value to its consumer comprises interpreting the library, linking it with the custom context, and applying a final transformation to its return value.
+Returning the library's value to its consumer amounts to interpreting the library, linking it with the custom context, and applying a final transformation to its return value.
 % TODO: (for intro!) ..to attenuate the privilege exercised by the library's consumer
-The goal of the final transformation is to track activity at the boundary;
-  for some analyses, \sys needs to additionally augment the values going through the library's interface---including continuation functions passed as arguments to the library's methods.
+The goal of the final transformation is to track activity at the boundary;\footnote{
+  For some analyses, \sys needs to additionally augment the values going through the library's interface---including continuation functions passed as arguments to the library's methods.}
+This final transformation is applied for every new consumer of the library, returning a fresh analysis wrapper.
+This is due to the need for distinguishing between different boundaries of the same library.
 
-The final transformation is applied for every new consumer of the library.
-This is because the system needs to distinguish between all different boundaries of the same library, explained in the next section~\sx{three}.
+The treatment of this feature during reassembly is explained in the next section~\sx{three}.
   
 
-\subsection{Re-assembly}
+\subsection{Reassembly}
 \label{three}
 
 To successfully reassemble the application, \sys needs to ensure that cross-references between libraries resolve correctly.
-The central mechanism for resolution is the library cache.
+The central mechanism for this resolution is the library cache.
 
-To support multiple wrappers for a single cached library, the cache is extended by two levels reaching a total of three.
+To support multiple wrappers for a single cached library, the cache is extended by two levels (for a total of three).
 The reason for adding the two levels is that libraries are usually governed by a single context analysis but multiple interface analyses, one for each of their consumers.
 A context transformation is applied at most a few times (usually only once), whereas a return-value transformation is applied on every \ttt{import}.
 Thus, the first level is indexed by library identifiers (as before); the second by context analysis; and the third by analysis of the \ttt{export}ed interfaces.
@@ -612,10 +630,12 @@ Mostly-transformed libraries have gone through the entire transformation pipelin
   they have been interpreted and have had their context transformed and linked, but their return value has not been processed to track analysis of its interface.
 
 % A single augmented object (such as \ttt{Object}) may need to be shared among multiple files in a library, or even multiple libraries within a package directory.
-A special entry is reserved the original library value~\sx{two}, so that subsequent transformations can skip loading the library from disk.
-When a library is already loaded, \sys indexes by context analysis to retrieve the transformed library instance corresponding to this analysis.
-It then applies a transformation to the library's return value.
-New libraries are inserted into the second-level cache right after evaluation of the interpreted function.
+A special entry is reserved for the original library value as a string~\sx{two}, so that subsequent transformations can skip loading the library from disk.
+When a new analysis is applied to a library, \sys indexes the cache by library identifier and applies the analysis-specific \ttt{wrap} to the library's context.
+It then adds that result to a slot in the next layer of the cache, indexed by the analysis identifier.
+When a library is already loaded, \sys indexes by analysis to retrieve the (mostly) transformed library corresponding to this analysis.
+It then applies a transformation to the library's return value, and inserts the (finalized) transformed library to the third layer of the cache.
+% New libraries are inserted into the second-level cache right after evaluation of the interpreted function.
 
 
 \section{Implementation of Dialysis for SSJ}
@@ -635,9 +655,9 @@ New libraries are inserted into the second-level cache right after evaluation of
 \end{figure*}
 
 
-This section details our implementation of \sys for server-side JavaScript (SSJ) in about 1.5K lines of code on top of version 8.9.4 of the Node.js runtime.
-We start with the internals of \sys's Node.js implementation~\sx{impl1}, and then describe the three analyses built on \sys~\sx{impl2}.
-We postpone discussion of how other environments diverge from JavaScript for later~\S\ref{reqs}.
+This section details our implementation of \sys for server-side JavaScript (SSJ) in about 1.5K lines of code on top Node.js v8.9.4.
+We start with the internals of \sys's Node.js implementation~\sx{impl1}, and then describe the three analyses developed with \sys~\sx{impl2}.
+We postpone discussion of how other environments diverge from JavaScript for later~\sx{reqs}.
 
 In practice, the aforementioned dialysis stages can be implemented in two different ways.
 The first is to implement \sys as a modified version of the runtime (\eg \sys-powered JavaScript) in which several stages of its library-loading facility have been augmented in-place with the techniques described earlier.
