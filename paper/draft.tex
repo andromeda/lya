@@ -8,6 +8,9 @@
 \usepackage{color}
 \usepackage{booktabs}
 \usepackage{graphicx}
+\usepackage{alltt}
+\usepackage{amssymb}
+\usepackage{amsmath}
 
 \usepackage{caption}
 \captionsetup[figure]{font=footnotesize,name={Fig.},labelfont={bf, footnotesize}}
@@ -34,8 +37,13 @@
 \newcommand{\cf}[1]{(\emph{Cf}.\S\ref{#1})}
 \newcommand{\sx}[1]{(\S\ref{#1})}
 \newcommand{\tb}[1]{(Tab.\ref{tab:#1})}
+\newcommand{\rf}[1]{\ref{#1}}
+\newcommand{\se}[1]{\S\ref{#1}}
+\newcommand{\fg}[1]{Fig.~\ref{#1}}
+
 \newcommand{\sys}{{\scshape Lya}\xspace}
 \newcommand{\toy}{{\tt lya.js}\xspace}
+
 
 \newcommand{\fra}{fragmentation\xspace} % fracture
 \newcommand{\ana}{analysis\xspace}      % 
@@ -44,6 +52,10 @@
 \newcommand{\Ana}{Analysis\xspace}      % 
 \newcommand{\Ass}{Reassembly\xspace}    % 
 \newcommand{\dia}{\fra, \ana, and \ass}
+
+% FIXME:
+\newcommand{\pc}{PIC\xspace}
+\newcommand{\pcs}{\pc{}s\xspace}
 
 \newcommand{\goal}[1]{(\textbf{G#1})\xspace}
 
@@ -130,12 +142,12 @@ Modifying the application's runtime environment such as the interpreter is cumbe
 Tools that virtualize execution~\cite{pin, valgrind, jalangi, roadrunner} have high performance costs---for example, Jalangi~\cite{jalangi} and RoadRunner~\cite{roadrunner} report No-Op analysis on the order of 26--32$\times$ and 52$\times$, respectively.
 % Problem-specific solutions require significant investment outside the language's mental model---for example,  each ---as a case in point, Jalangi reports XX overhed (exact overheads always depend on the specific analysis).
 
-Both effort and performance costs are severely compounded by the use of third-party libraries---development-time constructs usually glued together without a full understanding of their internals.
-Their ubiquity is a recent phenomenon enabled by zero-cost code sharing~\cite{libs}
+Effort and performance costs are severely compounded by the use of third-party libraries, usually glued together without a full understanding of their internals.
+This is a recent phenomenon enabled by zero-cost code sharing~\cite{libs}:
 % Libraries are used pervasively today to lower development costs and improve software quality, 
 % This over-reliance to third-party libraries is a recent phenomenon, 
-  with the proliferation of language-specific package repositories, the effort of publishing and that of using a library are essentially zero.
-As a result, applications frequently count hundreds of libraries, each often containing only a few lines of code~\cite{leftpad, npmstudy:19}. % how to say thousands of them depend on a 11-line lib?
+  language-specific package repositories eliminate the cost of publishing and using a library.
+As a result, applications frequently count hundreds of libraries~\cite{npmstudy:19}, with each often only a few lines long~\cite{leftpad, npmstudy:19}. % how to say thousands of them depend on a 11-line lib?
 Library-oriented analysis adds to the challenges of prior tools as
   (i) library boundaries disappear at runtime, and
   (ii) coarse-grained, high-level language semantics misalign with fine-grained, low-level instrumentation.
@@ -200,7 +212,7 @@ Aside from the aforementioned sections (\S\ref{bg}--\ref{impl}), the paper discu
 \section{Background, Examples, and Goals}
 \label{bg}
 
-A single application today often incorporates multiple libraries\footnote{We use the terms ``library'', ``package'', and ``module'' interchangeably.} written and published by several different authors.
+A single application today often incorporates multiple libraries written and published by several different authors.
 To make the difficulties of analyzing such library-overreliant more concrete, we describe several example analysis that are often needed by the authors of third-party libraries.
 These examples illustrate key requirements for the design of a framework for analyzing applications at the boundaries of modules.
 Before describing these examples, however, we offer a brief refresher on the abstractions and corresponding internals of module systems~\sx{bg1}.
@@ -208,91 +220,138 @@ Before describing these examples, however, we offer a brief refresher on the abs
 % The emerging development process should (and to a certain extent, does) simplify the development and testing process;
 %   unfortunately, good abstractions are sealed (\ie they do not leak between abstraction layers), which makes the inspection of a library difficult.
 
-\subsection{Background on Modules and Module Systems}
+\subsection{Background on Module Systems}
 \label{bg1}
 
-languages provide module systems
+A library, package, or module---we use these terms interchangeably---is a development-time construct for encapsulating reusable functionality.
+This functionality falls into two categories:
+  it either (i) comes bundled with the language, possibly wrapping operating-system interfaces such as the file-system in a way that is system-agnostic and conforms to the language's conventions,
+  or (ii) is provided by other developers sharing code others might find useful.
+Fig.~\ref{mod} depicts the basic structure of a modern program, in which the \ttt{math} library provides a set of four elementary operations.
 
-closely coupled with the runtime
+From a developer's perspective, \ttt{import}ing a library makes its functionality usable by the calling code. 
+What this means is that some of the library's functionality is bound to a variable name that becomes available in the scope of the caller.
+This is provided through a form of \ttt{export}ing, where the library developer expresses which values should become available to the importing code.
+The definition of a value depends on the semantics of the language, but for now we can assume it's either a primitive value, a list of values, a function, or an object mapping string keys to values.
+Internally, the library might import other libraries, cause side-effects to the file-system and the network, or even be implemented in multiple languages.
+% , as shown on line \fixme{XX},
+% closely coupled with the runtime
+% and in some cases features its own mini-language, as is the case in Scheme and Standard ML.
 
-A module uses a \ttt{import} function and returns an export .
-Intuitively a map
+From the language's perspective, the loading process is achieved in several steps. 
+In compiled programming languages libraries might be used to enable separate compilation, in which case an additional linking phase connects the resulting object files.
+Interpreted languages involve a somewhat convoluted process that combines loading, interpretation, and linking.
+This process starts by locating the library in the file system or across the network,\footnote{
+  Examples of run-time environments featuring network loading include V8 and deno, for executing JavaScript and TypeScript respectively.
+}
+by resolving relative or absolute identifiers.
+% The library is assigned a unique identifier.
+The content of the library is then read and wrapped in a way that resolves library-local names such as \ttt{\_\_name\_\_} in Python and \ttt{\_\_filename} in JavaScript to meaningful values.
+The wrapper is then interpreted and evaluated using the language's interpreter, which might result to side-effects---for example, a \ttt{process.exit} in the library's top-level scope will exit the entire program.
+Finally, the value returned bound to the \ttt{export}ed interface or returned from this interpretation (depending on the language) will be made available to the scope of code calling \ttt{import}.
 
-Several details:
-  same module at multiple levels, and the module cache
-  sometime it's the same, some times it;s not
-  module resolution algorithm
+There is significant variation, but a few features are common across many implementations.
+A library cache maintains a mapping from library identifiers---often absolute paths---to returned \ttt{export} values.
+The library cache serves a dual purpose:
+  by avoiding to locate already loaded libraries, it improves performance and maintains the consistency of stateful libraries.
+Recursive imports are handled in depth-first way, and if cyclical dependencies are possible they are resolved by pointing to the cache.
+An increasingly common feature is to allow different versions of the same library to co-exist in a program, in order to avoid a choice between mutually exclusive options---a paradoxical situation known as ``dependency hell''.
+As a result, a single \ttt{import} \ttt{lib} does not necessarily resolve to the same (version of the) library \ttt{lib} every time.
+The dual of this situation is also possible, in which two different library names may resolve to the same identifier (in which case the second will be redirected to the cache).
+These features complicate library-level analysis, especially in interpreted programming languages.
+
+
+% Several details:
+%   same module at multiple levels, and the module cache
+%   sometime it's the same, some times it;s not
+%   module resolution algorithm
 
 \subsection{Motivating Examples}
 
 Having reviewed the building blocks and underlying techniques that power modularity, we now turn to examples of dynamic analysis that today are difficult or require specialized solutions:
   (i) an allow/deny security analysis,
-  (ii) a profiling analysis showing hot modules,
+  (ii) a profiling analysis showing hot libraries,
   (iii) a synthesis-oriented analysis on input-output data, and
   (iv) an analysis enforcing a static union-based type system at runtime.
 These examples illuminate key design requirements for \sys's implementation of module-level dynamic analysis.
 
 \heading{Security Analysis}
-Today's ubiquitous reliance on third-party modules has led to an explosion of supply-chain attacks~\cite{maass2016theory, lauinger2017thou, long2015owasp, cadariu2015tracking, breakapp:plos:2017, snyk}.
-Both bugs and malicious code in imported modules provide attack vectors that are exploitable long after modules reach their end-users.
-As development-time module boundaries do not exist at runtime, modules end up executing with no meaningful isolation or privilege separation guarantees between each other and the trusted portions of an application.
-The popularity of certain libraries---depended upon by tens of thousands of other libraries or applications---allows vulnerabilities deep in the dependency graph to affect a great number of applications~\cite{kuppusamy2016diplomat, leftpad, npmstudy:19}.
+The pervasive reliance on third-party libraries has led to an explosion of supply-chain attacks~\cite{long2015owasp, maass2016theory, snyk, lauinger2017thou}.
+Both bugs and malicious code in imported libraries create attack vectors, exploitable long after libraries reach their end-users.
+As library boundaries do not exist at runtime, libraries end up executing with no meaningful isolation or privilege separation guarantees between each other and the trusted portions of a program.
+Popular libraries, depended upon by tens of thousands of other libraries or applications, allow vulnerabilities deep in the dependency graph to affect a great number of applications~\cite{leftpad, npmstudy:19}.
 Discovered vulnerabilities are becoming harder to eradicate, as updates are fetched automatically~\cite{npmFailure} and module unpublishing is becoming a multi-step process to avoid breaking applications~\cite{npmUnpublish}.
-Worst of all,\omit{package developers accidentally publishing their security} leaked publishing tokens allow anyone to update packages with code that will eventually reach end-users via package updates~\cite{eslint1, eslint2}.
+Worst of all, leaked publishing tokens allow attackers to update packages with code that will eventually reach end-users via package updates~\cite{eslint1}.
 
-Recent work~\cite{dld:08, sandcrust, tsampas2017towards, breakapp:ndss:2018} has shown that 
-The key issue underlying the \ttt{event-stream} attack is that any third-party fragment of an application has unrestricted access to the functionality available to the rest of application. % and is exploitable.
-Some of this functionality is \emph{explicitly} provided by other libraries such as \ttt{fs} and \ttt{http}.
-Other functionality is \emph{implicitly} provided by the programming language;
-  examples include the ability to use global variables, import modules, and access the cache of the loaded modules.
-Both explicitly and implicitly provided functionality is exploitable by third-party code.
-While it may be needed for the application to function as a whole, it is not necessarily needed by \ttt{event-stream}.
-% However, not \emph{all} of this capability is needed by \emph{all} of the modules during \emph{all} of the time.
-MLC shows great promise, as it can
-(i) retrofit security into \emph{legacy} systems not designed with security as their primary concern,
-(ii) protect against a plethora of \emph{real} attacks stemming from defective, subverted, and malicious elements, and
-(iii) shield against attacker-controlled components with \emph{unknown} vulnerabilities and powerful \emph{runtime} code evaluation. % (\eg \texttt{eval}).
+As a concrete example, consider the recent event-stream incident~\cite{es1, es2}, in which a maintainer of a highly popular library inserted code for stealing Bitcoin wallet credentials from a program using that library.
+As event-stream activated its malicious behavior only on production---\ie not during testing or development---it is critical to be able to toggle the behavior of the system
+At the same time, it is not critical to analyze behavior \emph{within} the event-stream library itself:
+  if any data exfiltration is happening, this will require calling out of the library and into the network---in event-stream's case, using the \ttt{fs} library to modify a different library and then use \ttt{http} from the second library.
+Both \ttt{fs} and \ttt{http} are libraries part of the standard library and built into the runtime environment.
+% The key issue underlying the \ttt{event-stream} attack is that any third-party fragment of an application has unrestricted access to the functionality available to the rest of application.
 
-To make this concrete, we are introducing
+To address such problems, several recent proposals suggest analyzing third-party modules dynamically to identify malicious behavior~\cite{}.
+% FIXME more about the policy, tracking arguments too
+A simple ``allow-deny'' security analysis indicating the resources touched by that library would have revealed access to the and access .
+Examples of interfaces outside the \ttt{http} and \ttt{fs} libraries include the ability to use global variables, import other libraries, and access the cache of the loaded modules---all of which are easily available to any third-party that is part of an application.
+
+% \emph{
+% This case highlights the need to \fixme{analyze} all the observable behavior \emph{around} a library, without necessarily caring about fine-grained library-internal analysis.
+% }
 
 \heading{Performance Diagnosis}
-Developers use various techniques to understand such problems.
-For example, collected traces can be replayed against off-line versions of the system and statistical profiling can identify hot code-paths.
-These techniques, however, require some degree of \emph{manual} effort:
-  capturing traces, setting up testbeds, replaying traces, analyzing statistics, and debugging performance are all tedious and time-consuming tasks.
-Pervasiveness of third-party modules and heavy code reuse in modern applications compound the challenge, as the causes may lie deep in the dependency chain.
+Diagnosing performance problems is a difficult task, exacerbated by the heavy use of third-party libraries.
+Libraries are written by authors with different education backgrounds, quality standards, and, most importantly, needs:
+  it's not unusual for a weekend project solving a local need to end up as a critical dependency among several open source projects~\cite{}.
+Maintenance and rewriting can cause performance regressions between two versions of a library.
+% FIXME: Garbage collection
+Worse even, the fact that one library changes a dependency to a different implementation can cause severe performance pathologies to upstream projects---that is, while the interface remains the same due to an intermediate layer of abstraction, performance characteristics change dramatically~\cite{evhaus}.
 
-Once provided with a few recipes, \sys starts monitoring the performance of the corresponding modules in order to detect bottlenecked modules.
-A key observation is the semantic isomorphism between calling a function and passing a message~\cite{scheme:98, duality:79}.
-This allows viewing a series of calls as a stream of messages. % that 
-% at each module boundary 
-Module boundaries can be viewed as (virtual) queues of messages that await processing.
-% and applying windowed average operations on a 
+As a concrete example, consider the \ttt{minimatch} library, a regular-expression-based file-matching utility susceptible to long delays because of pathological regular expressions that involve backtracking.
+Pathological inputs reaching \ttt{minimatch}, even if benign, can cause significant performance degradation.
+The source of this degradation can lie deep in the dependency chain of the application~\cite{crosby2003denial}, but also affect logically unrelated parts competing for the same resource (\ie CPU).
+
+The research community has proposed several possible mitigations~\cite{}, all critically depending on detecting and attributing the slowdown to the bottlenecked component.
+An analysis 
+% A key observation is the semantic isomorphism between calling a function and passing a message
+% This allows viewing a series of calls as a stream of messages.
+% Module boundaries can be viewed as (virtual) queues of messages that await processing.
+treating library invocation boundaries as message queues~\cite{scheme:98, duality:79}.
 Overwhelming a module causes its ingress queue to grow.
-% MM: related to the sync vs. async
-% As the queue grows due to module overloading, new messages will be processed only after all other messages have been processed.
-At some point, the waiting time of newly-arrived messages becomes longer than the time to send the messages to a remote copy of the module, run the call there, and return the results back to their intended recipient.
-% Intuitively, it makes sense to schedule a queue on a remote processor when the wait time at the end of the queue becomes longer than scheduling the message to a remote queue.
+At some point, the waiting time of newly-arrived messages becomes longer than sending messages to a library replica.
+Profiling is accomplished by wrapping module interfaces with logic that generates a model of the current workload.
+Each module boundary collects its own statistics based on a combination of recipes and instructions from the coordinator.
+Profile generation can operate at a high resolution in time and space:
+  (i) at every function call entering a module, and (ii) on thousands of modules across an application.
 
-To make this concrete, we are introducing
 
-\heading{Type and Invariant Checking}
+% \emph{
+% This case highlights the need to \fixme{analyze} all the observable behavior \emph{around} a library, without necessarily caring about fine-grained library-internal analysis.
+% }
+
+\heading{Invariant Discovery}
 Extracting type invariants is helpful in a variety of ways---type safety is an important property and types are lightweight annotations that can be quickly and efficiently checked.
 Dynamic analysis can be used to generate type assertions or invariants
 For example
+e.
+For example, types identify program invariants to be preserved during code modifications, to generate marshalling and marshalling wrappers, or even to guide library synthesis and regeneration.
+This is especially problematic in dynamic programming languages:
+  in the absence of type signatures, there is not much one can say about a \ttt{http.request} object.
 
-To make this concrete, we are using
+To make this concrete, consider the case of the \ttt{gRPC} library for serializing and de-serializing objects.
+Given a ---say, a simple bignum library or a crypto---a developer has to first run the library manually, take note of the result, and then write a protocol buffer specification file declaring the type; %, common in distributed systems
+if the type changes, because of a library version change or because of changes in the .
+
 The static type system is defined as a variant of a simply-typed lambda calculus augmented with union types.
+A simple approach would be to define a very simple type system that captures the type of a value by observing the execution of the program---after all, the types are dynamically checked!
+The analysis could also capture union types, for cases where it observes that a variable is at times witnessed to hold values of different types---although a single program tends to make calls of the same type signature across its entire lifetime~\cite{daikon}.
+The analysis could also do some type ``unpacking'' to deconstruct a type to its structural primitives---for example, noting that an object of type user is comprised of two strings (first and last name) and a number (age).
 
-\heading{Learning, Synthesis, and Regeneration}
-Extracting type invariants is helpful in a variety of ways---type safety is an important property and types are lightweight annotations that can be quickly and efficiently checked.
-Dynamic analysis can be used to generate type assertions or invariants
-For example
-The approach has been pioneered by systems such as 
+% would need to be able 
+% to capture structural subtitling---that is the piecewise 
 
-To make this concrete, we are using
-The static type system is defined as a variant of a simply-typed lambda calculus augmented with union types.
 
+% \heading{Learning, Synthesis, and Regeneration}
 
 \subsection{Design Goals}
 
@@ -315,52 +374,39 @@ The next section describes program dialysis, a new program analysis technique th
 \label{design}
 
 Dialysis starts by dynamically modifying the functionality of the module system that is responsible for importing and loading libraries:
-  instead of simply locating a library in the filesystem and loading it, it yields control to \sys which applies a series of transformation steps to libraries, with the goal of interposing at their boundaries.
-We start with a three-step overview of dialysis~\sx{overview}, highlighting the challenges that arise in the process.
-We next describe each one of these steps in more detail~(\S\ref{one}--\ref{three}).
+  instead of simply locating and loading a library from the file-system, it yields control to \sys, which applies a series of transformations to libraries with the goal of interposing at their boundaries.
+We start with an overview of dialysis~\sx{overview}, highlighting several key challenges, followed by a detailed description of each step~(\S\ref{one}--\ref{three}).
 
 \subsection{Overview}
 \label{overview}
 
 % FIXME: add user data
-At a high level, the goal of program dialysis is to \fra the program at the boundaries of third-party modules, apply transformations that insert analysis-specific machinery, and then carefully \ass individual components to maintain the original semantics.
- In more detail, these three phases are as follows:
+At a high level, the goal of program dialysis is to dismantle the program at the boundaries of third-party libraries, apply transformations that insert analysis-specific machinery, and then carefully assemble individual components to maintain the original semantics.
+ In more detail:
 
 \begin{itemize}
   
-  \item \Fra:
-    It first starts by recursively dis-assembling programs into their library dependencies---pieces of software implement a computation or functionality.
-    This is essentially achieved by instrumenting the import statements and walking the program's recursive dependency structure.
-    Different analysis can operate at different granularities, and has to solve challenges such as multi-module and dedublication.
+  \item \textbf{Dismantling:}
+Dialysis starts by recursively dismantling a program into its dependencies. % ---pieces of software implement a computation or functionality.
+This is achieved by re-wiring the language's \ttt{import} functionality to go through \sys, resulting in \sys walking the program's recursive dependency structure at runtime.
+During this phase, \sys has to determine the granularity of the analysis (\eg top-level libraries, a specific library \etc) in order to apply transformations at the correct level and mapping provided analysis hooks to the corresponding libraries.
 
-  \item \Ana:
-    It then sets a specific analysis up by wrapping and transforming each module interface, its surrounding environment, as well as the values passing through the module boundary.
-    Programmatic transformations walk and transform each one of these values based on their type:
-      the module interface is usually a complex (but singular) object; the surrounding environment treats 
-    This phase requires solving several challenges, including enumerating and tracking all points of entry into and exit out of a library.
-    It also requires providing 
-     in a backwards compatible fashion.
+  \item \textbf{Transformation:}
+It then sets up the provided analysis, by transforming each library interface, its surrounding environment, and possibly the values passing through the library boundary.
+Programmatic transformations walk and wrap each one of these values based on their type.
+% the library interface is usually a complex (but singular) object;
+% the surrounding environment provides names to multiple ``implicitely'' imported libraries, functionality provided by the language.
+This phase requires solving several challenges, including enumerating all points of entry into and exit out of a library, 
+and swapping original values externally available to a library with ones that are wrapped with interposition mechanisms.
 
-  \item \Ass:
-    Finally, it re-assembles individual modified modules back into the original structure.
-    This creates several challenges, the most important of which is the treatment of the module cache---a mechanism for avoiding multiple loads of the same module .
-    Since a single library can now correspond to many different wrappers, each modified to capture different  analysis fragments, the cache needs to be augmented to ensure the right analysis fragment clicks at the right place during the re-assembly of the dependency tree.
+  \item \textbf{Re-assembly}
+Finally, dialysis re-assembles individual modified libraries back into the program's original structure.
+The most important challenge during this phase the treatment of the library cache~\sx{bg1}:
+  since a single library can now correspond to many different wrappers, each modified to capture a small fragment of the overall analysis, the cache needs to be augmented to ensure the right analysis fragment clicks at the right place during the re-assembly of the dependency tree.
 
 \end{itemize}
 
-Program runtime transformations such as the ones applied in the second phase are used pervasively throughout \sys.
-
-% , such as an object returned from a module or an exception about to be sent across the network.
-Transformations can be applied to any value in the language. 
-The most general value is an object, a bag of records holding key-value fields;
-  other value types include primitives, functions, and booleans.
-% Listing~\ref{core-tx} presents a simplified core of the language.
-Transformations walk objects from their root, processing component values based on their types (Fig.~\ref{fig:txfm}).
-More specifically,
-  (i) \emph{function} values are wrapped by closures specific to the goal of the transformation; % on the function's arguments and return values;
-  (ii) \emph{object} values are recursively transformed, with their getter and setter methods replaced similar to function values; % and at times combining return results; and
-  (iii) \emph{primitive} values are either transformed directly or copied unmodified and wrapped with an access interposition mechanism.
-% Usually transformations do not mutate original values, but first copy them, apply transformations to the copies, and return copies to the caller.
+% Program runtime transformations such as the ones applied in the second phase are used pervasively throughout \sys.
 
 \begin{figure}[t]
 \raggedleft 
@@ -368,26 +414,47 @@ More specifically,
 \caption{
   \textbf{Base transformation.}
   \textmd{
-  The algorithm (simplified) is presented in functional style to simplify variable binding; types (object, list, function, and primitive), used for pattern matching, are shown in light {\color{cdb} \emph{turquoise}}~\cf{bt}.
+  The algorithm (simplified) is presented in functional style to simplify variable binding; types (object, list, function, and primitive), used for pattern matching, are shown in light {\color{cdb} \emph{turquoise}}~\cf{bt}. The meta-function $\alpha$ stands for the locations of analysis hooks.
   }
 }
 \label{fig:base}
 \end{figure}
 
+% To transform a module, \sys augments several steps of the module loading process (Fig.~\ref{fig:pipeline}) using a base transformation that wraps an object with a security monitor~\sx{bt}.
+% It starts by intercepting calls to the \ttt{require} function~\sx{import}, which locates the module's source code and \pc.
+% It then constructs a custom context based on the \pc's implicit segment~\sx{context}.
+% It then encloses the module in a closure to leverage local variable resolution in order to link the custom context with the module~\sx{enclosure}.
+% After source interpretation, \sys transforms the resulting value by consulting the \pc's explicit segment~\sx{final}, updates the \sys-augmented module cache~\sx{cache}, and returns the value to the consumer.
+% The following subsections detail these steps.
 
-The program transformations described earlier~\sx{overview} are in \sys  abstracted by a set of parametrizable skeletons.
-These skeletons provide hooks for end-developers writing analyses.
-Specifically, they map types of values (\eg \ttt{Number}s, \ttt{Function}s) to generic hooks for each type. 
-These hooks are then extended or rewritten by developers to
-
-For example, consider transforming a \ttt{Math} object with the goal of profiling its interfaces or generating a remote interface (Fig.~\ref{fig:lib}\emph{a,b}).
-\sys traverses the object returned by \ttt{Math} and replaces functions such as \ttt{div} with wrappers.
-The wrappers depend on the intended goal:
-  profiling wrappers would record invocation statistics, and RPC wrappers would forward calls to a remote replica.
-
-
-\subsection{Disassembly}
+\subsection{Dismantling}
 \label{one}
+
+When the dialysis starts along with the rest of the program, it first loads the analysis hooks provided by the developer. 
+Among other things, \sys needs to determine which library boundaries are of interest and what the granularity of the analysis is going to be.
+For the former, developers may have specified a subset of libraries whose boundaries are of interest or a subset of libraries that should \emph{not} be analyzed.
+For the latter, it checks the constructs that---for example, whether the analysis includes global variables, library-local constructs, standard libraries \etc
+
+It then dynamically replaces the implementation of\ttt{import}:
+  rather than simply locating and loading a library, the function yields to \sys.
+
+\sys checks the cache~\sx{three} to determine (i) if the library has already been loaded, and (ii) whether it has been loaded with the same analysis hooks.
+If both are determined true, \sys retrieves the cached version of the library and returns the transformed \ttt{export}ed value.
+If the library was loaded with a different analysis---say because there are different analyses applied to different parts of a dependency tree---\sys constructs the appropriate analysis and applies a transformation pass on a cached copy of the unmodified library~\sx{three}.
+% \omit{---the common case---}
+Otherwise, \sys first invokes the built-in library loader to locate the library.
+
+The process of loading new libraries includes (i) a phase of reading the necessary files as source code and (ii) a phase of interpreting them, interspersed by applications of transformations.
+Reading files returns a string representation of the code; interpretation uses the language's runtime evaluation primitives to convert the code to an in-memory object.
+A series of transformations is applied before and after interpretation~\sx{two}.
+
+Some analyses may themselves make use of global variables, libraries, and other analyzable constructs.
+\sys must note not to include these constructs in the ones 
+% The analysis language is embedded in the source language, thus \sys makes use of the language's built-in evaluation primitives to interpret the \pc specification file.
+Dialysis frameworks may want to add analysis-specific keywords not provided by the language.
+To achieve this, \fixme{we} wrap each analysis hook with a function whose body starts by defining the expected keywords.
+The precise techniques for achieving this will be made clear in the next section~\sx{two}, after covering transformations;
+  the key to remember is that analysis are loaded from disk as source files, similar to libraries.
 
 \begin{figure}[t]
 \centering 
@@ -403,89 +470,138 @@ The wrappers depend on the intended goal:
 \end{figure}
 
 
-\subsection{Reassembly}
+\subsection{Transformation}
+\label{two}
+
+For each analyzed library, \sys needs to place hooks all around its boundary---not just its interface.
+This is achieved in three logical steps:
+(i) transforming the variable context, a mapping from names to values, within which the library will be interpreted,
+(ii) interpreting the library within this context, so that all names resolve to \sys-augmented values, and
+(iii) transforming the return value, \ie the library interface, once the interpretation is complete.
+Before discussing \emph{where} each transformation are applied, however, it makes sense to see \emph{how} they are applied.
+
+\heading{Transformations}
+% , such as an object returned from a module or an exception about to be sent across the network.
+Transformations can be applied to any value in the language, which can generally be a primitive, a function, or a compound value---say, a list of values or an object of key-value pairs.
+% Listing~\ref{core-tx} presents a simplified core of the language.
+Transformations walk compound values from their root, processing component values based on their types (Fig.~\ref{fig:base}).
+More specifically,
+  (i) \emph{function} values are wrapped by closures that contain analysis-specific hooks; % on the function's arguments and return values;
+  (ii) \emph{object} and \emph{list} values are recursively transformed, with their getter and setter methods replaced similar to function values; % and at times combining return results; and
+  (iii) \emph{primitive} values are either transformed directly or copied unmodified and wrapped with an access interposition mechanism.
+To avoid cycles during the walk, values are added to map that is consulted at the beginning of each recursive call.
+% Usually transformations do not mutate original values, but first copy them, apply transformations to the copies, and return copies to the caller.
+
+
+% \sys's transformations boil down to a base form \ttt{BT} that augments \emph{objects} with runtime security monitors.
+% At a high level, \ttt{BT} takes an object $O$ and a \pc $\sigma$ and returns a new object $O'$.
+% Every field $f$ of $O$ is wrapped with a method $f'$ defined to enclose $f$.
+% At runtime, $f'$ checks $\sigma$:
+%  if the access is allowed, it forwards the call to $f$;
+%  otherwise, it raises an exception.
+% % Appendix: An example result is shown in the appendix.~\ref{fig:bt2}.
+% 
+% To achieve this transformation, \sys walks the object graph from the root and processes component values based on their types (Fig.~\ref{fig:base}).
+% Rather than mutating original values, it copies them, applies transformations on the copies, and returns copies to the caller:
+% 
+% % Listing~\ref{core-tx} presents a simplified core of the language.
+% 
+% \begin{itemize}
+% \item
+%   \emph{function} values are wrapped by a closure that forwards arguments to the original function if allowed to do so.
+% \item
+%   \emph{object} values are recursively transformed, with their getter and setter methods replaced similar to function values.
+% \item
+%   \emph{primitive} values are copied unmodified and wrapped with an access interposition mechanism.
+% \end{itemize}
+
+Direct field accesses, such as assignments, require custom detection upon dereference.
+To achieve this, \sys wraps fields with an interposition mechanism;
+  this mechanism essentially treats direct field accesses as function calls (see \S\ref{impl} for implementation details and \S\ref{reqs} for equivalents in other environments).
+% Examples of such mechanisms include \ttt{Proxy} objects (JavaScript), metatables (Lua), metaclasses (Python), and direct-accessor metaprogramming (Ruby).
+\sys's wrappers detect and record changes to any of the object's fields, transforming values as needed.
+For example, if a field in a transformed object is assigned a new value, that value itself has to be be transformed before being attached to the \fixme{tree}.
+
+\sys allows toggling analyses on/off, changing analysis, or chaining multiple analysis during the execution of the program.
+To achieve this, it maintains a handle to the root of both the unprocessed and the newly processed values, for further processing:
+  the unprocessed value is used to create objects, at runtime, that run a different analysis;
+  the new value is used to revoke or chain analyses, a feature not explored further in this paper.
+
+\heading{Context Transformation}
+To be able to track an analysis at the library boundary, \sys needs to provide each library with values that are augmented with interposition wrappers---and do this for all of the names a library to which a library has access.
+
+To achieve this, \sys first needs to prepare a transformed copy of the library's outer context.
+Semantically, the context is a map from variable names to their values.
+Thus, \sys creates an auxiliary hash table mapping names to transformed values.
+Names correspond to any name that, by the language definition, is accessible by the library and resolves to a value outside that library, such as globals, built-ins, module-locals, \etc.
+Transformed values are created by applying the base transformation \ttt{BT} over values in the context, adding the provided analysis hooks.
+
+%% FIXME: 
+%% While user-defined global variables are stored in well-known locations,\footnote{
+%%   For example, \ttt{globals} in JavaScript and \ttt{\_G} in Lua.
+%% } traversing the global scope for built-in values is generally not possible.
+%% To solve this problem, \sys collects such values by resolving well-known names hard-coded in a list;
+%%   different lists exist for different environments and versions of the language.
+%% Using this list, \sys creates a list of pointers to unmodified values. % upon startup.
+
+Care must be taken with library-local variables. % that refer to library-specific information such as \ttt{\_\_name\_\_} in Python~\sx{bg1}.
+These are accessible from anywhere within the scope of a library (similar to global variables), but resolve to a different value for each library.
+Examples include the library's absolute filename, its \ttt{export}ed values, and whether the library is invoked as the application's \ttt{main} library~\sx{bg1}.
+Attempting to access library-local variables directly from within \sys's scope will fail subtly, as they will end up resolving to library-local values of \sys \emph{itself}---and specifically, the module within \sys that is applying the transformation.
+\sys solves this problem by leaving the value empty and deferring binding for later from within the scope of the library (see below).
+
+\heading{Context Linking}
+To link the library with the newly transformed version of its context, \sys wraps the library---still an uninterpreted string of source code---with a closure.
+The closure's body starts with a prologue of the form:
+\begin{verbatim}
+  local pint = ctx.print
+  local error = ctx.error
+  ...
+\end{verbatim}
+These statements shadow global variable names by redefining them as local ones.
+The closure accepts an argument \ttt{ctx}, which will be the customized context created earlier, assigning its entries to their respective variable names.
+The prologue executes before everything else in the library.
+% When the closure is applied to the customized context, the library's return value is recovered in a side-effectful manner (as in the unmodified library system) by reading the library's \ttt{exports} variable---that is, the closure does not end with an explicit \ttt{return}.
+This technique leverages lexical scoping to inject a non-bypassable step in the variable name resolution process.
+Instead of resolving to variables in the context, resolution will first ``hit'' library-local values augmented with analysis monitors.
+
+Late-bound, library-local variables mentioned during context creation are the result of applying \fixme{\ttt{BT}} over variable names in the current scope;
+  these names are now bound to the correct library-local values.
+
+\heading{Library Interface Transformation}
+Returning the library's value to its consumer comprises interpreting the library, linking it with the custom context, and applying a final transformation to its return value.
+% TODO: (for intro!) ..to attenuate the privilege exercised by the library's consumer
+The goal of the final transformation is to track activity at the boundary;
+  for some analyses, \sys needs to additionally augment the values going through the library's interface---including continuation functions passed as arguments to the library's methods.
+
+The final transformation is applied for every new consumer of the library.
+This is because the system needs to distinguish between all different boundaries of the same library, explained in the next section~\sx{three}.
+  
+
+\subsection{Re-assembly}
 \label{three}
 
+To successfully reassemble the application, \sys needs to ensure that cross-references between libraries resolve correctly.
+The central mechanism for resolution is the library cache.
 
-% \section{Applications of Analysis}
-% \label{apps}
+To support multiple wrappers for a single cached library, the cache is extended by two levels reaching a total of three.
+The reason for adding the two levels is that libraries are usually governed by a single context analysis but multiple interface analyses, one for each of their consumers.
+A context transformation is applied at most a few times (usually only once), whereas a return-value transformation is applied on every \ttt{import}.
+Thus, the first level is indexed by library identifiers (as before); the second by context analysis; and the third by analysis of the \ttt{export}ed interfaces.
+% The first level is indexed by library identifiers as before, the second level is indexed by implicit segments, and the third level is indexed by explicit segments.
+For each library, the second level contains a collection of entries corresponding to mostly-transformed libraries, and the third level contains fully transformed libraries.
+Mostly-transformed libraries have gone through the entire transformation pipeline except for the last stage:
+  they have been interpreted and have had their context transformed and linked, but their return value has not been processed to track analysis of its interface.
+
+% A single augmented object (such as \ttt{Object}) may need to be shared among multiple files in a library, or even multiple libraries within a package directory.
+A special entry is reserved the original library value~\sx{two}, so that subsequent transformations can skip loading the library from disk.
+When a library is already loaded, \sys indexes by context analysis to retrieve the transformed library instance corresponding to this analysis.
+It then applies a transformation to the library's return value.
+New libraries are inserted into the second-level cache right after evaluation of the interpreted function.
 
 
-\section{Implementation: Lya}
+\section{Implementation of Dialysis for SSJ}
 \label{impl}
-
-We implemented \sys for version 8.9.4 of the Node.js runtime.
-Node.js is a runtime that bun
-
-in about 1.5K lines of JavaScript.
-We summarize where other implementations would diverge in table 1
-
-Individual analysis are implemented using a set of templates that provide initial constructs (see below).
-The difference between them, \ie the amount of code that is unique to each analysis, is about 20--30 lines.
-
-The following subsections outline how module systems handle modules at runtime, by exemplifying the internals of Node.js.
-It sketches the Node.js runtime~\sx{a}, the use of the module system~\sx{b}, and the internals of how module loading works~\sx{c}.
-
-In practice, the aforementioned dialysis stages can be implemented in two different ways.
-The first is as a modified version of the runtime, where 
-No-op analyses correspond to the default execution
-  either 
-It is introduced as a backward-compatible, drop-in replacement of the language's module system.
-It can be imported as an application-specific module (\eg \ttt{ignis} package) or can be bundled with a custom language runtime (\eg \sys-powered Lua) replacing its system-wide module system.
-
-We went with the latter approach, providing \sys as a library, to simplify its evaluation and its comparison with the vanilla runtime (both in terms of performance and correctness).
-However, we have found there are significant opportunities for performance optimization and gains in development complexity by choosing the former approach;
-  we expand on these at the end of this section~\sx{opportunities}.
-% get second argument, no need to pass arguments around, tricky to 
-% carefull hardcoding of paths, because \sys's code itself is split into modules
-% We found it useful to add a function for white- and black-listing, as a set of regular expressions.
-% Regular expressions where useful because internally libraries are identified via library identifiers that correspond to file-system paths.
-% Originally intended as an aid to \sys's development and debugging, it proved useful enough for writing analysis A1--4 that decided to expose it to users.
-% This is useful, for example, when...
-% The configuration object accepts \ttt{only} and \ttt{not} that contain sets of regular expressions;
-
-
-(1) why node.js
-(2) Create a table of compatibility and show individual aspects
-
-\heading{Module System}
-Node.js' module system is implemented entirely in JavaScript.
-It exposes \ttt{require}, a global-looking function for importing modules.
-\fixme{Figure} above demonstrates the use of \ttt{require}.
-
-% \begin{lstlisting}[language=js,mathescape,upquote=true]
-% // -------------- [./main.js] -------------
-% // importing point
-% let Point = require("./point.js");
-% Point.create(1, 1).print(); // => [1, 1]
-% 
-% // -------------- [./point.js] ------------
-% let Point = function Point (x, y) {
-%     this.x = x; this.y = y;
-% };
-% Point.prototype.print = function print () {
-%   console.log([this.x, this.y]);
-% };
-% module.exports = {
-%     create:  function create (x, y) {
-%         return new Point(x, y);
-%     }
-% };
-% \end{lstlisting}
-
-In the example above, the main module (\ttt{main.js}) imports the \ttt{point.js} module using the \ttt{require} statement (line 3)
-Functionality from the exporting module (\ttt{point.js}) that is expected to become available to the importing module (\ttt{main.js}) is assigned to a special \ttt{module.exports} object (line 13);
-  the rest is module-private functionality.
-Files and modules are in one-to-one correspondence (each file is treated as a separate module).
-Method \ttt{require} is synchronous (\ie blocking):
-  it will block execution until the module specified is loaded.
-% ---and can be used to load built-in modules such as \ttt{http} and \ttt{fs}.
-The module system is implemented in the \ttt{module} built-in module~\sx{c}, which locates, wraps, compiles, and executes the specified file.
-
-\sys hooks into \ttt{module} and alters the return value of the \ttt{require} call that imports \ttt{point.js} (line 3).
-
-\subsection{Implementation of the Module System}
-\label{c}
 
 \begin{figure*}[t]
 \centering
@@ -494,22 +610,42 @@ The module system is implemented in the \ttt{module} built-in module~\sx{c}, whi
 \caption{
   \textbf{Example transformations.}
    Applying runtime transformations (b) and context rebinding (c, d) on a simple \ttt{Math} object~\cf{impl}.
+\fixme{No UX!}
 }
 \label{fig:tx2}
 \vspace{-2mm}
 \end{figure*}
 
 
-At a very high level, loading a fresh module with \ttt{require("foo");} corresponds to the following five stages:
+This section details our implementation of \sys for server-side JavaScript (SSJ) in about 1.5K lines of code on top of version 8.9.4 of the Node.js runtime.
+We start with the internals of \sys's Node.js implementation~\sx{impl1}, and then describe the three analyses built on \sys~\sx{impl2}.
+We postpone discussion of how other environments diverge from JavaScript for later~\S\ref{reqs}.
 
-\begin{enumerate}
-% \def\labelenumi{\arabic{enumi}.}
-\item Resolution: identify the file to which the module specified corresponds, and locate it in the filesystem.
-\item Loading: depending on the file type, use the corresponding loader (\eg V8 compiler for \ttt{js}, \ttt{JSON.parse} for \ttt{json} \etc).
-\item Wrapping: wrap the module so that module-globals get encapsulated and Node.js globals (\eg \ttt{require}) get resolved.
-\item Evaluation: evaluate the wrapped module in the current context, so that global names and top-level objects get resolved correctly.
-\item Caching: add the module to a handful of module-related cache structures, for purposes of consistency and performance.
-\end{enumerate}
+In practice, the aforementioned dialysis stages can be implemented in two different ways.
+The first is to implement \sys as a modified version of the runtime (\eg \sys-powered JavaScript) in which several stages of its library-loading facility have been augmented in-place with the techniques described earlier.
+The second approach is to implement as a third-party library (\eg the \ttt{lya} package) available by the language's package manager.
+
+With both approaches, \sys feels to users as a backward-compatible, drop-in replacement of SSJ's module system---but the second approach has several benefits.
+It does not require \sys's users to add a second runtime whose sole purpose is to run analyses;
+  it removes \sys's creators and maintainers from the critical path of updates between the runtime developers and its users; 
+  and it simplifies \sys's evaluation and comparison with the vanilla runtime (both in terms of performance and correctness).
+% However, we have found there are significant opportunities for performance optimization and gains in development complexity by choosing the former approach;
+%   we expand on in the discussion section~\sx{reqs}.
+
+% It sketches the Node.js runtime~\sx{a}, the use of the module system~\sx{b}, and the internals of how module loading works~\sx{c}.
+
+\subsection{System Implementation}
+\label{impl1}
+
+
+Node.js' module system is implemented entirely in JavaScript.
+It exposes \ttt{require}, a global-looking function for importing modules.
+At a high level, loading a fresh module with \ttt{require("foo");} corresponds to the following five stages:
+(1) Resolution: identify the file to which the module specified corresponds, and locate it in the filesystem.
+(2) Loading: depending on the file type, use the corresponding loader (\eg V8 compiler for \ttt{js}, \ttt{JSON.parse} for \ttt{json} \etc).
+(3) Wrapping: wrap the module so that module-globals get encapsulated and Node.js globals (\eg \ttt{require}) get resolved.
+(4) Evaluation: evaluate the wrapped module in the current context, so that global names and top-level objects get resolved correctly.
+(5) Caching: add the module to a handful of module-related cache structures, for purposes of consistency and performance.
 
 % The resolution algorithm is somewhat convoluted, because it depends on several different facts (including the type of the file requested, whether it is a globally installed, whether it is a directory \etc).
 % It does not require any \sys support beyond copying the directory that contains the source code of the all the modules onto the remote host.
@@ -523,19 +659,16 @@ True globals remaining are
   (ii) Node.js-specific globals (\eg \ttt{console}, \ttt{process}, \ttt{timer}).
 These globals require further interposition.
 
-% \begin{lstlisting}[language=js,mathescape,upquote=true]
-% // Node.js will wrap a module with a function,
-% // so as to bring certain names into scope
-% // before compiling/evaluating code.
-% let wrapped = "function (" +
-%         "exports, require, module, " +
-%         "__filename, __dirname, CTX) {" +
-%     "let Math = CTX.Math" +
-%     "let console = CTX.console" +
-%     //...[more definitions]
-%     moduleSource +
-%   "});"
-% \end{lstlisting}
+% \begin{verbatim}
+% let lib = `
+%  function (exports, require, module,
+%            __filename, __dirname, CTX) {
+%    let Math = CTX.Math
+%    let console = CTX.console
+%    //...[more definitions]
+%    ${moduleSource}
+%  });`;
+% \end{verbatim}
 
 
 \sys hooks into the wrapper function (the last variable in the function definition, \ttt{CTX}).
@@ -544,43 +677,80 @@ For example, \ttt{console} in the context of the module will be an \sys-created 
 Evaluation of the module passes an additional value to this function, which is the modified context.
 As a result, any changes to the top-level objects and any global variables are accessible from the within the module.
 
-% \begin{lstlisting}[language=js,mathescape,upquote=true]
-% //Input: module ID e.g., absolute filepath
-% let load = function (ID) {
-%   if (cache[ID]) {
-%      return cache[ID];
-%   }
-%   let m = {
-%     exports: {}, id: ID, dir: path.resolve(ID)
-%   };
-%   let cm = v8.compile(wrapped);
-%   let ii = iris.getImplicit(ID);
-%   let c = iris.freshContext(ii);
-%   cm(m.exports, this.require, m, ID, m.dir, c);
-%   let ei = iris.getExplicit(ID);
-%   m.exports = iris.wrap(m.exports, [ei] );
-%   cache[ID] = m;
-%   return m.exports;
-% }
-% \end{lstlisting}
+% get second argument, no need to pass arguments around, tricky to 
+% carefull hardcoding of paths, because \sys's code itself is split into modules
+% We found it useful to add a function for white- and black-listing, as a set of regular expressions.
+% Regular expressions where useful because internally libraries are identified via library identifiers that correspond to file-system paths.
+% Originally intended as an aid to \sys's development and debugging, it proved useful enough for writing analysis A1--4 that decided to expose it to users.
+% This is useful, for example, when...
+% The configuration object accepts \ttt{only} and \ttt{not} that contain sets of regular expressions;
 
-The \ttt{load} method in the \ttt{Module} module combines evaluation (line 10) and caching (line 14) of the wrapped module.
-After evaluation, invoking the compiled function generates the value that is assigned to \ttt{module.exports} from within the module (line 12).
-\sys passes a freshly constructed context at that invocation, modified according to the implicit segment of the (PIC??) corresponding to the module being loaded.
-Before returning the value of \ttt{module.exports}, \sys transforms it according to the explicit segment of the (PIC??) corresponding to the module being loaded.
-Finally, the results of the entire process are placed into the module cache for later use.
-
-\subsection{Limitations}
-
-% FIXME: Talk about the inability to 
-A limitation of our implementation is that it cannot analyze the library importing \sys---usually, the top-level program entry-point equivalent to \ttt{main}.
-This is because \sys cannot transform the context of that file
-As a result, \sys as-is cannot be applied to, say, to analyze single-file programs---a common pattern in scripting languages often used for quick-and-dirty tasks.
-The simplest workaround here is to create an auxiliary file that imports \sys, and then import the single-file script (which, in most scripting languages would invoke it).
+%% TODO: implementation
+%% The program transformations described earlier~\sx{overview} are in \sys  abstracted by a set of parametrizable skeletons.
+%% These skeletons provide hooks for end-developers writing analyses.
+%% Specifically, they map types of values (\eg \ttt{Number}s, \ttt{Function}s) to generic hooks for each type. 
+%% These hooks are then extended or rewritten by developers to
 
 
+Fig.~\ref{fig:tx2}\emph{a--d} exemplifies our transformation techniques in the context of JavaScript.
+\sys traverses a \ttt{Math} object, replaces functions such as \ttt{div} with wrappers; it also creates a modified version of the surrounding context and binds it to the library.
+The precise wrappers depend on the intended analysis, reviewed next.
 
-\section{Evaluation and Experience}
+
+\subsection{Individual Analyses}
+\label{impl2}
+
+Individual analysis are implemented using a set of templates that provide initial constructs (see below).
+\sys offers a small utility library to reduce boilerplate code for pattern-matching on types.
+As a result, code that is specific to individual analyses averages about 20--30 lines.
+
+\heading{Security Analysis}
+To address the security concerns of third-party libraries, we develop a concrete \ttt{RWX} policy for analyzing accesses.
+The language of the analysis is given in the following grammar:
+
+\begin{alltt}
+  str:  <identifier in JS>
+  libs: [ str ]
+  path: str `.` path
+  mode: P{ R | W | X }
+  body: { [ path: mode ]: path \(\in\) mods}
+  analysis:  mods body
+\end{alltt}
+
+\heading{Performance Diagnosis}
+
+\begin{equation}
+\label{eq:2}
+R_{new} =
+\begin{cases}
+  R +1, & \varrho\times\sum_{i=1}^t{w_il_i} > \delta + \delta_0  \\
+  R -1,  & \varrho\times\sum_{i=1}^t{w_il_i}  < \delta + a * \delta_0
+\end{cases}
+\end{equation}
+
+Scale-in (\ie $-1$) might not seem as important, but constrained environments benefit from quick re-allocation.
+However, after scale-in, the system often ends up just scaling out the same module.
+To avoid such oscillation, a small reclamation delay $a$ increases the system's confidence that the workload has moved away from a specific pattern.
+
+% ATTRIBUTION
+Interestingly, profiling functions running at each boundary cannot ``see through'' libraries in order to attribute load among a library and its dependencies correctly.
+For example, an agent at the outermost boundary \ttt{A} of a dependency tree \ttt{A}$\rightarrow$\ttt{B}$\rightarrow$\ttt{C} does not know how much of the latency
+% \eat{ is \ttt{A}-internal and how much}
+comes from \ttt{B}. % or \ttt{B}'s dependency, \ttt{C}.
+
+
+\heading{Invariant Discovery}
+Describe specific type system
+
+% \subsection{Limitations}
+% 
+% % FIXME: Talk about the inability to 
+% A limitation of our implementation is that it cannot analyze the library importing \sys---usually, the top-level program entry-point equivalent to \ttt{main}.
+% This is because \sys cannot transform the context of that file
+% As a result, \sys as-is cannot be applied to, say, to analyze single-file programs---a common pattern in scripting languages often used for quick-and-dirty tasks.
+% The simplest workaround here is to create an auxiliary file that imports \sys, and then import the single-file script (which, in most scripting languages would invoke it).
+
+\section{Evaluation}
 \label{eval}
 
 \sys's  development achieves goals~\goal{1--3}~\sx{goals}, demonstrating that it is indeed feasible to construct a framework that operates at the level of modules, 
