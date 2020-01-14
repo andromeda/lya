@@ -84,7 +84,7 @@
 %for single author (just remove % characters)
 \author{
 {\rm Anonymous Author(s)}\\
-\normalsize{Submission \#225, 12 pages}\\
+\normalsize{Submission \#225, 11 + 2 pages}\\
 % \normalsize{Additional Anonymized Material: \href{https://git.io/JvfCf}{https://git.io/JvfCf}.}
 % {\rm Grigoris Ntousakis}\\
 % Technical University of Crete
@@ -219,8 +219,8 @@ Aside from the aforementioned sections (\S\ref{bg}--\ref{impl}), the paper discu
 \label{bg}
 
 A single application today often incorporates multiple libraries written and published by several different authors.
-To make the difficulties of analyzing such library-overreliant more concrete, we describe several example analysis that are often needed by the authors of third-party libraries.
-These examples illustrate key requirements for the design of a framework for analyzing applications at the boundaries of modules.
+To make the difficulties of analyzing such library-overreliant software more concrete, we describe three example analyses~\sx{examples}.
+These examples illustrate key requirements for the design of a framework for analyzing applications at the boundaries of modules~\sx{goals}.
 Before describing these examples, however, we offer a brief refresher on the %abstractions and corresponding
   internals of module systems~\sx{bg1}.
 
@@ -290,6 +290,7 @@ These features complicate library-level analysis, especially in interpreted prog
 %   module resolution algorithm
 
 \subsection{Motivating Examples}
+\label{examples}
 
 Having reviewed the building blocks and underlying techniques that power modularity, we now turn to examples of dynamic analysis that today are difficult or require specialized solutions:
   (i) an allow/deny security analysis,
@@ -376,6 +377,7 @@ The analysis would consult the (static) definition of a type \emph{system}, capt
 % \heading{Learning, Synthesis, and Regeneration}
 
 \subsection{Design Goals}
+\label{goals}
 
 We have briefly introduced three motivating analyses for extracting information about an application's dependencies.
 While the challenges behind these analyses share several characteristics, today they remain largely unaddressed by dynamic analyses frameworks due to a combination of factors:
@@ -1015,85 +1017,80 @@ Confirming that \sys performs correctly under these scenarios is one part of the
 \label{diss}
 
 
-Library dialysis, as implemented in \sys, depends on a few features available in the programming language.
-In this section we describe how to develop the same solution on other environments.
-In the second part of this section, we reflect on some of the current limitations of the system.
+Program dialysis depends on a few features provided by the programming language.
+In this section, we start by describing its requirements~\sx{reqs} and then reflect on some of its strengths and weaknesses~\sx{principles}.
 
-\subsection{Applying to Other Environments}
+\subsection{Applying \sys to Other Environments}
 \label{reqs}
 
-\begin{table*}[t]
-\center
-\footnotesize
-\setlength\tabcolsep{3pt}
-\caption{
-  \footnotesize{
-    \textbf{Language features used and their availability in other languages}.
-    Broadly, the requirements of module dialysis can be broken down into to five elementary requirements.
-  }
-}
-\begin{tabular*}{\textwidth}{l @{\extracolsep{\fill}} lll ll}
-\toprule
-             &  Instrument \ttiny{import}s  & Traverse objects      & Wrap values         & (Weak) Maps       & Shadow variables      \\
-\midrule
-Lua          &                              &                       &                     &                   &                       \\
-JavaScript   &                              &                       &                     &                   &                       \\
-Python       &                              &                       &                     &                   &                       \\
-Ruby         &                              &                       &                     &                   &                       \\
-Haskell      &                              &                       &                     &                   &                       \\
-OCaml        &                              &                       &                     &                   &                       \\
-Rust         &                              &                       &                     &                   &                       \\
-Java         &                              &                       &                     &                   &                       \\
-\bottomrule
-\end{tabular*}
-\label{tab:compat}
-\vspace{-5mm}
-\end{table*}
+% \begin{table*}[t]
+% \center
+% \footnotesize
+% \setlength\tabcolsep{3pt}
+% \caption{
+%   \footnotesize{
+%     \textbf{Language features used and their availability in other languages}.
+%     Broadly, the requirements of module dialysis can be broken down into to five elementary requirements.
+%   }
+% }
+% \begin{tabular*}{\textwidth}{l @{\extracolsep{\fill}} lll ll}
+% \toprule
+%              &  Instrument \ttiny{import}s  & Traverse objects      & Wrap values         & (Weak) Maps       & Shadow variables      \\
+% \midrule
+% Lua          &                              &                       &                     &                   &                       \\
+% JavaScript   &                              &                       &                     &                   &                       \\
+% Python       &                              &                       &                     &                   &                       \\
+% Ruby         &                              &                       &                     &                   &                       \\
+% Haskell      &                              &                       &                     &                   &                       \\
+% OCaml        &                              &                       &                     &                   &                       \\
+% Rust         &                              &                       &                     &                   &                       \\
+% Java         &                              &                       &                     &                   &                       \\
+% \bottomrule
+% \end{tabular*}
+% \label{tab:compat}
+% \vspace{-5mm}
+% \end{table*}
 
 The techniques presented in this paper are applicable to any programming language.
-We chose the JavaScript ecosystem to evaluate the feasibility of our approach, primarily because
-  (i) it boasts the largest collection of libraries (and number of problems)~\cite{modulecounts} and
-	(ii) we had prior experience by writing two systems that make extensive use of dynamic analysis---more sophisticated versions of analyses \fixme{XX} and \fixme{XX}.
-In this section, we discuss the requirements for building \sys over other runtime environments.
+We chose the JavaScript ecosystem % to evaluate the feasibility of our approach,
+primarily because
+  (i) it boasts the largest collection of libraries~\cite{modulecounts} and
+	(ii) we had prior experience developing more sophisticated version of the security and performance analyses.
+We now expand on the requirements for developing dialysis over other runtime environments.
 % FIXME: All these features have to have been discussed earlier
 
-By operating on library boundaries, program dialysis makes use of five key features available in a programming language~\tb{compat}.
-All major programming languages can support these five features in a variety of ways, as described below.
-
-First, \sys replaces the implementation of the import statement (\eg \ttt{require}).
+By operating on library boundaries, dialysis uses a few special language features, supported by all major programming languages.
+First, \sys needs to re-wire the \ttt{import} keyword:
 % This feature is important for compatibility reasons---otherwise developers would have to replace all import statements in their applications.
-If this statement is a function (\eg JavaScript, Scheme, Racket \etc) then replacement can be easily achieved by replacing its definition.
-If this statement is a special non-function keyword such as \ttt{import}, this can be achieved by a rewriting rule that replaces import with a special function;
+  if it is a function (\eg JavaScript, Scheme, Racket), rewiring amounts to an overwrite;
+  if it is a special non-functional keyword, re-wiring needs to be prefixed by a rewriting pass replacing \ttt{import} with a function (at module-loading).
 % This is simplified by the fact that the import syntax is trivial.
 
-\sys also needs the ability to interpose on values and transform their components.
-This is relatively easy in languages that provide meta-programming capabilities.
+It also needs the ability to interpose on values and transform their components.
+% This is relatively easy in languages that provide meta-programming capabilities.
 Dynamic programming languages offer runtime reflection and conveniently expose object accesses as (over-loadable) functions---\eg \ttt{Proxy} objects in JavaScript, metatables in Lua, metaclasses in Python, and direct-accessor meta-programming Ruby.
-Compiled languages such as Haskell, OCaml, and Rust would apply transformations with static metaprogramming facilities, traversing and transforming objects at compile time.
-Examples include templates and macro expansions such as Haskell's Template Haskell and Rust's macro system.
-And some languages, such as Haskell, Java, and Julia, provide both static and dynamic reflection capabilities, allowing considerable freedom in the choice of implementation.
+Compiled languages would apply transformations with static metaprogramming facilities, traversing and transforming objects at compile time.
+Examples include templates and macro expansions such as Haskell's Template and Rust's macro system.
+% Other languages, such as Java and Julia, provide both static and dynamic reflection capabilities. %, allowing considerable freedom in the choice of implementation.
 % Fifth, \sys makes extensive use of interposition which is also available in different programming languages.
 % Static programming languages provide different types of support for 
 
-\sys makes extensive use of weak maps to support to check for object equality.
-Examples of uses include checking for cycles during object traversal and checking whether an object has already been wrapped.
-Hash tables that are indexed by reference are supported in virtually all programming languages.
-An additional feature useful in garbage-collected languages would be for these (copies of) references to not affect the reclamation of original objects.
-Languages either support the ability to create such a weak reference from a normal reference (\eg Python's weak references), or provide structures that automatically hold weak versions of these references (\eg JavaScript's Weak Map).
+\sys makes extensive use of hash-maps---to check for object equality, for cycles during traversal, and for prior wrapping.
+Hash-maps are supported by every programming language; many support storing weak references, which avoid affecting object reclamation in garbage-collected environments, and can be created either explicitly (\eg Python) or implicitly by using a ``weak'' structure (\eg JavaScript).
+% An additional feature useful in garbage-collected languages would be for these (copies of) references to not affect the reclamation of original objects.
+% Languages either support the ability to create such a weak reference from a normal reference (\eg Python's weak references), or provide structures that automatically hold weak versions of these references (\eg JavaScript's Weak Map).
 
-Finally, \sys makes extensive use of variable shadowing to hide access to the original, unmodified versions of values.
-This is a feature that is universally available in programming languages;\footnote{
+Finally, \sys makes use of variable shadowing to hide the original, unmodified versions of values---a universal feature.\footnote{
   A notable exception is the language CoffeeScript. %, which can mimic the same feature using function scope.
 }
-Deferences in scoping rules---\ie what the shadowed variable ends up referring to upon execution---do not affect the usefulness of this feature, although we have found lexical scoping easier than dynamic scoping.
+% Differences in scoping rules---\ie what the shadowed variable ends up referring to upon execution---do not affect the usefulness of this feature, although we have found lexical scoping easier than dynamic scoping.
 
-To conclude, all major languages provide enough facilities to support the dialysis---albeit with a different level of convenience.
+To conclude, all major languages provide facilities to support dialysis---albeit with a different level of convenience.
 Dynamic languages have features---\eg name (re-)binding, value introspection, dynamic code evaluation, and access interposition---that enable runtime transformations.
 Runtime transformations conveniently unify module identification with interposition:
   a single function or function-like operator locates a module, interprets it, and applies transformations before exposing its interface in the caller context.
-Compiled languages such as Haskell, OCaml, and Rust apply transformations using compile-time metaprogramming facilities.
-Compile time transformations alleviate much of the runtime overhead of transformations, improving program startup times;
-  and type checking could further aid developers by issuing warnings of incompatible privilege settings.
+Compiled languages have other benefits, namely that applying transformations statically ameliorates their runtime overhead.
+% and type checking could further aid developers by issuing warnings of incompatible privilege settings.
 
 
 \subsection{When to Use Dialysis}
