@@ -1,0 +1,12 @@
+{
+  "main": {
+    "require('./sunspider/math-partial-sums.js')": 1
+  },
+  "math-partial-sums.js": {
+    "Object": 50,
+    "undefined": 12697600,
+    "Math.sin": 3174400,
+    "Math.cos": 3174400,
+    "Math.pow": 6348800
+  }
+}
