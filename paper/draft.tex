@@ -189,8 +189,8 @@ To demonstrate its effectiveness, we evaluate \sys on the JavaScript ecosystem (
 We develop a diverse set of analyses that target practical information about a program:
   an allow/deny security analysis,
   a profiling analysis showing bottlenecked modules,
-  a synthesis-oriented analysis on input-output data, and
-  an analysis enforcing a static union-based type system at runtime.
+% a synthesis-oriented analysis on input-output data,
+  and an analysis extracting union-based type invariants.
 This set of analyses drives the design requirements for \sys, and highlights dialysis as a middle ground between coarse- and fine-grained analysis.
 We evaluate \sys at three different levels:
   (i) synthetic micro-benchmarks that test certain aspects and confirm the correctness of our analyses in a controlled environment;
@@ -198,9 +198,9 @@ We evaluate \sys at three different levels:
   (iii) end-to-end full-application macro-benchmarks that show behavior of \sys on realistic workloads. 
 \S\ref{bg}--\ref{eval} present our key contributions:
 \begin{itemize}
-\item \S\ref{bg} characterizes the shared needs of four case-study multi-module analyses whose needs remain mostly unmet by general-purpose analysis frameworks.
-\item \S\ref{design} presents the design of the bolt-on module-oriented dynamic analysis~\sx{design}, which meets the requirements of the four case-study analyses.
-\item \S\ref{impl} discusses our implementation, \sys, as a pluggable library for the JavaScript ecosystem, as well as the implementation of the four analyses.
+\item \S\ref{bg} characterizes the shared needs of three case-study multi-module analyses whose needs remain mostly unmet by general-purpose analysis frameworks.
+\item \S\ref{design} presents the design of the bolt-on module-oriented dynamic analysis~\sx{design}, which meets the requirements of the three case-study analyses.
+\item \S\ref{impl} discusses our implementation, \sys, as a pluggable library for the JavaScript ecosystem, as well as the implementation of the three analyses.
 \item \S\ref{eval} evaluates \sys showing it expresses insightful analyses succinctly, adds minimal overheads over the baseline runtime, and scales to hundreds of modules.
 \end{itemize}
 
@@ -223,41 +223,56 @@ Before describing these examples, however, we offer a brief refresher on the abs
 \subsection{Background on Module Systems}
 \label{bg1}
 
-A library, package, or module---we use these terms interchangeably---is a development-time construct for encapsulating reusable functionality.
-This functionality falls into two categories:
-  it either (i) comes bundled with the language, possibly wrapping operating-system interfaces such as the file-system in a way that is system-agnostic and conforms to the language's conventions,
-  or (ii) is provided by other developers sharing code others might find useful.
-Fig.~\ref{mod} depicts the basic structure of a modern program, in which the \ttt{math} library provides a set of four elementary operations.
+\begin{figure}[t]
+\raggedleft 
+\includegraphics[width=0.45\textwidth]{./figs/lya_ex1.pdf}
+\caption{
+  \textbf{Example of a library import.}
+  \textmd{
+    The program on the left imports the \ttt{simple-math} library, shown right, which imports a \ttt{log} library and exports a simple \ttt{Math} object.
+    Several names resolve to functionality provided by the programming language:
+      names \ttt{import} and \ttt{export} resolve to library-local values; \ttt{print} resolves to a global value.
+  }
+}
+\label{fig:ex1}
+\end{figure}
 
-From a developer's perspective, \ttt{import}ing a library makes its functionality usable by the calling code. 
-What this means is that some of the library's functionality is bound to a variable name that becomes available in the scope of the caller.
-This is provided through a form of \ttt{export}ing, where the library developer expresses which values should become available to the importing code.
-The definition of a value depends on the semantics of the language, but for now we can assume it's either a primitive value, a list of values, a function, or an object mapping string keys to values.
-Internally, the library might import other libraries, cause side-effects to the file-system and the network, or even be implemented in multiple languages.
+
+A library, package, or module---we use these terms interchangeably---is a development-time construct encapsulating reusable functionality.
+This functionality falls into two categories:
+  it either (i) comes bundled with the language, possibly wrapping operating-system interfaces, such as the file-system, in a way that is system-agnostic and conforms to the language's conventions,
+  or (ii) provided by other developers sharing code others might find useful.
+Fig.~\ref{fig:ex1} shows a \ttt{simple-math} library (right) imported by a program (left).
+
+From a developer's perspective, \ttt{import}ing a library makes its functionality available to the calling code by means of binding its functionality to a name in the caller's scope.
+% What this means is that some of the library's functionality is bound to a variable name that becomes available in the scope of the caller.
+This is achieved by some form of \ttt{export}ing, where the library developer expresses which values should become available to the \ttt{import}ing code.
+The definition of a value depends on the semantics of the language; for now we can assume it's either a primitive value, a list of values, a function, or an object mapping string keys to values.
+Internally, the library may \ttt{import} other libraries, cause side-effects to the file-system or the network, or even be implemented in multiple languages.
 % , as shown on line \fixme{XX},
 % closely coupled with the runtime
 % and in some cases features its own mini-language, as is the case in Scheme and Standard ML.
 
-From the language's perspective, the loading process is achieved in several steps. 
-In compiled programming languages libraries might be used to enable separate compilation, in which case an additional linking phase connects the resulting object files.
-Interpreted languages involve a somewhat convoluted process that combines loading, interpretation, and linking.
-This process starts by locating the library in the file system or across the network,\footnote{
-  Examples of run-time environments featuring network loading include V8 and deno, for executing JavaScript and TypeScript respectively.
-}
+From the programming language's perspective, the process of \ttt{import}ing a library is achieved in several steps. 
+Compiled languages support separate compilation, where source files are compiled individually, followed by a runtime-linking phase that loads and links the resulting object files.
+Interpreted languages involve a somewhat convoluted process that combines runtime loading, interpretation, and linking.
+This process starts by locating the library in the file system % or across the network,\footnote{
+%   Examples of run-time environments featuring network loading include V8 and deno, for executing JavaScript and TypeScript respectively.
+% }
 by resolving relative or absolute identifiers.
 % The library is assigned a unique identifier.
 The content of the library is then read and wrapped in a way that resolves library-local names such as \ttt{\_\_name\_\_} in Python and \ttt{\_\_filename} in JavaScript to meaningful values.
-The wrapper is then interpreted and evaluated using the language's interpreter, which might result to side-effects---for example, a \ttt{process.exit} in the library's top-level scope will exit the entire program.
-Finally, the value returned bound to the \ttt{export}ed interface or returned from this interpretation (depending on the language) will be made available to the scope of code calling \ttt{import}.
+The wrapper is then interpreted and evaluated using the language's interpreter, which might result to side-effects---for example, a \ttt{process.exit()} in the library's top-level scope will exit the entire program.
+Finally, the value bound to the \ttt{export}ed interface or returned from this interpretation (depending on the language) is made available to the scope of the  \ttt{import}ing code.
 
 There is significant variation, but a few features are common across many implementations.
-A library cache maintains a mapping from library identifiers---often absolute paths---to returned \ttt{export} values.
-The library cache serves a dual purpose:
-  by avoiding to locate already loaded libraries, it improves performance and maintains the consistency of stateful libraries.
-Recursive imports are handled in depth-first way, and if cyclical dependencies are possible they are resolved by pointing to the cache.
+A library cache maintains a mapping from library identifiers, often absolute paths, to returned \ttt{export} values.
+The cache serves a dual purpose:
+  by avoiding locating already loaded libraries, it improves performance and ensures the consistency of any library-internal state.
+Recursive imports are handled in a depth-first way, and when cyclical dependencies are possible they are resolved by pointing to the cache.
 An increasingly common feature is to allow different versions of the same library to co-exist in a program, in order to avoid a choice between mutually exclusive options---a paradoxical situation known as ``dependency hell''.
-As a result, a single \ttt{import} \ttt{lib} does not necessarily resolve to the same (version of the) library \ttt{lib} every time.
-The dual of this situation is also possible, in which two different library names may resolve to the same identifier (in which case the second will be redirected to the cache).
+As a result, a single \ttt{import} \ttt{l} does not necessarily resolve to the same (version of the) library \ttt{l} every time.
+The dual of this is also possible: two different library names may resolve to the same identifier (in which case the second will be redirected to the cache).
 These features complicate library-level analysis, especially in interpreted programming languages.
 
 
@@ -270,31 +285,35 @@ These features complicate library-level analysis, especially in interpreted prog
 
 Having reviewed the building blocks and underlying techniques that power modularity, we now turn to examples of dynamic analysis that today are difficult or require specialized solutions:
   (i) an allow/deny security analysis,
-  (ii) a profiling analysis showing hot libraries,
-  (iii) a synthesis-oriented analysis on input-output data, and
-  (iv) an analysis enforcing a static union-based type system at runtime.
+  (ii) a performance-profiling analysis showing bottlenecked libraries, and
+% (iii) a synthesis-oriented analysis on input-output data, and
+  (iii) an analysis extracting runtime type invariants.
 These examples illuminate key design requirements for \sys's implementation of module-level dynamic analysis.
 
 \heading{Security Analysis}
 The pervasive reliance on third-party libraries has led to an explosion of supply-chain attacks~\cite{long2015owasp, maass2016theory, snyk, lauinger2017thou}.
-Both bugs and malicious code in imported libraries create attack vectors, exploitable long after libraries reach their end-users.
-As library boundaries do not exist at runtime, libraries end up executing with no meaningful isolation or privilege separation guarantees between each other and the trusted portions of a program.
+Both bugs and malicious code in libraries create attack vectors, exploitable long after libraries reach their end-users.
+As library boundaries disappear at runtime, libraries end up executing with no meaningful isolation or privilege separation guarantees between each other and the trusted portions of a program.
 Popular libraries, depended upon by tens of thousands of other libraries or applications, allow vulnerabilities deep in the dependency graph to affect a great number of applications~\cite{leftpad, npmstudy:19}.
 Discovered vulnerabilities are becoming harder to eradicate, as updates are fetched automatically~\cite{npmFailure} and module unpublishing is becoming a multi-step process to avoid breaking applications~\cite{npmUnpublish}.
 Worst of all, leaked publishing tokens allow attackers to update packages with code that will eventually reach end-users via package updates~\cite{eslint1}.
 
-As a concrete example, consider the recent event-stream incident~\cite{es1, es2}, in which a maintainer of a highly popular library inserted code for stealing Bitcoin wallet credentials from a program using that library.
-As event-stream activated its malicious behavior only on production---\ie not during testing or development---it is critical to be able to toggle the behavior of the system
-At the same time, it is not critical to analyze behavior \emph{within} the event-stream library itself:
-  if any data exfiltration is happening, this will require calling out of the library and into the network---in event-stream's case, using the \ttt{fs} library to modify a different library and then use \ttt{http} from the second library.
-Both \ttt{fs} and \ttt{http} are libraries part of the standard library and built into the runtime environment.
+As a concrete example, consider the recent \ttt{event-stream} incident~\cite{es1, es2}, in which a maintainer of a highly popular library inserted code stealing Bitcoin wallet credentials from programs using that library.
+Heavy-weight, offline dynamic analysis~\cite{jalangi} would not have helped, as \ttt{event-stream} activated only on production (rather than testing or development).
+Coarse-grained analysis at program boundaries, say via containment or system-call interposition~\cite{systrace:03}, would have not helped either because host programs already used the network and disk.
+Finally, static analysis would have been of little use, as \ttt{event-stream} encrypted its source code.
+
+Having the ability to toggle a library-level ``allow-deny'' security analysis on/off at runtime would have revealed the (unusual) resources touched by \ttt{event-stream}.
+Analyzing the behavior \emph{within} the library itself is not critical:
+  if any data exfiltration is happening, it will require calling out of the library and into the network---in \ttt{event-stream}'s case, using the \ttt{fs} library to modify a different library and then use \ttt{http} from the second library.
+Both \ttt{fs} and \ttt{http} are part of the standard library, built into the runtime environment.
+Examples of interfaces outside the \ttt{http} and \ttt{fs} libraries include the ability to use global variables, import other libraries, and access the cache of the loaded modules---all of which are unfortunately available to any third-party that is part of an application.
 % The key issue underlying the \ttt{event-stream} attack is that any third-party fragment of an application has unrestricted access to the functionality available to the rest of application.
 
-To address such problems, several recent proposals suggest analyzing third-party modules dynamically to identify malicious behavior~\cite{}.
-% FIXME more about the policy, tracking arguments too
-A simple ``allow-deny'' security analysis indicating the resources touched by that library would have revealed access to the and access .
-Examples of interfaces outside the \ttt{http} and \ttt{fs} libraries include the ability to use global variables, import other libraries, and access the cache of the loaded modules---all of which are easily available to any third-party that is part of an application.
-
+ %% To address such problems, several recent proposals suggest analyzing third-party modules dynamically to identify malicious behavior~\cite{}.
+ %% % FIXME more about the policy, tracking arguments too
+ %%  indicating the resources touched by that library 
+ %% it seems critical to be able to toggle analysis on/off on production.
 % \emph{
 % This case highlights the need to \fixme{analyze} all the observable behavior \emph{around} a library, without necessarily caring about fine-grained library-internal analysis.
 % }
@@ -302,46 +321,43 @@ Examples of interfaces outside the \ttt{http} and \ttt{fs} libraries include the
 \heading{Performance Diagnosis}
 Diagnosing performance problems is a difficult task, exacerbated by the heavy use of third-party libraries.
 Libraries are written by authors with different education backgrounds, quality standards, and, most importantly, needs:
-  it's not unusual for a weekend project solving a local need to end up as a critical dependency among several open source projects~\cite{}.
-Maintenance and rewriting can cause performance regressions between two versions of a library.
+  it's not unusual for a weekend project solving a local need to end up as a critical dependency among several open source projects~\cite{cheapcomplexity}.
+Maintenance and rewriting can also cause performance regressions between two versions of a library;
 % FIXME: Garbage collection
-Worse even, the fact that one library changes a dependency to a different implementation can cause severe performance pathologies to upstream projects---that is, while the interface remains the same due to an intermediate layer of abstraction, performance characteristics change dramatically~\cite{evhaus}.
+  worse even, the fact that a library changes one of its dependencies can cause severe performance pathologies to upstream projects---that is, while an interface remains the same due to an intermediate layer of abstraction, performance characteristics can change dramatically~\cite{jest}.
 
-As a concrete example, consider the \ttt{minimatch} library, a regular-expression-based file-matching utility susceptible to long delays because of pathological regular expressions that involve backtracking.
-Pathological inputs reaching \ttt{minimatch}, even if benign, can cause significant performance degradation.
-The source of this degradation can lie deep in the dependency chain of the application~\cite{crosby2003denial}, but also affect logically unrelated parts competing for the same resource (\ie CPU).
+As a concrete example, consider the \ttt{minimatch} library, a regular-expression-based file-matching utility susceptible to long delays due to regular expressions that involve backtracking~\cite{minimatch}.
+Pathological inputs reaching \ttt{minimatch}, even if benign, can cause significant performance degradation~\cite{redos} deep in the dependency chain that can also affect other parts competing for the same resource~\cite{evp}.
+Developers use various techniques to understand such problems---for example, they collect and replay traces against off-line versions of the system, or use statistical profiling to identify hot code-paths.
+These techniques, however, require significant \emph{manual} effort:
+  capturing traces, setting up testbeds, replaying traces, analyzing statistics, and debugging performance are all tedious and time-consuming tasks, compounded by the difficulties of mapping the results to the right third-party libraries.
 
-The research community has proposed several possible mitigations~\cite{}, all critically depending on detecting and attributing the slowdown to the bottlenecked component.
-An analysis 
-% A key observation is the semantic isomorphism between calling a function and passing a message
-% This allows viewing a series of calls as a stream of messages.
-% Module boundaries can be viewed as (virtual) queues of messages that await processing.
-treating library invocation boundaries as message queues~\cite{scheme:98, duality:79}.
-Overwhelming a module causes its ingress queue to grow.
-At some point, the waiting time of newly-arrived messages becomes longer than sending messages to a library replica.
-Profiling is accomplished by wrapping module interfaces with logic that generates a model of the current workload.
-Each module boundary collects its own statistics based on a combination of recipes and instructions from the coordinator.
-Profile generation can operate at a high resolution in time and space:
-  (i) at every function call entering a module, and (ii) on thousands of modules across an application.
+Having the ability to quickly detect a slowdown and attribute it to a bottlenecked component is key, by toggling on/off a profiling analysis that operates at library boundaries.
+The analysis would wrap library interfaces with logic that generates a model of the current workload.
+Profiling can operate at a high resolution in time and space:
+  (i) at every function call entering a library, and (ii) on hundreds of libraries across an application.
+but does not need to track detailed operations such as direct variable accesses.
+% An analysis could treat library invocation boundaries as message queues~\cite{scheme:98, duality:79} growing when a library gets overwhelmed.
+% At some point, the waiting time of newly-arrived messages becomes longer than sending messages to a library replica.
+Each library wrapper would collect profiling statistics at its own boundary, updating a global structure ordering the libraries' overall needs.
 
 
 % \emph{
 % This case highlights the need to \fixme{analyze} all the observable behavior \emph{around} a library, without necessarily caring about fine-grained library-internal analysis.
 % }
 
-\heading{Invariant Discovery}
-Extracting type invariants is helpful in a variety of ways---type safety is an important property and types are lightweight annotations that can be quickly and efficiently checked.
-Dynamic analysis can be used to generate type assertions or invariants
-For example
-e.
-For example, types identify program invariants to be preserved during code modifications, to generate marshalling and marshalling wrappers, or even to guide library synthesis and regeneration.
+\heading{Type Invariant Discovery}
+Extracting typing information is helpful in a variety of ways, as type safety is an important property helpful in variety of scenarios. 
+%and types are lightweight annotations that can be quickly and efficiently checked.
+For example, types can be used to (i) identify program invariants to be preserved during code modifications, (ii) generate (machine-checkable) program documentation, or (ii) guide program synthesis and regeneration~\cite{daikon}.
 This is especially problematic in dynamic programming languages:
-  in the absence of type signatures, there is not much one can say about a \ttt{http.request} object.
+  in the absence of static type signatures, there is not much one can say about a object \ttt{o} without executing it and introspecting its properties.
 
-To make this concrete, consider the case of the \ttt{gRPC} library for serializing and de-serializing objects.
-Given a ---say, a simple bignum library or a crypto---a developer has to first run the library manually, take note of the result, and then write a protocol buffer specification file declaring the type; %, common in distributed systems
+As a case in point, consider the \ttt{gRPC} library for serializing and de-serializing objects~\cite{grpc}.
+Given a value returned from a library call---say, a bignum or crypto library---a developer has to first run the library manually, take note of the result, and then write a protocol buffer specification file declaring the type; %, common in distributed systems
 if the type changes, because of a library version change or because of changes in the .
 
+Dynamic analysis can be used to generate type assertions or invariants.
 The static type system is defined as a variant of a simply-typed lambda calculus augmented with union types.
 A simple approach would be to define a very simple type system that captures the type of a value by observing the execution of the program---after all, the types are dynamically checked!
 The analysis could also capture union types, for cases where it observes that a variable is at times witnessed to hold values of different types---although a single program tends to make calls of the same type signature across its entire lifetime~\cite{daikon}.
@@ -355,7 +371,7 @@ The analysis could also do some type ``unpacking'' to deconstruct a type to its 
 
 \subsection{Design Goals}
 
-We have briefly introduced four motivating analyses for extracting information about an application's dependencies.
+We have briefly introduced three motivating analyses for extracting information about an application's dependencies.
 While the challenges behind these analyses share several characteristics, today they remain largely unaddressed by dynamic analyses frameworks due to a combination of factors:
   these frameworks either require highly specialized solutions often outside the core language,
   do not leverage or offer semantic information at the level of module boundaries, or
@@ -605,14 +621,14 @@ New libraries are inserted into the second-level cache right after evaluation of
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=0.99\textwidth]{./figs/lya_ex.pdf}
+\includegraphics[width=0.99\textwidth]{./figs/lya_ex2.pdf}
 \vspace{-2mm}
 \caption{
   \textbf{Example transformations.}
    Applying runtime transformations (b) and context rebinding (c, d) on a simple \ttt{Math} object~\cf{impl}.
 \fixme{No UX!}
 }
-\label{fig:tx2}
+\label{fig:ex2}
 \vspace{-2mm}
 \end{figure*}
 
@@ -692,7 +708,7 @@ As a result, any changes to the top-level objects and any global variables are a
 %% These hooks are then extended or rewritten by developers to
 
 
-Fig.~\ref{fig:tx2}\emph{a--d} exemplifies our transformation techniques in the context of JavaScript.
+Fig.~\ref{fig:ex2}\emph{a--d} exemplifies our transformation techniques in the context of JavaScript.
 \sys traverses a \ttt{Math} object, replaces functions such as \ttt{div} with wrappers; it also creates a modified version of the surrounding context and binds it to the library.
 The precise wrappers depend on the intended analysis, reviewed next.
 
@@ -795,7 +811,7 @@ Both of these goals would have been difficult to achieve outside a synthetic env
 \caption{
   \footnotesize{
     \textbf{Synthetic Micro-benchmarks}.
-		Applying the four analyses on a series of synthetic micro-benchmarks, created to stress different features.
+		Applying the three analyses on a series of synthetic micro-benchmarks, created to stress different features.
   }
 }
 \begin{tabular*}{\columnwidth}{l @{\extracolsep{\fill}} ll lll}
@@ -820,7 +836,7 @@ something5    &           &  24214  &   24721  &   24574  &   24502   \\
 \caption{
   \footnotesize{
     \textbf{Applying \sys to single-library programs}.
-		\fixme{Execution time of four test suites against }
+		\fixme{Execution time of eight test suites against }
   }
 }
 \begin{tabular*}{\columnwidth}{l @{\extracolsep{\fill}} ll lll}
@@ -847,7 +863,7 @@ mkdirp~\cite{}      & 116.37 & 1959.52 & 1392.64 & 1252 & 0.00    \\
 \end{table}
 
 
-Table~\ref{} depicts the results of the four analysis applied to these benchmarks.
+Table~\ref{} depicts the results of the three analysis applied to these benchmarks.
 We decided to report all combinations of analyses and benchmarks, but in practice not all are useful---\eg some modules do not feature interesting access or performance patterns.
 Currently, these benchmarks return the results we expect, but they did help with the identification of problems such as 
 These be
@@ -1042,7 +1058,7 @@ An important feature of the wrapping techniques presented in this paper is that 
 Unfortunately, this is not true in C where a library can forge a pointer and access arbitrary locations in its the program's address space.
 A related problem is the inability to traverse and wrap objects, due to lack of bounds.
 It is unclear how to wrap values without any kind of size information.\footnote{
-  Recent advances show promise: C-Strider~\cite{saur2016cstrider} and ptrSplit~\cite{ptrsplit:17} provide type-aware heap traversal for C programs.
+  Recent efforts such as C-Strider~\cite{saur2016cstrider} and ptrSplit~\cite{ptrsplit:17} show promise.
 }
 % Finally, C is missing direct direct equivalents to \sys's requirements~\sx{reqs}
 
