@@ -53,6 +53,12 @@
 \newcommand{\Ass}{Reassembly\xspace}    % 
 \newcommand{\dia}{\fra, \ana, and \ass}
 
+\newcommand{\R}{\ttt{R}\xspace}
+\newcommand{\W}{\ttt{W}\xspace}
+\newcommand{\X}{\ttt{X}\xspace}
+\newcommand{\E}{\ttt{X}\xspace}
+\newcommand{\rwx}{\ttt{RWX}\xspace}
+
 % FIXME:
 \newcommand{\pc}{PIC\xspace}
 \newcommand{\pcs}{\pc{}s\xspace}
@@ -362,9 +368,6 @@ This process has to be repeated with every change, often due to library updates 
 Dynamic analysis can be used to discover such type assertions or invariants.
 The analysis would consult the (static) definition of a type \emph{system}, capturing the type of values at the library boundaries by observing the execution of the program.
 %% TODO: such as the simply-typed lambda calculus augmented with objects and union types.
-Additionally, it would need to support expressions of type unions, for when it witnesses variables holding values of different types, and the decomposing of complex types to their elementary building blocks.
-The former would be captured by sum types---although, in practice, a single program tends to make calls of the same type signature across its entire lifetime~\cite{daikon}.
-For the latter, the analysis would perform ``unpacking'' to deconstruct a type to its structural primitives---for example, noting that an object of type \ttt{user} is comprised of two \ttt{string}s (first and last name) and a \ttt{number} (age).
 
 % would need to be able 
 % to capture structural subtitling---that is the piecewise 
@@ -648,27 +651,27 @@ It then applies a transformation to the library's return value, and inserts the 
 \caption{
   \textbf{Example transformations.}
    Applying runtime transformations (b) and context rebinding (c, d) on a simple \ttt{Math} object~\cf{impl}.
-\fixme{No UX!}
 }
 \label{fig:ex2}
-\vspace{-2mm}
+\vspace{-4mm}
 \end{figure*}
 
+% Fixme switch from libraries to modules?
 
 This section details our implementation of \sys for server-side JavaScript (SSJ) in about 1.5K lines of code on top Node.js v8.9.4.
 We start with the internals of \sys's Node.js implementation~\sx{impl1}, and then describe the three analyses developed with \sys~\sx{impl2}.
 We postpone discussion of how other environments diverge from JavaScript for later~\sx{reqs}.
 
-In practice, the aforementioned dialysis stages can be implemented in two different ways.
-The first is to implement \sys as a modified version of the runtime (\eg \sys-powered JavaScript) in which several stages of its library-loading facility have been augmented in-place with the techniques described earlier.
-The second approach is to implement as a third-party library (\eg the \ttt{lya} package) available by the language's package manager.
+The aforementioned dialysis design can be implemented in either of two ways.
+The first is to implement \sys as a modified version of the runtime (\eg \sys-powered JavaScript) in which several stages of its library-loading facility have been augmented in-place. % with the techniques described earlier.
+The second approach is to implement \sys as a third-party library (\eg the \ttt{lya} package) available by the language's package manager.
 
-With both approaches, \sys feels to users as a backward-compatible, drop-in replacement of SSJ's module system---but the second approach has several benefits.
-It does not require \sys's users to add a second runtime whose sole purpose is to run analyses;
-  it removes \sys's creators and maintainers from the critical path of updates between the runtime developers and its users; 
-  and it simplifies \sys's evaluation and comparison with the vanilla runtime (both in terms of performance and correctness).
-% However, we have found there are significant opportunities for performance optimization and gains in development complexity by choosing the former approach;
-%   we expand on in the discussion section~\sx{reqs}.
+With both approaches, \sys feels to users as a backward-compatible, drop-in replacement of Node's module system;
+  we went with the second approach, as avoiding tight coupling has several benefits:
+  it does not require \sys's users to have a second Node copy only for running analyses;
+  it removes \sys's developers from the critical path of updates between the Node developers and its users; 
+  and it simplifies \sys's comparison with vanilla Node (both in terms of performance and correctness).
+The primary drawback was missing a few  opportunities for runtime-performance and development-effort.
 
 % It sketches the Node.js runtime~\sx{a}, the use of the module system~\sx{b}, and the internals of how module loading works~\sx{c}.
 
@@ -676,26 +679,37 @@ It does not require \sys's users to add a second runtime whose sole purpose is t
 \label{impl1}
 
 
-Node.js' module system is implemented entirely in JavaScript.
-It exposes \ttt{require}, a global-looking function for importing modules.
-At a high level, loading a fresh module with \ttt{require("foo");} corresponds to the following five stages:
-(1) Resolution: identify the file to which the module specified corresponds, and locate it in the filesystem.
-(2) Loading: depending on the file type, use the corresponding loader (\eg V8 compiler for \ttt{js}, \ttt{JSON.parse} for \ttt{json} \etc).
-(3) Wrapping: wrap the module so that module-globals get encapsulated and Node.js globals (\eg \ttt{require}) get resolved.
-(4) Evaluation: evaluate the wrapped module in the current context, so that global names and top-level objects get resolved correctly.
-(5) Caching: add the module to a handful of module-related cache structures, for purposes of consistency and performance.
+Node's module system is implemented entirely in JavaScript, exposing a library-local \ttt{require} function for importing modules.
+Loading a fresh module with \ttt{require("foo");} corresponds to the following five stages, all of which are augmented by \sys:
+(R) Resolution: identify the file to which the module specified corresponds, locate it in the file-system, and assign its absolute path as a module identifier.
+(L) Loading: depending on the file type, identify the corresponding loader---\eg V8 compiler for \ttt{js}, \ttt{JSON.parse} for \ttt{json} \etc
+% Identifiers are absolute paths.
+(W) Wrapping: wrap the module so local names do not escape the module's scope and Node's module-local names get resolved.
+(E) Evaluation: evaluate the wrapped module in the current context, so that global names and top-level objects get resolved correctly.
+(C) Caching: add the module to a handful of module-related caches, for purposes of consistency and performance.
 
 % The resolution algorithm is somewhat convoluted, because it depends on several different facts (including the type of the file requested, whether it is a globally installed, whether it is a directory \etc).
 % It does not require any \sys support beyond copying the directory that contains the source code of the all the modules onto the remote host.
 \sys interposes on all of these steps to facilitate transformations.
-Wrapping (3) and evaluation (4) are particularly interesting, because they allow \sys to interpose at the module boundary during runtime.
-Before a module's code is evaluated, the Node.js module loader wraps the module so that
-  (i) it keeps top-level variables (defined with \ttt{var}, \ttt{const} or \ttt{let}) scoped to the module rather than the global object; and
-  (ii) it provides some global-looking variables that are actually specific to the module, such as the \ttt{module} and \ttt{exports} objects that the implementor can use to export values from the module and convenience variables---such as \ttt{\_\_filename} and \ttt{\_\_dirname}  containing the module's absolute filename and directory path, respectively.
-True globals remaining are
-  (i) the global objects as defined by the EcmaScript standard (\eg \ttt{Object}, \ttt{Function}, \ttt{Math}); and
-  (ii) Node.js-specific globals (\eg \ttt{console}, \ttt{process}, \ttt{timer}).
-These globals require further interposition.
+Interposing on resolution (R) makes the module identifier available to \sys without affecting the (incredibly convoluted!) module resolution algorithm.
+If the module's type is one \sys can analyze, it fetches the corresponding analysis during loading (L).
+Wrapping (W) and evaluation (E) are where \sys transforms the module boundary.
+\sys replaces Node's wrapper function in order to add a last variable in the function definition, \ttt{CTX}.
+\sys comes with a hard-coded list of names corresponding to the specific version of EcmaScript and Node.js:
+  (i) identifying names coming from EcmaScript was relatively easy, as the standard makes them explicit;
+  (ii) Node's global names are described at various parts of the documentation; and
+  (iii) library-local required close inspection of Node's internals; fortunately, these were only five names.
+
+% Before a module's code is evaluated, the Node.js module loader wraps the module so that
+%   (i) it keeps top-level variables (declared with \ttt{var}, \ttt{const} or \ttt{let}) scoped to the module rather than the global object; and
+%   (ii) it provides some global-looking variables that are actually specific to the module, such as the \ttt{module} and \ttt{exports} objects that the implementor can use to export values from the module and convenience variables---such as \ttt{\_\_filename} and \ttt{\_\_dirname}  containing the module's absolute filename and directory path, respectively.
+% True globals remaining are
+%   (i) the global objects as defined by the EcmaScript standard (\eg \ttt{Object}, \ttt{Function}, \ttt{Math}); and
+%   (ii) Node.js-specific globals (\eg \ttt{console}, \ttt{process}, \ttt{timer}).
+% These globals require further interposition.
+
+
+% TODO: Talk about recipe file, that could be kept along with the module identifier
 
 % \begin{verbatim}
 % let lib = `
@@ -708,77 +722,109 @@ These globals require further interposition.
 %  });`;
 % \end{verbatim}
 
-
-\sys hooks into the wrapper function (the last variable in the function definition, \ttt{CTX}).
-This trivial source-to-source transformation re-defines global variables as module-locals and initializes them with \sys-augmented values.
-For example, \ttt{console} in the context of the module will be an \sys-created object that allows \sys to interpose on it.
-Evaluation of the module passes an additional value to this function, which is the modified context.
-As a result, any changes to the top-level objects and any global variables are accessible from the within the module.
+We found it useful to add an option for white- and black-listing libraries.
+The configuration object accepts \ttt{only} and \ttt{not} expressions that indicate whether a module identifier will be part of the analysis.
+These expressions contain sets of sets of regular expressions, pattern-matching against module identifiers, which in Node are represented as absolute file-system paths.
+Originally intended as an aid to \sys's development and debugging, this option proved useful enough for writing the three analyses that we decided to expose them to users.
+Examples of use include blacklisting built-in libraries or white-listing only the newest-imported library.
+% This is useful, for example, when...
 
 % get second argument, no need to pass arguments around, tricky to 
 % carefull hardcoding of paths, because \sys's code itself is split into modules
-% We found it useful to add a function for white- and black-listing, as a set of regular expressions.
-% Regular expressions where useful because internally libraries are identified via library identifiers that correspond to file-system paths.
-% Originally intended as an aid to \sys's development and debugging, it proved useful enough for writing analysis A1--4 that decided to expose it to users.
-% This is useful, for example, when...
-% The configuration object accepts \ttt{only} and \ttt{not} that contain sets of regular expressions;
 
 %% TODO: implementation
-%% The program transformations described earlier~\sx{overview} are in \sys  abstracted by a set of parametrizable skeletons.
-%% These skeletons provide hooks for end-developers writing analyses.
-%% Specifically, they map types of values (\eg \ttt{Number}s, \ttt{Function}s) to generic hooks for each type. 
-%% These hooks are then extended or rewritten by developers to
 
-
-Fig.~\ref{fig:ex2}\emph{a--d} exemplifies our transformation techniques in the context of JavaScript.
+Fig.~\ref{fig:ex2} exemplifies \sys's transformation techniques in the context of JavaScript.
 \sys traverses a \ttt{Math} object, replaces functions such as \ttt{div} with wrappers; it also creates a modified version of the surrounding context and binds it to the library.
-The precise wrappers depend on the intended analysis, reviewed next.
 
 
 \subsection{Individual Analyses}
 \label{impl2}
 
-Individual analysis are implemented using a set of templates that provide initial constructs (see below).
+Individual analysis are implemented using a set of templates that provide initial constructs.
+%% Individual transformations described earlier~\sx{overview} are in \sys  abstracted by a set of parametrizable skeletons.
+%% These skeletons provide hooks for end-developers writing analyses.
+%% Specifically, they map types of values (\eg \ttt{Number}s, \ttt{Function}s) to generic hooks for each type. 
+%% These hooks are then extended or rewritten by developers to
 \sys offers a small utility library to reduce boilerplate code for pattern-matching on types.
-As a result, code that is specific to individual analyses averages about 20--30 lines.
+Individual analyses are between 100--200 lines of code, but a significant part of this code is common across analyses.
+
+As the three analyses are quite complex to be shown in the paper, we present here a trivial analysis---one that counts all accesses to global variables from a module \ttt{serial}:
+
+\begin{verbatim}
+let fs = require('fs');
+let count = {};
+forevery.global.in(/serial/) = {
+  pre: (name, path, _) => {
+    let id = resolve(name, path);
+    count[id] = count[id]?  count[id] + 1 : 1;
+  }
+};
+process.on('exit', () => {
+  fs.writeFileSync('acl.json',
+                   'utf-8',
+                   JSON.stringify(count));
+});
+\end{verbatim}
+
+\noindent
+\sys-provided \ttt{forevery} generates sets of names succinctly.
+The \ttt{in} field is a method that takes a regular expression matching module identifiers.
+If not empty, \ttt{pre} and \ttt{post} hooks are called before and after each access of the elements specified in the set.
+Finally, \ttt{resolve} is a method for traversing an object given a path within that object.
+Upon program exit, the results are written to disk, all using the expected Node APIs.
 
 \heading{Security Analysis}
-To address the security concerns of third-party libraries, we develop a concrete \ttt{RWX} policy for analyzing accesses.
-The language of the analysis is given in the following grammar:
+To address the security concerns of third-party libraries, we develop a concrete \ttt{RWX} policy that analyzes accesses for every library-to-library combination.
+The analysis treats built-in libraries and global variables as modules,
+% and generates a list of permissions for each of their fields.
+and develops a permission model where individual fields are governed by permission sets containing combinations of read, write, and execute permissions:
+ (i) a read permission (\R) indicates that a consumer read a value, including assigning it to a variable and passing it around to other modules;
+ (ii) a write permission (\W) indicates that a consumer modified or deleted a value; and
+ (iii)  an execute permission (\X) indicates that a consumer to executed a value---\eg a function or a method---or invoked a constructor (usually prefixed by \ttt{new}).
 
-\begin{alltt}
-  str:  <identifier in JS>
-  libs: [ str ]
-  path: str `.` path
-  mode: P{ R | W | X }
-  body: { [ path: mode ]: path \(\in\) mods}
-  analysis:  mods body
-\end{alltt}
+The resulting permission sets are organized as a collection of maps, one per library, each indexed by object-paths such as \ttt{Math.add: RX}.
+% that correspond to values of other modules or global-like language names.
 
 \heading{Performance Diagnosis}
+To conduct performance diagnosis, we develop a profiling analysis that operates at two levels:
+ (i) module-boundary wrappers that collecting profiling statistics for calls between modules by wrapping module interfaces; and
+ (ii) an aggregator function that collects statistics from all boundary wrappers and generates a model of library load under the current workload.
 
-\begin{equation}
-\label{eq:2}
-R_{new} =
-\begin{cases}
-  R +1, & \varrho\times\sum_{i=1}^t{w_il_i} > \delta + \delta_0  \\
-  R -1,  & \varrho\times\sum_{i=1}^t{w_il_i}  < \delta + a * \delta_0
-\end{cases}
-\end{equation}
+Boundary wrappers operate at a higher-frequency intervals than the aggregator, which operates on summaries.
+Their analysis focuses on function values (\eg functions, methods, constructors), skipping all other direct field accesses.
+Functions are wrapped with prologue and epilogue wrappers that record statistics from the Node.js runtime---for now, a frequency counter and a timer between prologue-to-epilogue invocations.
+% Many statistics are available by the Node.js runtime, including memory and garbage-collection statistics, 
+Boundary wrappers summarize these statistics by periodically sending a windowed, weighted average of call latencies to the aggregator function.
 
-Scale-in (\ie $-1$) might not seem as important, but constrained environments benefit from quick re-allocation.
-However, after scale-in, the system often ends up just scaling out the same module.
-To avoid such oscillation, a small reclamation delay $a$ increases the system's confidence that the workload has moved away from a specific pattern.
+% Wrappers record statistics about the their encapsulated functions as well as queue characteristics of outstanding calls.
+% The wrapper epilogue has access to several raw metrics related to profiling (Tab.~\ref{tab:metrics}).
+% These metrics are viewed as a windowed average that priori 
 
-% ATTRIBUTION
-Interestingly, profiling functions running at each boundary cannot ``see through'' libraries in order to attribute load among a library and its dependencies correctly.
-For example, an agent at the outermost boundary \ttt{A} of a dependency tree \ttt{A}$\rightarrow$\ttt{B}$\rightarrow$\ttt{C} does not know how much of the latency
-% \eat{ is \ttt{A}-internal and how much}
-comes from \ttt{B}. % or \ttt{B}'s dependency, \ttt{C}.
+Interestingly, profiling functions at the boundary cannot ``see through'' libraries to correctly attribute load among a library and its dependencies.
+For example, a boundary wrapper \ttt{A} of a dependency tree \ttt{A}$\rightarrow$\ttt{B}$\rightarrow$\ttt{C} does not know how much of the latency comes from \ttt{B}.
+Fortunately, the aggregator understands the dependency structure and can approximate how much of the latency comes from each module.
+% Such a approximation is more complicated than a simple subtraction, as a module may invoke interfaces from multiple modules at the same time.
+% Having an analysis fragment per library consumer, however, alleviates much of the problem.
 
+% FIXME: Snapshot results
+% [serial , whatever, pizza, ...]
 
-\heading{Invariant Discovery}
-Describe specific type system
+\heading{Type Invariant Discovery}
+To infer type invariants for serialization specifications, we develop a simple type system and use our analysis to map values to types.
+
+The type system is modeled after the simply-typed lambda calculus augmented with:
+  (i) unions (sum types), such as \ttt{a | b | c}; 
+  (ii) JavaScript-specific types such as \ttt{null}, \ttt{NaN}, or \ttt{undefined}; and
+  (iii) a \ttt{native} type for values that cannot be serialized, like \ttt{console.log}.
+Support for union types is useful for when our analysis witnesses variables holding values of different types---although, in practice,  programs tend to make calls of the same type across their entire lifetime~\cite{daikon}.
+
+Our implementation also uses a base set of JavaScript types and rules to deconstruct complex types into their elementary building blocks.
+% Knowing how to deconstruct a type to its structural primitives allows walking values---
+For example, the analysis extracts that an object of type \ttt{user} is comprised of two \ttt{string}s (first and last name) and a \ttt{number} (age).
+% To achieve this, the analysis makes use of introspection to identify 
+
+% leftpad: (string | number) -> number -> (string | null) -> string 
 
 % \subsection{Limitations}
 % 
