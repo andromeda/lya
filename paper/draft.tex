@@ -1095,38 +1095,46 @@ Compiled languages have other benefits, namely that applying transformations sta
 
 \subsection{When to Use Dialysis}
 \label{principles}
-Dynamic analysis is a general analysis technique that discovering facts about programs.
-While full-fledged dynamic analysis can provide full visibility into , it may result in higher performance overheads and developer effort.
-Dialysis can be thought as a coarser version of analysis stemming from the natural boundaries of libraries, a level of granularity that is just right for certain domains.
-Which are these cases exactly?
+% Dynamic analysis is a general technique for discovering facts about programs.
+While heavy-weight dynamic analysis provides full visibility into program execution, it may suffer from higher performance overheads, require significant developer effort, or offer results that are too low-level for the problem at hand.
+% Dialysis can be thought as a coarser version of analysis stemming from natural library boundaries---a level of granularity that seems just right for certain problems.
+% Which are these cases exactly?
 
-The first class of  
-It is really a quick-and-dirty 
-As it quickly isolates homegrown code from standard libraries and third-party code, it is a help pin-point to 
-Its availability as a global module makes this trivial.
-% This is a particularly good match for dynamic programming languages that are already geared towards quick prototyping.
+% pressing need, lightweight, 
+% multiplies lyas power
+Dialysis shines when there is a need for urgency, select online analysis, and a high level of abstraction.
+It can help identify (or narrow down) the source of a problem quickly, by swiftly isolating homegrown code from standard and third-party libraries, by requiring a few lines of analysis-specific code inlined, and by leveraging the developer's expertise in their language of choice.
+By operating at coarser granularity, using the vanilla optimized runtime, and by toggling parts of the analysis on and off, it provides the ability to perform the analysis online.
+Finally, dialysis deconstructs programs only at library boundaries, a naturally coarser granularity that is just the right level for certain problems.
+% a granularity that is well-suited for several tasks.
+% libraries are a convenient level of abstraction---or the point where abstractions 
+% monitors all around a library
 
-The second is when the goal is to understand the behavior of third-party code.
-Dialysis plugs monitors all around a library, and in clearly delineated abstraction boundaries within that library where the signal-to-noise ratio is naturally expected to be high.
-Dialysis deconstructs programs only at the library boundaries, at a granularity well-suited for several tasks.
-Examples include the 
-N-version programming ---all of which would require a custom tool.
-By viewing the program's surrounding environment as libraries---which is the case in all high-level programming languages---dialysis can expand its coverage to the operating system, file system, network and other ``ambient'' services.
+% The first class of problems where dialysis shines is quick-and-dirty insights;
+% Even if dialysis doesn't solve the problem, it can quickly narrow it down to a certain corner of the application, at which point the cost of a heavy-weight solution is lower.
+% % This is a particularly good match for dynamic programming languages that are already geared towards quick prototyping.
+% 
+% The second is when the goal is to understand the behavior of third-party code.
+% Dialysis plugs monitors all around a library, and in clearly delineated abstraction boundaries within that library where the signal-to-noise ratio is naturally expected to be high.
+% Dialysis deconstructs programs only at the library boundaries, at a granularity well-suited for several tasks.
+% Examples include the 
+% N-version programming ---all of which would require a custom tool.
+% By viewing the program's surrounding environment as libraries---which is the case in all high-level programming languages---dialysis can expand its coverage to the operating system, file system, network and other ``ambient'' services.
 
 Dialysis is \emph{not appropriate} for monolithic programs or ones written in low-level languages such as C.
-These limitations is due to several reasons.
+These limitations are due to several reasons.
 First, C programs do not feature clear, ``impenetrable'' boundaries like the ones available in memory- and type-safe languages.
-An important feature of the wrapping techniques presented in this paper is that they can ---\ie the full observable behavior around a library.
-Unfortunately, this is not true in C where a library can forge a pointer and access arbitrary locations in its the program's address space.
-A related problem is the inability to traverse and wrap objects, due to lack of bounds.
-It is unclear how to wrap values without any kind of size information.\footnote{
+An important feature of the wrapping techniques presented in this paper is that they can track a library's full observable behavior.
+Unfortunately, this is not true in C where a library can forge a pointer and access arbitrary locations in the program's address space.
+A related problem is C's inability to traverse and wrap objects;
+  due to lack of runtime information about size and structure, it is unclear how to traverse and transform them.\footnote{
   Recent efforts such as C-Strider~\cite{saur2016cstrider} and ptrSplit~\cite{ptrsplit:17} show promise.
 }
 % Finally, C is missing direct direct equivalents to \sys's requirements~\sx{reqs}
 
-That said, it is possible to apply dialysis in C programs that have first gone through a process of decomposition or component sanboxing---as is the case in compartmentalization, program slicing, and related areas.
-Additionally, many libraries in high-level programming languages today simply wrap C programs either directly or through a foreign-function interface.
-Dialysis can be used with these libraries, as it plugs into the abstractions provided by the high-level, wrapper interface.
+% That said, it is possible to apply dialysis in C programs that have first gone through a process of decomposition or component sanboxing---as is the case in compartmentalization, program slicing, and related areas.
+% Additionally, many libraries in high-level programming languages today simply wrap C programs either directly or through a foreign-function interface.
+% Dialysis can be used with these libraries, as it plugs into the abstractions provided by the high-level, wrapper interface.
 
 \section{Related Work}
 \label{rw}
