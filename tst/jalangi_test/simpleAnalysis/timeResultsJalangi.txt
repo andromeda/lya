@@ -1,0 +1,50 @@
+The name of file date-format-xparb.js
+
+real	0m27.719s
+user	0m27.584s
+sys	0m0.468s
+The name of file math-cordic.js
+
+real	1m40.000s
+user	1m40.036s
+sys	0m0.028s
+The name of file math-partial-sums.js
+
+real	0m35.560s
+user	0m35.592s
+sys	0m0.032s
+The name of file math-spectral-norm.js
+
+real	0m53.496s
+user	0m53.532s
+sys	0m0.044s
+The name of file regexp-dna.js
+
+real	0m1.009s
+user	0m1.036s
+sys	0m0.020s
+The name of file string-base64.js
+
+real	0m31.142s
+user	0m31.180s
+sys	0m0.092s
+The name of file string-fasta.js
+
+real	0m41.714s
+user	0m41.768s
+sys	0m0.028s
+The name of file string-tagcloud.js
+
+real	5m34.745s
+user	5m34.644s
+sys	0m1.412s
+The name of file string-unpack-code.js
+
+real	0m13.089s
+user	0m13.120s
+sys	0m0.072s
+The name of file string-validate-input.js
+
+real	0m0.350s
+user	0m0.400s
+sys	0m0.032s
