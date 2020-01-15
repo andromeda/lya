@@ -886,13 +886,16 @@ Both of these goals would have been difficult to achieve outside a synthetic env
 }
 \begin{tabular*}{\columnwidth}{l @{\extracolsep{\fill}} ll lll}
 \toprule
-              &   Base    &  SA     & PD       &   TIC    &   LSR     \\
+	      &   Base    &  SA     & PD      &  TIC    &  LSR \\
 \midrule
-something1    &           &  0.70   &    3.43  &   3.46   &   3.26    \\
-something2    &           &  1.31   &    4.81  &   4.55   &   4.63    \\
-something3    &           &  5.95   &    4.78  &   4.25   &   4.85    \\
-something4    &           &  18.29  &   11.20  &   10.24  &   9.54    \\
-something5    &           &  24214  &   24721  &   24574  &   24502   \\
+something1    &   0.90    &  4.70   &  4.54   &  4.30   &  -   \\
+something2    &   1.44    &  6.46   &  6.24   &  5.96   &  -   \\
+something3    &   3.37    &  6.26   &  6.32   &  5.72   &  -   \\
+something4    &   7.79    &  13.54  &  13.31  &  12.8   &  -   \\
+something5    &   24661   &  24848  &  24754  &  24760  &  -   \\
+something6    &   4.06    &  7.24   &  7.16   &  6.79   &  -   \\
+something7    &   4.11    &  7.25   &  7.23   &  6.86   &  -   \\
+something8    &   4.32    &  8.32   &  8.19   &  7.73   &  -   \\
 \bottomrule
 \end{tabular*}
 \label{tab:synthetic}
@@ -956,7 +959,7 @@ The takeaway is that \sys-inherent overheads due to interposition are unlikely t
 
 \begin{figure*}[t]
   \centering
-   \includegraphics[width=0.95\textwidth]{./figs/meso.pdf}
+   \includegraphics[width=0.95\textwidth]{./figs/meso2.pdf}
   \caption{
     \textbf{Analysis overheads.}
     The plot compares a series of modules from single-library programs taken from Jalangi between three setups:

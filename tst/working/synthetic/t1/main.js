@@ -1,4 +1,3 @@
-
 if (parseInt(process.env.key) != 0) {
         lyaConfig = {
         SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
