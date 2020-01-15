@@ -816,8 +816,8 @@ Fortunately, the aggregator understands the dependency structure and can approxi
 To infer type invariants for serialization specifications, we develop a simple type system and use our analysis to map values to types.
 
 The type system is modeled after the simply-typed lambda calculus augmented with:
-  (i) unions (sum types), such as \ttt{a | b | c}; 
-  (ii) JavaScript-specific types such as \ttt{null}, \ttt{NaN}, or \ttt{undefined}; and
+  (i) unions (sum types), such as \ttt{a | b | c}, 
+  (ii) JavaScript-specific types such as \ttt{null}, \ttt{NaN}, or \ttt{undefined}, and
   (iii) a \ttt{native} type for values that cannot be serialized, like \ttt{console.log}.
 Support for union types is useful for when our analysis witnesses variables holding values of different types---although, in practice,  programs tend to make calls of the same type across their entire lifetime~\cite{daikon}.
 
@@ -839,40 +839,42 @@ For example, the analysis extracts that an object of type \ttt{user} is comprise
 \section{Evaluation}
 \label{eval}
 
-\sys's  development achieves goals~\goal{1--3}~\sx{goals}, demonstrating that it is indeed feasible to construct a framework that operates at the level of modules, 
-does not force developers to learn a new language, and that it can be implemented as a library around an existing runtime.
-Despite the fact that it operates at coarser granularity, as shown earlier~\sx{impl} \sys can express analyses that generate results useful in several practical scenarios.
-
-In this section, we are interested in zooming into \sys's performance characteristics~\goal{4}.
-At a high level, we are interested in three questions:
-(i) the overheads of the \sys's underlying building blocks;
-(ii) the overhead of different analysis on real libraries and how this compares with production dynamic analysis frameworks; and
-(iii) evaluation of \sys's behavior using our analyses on realistic, multi-library applications.
+\sys's  development achieves goals~\sx{goals}, demonstrating that it is indeed feasible to build a frameworks that 
+  operates as a library around an existing runtime,
+  does not require learning a new language and tools, and 
+  gets meaningful information by operating only at library boundaries, 
+% Despite the fact that it operates at coarser granularity, as shown earlier~\sx{impl} \sys can express analyses that generate results useful in several practical scenarios.
+In this section, we report on \sys's performance characteristics:
+% At a high level, we are interested in three questions:
+  (i) the overheads of the \sys's underlying building blocks;
+  (ii) the overhead of different analysis on real libraries, and how this compares with production dynamic analysis frameworks; and
+  (iii) an evaluation of \sys's behavior using our analyses on realistic, multi-library applications.
 % For the first question, we use  synthetic micro-benchmarks that built to stress key elements of the system and confirm it works correctly~\sx{micro}.
 % For the second question, we use real libraries and compare them with an analysis written in Jalangi~\sx{meso}.
 % For the third question, we use a combination of real applications~\sx{macro}.
 
 Several takeaways are worth highlighting.
-\fixme{TODO after we have the results.}
+Analyses expressed in \sys are about 4$\times$ smaller than equivalent analyses written for a heavy-weight instrumentation frameworks.
+\sys supports high-performance analysis at the boundaries of individual libraries, adding on average less than \fixme{2$\times$}.
+Finally, \sys seems to scale well to large applications with hundreds of libraries while interposing on several thousands of objects.
 
-Experiments were run on a moderate server with 4GB of memory and 2 Intel Core2 Duo E8600 CPUs clocked at 3.33GHz.
-In terms of software, we used Docker version 18.09.7 running \fixme{a minimal Ubuntu 14.04.6 version}, Jalangi \fixme{v2}, Node.js v8.9.4 (bundled with V8 v6.1.534.50, LibUV v1.15.0, and npm v6.4.1), all atop a Debian Linux with kernel v4.4.0-134.
-We run our software experiments within a Docker container to simplify the setup of the Jalangi framework.
+Experiments were conducted on a moderate server with 4GB of memory and 2 Intel Core2 Duo E8600 CPUs clocked at 3.33GHz.
+In terms of software, we used Docker version 18.09.7 running a minimal Ubuntu 14.04.6, Jalangi v2, Node.js v8.9.4 (bundled with V8 v6.1.534.50, LibUV v1.15.0, and npm v6.4.1), all atop a Debian Linux with kernel v4.4.0-134.
+All times reported are in \textbf{ms}, averaged over 1K runs;
+  \textbf{SA}, \textbf{PD}, and \textbf{TID} respectively stand for security analysis, performance diagnosis, and type-invariant discovery.
+  
 
 \subsection{Micro-benchmarks}
 \label{micro}
 
-\sys's micro-benchmark suite was designed with two goals in mind.
-
-The first goal was to test key properties of each analysis and confirm it outputs the expected results.
-For example, to better understand performance diagnosis policy and confirm it works correctly, we craft a library that contains four other libraries with pre-defined bottlenecks.
-The library can perform one of three operations, depending on its current state:
-  (i) invoke a call to a module it imports,
-  (ii) busy-wait, or
-  (iii) respond to calls by returning a value.
-
-The second goal was to identify understand \sys bottlenecks in a controlled environment, 
-Both of these goals would have been difficult to achieve outside a synthetic environment, as we do not fully understand applications we haven't written ourselves.
+\sys's micro-benchmarks were designed to test key properties of each analysis and confirm it outputs the expected results.
+For example, to better understand PD and confirm it works correctly, we craft a micro-benchmark with four dependencies of known static bottlenecks.
+% Each dependency can perform one of three operations, depending on its current state:
+%   (i) invoke a call to a module it imports,
+%   (ii) busy-wait for a specific amount of time, or
+%   (iii) respond to calls by returning a value.
+A second goal was to understand \sys's internal overheads in a controlled environment.
+% Both of these goals would have been difficult to achieve outside a controlled environment. % , as we do not fully understand applications we haven't written ourselves.
 
 \begin{table}[t]
 \center
@@ -882,66 +884,32 @@ Both of these goals would have been difficult to achieve outside a synthetic env
   \footnotesize{
     \textbf{Synthetic Micro-benchmarks}.
 		Applying the three analyses on a series of synthetic micro-benchmarks, created to stress different features.
+    All timings are in $ms$.
   }
 }
-\begin{tabular*}{\columnwidth}{l @{\extracolsep{\fill}} ll lll}
+\begin{tabular*}{\columnwidth}{l @{\extracolsep{\fill}} lll l}
 \toprule
-	      &   Base    &  SA     & PD      &  TIC    &  LSR \\
+	            &   Base    &  SA     & PD      &  TID    \\
 \midrule
-something1    &   0.90    &  4.70   &  4.54   &  4.30   &  -   \\
-something2    &   1.44    &  6.46   &  6.24   &  5.96   &  -   \\
-something3    &   3.37    &  6.26   &  6.32   &  5.72   &  -   \\
-something4    &   7.79    &  13.54  &  13.31  &  12.8   &  -   \\
-something5    &   24661   &  24848  &  24754  &  24760  &  -   \\
-something6    &   4.06    &  7.24   &  7.16   &  6.79   &  -   \\
-something7    &   4.11    &  7.25   &  7.23   &  6.86   &  -   \\
-something8    &   4.32    &  8.32   &  8.19   &  7.73   &  -   \\
+globals.js    &   0.90    &  4.70   &  4.54   &  4.30   \\
+something2    &   1.44    &  6.46   &  6.24   &  5.96   \\
+counter.js    &   3.37    &  6.26   &  6.32   &  5.72   \\
+something4    &   7.79    &  13.54  &  13.31  &  12.8   \\
+delay.js      &   24661   &  24848  &  24754  &  24760  \\
+something6    &   4.06    &  7.24   &  7.16   &  6.79   \\
+something7    &   4.11    &  7.25   &  7.23   &  6.86   \\
+cycles.js     &   4.32    &  8.32   &  8.19   &  7.73   \\
 \bottomrule
 \end{tabular*}
 \label{tab:synthetic}
 \vspace{-5mm}
 \end{table}
 
-\begin{table}[t]
-\center
-\footnotesize
-\setlength\tabcolsep{3pt}
-\caption{
-  \footnotesize{
-    \textbf{Applying \sys to single-library programs}.
-		\fixme{Execution time of eight test suites against }
-  }
-}
-\begin{tabular*}{\columnwidth}{l @{\extracolsep{\fill}} ll lll}
-\toprule
-                    & Base   &  SA   & PD     &   TIC   & LSR     \\
-\midrule
-Classnames~\cite{}  &  2.72  & 6.62  &  6.61  &  6.10   & 5.94    \\
-Debug~\cite{}       & 31.39  & 33.54 &  33.94 &  33.96  & 33.04   \\
-% Minimist\\
-~~~-t1              & 31.46  & 60.13 &  60.00 &  56.62  & 56.72   \\
-~~~-t2              & 19.17  & 59.77 &  60.75 &  57.15  & 57.79   \\
-~~~-t3              & 21.64  & 205.2 &  205.53&  132.25 & 137.84  \\
-~~~-t4              & 20.69  & 59.70 &  60.75 &  59.92  & 56.60   \\
-~~~-t5              & 20.49  & 70.48 &  72.20 &  64.71  & 66.03   \\
-Moment~\cite{}      & 31.73  & 48.04 &  49.23 &  44.95  & 46.12   \\
-yargs~\cite{}       & 13.42  & 13.00 &  14.41 &  13.47  & 13.48   \\
-chalk~\cite{} 	    & 17.37  & 24.42 &  26.01 &  26.32  & 0.00    \\
-colorette~\cite{}   & 08.10  & 13.85 &  13.41 &  13.16  & 0.00    \\
-mkdirp~\cite{}      & 116.37 & 1959.52 & 1392.64 & 1252 & 0.00    \\
-\bottomrule
-\end{tabular*}
-\label{tab:meso}
-\vspace{-5mm}
-\end{table}
-
-
-Table~\ref{} depicts the results of the three analysis applied to these benchmarks.
-We decided to report all combinations of analyses and benchmarks, but in practice not all are useful---\eg some modules do not feature interesting access or performance patterns.
-Currently, these benchmarks return the results we expect, but they did help with the identification of problems such as 
-These be
-Load is visible at the application level (left), but the lack of detail does not help determine which modules must be scaled out.
-Module-level data, collected by \sys' coordinator (right), reveal that \ttt{m3} receives the majority of the load.
+Table~\ref{tab:synthetic} depicts the results of the three analysis applied to a subset of our benchmarks.
+Not all analysis-benchmark combinations are useful---\ie some modules do not feature interesting access or performance patterns.
+Currently, these benchmarks return the results we expect, but they did help with the identification of \sys's bugs.
+The \ttt{delay.js} is the PD benchmark mentioned earlier, with static bottlenecks.
+Initial loading time, affected by transformations altering the environment, is not affected (delta is under 1ms).
 
 To understand the costs of proxy interposition, we measure the time to access deeply-nested properties of two versions of an object:
   unmodified and proxy-wrapped.
@@ -954,12 +922,47 @@ We emphasize that this is an artificially constructed benchmark stressing worst-
   for comparison, the transformation of these objects itself took nearly 16 seconds ($10^3\times$ more than what we experienced with real modules).
 The takeaway is that \sys-inherent overheads due to interposition are unlikely to be the bottleneck of an analysis.
 
-\subsection{Single-module Benchmarks}
+\begin{table}[t]
+\center
+\footnotesize
+\setlength\tabcolsep{3pt}
+\caption{
+  \footnotesize{
+    \textbf{\sys-augmented single-library programs}.
+    The table shows the overheads of applying the three analyses to the test suites of eight libraries (with Minimist involving five test cases).
+  }
+}
+\begin{tabular*}{\columnwidth}{l @{\extracolsep{\fill}} lll l}
+\toprule
+                               & Base   &  SA   & PD     &   TID   \\
+\midrule
+Classnames~\cite{classnames}   &  2.72  & 6.62  &  6.61  &  6.10   \\
+Debug~\cite{debug}             & 31.39  & 33.54 &  33.94 &  33.96  \\
+Minimist~\cite{minimist}       &        &       &        &         \\
+~~~-t1                         & 31.46  & 60.13 &  60.00 &  56.62  \\
+~~~-t2                         & 19.17  & 59.77 &  60.75 &  57.15  \\
+~~~-t3                         & 21.64  & 205.2 &  205.53&  132.25 \\
+~~~-t4                         & 20.69  & 59.70 &  60.75 &  59.92  \\
+~~~-t5                         & 20.49  & 70.48 &  72.20 &  64.71  \\
+Moment~\cite{moment}           & 31.73  & 48.04 &  49.23 &  44.95  \\
+yargs~\cite{yargs}             & 13.42  & 13.00 &  14.41 &  13.47  \\
+chalk~\cite{chalk}             & 17.37  & 24.42 &  26.01 &  26.32  \\
+colorette~\cite{colorette}     & 08.10  & 13.85 &  13.41 &  13.16  \\
+mkdirp~\cite{mkdirp}           & 116.37 & 1959.52 & 1392.64 & 1252 \\
+\bottomrule
+\end{tabular*}
+\label{tab:meso}
+\vspace{-5mm}
+\end{table}
+
+
+
+\subsection{Single-Library Benchmarks}
 \label{meso}
 
 \begin{figure*}[t]
   \centering
-   \includegraphics[width=0.95\textwidth]{./figs/meso2.pdf}
+   \includegraphics[width=0.95\textwidth]{./figs/meso.pdf}
   \caption{
     \textbf{Analysis overheads.}
     The plot compares a series of modules from single-library programs taken from Jalangi between three setups:
@@ -971,32 +974,56 @@ The takeaway is that \sys-inherent overheads due to interposition are unlikely t
 \end{figure*}
 
 
+To understand \sys's performance characteristics at the level of individual modules, we perform two experiments.
+
+In the first experiment, we collect a diverse set of eight popular libraries from npm, 
+% used by thousands of other projects,
+on the order of hundreds of lines of code.
+As a workload, we use the project-internal test suite that comes bundled with each library (invocable by \ttt{npm test});
+  \ttt{minimist} involves several distinct test harnesses, which we 
+These tests stress functionality as expected by the authors of the library, and confirms compatibility with all of its functionality.
+We apply \sys using the three analyses we developed, and compare the results with their baseline performance (Tab.~\ref{tab:meso}).
+The results show that executions augmented with analyses are within 2$\times$, averaging \fixme{XX\%}.
+Different benchmarks put a different pressure on \sys's wrappers---some resulting in the invocation of as many as \fixme{XXX} wrappers, as shown by the resulting analysis output on disk.
+
+In the second experiment, we apply \sys on Jalangi2's extensive test suite (Fig.~\ref{fig:meso}) and compare \sys's performance to that of Jalangi2.
+To be fair in our comparison, we design a simple analysis from scratch that both frameworks can support---namely, one for tracking counts of global variable accesses~\sx{impl2}.
+The core of the analysis requires a few lines, but expressing it in \sys requires 4$\times$ fewer lines of code;
+  the effort of employing \sys as a library was significantly lower than Jalangi2, for which we \fixme{relied} on a Docker container to simplify the framework's setup.
+The performance results show that \sys performs better than Jalangi2, at times by a significant margin (\ie more than 10$\times$ for 13 benchmarks).
+We note here that Jalangi2 has a runtime performance that is significantly faster than the classic Jalangi, as it eschews record/replay capabilities.
+Jalangi2 is more powerful, expressing analyses that are more fine-grained than \sys's, but results in higher developer effort and runtime performance.
+
+
 \subsection{End-to-End Benchmarks}
 \label{macro}
 
-\begin{table}[t]
+\begin{table}[b]
 \center
 \footnotesize
 \setlength\tabcolsep{3pt}
 \caption{
   \footnotesize{
     \textbf{Applying \sys to three large applications}.
-		\fixme{Highlight some things}
+    The table shows the overheads of applying the three analyses to three large applications.
   }
 }
-\begin{tabular*}{\columnwidth}{l @{\extracolsep{\fill}} lll}
+\begin{tabular*}{\columnwidth}{l @{\extracolsep{\fill}} ccc}
 \toprule
-                    & Koa    & Moeda   &  Terminalizer \\
+                                     & KoaBlog~\cite{koa}    & Moeda~\cite{moeda}   &  Term/zr~\cite{terminalizer} \\
 \midrule
- Size (KB)          & 41M    &  29M    &   262M        \\
- LoC                & 127K   &  79K    &   39K         \\
- Top-level modules  &  24    &  7      &    33         \\
- Total Modules      &  432   &  260    &    1084       \\
- Lya detects:       &  1507  &   729   &     2355      \\
- Baseline           &  0.97  &  1.27   &    0.754      \\
- A1 (TF)            &  1.48  &  2.00   &    3.346      \\
- A3 (HF)            &  1.30  &  2.684  &    2.684      \\
- A8 (Types)         &  1.32  &  2.036  &    2.615      \\     
+Structure                            &                   &                      &              \\
+~~Size (MB)                          & 41                &  29                  &   262        \\
+~~Code Size (KLoC)                   & 127               &  79                  &   39         \\
+~~Top-level Modules, statically      &  24               &  7                   &    33         \\
+~~Total Modules, statically (npm)    &  432              &  260                 &    1084       \\
+~~Total Modules, dynamically (\sys)  &  1507             &   729                &     2355      \\
+%                                     &                   &                      &              \\
+Performance                          &                   &                      &              \\
+~~Baseline                           &  0.97             &  1.27                &    0.754      \\
+~~Security Analysis                  &  1.48             &  2.00                &    3.346      \\
+~~Performance Diagnosis              &  1.30             &  2.684               &    2.684      \\
+~~Type Invariant Discovery           &  1.32             &  2.036               &    2.615      \\     
 \bottomrule
 \end{tabular*}
 \label{tab:macro}
@@ -1004,24 +1031,27 @@ The takeaway is that \sys-inherent overheads due to interposition are unlikely t
 \end{table}
 
 
+Finally, we perform end-to-end program dialysis  on three large, popular applications:
+  KoaBlog~\cite{koa}, a minimal blogging platform built on the Koa framework,
+  Modeda~\cite{moeda}, a CLI converter that, among other features, uses online currency exchange rates to convert currencies from the terminal, and
+  Terminalizer~\cite{terminalizer}, an application for recording terminal sessions to generating animated gif images and shareable a web player links.
+These are popular applications---for example, Koa.js and Terminalizer have 28.3K and 8.7K stars stars on GitHub, respectively.
+Their structural and performance characteristics are shown in Tab.~\ref{tab:macro}.
 
-Highly popular applications---for example, Koa.js and Terminalizer have 28.3K and 8.7K stars stars on GitHub, respectively.
-Applying \sys to these applications generates much larger analayses
-For example, the performance diagnosis analysis hooks reports timing characteristics for 
+The difference between the modules detected statically (by running \ttt{npm ls}) and the ones observed by \sys is due to a few reasons.
+One is that \sys does not report accesses if a library has not been accessed, whereas \ttt{npm} traverses reports on the static library structure.
+Additionally, \sys analyzes modules that are part of the standard library (some of which have themselves internal dependencies),  not shown by \ttt{npm}.
 
-The difference between the modules detected statically (by running \ttt{npm ls}) and the ones observed by \sys is due to a few different reasons.
-One is that an analysis does not report accesses if a 
-\sys analyzes modules that are part of the standard library too (some of which have themselves internal dependencies), which are not shown by \ttt{npm}.
-Our post-processing counts by module name (\ie squashes duplicate reports by 
+Applying \sys to these applications generates much larger analysis results, while the performance of analyzed code is on average still within 2--3$\times$ over the baseline.
+The size of the resulting JSON files raises the challenge of analysis interpretability---surprisingly, just running Terminalizer with \ttt{--help} returns more than 6K entries from several libraries.
+Our routines for post-processes \sys's results also counts by module name---\ie squashes duplicate reports by human-name, not module identifier.
 This can affect the results of multiple imports with the same name at different parts of the tree that would indeed correspond to different.
 For example, importing two different versions of a library at two different parts of the dependency tree will result in to two different with the same name.
-It also squashes cache entries that correspond to one module imported by multiple modules, which would create separate entries in \sys's augmented cache, but would result in a single count for Tab.~\ref{macro} (for \sys's treatment of the module cache, see~\S\ref{cache}).
+It also squashes cache entries that correspond to one module imported by multiple modules, which would create separate entries in \sys's augmented cache, but would result in a single count for Tab.~\ref{macro} (for \sys's treatment of the module cache, see~\S\ref{three}).
 Confirming that \sys performs correctly under these scenarios is one part of the motivation behind the synthetic micro-benchmarks shown earlier~\sx{micro}.
-
 
 \section{Discussion}
 \label{diss}
-
 
 Program dialysis depends on a few features provided by the programming language.
 In this section, we start by describing its requirements~\sx{reqs} and then reflect on some of its strengths and weaknesses~\sx{principles}.
@@ -1167,11 +1197,11 @@ Nevertheless, some of NodeProf's goals are similar to \sys such as lowering over
 The Aran sketch~\cite{javascript1} proposes proxy-based analysis coupled with JavaScript's unusual \ttt{with} primitive for wrapping custom contexts.
 \sys works at the module boundaries, a potentially coarser granularity, without any unusual language constructs.
 
-JSConTest2~\cite{javascript2} is a dynamic \emph{access} analysis framework;
-\fixme{Rather than extracting accesses, it arms developers with the ability to write access control contracts (\ie executable partial specifications)}.
-This capability is complimentary to \sys's security analysis model~\sx{examples}, illustrating a need for a general-purpose online analysis framework.
-% \ie their analysis can be implemented on top of \sys with significantly less effort.
-% build around proxies.
+%% JSConTest2~\cite{javascript2} is a dynamic \emph{access} analysis framework;
+%% \fixme{Rather than extracting accesses, it arms developers with the ability to write access control contracts (\ie executable partial specifications)}.
+%% This capability is complimentary to \sys's security analysis model~\sx{examples}, illustrating a need for a general-purpose online analysis framework.
+%% % \ie their analysis can be implemented on top of \sys with significantly less effort.
+%% % build around proxies.
 
 JavaScript is related to WebAssembly, a standardized subset of JavaScript target designed to serve as a compilation target.
 The first dynamic analysis framework for WebAssembly, Wasabi~\cite{wasabi}, shares some of \sys' goals---\eg low-effort analysis and API for observation rather than manipulation.
