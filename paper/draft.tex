@@ -140,12 +140,12 @@
 \date{}
 
 % make title bold and 14 pt font (Latex default is non-bold, 16 pt)
-\title{\Large \bf Dynamic Program Dialysis with Lya}
+\title{\Large \bf Multi-library Program Dialysis with Lya}
 
 %for single author (just remove % characters)
 \author{
 {\rm Anonymous Author(s)}\\
-\normalsize{Submission \#225, 11 + 2 pages}\\
+\normalsize{Submission \#225, 11 + 3 pages}\\
 % \normalsize{Additional Anonymized Material: \href{https://git.io/JvfCf}{https://git.io/JvfCf}.}
 % {\rm Grigoris Ntousakis}\\
 % Technical University of Crete
@@ -158,18 +158,15 @@
 
 \begin{abstract}
 
-% Such library over-reliance is a recent trend: % in software engineering:
 Applications today rely on hundreds of libraries, to the point where code written by their nominal developers is only a small fraction of their total line count.
-% On the surface, such reliance is beneficial, 
-Despite its benefits, this over-reliance creates many challenges, precisely due to the lack of knowledge of and visibility into library internals---for example, in the presence of deeply-nested third-party code, security auditing and performance profiling, already challenging in monolithic applications, become extremely difficult.
+Despite its benefits, this over-reliance creates many challenges, precisely due to the lack of knowledge and visibility into library internals---for example, in the presence of deeply-nested third-party code, security auditing and performance profiling, already challenging in monolithic applications, become extremely difficult.
 
-To address these challenges, we present \emph{program dialysis}, a novel dynamic-analysis technique specifically tailored to applications with many third-party libraries.
-Combining name shadowing, context wrapping, and transformation of the underlying dependency graph, program dialysis automates dynamic \fra, \ana, and \ass of programs at the level of individual libraries during program execution.
-% is a general technique that
+To address these challenges, we present \emph{program dialysis}, a dynamic analysis technique specifically tailored to applications with many third-party libraries.
+Combining name shadowing, context wrapping, and transformation of the underlying dependency graph, program dialysis automates dynamic fragmentation, analysis, and reassembly of programs at the level of individual libraries during program execution.
 It bolts onto existing languages, enabling analysis expressions in the source language, with only a few lines of analysis-specific code.
-Our dialysis prototype, \sys, targets the JavaScript ecosystem counting over 1M libraries used on the web, server, and mobile.
-We develop a series of case-studies to motivate \sys's design, and demonstrate how \sys allows the analysis of both individual libraries as well as multi-libraries application programs with low developer effort and performance overhead:
-  insightful analyses can be expressed in 10--20 lines of code, add a virtually imperceptible increase in the load latency of individual libraries, and scale to real applications with hundreds of libraries.
+Our dialysis prototype, \sys, targets the JavaScript ecosystem counting over 1M libraries for the web, server, and mobile.
+We develop a series of case-studies that motivate \sys's design, and demonstrate how \sys allows the analysis of both individual libraries as well as multi-library programs with low developer effort and performance overhead:
+  insightful analyses can be expressed in a few lines of code, add a minimal increase in the load latency of individual libraries, and scale to large programs with hundreds of libraries.
 
 % Module dialysis can be bolted on existing language runtime environments in a language-agnostic fashion 
 % % By leveraging the ubiquity of third-party modules in today's applications
@@ -189,12 +186,12 @@ We develop a series of case-studies to motivate \sys's design, and demonstrate h
 \section{Introduction}
 \label{intro}
 
-Dynamic analysis is a type of program analysis performed by (and while) executing a program, with the goal of extracting information about the program and its execution.
+Dynamic analysis is a type of analysis performed by (and while) executing a program, with the goal of extracting information about the program and its execution.
 Such information may include the ability to infer execution invariants, check security constraints, and extract performance characteristics~\cite{analysis:10}.
 Contrary to other types of analysis, its key benefits make it the primary (or only) candidate in a variety of scenarios---namely, ones that require:
-  (i) current runtime information, such as profiling information, in view of changing load patterns~\cite{staticdynamic},
+  (i) current runtime information, such as profiling data, in view of changing load patterns~\cite{staticdynamic},
   (ii) accurate visibility into the execution, devoid of abstraction or approximation~\cite{staticdynamic},
-  (iii) Turing-complete policies, where policies themselves are programs~\cite{contracts1, contracts2, contracts3},
+  (iii) Turing-complete policies, where monitors themselves are programs~\cite{contracts1, contracts2, contracts3},
   (iv) dynamic or runtime-reflection features, such as the ones present in Python and JavaScript~\cite{jsanalysis1, jsanalysis2}.
 
 % Where dynamic analysis shines is
@@ -214,7 +211,7 @@ This is a recent phenomenon enabled by zero-cost code sharing~\cite{libs}:
 % Libraries are used pervasively today to lower development costs and improve software quality, 
 % This over-reliance to third-party libraries is a recent phenomenon, 
   language-specific package repositories eliminate the cost of publishing and using a library.
-As a result, applications frequently count hundreds of libraries~\cite{npmstudy:19}, with each often only a few lines long~\cite{leftpad, npmstudy:19}. % how to say thousands of them depend on a 11-line lib?
+As a result, applications frequently count hundreds of libraries~\cite{npmstudy:19}, with each one often only a few lines long~\cite{leftpad, npmstudy:19}. % how to say thousands of them depend on a 11-line lib?
 Library-oriented analysis adds to the challenges of prior tools as
   (i) library boundaries disappear at runtime, and
   (ii) coarse-grained, high-level language semantics misalign with fine-grained, low-level instrumentation.
@@ -224,9 +221,11 @@ To address these challenges, we propose a novel approach to dynamic analysis, te
   From ancient Greek {\scriptsize $\delta\iota\acute{\alpha}$} (di\'{a}, ``inter-, through'') and {\scriptsize $\lambda\acute{\tilde{\upsilon}}\epsilon\iota\nu$} (lúein, ``to loosen'').
 } and implemented in \sys.
 Program dialysis is a general technique, applicable to any programming language, that enables dynamic fragmentation, analysis, and reassembly of applications at the level of individual libraries. 
-It operates during program execution, automating wrapping and transformation of the program's dependency graph, and allowing developers to extract meaningful insights with only a few lines of analysis-specific code
+%                                                   !! sosto!!------.
+%                                                                   \/
+It operates during program execution, automating the wrapping and transformation of a program's dependency graph, and allows developers to extract meaningful insights with only a few lines of analysis-specific code.
 By operating at the granularity of libraries, dialysis has several benefits over prior work: %full-fledged dynamic analysis:
-  (i) it allows bolting library dialysis itself as a library onto existing runtime environments with no dynamic analysis,
+  (i) it allows bolting analysis, itself as a library, onto unmodified runtime environments, % with no dynamic analysis,
   (ii) it supports analysis expressions using the same language, tools, and abstractions as the host program language,
   (iii) it features significantly low runtime performance overheads, enabling the potential for toggling its use in production environments.
 
@@ -254,26 +253,26 @@ By operating at the granularity of libraries, dialysis has several benefits over
 
 To demonstrate its effectiveness, we evaluate \sys on the JavaScript ecosystem (>1.2M libraries~\cite{modulecounts}). % and unusually high code-reuse~\cite{npmstudy:19}. %, and a pressing need for usable dynamic analysis~\cite{}.
 We develop a diverse set of analyses that target practical information about a program:
-  an allow/deny security analysis,
+  a read-write-execute security analysis,
   a profiling analysis showing bottlenecked modules,
 % a synthesis-oriented analysis on input-output data,
   and an analysis extracting union-based type invariants.
-This set of analyses drives the design requirements for \sys, and highlights dialysis as a middle ground between coarse- and fine-grained analysis.
+These analyses drive the design requirements for \sys, and highlight dialysis as a middle ground between coarse- and fine-grained analysis.
 We evaluate \sys at three different levels:
   (i) synthetic micro-benchmarks that test certain aspects and confirm the correctness of our analyses in a controlled environment;
   (ii) single-module meso-benchmarks that allow comparison with dynamic analysis frameworks; and
-  (iii) end-to-end full-application macro-benchmarks that show behavior of \sys on realistic workloads. 
+  (iii) end-to-end full-application macro-benchmarks that showcase \sys's behavior on realistic workloads. 
 \S\ref{bg}--\ref{eval} present our key contributions:
 \begin{itemize}
 \item \S\ref{bg} characterizes the shared needs of three case-study multi-module analyses whose needs remain mostly unmet by general-purpose analysis frameworks.
-\item \S\ref{design} presents the design of the bolt-on module-oriented dynamic analysis~\sx{design}, which meets the requirements of the three case-study analyses.
+\item \S\ref{design} presents the design of dialysis, bolt-on library-oriented dynamic analysis~\sx{design}, which meets the requirements of the three case-study analyses.
 \item \S\ref{impl} discusses our implementation, \sys, as a pluggable library for the JavaScript ecosystem, as well as the implementation of the three analyses.
-\item \S\ref{eval} evaluates \sys showing it expresses insightful analyses succinctly, adds minimal overheads over the baseline runtime, and scales to hundreds of modules.
+\item \S\ref{eval} evaluates \sys, showing that it expresses insightful analyses succinctly, adds minimal overheads over the baseline runtime, and scales to hundred-library programs.
 \end{itemize}
 
 Aside from the aforementioned sections (\S\ref{bg}--\ref{impl}), the paper discusses \sys's limitations and its application to other languages~\sx{diss};
   it compares with related prior work in the literature~\sx{rw};
-  and closes with appropriate conclusions~\sx{end}.
+  and draws appropriate conclusions~\sx{end}.
 
 
 \section{Background, Examples, and Goals}
@@ -283,7 +282,7 @@ A single application today often incorporates multiple libraries written and pub
 To make the difficulties of analyzing such library-overreliant software more concrete, we describe three example analyses~\sx{examples}.
 These examples illustrate key requirements for the design of a framework for analyzing applications at the boundaries of modules~\sx{goals}.
 Before describing these examples, however, we offer a brief refresher on the %abstractions and corresponding
-  internals of module systems~\sx{bg1}.
+  internals of a module system~\sx{bg1}.
 
 % The emerging development process should (and to a certain extent, does) simplify the development and testing process;
 %   unfortunately, good abstractions are sealed (\ie they do not leak between abstraction layers), which makes the inspection of a library difficult.
@@ -310,13 +309,13 @@ Before describing these examples, however, we offer a brief refresher on the %ab
 A library, package, or module---we use these terms interchangeably---is a development-time construct encapsulating reusable functionality.
 This functionality falls into two categories:
   it either (i) comes bundled with the language, possibly wrapping operating-system interfaces, such as the file-system, in a way that is system-agnostic and conforms to the language's conventions,
-  or (ii) provided by other developers sharing code others might find useful.
+  or (ii) is provided by other developers sharing code others might find useful.
 Fig.~\ref{fig:ex1} shows a \ttt{simple-math} library (right) imported by a program (left).
 
 From a developer's perspective, \ttt{import}ing a library makes its functionality available to the calling code by means of binding its functionality to a name in the caller's scope.
 % What this means is that some of the library's functionality is bound to a variable name that becomes available in the scope of the caller.
 This is achieved by some form of \ttt{export}ing, where the library developer expresses which values should become available to the \ttt{import}ing code.
-The definition of a value depends on the semantics of the language; for now we can assume it's either a primitive value, a list of values, a function, or an object mapping string keys to values.
+The definition of a value depends on the semantics of the language. % for now we can assume it's either a primitive value, a list of values, a function, or an object mapping string keys to values.
 Internally, the library may \ttt{import} other libraries, cause side-effects to the file-system or the network, or even be implemented in multiple languages.
 % , as shown on line \fixme{XX},
 % closely coupled with the runtime
@@ -325,12 +324,12 @@ Internally, the library may \ttt{import} other libraries, cause side-effects to 
 From the programming language's perspective, the process of \ttt{import}ing a library is achieved in several steps. 
 Compiled languages support separate compilation, where source files are compiled individually, followed by a runtime-linking phase that loads and links the resulting object files.
 Interpreted languages involve a somewhat convoluted process that combines runtime loading, interpretation, and linking.
-This process starts by locating the library in the file system % or across the network,\footnote{
+This process starts by locating the library in the file system, % or across the network,\footnote{
 %   Examples of run-time environments featuring network loading include V8 and deno, for executing JavaScript and TypeScript respectively.
 % }
-by resolving relative or absolute identifiers.
+by resolving code-relative module identifiers.
 % The library is assigned a unique identifier.
-The content of the library is then read and wrapped in a way that resolves library-local names such as \ttt{\_\_name\_\_} in Python and \ttt{\_\_filename} in JavaScript to meaningful values.
+The content of the library is then read and wrapped in a way that resolves library-local names, such as \ttt{\_\_name\_\_} in Python and \ttt{\_\_filename} in JavaScript, to meaningful values.
 The wrapper is then interpreted and evaluated using the language's interpreter, which might result to side-effects---for example, a \ttt{process.exit()} in the library's top-level scope will exit the entire program.
 Finally, the value bound to the \ttt{export}ed interface or returned from this interpretation (depending on the language) is made available to the scope of the  \ttt{import}ing code.
 
@@ -338,9 +337,9 @@ There is significant variation, but a few features are common across many implem
 A library cache maintains a mapping from library identifiers, often absolute paths, to returned \ttt{export} values.
 The cache serves a dual purpose:
   by avoiding locating already loaded libraries, it improves performance and ensures the consistency of any library-internal state.
-Recursive imports are handled in a depth-first way, and when cyclical dependencies are possible they are resolved by pointing to the cache.
+Recursive imports are handled in a depth-first way, and when cyclical dependencies are possible, they are resolved by pointing to the cache.
 An increasingly common feature is to allow different versions of the same library to co-exist in a program, in order to avoid a choice between mutually exclusive options---a paradoxical situation known as ``dependency hell''.
-As a result, a single \ttt{import} \ttt{l} does not necessarily resolve to the same (version of the) library \ttt{l} every time.
+As a result, a single \ttt{import} $l$ does not necessarily resolve to the same (version of the) library $l$ every time.
 The dual of this is also possible: two different library names may resolve to the same identifier (in which case the second will be redirected to the cache).
 These features complicate library-level analysis, especially in interpreted programming languages.
 
@@ -354,11 +353,12 @@ These features complicate library-level analysis, especially in interpreted prog
 \label{examples}
 
 Having reviewed the building blocks and underlying techniques that power modularity, we now turn to examples of dynamic analysis that today are difficult or require specialized solutions:
-  (i) an allow/deny security analysis,
+  (i) a read-write-execute security analysis,
   (ii) a performance-profiling analysis showing bottlenecked libraries, and
 % (iii) a synthesis-oriented analysis on input-output data, and
   (iii) an analysis extracting runtime type invariants.
-These examples illuminate key design requirements for \sys's implementation of module-level dynamic analysis.
+These examples illuminate key design requirements for dialysis in general and \sys in particular.
+% \sys's implementation of module-level dynamic analysis.
 
 \heading{Security Analysis}
 The pervasive reliance on third-party libraries has led to an explosion of supply-chain attacks~\cite{long2015owasp, maass2016theory, snyk, lauinger2017thou}.
@@ -371,11 +371,11 @@ Worst of all, leaked publishing tokens allow attackers to update packages with c
 As a concrete example, consider the recent \ttt{event-stream} incident~\cite{es1, es2}, in which a maintainer of a highly popular library inserted code stealing Bitcoin wallet credentials from programs using that library.
 Heavy-weight, offline dynamic analysis~\cite{jalangi} would not have helped, as \ttt{event-stream} activated only on production (rather than testing or development).
 Coarse-grained analysis at program boundaries, say via containment or system-call interposition~\cite{systrace:03}, would have not helped either because host programs already used the network and disk.
-Finally, static analysis would have been of little use, as \ttt{event-stream} encrypted its source code.
+Finally, static analysis would have been of little use, as \ttt{event-stream} encrypted its malicious payload.
 
 Having the ability to toggle a library-level ``allow-deny'' security analysis on/off at runtime would have revealed the (unusual) resources touched by \ttt{event-stream}.
 Analyzing the behavior \emph{within} the library itself is not critical:
-  if any data exfiltration is happening, it will require calling out of the library and into the network---in \ttt{event-stream}'s case, using the \ttt{fs} library to modify a different library and then use \ttt{http} from the second library.
+  if any data exfiltration is happening, it will require calling out of the library and into the network---in \ttt{event-stream}'s case, using the \ttt{fs} library to modify a different library and then call \ttt{http} from the second library.
 Both \ttt{fs} and \ttt{http} are part of the standard library, built into the runtime environment.
 Examples of interfaces outside the \ttt{http} and \ttt{fs} libraries include the ability to use global variables, import other libraries, and access the cache of the loaded modules---all of which are unfortunately available to any third-party that is part of an application.
 % The key issue underlying the \ttt{event-stream} attack is that any third-party fragment of an application has unrestricted access to the functionality available to the rest of application.
@@ -402,7 +402,7 @@ Developers use various techniques to understand such problems---\eg collecting a
 These techniques, however, require significant \emph{manual} effort:
   capturing traces, setting up test-beds, replaying traces, analyzing statistics, and debugging performance are all tedious and time-consuming tasks, compounded by the difficulties of mapping the results to the right third-party libraries.
 
-Switching on a library-level profiling analysis % that operates at library boundaries
+Switching-on a library-level profiling analysis % that operates at library boundaries
   would quickly detect a slowdown and attribute it to the bottlenecked \ttt{minimatch}.
 Wrapping library interfaces with profiling logic would collectively construct a model of the current workload.
 Such profiling could operate at a high resolution in time and space---at every function call entering a library and on hundreds of libraries across an application---but does not need to track detailed operations such as direct variable accesses.
@@ -427,8 +427,8 @@ To use it, developers have to provide a protocol-buffer specification describing
 Given a library---say, bignum or crypto---a developer has to first call it manually, take note of the result's type, and then fill in the protobuf spec. %, common in distributed systems
 This process has to be repeated with every change, often due to library updates or changes in the consuming program's structure.
 
-Dynamic analysis can be used to discover such type assertions or invariants.
-The analysis would consult the (static) definition of a type \emph{system}, capturing the type of values at the library boundaries by observing the execution of the program.
+Library-level dynamic analysis can be used to discover such type assertions or invariants.
+The analysis would consult the (static) definition of a type \emph{system}, capturing the type of values at the boundaries of libraries by observing their arguments during the execution of the program.
 %% TODO: such as the simply-typed lambda calculus augmented with objects and union types.
 
 % would need to be able 
@@ -441,9 +441,9 @@ The analysis would consult the (static) definition of a type \emph{system}, capt
 \label{goals}
 
 We have briefly introduced three motivating analyses for extracting information about an application's dependencies.
-While the challenges behind these analyses share several characteristics, today they remain largely unaddressed by dynamic analyses frameworks due to a combination of factors:
+While the challenges behind these analyses share several characteristics, today they remain largely unaddressed by dynamic analysis frameworks due to a combination of factors:
   these frameworks either require highly specialized solutions often outside the core language,
-  do not leverage or offer semantic information at the level of library boundaries, or
+  do not leverage nor offer semantic information at the level of library boundaries, or
   lead to a high (often impractical) performance overheads due to the high granularity of their analyses.
 To summarize, these applications would appear to be served well by a system that:
 \begin{itemize}
@@ -474,10 +474,10 @@ Program dialysis operates by
 
 \begin{itemize}
   
-  \item \textbf{Dismantling:}
+  \item \textbf{Fragmentation:}
 Dialysis starts by recursively dismantling a program into its dependencies. % ---pieces of software implement a computation or functionality.
 This is achieved by re-wiring the language's \ttt{import} function to go through \sys, resulting in \sys walking the program's recursive dependency structure at runtime.
-During this phase, \sys has to determine the granularity of the analysis (\eg top-level libraries, a specific library \etc) in order to apply transformations at the correct level and map th provided analysis hooks to the corresponding libraries.
+During this phase, \sys has to determine the granularity of the analysis (\eg top-level libraries, a specific library \etc) in order to apply transformations at the correct level and map the provided analysis hooks to the corresponding libraries.
 
   \item \textbf{Transformation:}
 It then sets up the provided analysis, by transforming each library interface, its surrounding environment, and possibly the values passing through the library boundary.
@@ -485,7 +485,7 @@ Programmatic transformations walk and wrap each one of these values based on the
 % the library interface is usually a complex (but singular) object;
 % the surrounding environment provides names to multiple ``implicitely'' imported libraries, functionality provided by the language.
 This phase requires solving several challenges, including enumerating all points of entry into and exit out of a library, 
-and swapping original values externally available to a library with ones that are wrapped with interposition mechanisms.
+and swapping all original values externally-available to a library with ones that are wrapped with interposition mechanisms.
 
   \item \textbf{Reassembly}
 Finally, dialysis reassembles individual modified libraries back into the program's original structure.
@@ -518,7 +518,7 @@ The cache needs to be augmented to support multiple wrappers per library, each c
 % After source interpretation, \sys transforms the resulting value by consulting the \pc's explicit segment~\sx{final}, updates the \sys-augmented module cache~\sx{cache}, and returns the value to the consumer.
 % The following subsections detail these steps.
 
-\subsection{Dismantling}
+\subsection{Fragmentation}
 \label{one}
 
 When a dialysis-augmented program starts, it first loads the analysis file provided by the developer. 
@@ -557,7 +557,7 @@ The precise techniques for achieving this will be made clear in the next section
 \caption{
   \textbf{Shadowing segments.}
   \textmd{
-  Cross-module variable name resolution (left) augmented with \sys (green boxes), which interjects non-bypassable steps resolving to \sys-augmented values (right-top: implicit module imports; right-bottom: explicit import).
+  Cross-module variable name resolution (left) augmented with \sys (green boxes), which interjects non-bypassable steps resolving to \sys-augmented values (right-top: implicit module imports; right-bottom: explicit import)~\cf{two}.
   }
   \vspace{-4mm}
 }
@@ -569,18 +569,18 @@ The precise techniques for achieving this will be made clear in the next section
 \label{two}
 
 %FIXME: Needs examples, especially the context
-For each analyzed library, \sys needs to place hooks all around its boundary---not just its interface.
+For each analyzed library, \sys needs to place hooks all around its boundary---not just its interface (Fig.~\ref{fig:shadowing}).
 This is achieved in three logical steps:
 (i) transforming library's context, a mapping from names to values that are available from outside library,
-(ii) interpreting the library within this context, so that all names resolve to \sys-augmented values, and
-(iii) transforming the return value, \ie the library interface, once the interpretation is complete.
+(ii) interpreting the library within this context, so that all names bind and resolve to \sys-augmented values, and
+(iii) transforming the library's \ttt{export} value, \ie the library interface, once the interpretation is complete.
 Before discussing \emph{where} each transformation is applied, however, we show \emph{how} they are applied.
 
 \heading{Transformations}
 % , such as an object returned from a module or an exception about to be sent across the network.
 \sys's transformations boil down to a base transform \ttt{wrap} that traverses and augments values with runtime analysis monitors.
-At a high level, \ttt{wrap} takes a value $v$ and an analysis fragment $\alpha$ and returns a new value $v'$ that has every one of its fields $f$ wrapped:
-   every $f$ is replaced with a method $f'$ that returns the result of calling $f$ after applying the analysis segment corresponding to $v$.
+At a high level, \ttt{wrap} takes a value $v$ and analysis fragments $(\alpha_1, \alpha_2)$ and returns a new value $v'$ that has every one of its fields $f$ wrapped:
+   every $f$ is replaced with a method $f'$ that calls fragment $\alpha_1$, calls $f$, calls fragments $\alpha_2$, and returns the result of the call to $f$.
 
 More specifically, \ttt{wrap} can be applied to any value in the language, which can generally be a primitive, a function, or a compound value---say, a list of values or an object of key-value pairs.
 % Listing~\ref{core-tx} presents a simplified core of the language.
@@ -621,15 +621,19 @@ To achieve this, \sys wraps fields with an interposition mechanism;
 % Examples of such mechanisms include \ttt{Proxy} objects (JavaScript), metatables (Lua), metaclasses (Python), and direct-accessor metaprogramming (Ruby).
 Extending a transformed object with a value will start with the value's transformation.
 % \sys's wrappers detect and record changes to any of the object's fields, transforming values as needed.
-For example, if a field in a transformed object is assigned a new value, that value has to be be transformed before its to the object.
+For example, if a field in a transformed object is assigned a new value, that value has to be transformed before it is attached to the object.
 
-\sys allows toggling analyses on/off, changing analysis, or chaining multiple analysis during the execution of the program.
+\sys allows toggling analyses on/off, changing analyses, or chaining multiple analyses during the execution of the program.
 To achieve this, it maintains a handle to the root of both the unprocessed and the newly processed values, for further processing:
   the unprocessed value is used to create objects, at runtime, that run different analyses;
   the new value is used to revoke or chain analyses together.
 
 \heading{Context Transformation}
 To be able to track an analysis at the library boundary, \sys needs to provide each library with values that are augmented with interposition wrappers---and do this for all of the names to which a library has access.
+This includes global and pseudo-global\footnote{
+  For example, Node introduces objects that are not part of the EcmaScript specification into the global scope, such as \ttiny{process} and \ttiny{console};
+  similarly, Lua's Luvit introduces its own globals such as \ttiny{p()} and \ttiny{exports}.
+} names provided by the language and its runtime.
 
 To achieve this, \sys first needs to prepare a transformed copy of the library's outer context.
 Semantically, the context is a map from variable names to their values.
@@ -651,15 +655,15 @@ Examples include the library's absolute filename as \ttt{\_\_name\_\_}, its \ttt
 Attempting to access library-local variables directly from within \sys's scope will fail subtly, as they will end up resolving to library-local values of \sys \emph{itself}---and specifically, the module within \sys that is applying the transformation.
 \sys solves this problem by leaving the value empty and deferring binding for later from within the scope of the library (see below).
 
-\heading{Context Linking}
+\heading{Context Binding}
 To link the library with the newly transformed version of its context, \sys wraps the library---still an uninterpreted string of source code---with a closure.
 The closure's body starts with a prologue of the form:
 \begin{verbatim}
-  local pint = ctx.print
+  local print = ctx.print
   local error = ctx.error
   ...
 \end{verbatim}
-These statements shadow global variable names by redefining them as local ones.
+These statements shadow global variable names by redefining them as function-local ones.
 The closure accepts an argument \ttt{ctx} that will hold the customized context (see above), assigning its entries to their respective variable names.
 The prologue executes before everything else in the library.
 % When the closure is applied to the customized context, the library's return value is recovered in a side-effectful manner (as in the unmodified library system) by reading the library's \ttt{exports} variable---that is, the closure does not end with an explicit \ttt{return}.
@@ -672,7 +676,7 @@ Late-bound, \emph{library}-local variables, such as the absolute filename mentio
 \heading{Library Interface Transformation}
 Returning the library's value to its consumer amounts to interpreting the library, linking it with the custom context, and applying a final transformation to its return value.
 % TODO: (for intro!) ..to attenuate the privilege exercised by the library's consumer
-The goal of the final transformation is to track activity at the boundary;\footnote{
+The goal of the final transformation is to track activity at the boundary.\footnote{
   For some analyses, \sys needs to additionally augment the values going through the library's interface---including continuation functions passed as arguments to the library's methods.}
 This final transformation is applied for every new consumer of the library, returning a fresh analysis wrapper.
 This is due to the need for distinguishing between different boundaries of the same library.
@@ -732,7 +736,7 @@ The second approach is to implement \sys as a third-party library (\eg the \ttt{
 % 
 With both approaches, \sys feels to users as a backward-compatible, drop-in replacement of Node's module system.
 We went with the second approach, as looser coupling seems to have several benefits:
-  it does not require \sys's users to have a second Node copy only for running analyses;
+  it does not force \sys's users to have a Node copy only for running analyses;
   it removes \sys's developers from the critical path of updates between the Node developers and its users; 
   and it simplifies \sys's comparison with vanilla Node (both in terms of performance and correctness).
 The primary drawback was missing a few opportunities for lowering runtime-performance and development-effort.
@@ -755,14 +759,15 @@ Loading a fresh module % with \ttt{require("foo")}
 
 % The resolution algorithm is somewhat convoluted, because it depends on several different facts (including the type of the file requested, whether it is a globally installed, whether it is a directory \etc).
 % It does not require any \sys support beyond copying the directory that contains the source code of the all the modules onto the remote host.
-\sys interposes on all of these steps to facilitate transformations.
+% \sys interposes on all of these steps to facilitate transformations.
+\sys augments all of these steps.
 Interposing on resolution (R) makes the module identifier available to \sys without affecting the (incredibly convoluted!) module resolution algorithm.
-If the module's type is one \sys can analyze, it fetches the corresponding analysis during loading (L).
+If the module's type corresponds to a module that can be analyzed by \sys, \sys fetches the corresponding analysis during loading (L).
 Wrapping (W) and evaluation (E) are where \sys transforms the module boundary.
 \sys replaces Node's wrapper function to pass an additional argument, the modified context \ttt{CTX}.
-\sys comes with a hard-coded list of names corresponding to the specific version of EcmaScript and Node.
+\sys comes with a hard-coded list of names corresponding to the specific versions of EcmaScript and Node.
 Identifying names coming from EcmaScript was relatively easy, as the standard makes them explicit.
-Node's global names are described at various parts of the documentation, but library-local names required close inspection of Node's internals; fortunately, these were only five names.
+Node's global names are described at various parts of the documentation, but library-local names required close inspection of Node's internals; fortunately, they were only five names.
 
 % Before a module's code is evaluated, the Node.js module loader wraps the module so that
 %   (i) it keeps top-level variables (declared with \ttt{var}, \ttt{const} or \ttt{let}) scoped to the module rather than the global object; and
@@ -813,22 +818,20 @@ Individual analysis are implemented using a set of templates that provide initia
 \sys offers a small utility library to reduce boilerplate code for pattern-matching on types.
 Individual analyses are about 60 lines of code, but a significant part of this code is common across them.
 
-As the three analyses are quite complex to be shown in the paper, we present here a trivial analysis---one that counts all accesses to global variables from a module \ttt{serial}:
+As the three analyses are quite complex to include in the paper, we present here a trivial analysis---one that counts all accesses to global variables from a module \ttt{serial}:
 
 \begin{lstlisting}
 let fs = require("fs");
 let count = {};
-forevery.global.in(/serial/) = {
+forevery.global.in(/serial/).do({
   pre: (name, path, _) => {
-    let id = resolve(name, path);
-    count[id] = count[id]?  count[id] + 1 : 1;
-  }
-};
+    let o = resolve(name, path);
+    count[o] = count[o]?  count[o] + 1 : 1;
+  } });
 process.on("exit", () => {
   fs.writeFileSync("acl.json",
                    "utf-8",
-                   JSON.stringify(count));
-});
+                   JSON.stringify(count)); });
 \end{lstlisting}
 
 \noindent
@@ -847,11 +850,11 @@ and develops a permission model where individual fields are governed by permissi
  (ii) a write permission (\W) indicates that a consumer modified or deleted a value; and
  (iii)  an execute permission (\X) indicates that a consumer executed a value---\eg a function or a method---or invoked a constructor (usually prefixed by \ttt{new}).
 
-The resulting permission sets are organized as collections of maps, one per library, indexed by object-paths---\eg \ttt{Math.add: RX}.
+The resulting permission sets are organized as collections of maps, one per library, indexed by object-paths---\eg \ttt{require("Math").add: RX}.
 % that correspond to values of other modules or global-like language names.
 
 \heading{Performance Diagnosis}
-We develop a profiling analysis that operates at two levels:
+We developed a profiling analysis that operates at two levels:
  (i) module-boundary wrappers that collect profiling statistics for calls between modules by wrapping module interfaces; and
  (ii) an aggregator function that collects statistics from all boundary wrappers and generates a model of library load under the current workload.
 
@@ -875,8 +878,8 @@ Fortunately, the aggregator understands the dependency structure and can approxi
 % [serial , whatever, pizza, ...]
 
 \heading{Type Invariant Discovery}
-To infer type invariants for serialization specifications, we base our analysis on a simple type system modeled after the simply-typed lambda calculus augmented with:
-  (i) unions (sum types), such as \ttt{a | b | c}, 
+To infer type invariants for serialization specifications, we based our analysis on a simple type system modeled after the simply-typed lambda calculus augmented with:
+  (i) unions (sum types), such as \ttt{string | number}, 
   (ii) JavaScript-specific types such as \ttt{null}, \ttt{NaN}, or \ttt{undefined}, and
   (iii) a \ttt{native} type for values that cannot be serialized, such as \ttt{console.log}.
 Support for union types is useful for when our analysis witnesses variables holding values of different types---although, in practice,  programs tend to make calls of the same type across their entire lifetime~\cite{daikon}.
@@ -914,7 +917,7 @@ In this section, we report on \sys's performance characteristics:
 % For the third question, we use a combination of real applications~\sx{macro}.
 
 Several takeaways are worth highlighting.
-Analyses expressed in \sys are about 4$\times$ smaller than equivalent analyses written for a heavy-weight instrumentation frameworks.
+Analyses expressed in \sys are about 4$\times$ smaller than equivalent analyses written for a heavy-weight instrumentation framework.
 \sys's library-level analysis adds a small overhead, less than $2\times$ for the vast majority of libraries and often less than $5ms$.
 Finally, \sys scales to large applications with hundreds of libraries while interposing on several thousands of objects.
 
@@ -928,7 +931,7 @@ All times reported are in \textbf{ms}, averaged over 1K runs;
 \label{micro}
 
 \sys's micro-benchmarks were designed to test key properties of each analysis and confirm it outputs the expected results.
-For example, to better understand PD and confirm it works correctly, we craft a micro-benchmark with four dependencies of known static bottlenecks.
+For example, to better understand PD and confirm it works correctly, we crafted a micro-benchmark with four dependencies of known static bottlenecks.
 % Each dependency can perform one of three operations, depending on its current state:
 %   (i) invoke a call to a module it imports,
 %   (ii) busy-wait for a specific amount of time, or
@@ -944,7 +947,7 @@ A second goal was to understand \sys's internal overheads in a controlled enviro
   \footnotesize{
     \textbf{Synthetic Micro-benchmarks}.
 		Applying the three analyses on a series of synthetic micro-benchmarks, created to stress different features.
-    All timings are in $ms$.
+    All timings are in $ms$~\cf{micro}.
   }
 }
 \begin{tabular*}{\columnwidth}{l @{\extracolsep{\fill}} lll l}
@@ -966,7 +969,7 @@ cycles           &   4.32    &  8.32   &  8.19   &  7.73   \\
 \end{table}
 
 Table~\ref{tab:synthetic} depicts the results of the three analyses applied to a subset of our benchmarks.
-The first column indicates the focus of the benchmark; not all analysis-benchmark combinations are useful.
+The first column indicates the focus of the benchmark; not all analysis--benchmark combinations are useful.
 % Currently, these benchmarks return the results we expect, but they did help with the identification of \sys's bugs.
 For example, the ``custom-delay'' benchmark, described earlier, features static bottlenecks across its dependency tree but does not involve interesting access patterns.
 The use of \sys adds an overhead that is under 2$\times$, except for the first two cases that feature \emph{only} accesses.
@@ -985,7 +988,7 @@ Traversing one million 12-edge paths (\ie root to leaves) averages 167.2ms and 5
 We emphasize that this is an artificially constructed benchmark stressing worst-case overheads nowhere near an normal execution:
   for comparison, the transformation of these objects itself took nearly 16 seconds ($10^3\times$ more than what we saw with real modules).
 The takeaway is that \sys-inherent overheads due to interposition are unlikely to be the bottleneck of an analysis;
-  what is likely to be the overhead is the analysis itself---\eg updating a global aggregator or invoking system-calls to extract timing.
+  what is likely to be is the analysis itself---\eg updating a global aggregator or invoking system-calls to extract timing.
 
 \begin{table}[t]
 \center
@@ -1039,22 +1042,22 @@ mkdirp~\cite{mkdirp}           & 116.37 & 1959.52 & 1392.64 & 1252 \\
 \end{figure*}
 
 
-To understand \sys's performance characteristics at the level of individual modules, we perform two experiments.
+To understand \sys's performance characteristics at the level of individual modules, we performed two experiments.
 
-In the first experiment, we collect a diverse set of eight popular libraries from npm, 
+In the first experiment, we collected a diverse set of eight popular libraries from npm, 
 % used by thousands of other projects,
 on the order of hundreds of lines of code.
-As a workload, we use each library's internal test suite, with \ttt{minimist} includes several distinct test harnesses.
+As a workload, we used each library's internal test suite (one library, \ttt{minimist}, includes several test harnesses).
 These tests stress functionality as expected by the library's authors and confirm that \sys does not break it.
-We apply \sys using the three analyses we developed, and compare the results with their baseline performance (Tab.~\ref{tab:meso}).
+We applied our three analyses, and compare their performance with the baseline (Tab.~\ref{tab:meso}).
 The results show that executions augmented with analyses are within 2--3$\times$, averaging a 80\% slowdown for the largest libraries.
-Different benchmarks put a different pressure on \sys's wrappers---some resulting in the invocation of as many as 257 wrappers. % (shown by the analysis output).
+Different benchmarks put a different pressure on \sys's wrappers, which range between 23--257. % (shown by the analysis output).
 
 In the second experiment, we apply \sys on Jalangi2's extensive test suite (Fig.~\ref{fig:meso}) and compare \sys's performance to that of Jalangi2.
 We note that Jalangi2 improves significantly over Jalangi's performance~\cite{jalangi}, as it eschews record/replay capabilities.
-To be fair in our comparison, we design a simple analysis from scratch that both frameworks can express---namely, one for tracking counts of global variable accesses~\sx{impl2}.
+To be fair in our performance comparison, we design a simple analysis from scratch that both frameworks can express---namely, one for tracking counts of global variable accesses~\sx{impl2}.
 The core of the analysis requires a few lines, but expressing it in \sys requires 4$\times$ fewer lines of code;
-  the effort of employing \sys as a library was significantly lower than that of Jalangi2, for which we relied on a Docker container to simplify the framework's setup.
+  the effort of employing \sys as a library was also significantly lower than that of Jalangi2, for which we relied on a Docker container to simplify the framework's setup.
 The performance results show that \sys performs better than Jalangi2, at times by a significant margin (\ie more than 10$\times$ for 13 benchmarks).
 Jalangi2 is more powerful than \sys, capable of expressing analyses that are more fine-grained than \sys's, but results in higher developer effort and runtime performance.
 
@@ -1069,7 +1072,7 @@ Jalangi2 is more powerful than \sys, capable of expressing analyses that are mor
 \caption{
   \footnotesize{
     \textbf{Applying \sys to three large applications}.
-    The table shows the overheads of applying the three analyses to three large applications.
+    The table shows the overheads of applying the three analyses to three large applications~\cf{macro}.
   }
 }
 \begin{tabular*}{\columnwidth}{l @{\extracolsep{\fill}} ccc}
@@ -1096,8 +1099,8 @@ Performance                          &                   &                      
 
 
 Finally, we perform end-to-end program dialysis on three large applications:
-  KoaBlog~\cite{koa}, a minimal blogging platform built on the Koa framework,
-  Moeda~\cite{moeda}, a command-line currency converter that, among other features, uses online currency exchange rates, and
+  KoaBlog~\cite{koa}, a minimal blogging platform built on the Koa framework;
+  Moeda~\cite{moeda}, a command-line currency converter that, among other features, uses online currency exchange rates; and
   Terminalizer~\cite{terminalizer}, an application for recording terminal sessions to generate animated gif images and shareable web-player links.
 These applications are highly popular, with Koa.js and Terminalizer having 28.3K and 8.7K GitHub stars respectively.
 Their structural and performance characteristics are shown in Tab.~\ref{tab:macro}.
@@ -1111,7 +1114,7 @@ Applying \sys to these applications generates analysis results that are 9--132$\
 However, the performance of analyzed code is on average still within 2--3$\times$ over the baseline performance.
 The size of the resulting JSON files raises the challenge of analysis interpretability---surprisingly, just running Terminalizer with \ttt{--help} still returns more than 6K fragments from several libraries.
 Our routines for post-processing \sys's results compress by module name---\ie squashing duplicate reports by human-name, not module identifier.
-This can affect the results of multiple imports with the same name at different parts of the tree that would indeed correspond to different libraries
+This can affect the results of multiple imports with the same name at different parts of the tree that would indeed correspond to different libraries.
 % For example, importing two different versions of a library at two different parts of the dependency tree will result in to two different with the same name.
 We also squash cache entries that correspond to one module imported by multiple modules, which would create separate entries in \sys's augmented cache, but results in a single count for Tab.~\ref{macro} (for \sys's treatment of the module cache, see~\S\ref{three}).
 Confirming that \sys performs correctly under these scenarios is one part of the motivation behind the synthetic micro-benchmarks shown earlier~\sx{micro}.
@@ -1297,14 +1300,13 @@ Contrary to PFR, dialysis operates on single programs, avoids breaking semantics
 \section{Conclusion}
 \label{end}
 
-Recent trends in software engineering have led to unprecedented levels of third-party code re-use.
-Applications today routinely pull together hundreds of libraries, making their analysis difficult.
-To address these challenges, we present \emph{program dialysis}, a novel dynamic-analysis technique specifically tailored to applications with many third-party libraries.
-Combining name shadowing, context wrapping, and transformation of the underlying dependency graph, program dialysis automates dynamic \fra, \ana, and \ass of programs at the level of individual libraries during program execution.
+Recent trends in software engineering have led to unprecedented levels of third-party code (re-)use.
+% Applications today routinely pull together hundreds of libraries, making meaningful analysis difficult.
+We present \emph{program dialysis}, a novel library-aware analysis technique for dismantling, analyzing, and reassembling programs by combining name shadowing, context wrapping, and transformation of the underlying dependency graph.
 % is a general technique that
-Contrary to heavy-weight dynamic analysis that provides full visibility into program execution, it may suffer from higher performance overheads, require significant developer effort, or offer results that are too low-level for the problem at hand, dialysis shines when there is a need for urgency, select online analysis, and a high level of abstraction.
-
-We note that \sys is open source, available for experimentation with other applications and analyses.
+Contrary to heavy-weight dynamic analysis, dialysis lowers developer effort in writing and deploying analysis, improves runtime performance, and operates at a high level of abstraction.
+% it may suffer from higher performance overheads, require significant developer effort, or offer results that are too low-level for the problem at hand, dialysis shines when there is a need for urgency, select online analysis, and a high level of abstraction.
+Our dialysis prototype for JavaScript, \sys, is available as an open-source library for experimentation with other applications and analyses.
 
 % \section*{Acknowledgments}
 % Martin
