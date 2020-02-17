@@ -31,3 +31,15 @@ The time of 1 is 3.287143
 The time of 9 is 3.3247959999999996 
 The time of 1 is 3.454471 
 The time of 9 is 3.681851 
+The time of 1 is 3.25095 
+The time of 9 is 3.468118 
+The time of 1 is 3.30897 
+The time of 1 is 3.2994749999999997 
+The time of 1 is 3.280181 
+The time of 1 is 3.33188 
+The time of 1 is 3.3467409999999997 
+The time of 9 is 3.272592 
+The time of 1 is 3.332327 
+The time of 9 is 3.5850239999999998 
+The time of 1 is 3.734394 
+The time of 9 is 3.31763 

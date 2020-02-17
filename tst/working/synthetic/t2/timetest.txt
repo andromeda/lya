@@ -38,3 +38,11 @@ The time of 1 is 4.893393
 The time of 9 is 4.875095 
 The time of 1 is 4.599218 
 The time of 9 is 4.815563 
+The time of 1 is 4.595988999999999 
+The time of 9 is 5.099314 
+The time of 1 is 4.6784099999999995 
+The time of 9 is 5.086215999999999 
+The time of 1 is 4.5761519999999996 
+The time of 9 is 4.634094999999999 
+The time of 1 is 4.697639 
+The time of 9 is 4.916454 
