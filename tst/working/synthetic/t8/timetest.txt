@@ -10,3 +10,5 @@ The time of 8 is 8.171558
 The time of 9 is 7.729019 
 The time of 1 is 5.997955 
 The time of 9 is 5.569379 
+The time of 1 is 5.9681 
+The time of 9 is 5.564912 

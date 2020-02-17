@@ -13,3 +13,13 @@ The time of 4 is 4.951601
 The time of 9 is 4.032842 
 The time of 1 is 5.015904 
 The time of 9 is 4.305822 
+The time of 1 is 4.491079 
+The time of 9 is 4.040533 
+The time of 1 is 4.317169 
+The time of 9 is 4.062805 
+The time of 1 is 4.306108 
+The time of 9 is 4.062658 
+The time of 1 is 4.504193 
+The time of 9 is 4.659581 
+The time of 1 is 4.325044999999999 
+The time of 9 is 4.0294859999999995 

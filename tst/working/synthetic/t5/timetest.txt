@@ -12,3 +12,6 @@ The time of 1 is 24011.266370999998
 The time of 4 is 24509.386238 
 The time of 1 is 24130.638505 
 The time of 9 is 23948.657304 
+The time of 1 is 23467.258095999998 
+The time of 1 is 23862.965711 
+The time of 9 is 23748.191859 
