@@ -1,0 +1,30 @@
+{
+  "main": {
+    "require('fs')": true,
+    "require('./m1.js')": true,
+    "require('path').basename": true,
+    "require('./m2.js')": true,
+    "require('fs').createWriteStream": true
+  },
+  "m1.js": {
+    "Object": true,
+    "require('fs')": true,
+    "require('fs').readFileSync": true,
+    "require('path')": true
+  },
+  "m2.js": {
+    "Object": true,
+    "require('fs')": true,
+    "require('path')": true,
+    "require('path').dirname": true,
+    "require('./m3.js')": true,
+    "require('fs').readFileSync": true,
+    "require('fs').rmdirSync": true,
+    "require('fs').mkdirSync": true
+  },
+  "m3.js": {
+    "Object": true,
+    "require('fs')": true,
+    "require('fs').readFileSync": true
+  }
+}

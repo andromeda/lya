@@ -1,0 +1,15 @@
+{
+  "main": {
+    "require('fs')": true,
+    "require('./m1.js')": true,
+    "bound consoleCall": true,
+    "require('./m2.js')": true,
+    "require('fs').createWriteStream": true
+  },
+  "m1.js": {
+    "Object": true
+  },
+  "m2.js": {
+    "Object": true
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "main": {
+    "require('./m1.js').add": "input: 0.number 1.number  => output: number",
+    "require('./m1.js').fft.add": "input: 0.number 1.number  => output: number",
+    "require('fs').createWriteStream": "input: 0.string 1.object  => output: object"
+  },
+  "m1.js": {}
+}

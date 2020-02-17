@@ -1,0 +1,29 @@
+{
+  "main": {
+    "require('fs')": true,
+    "require('./m1.js')": true,
+    "global.test": true,
+    "require('fs').createWriteStream": true
+  },
+  "m1.js": {
+    "Object": true,
+    "undefined": true,
+    "Math.abs": true,
+    "global.test": true,
+    "require('./m2.js')": true
+  },
+  "m2.js": {
+    "Object": true,
+    "bound consoleCall": true,
+    "require('./m3.js')": true,
+    "require('./m4.js')": true
+  },
+  "m3.js": {
+    "Object": true,
+    "bound consoleCall": true
+  },
+  "m4.js": {
+    "Object": true,
+    "bound consoleCall": true
+  }
+}
