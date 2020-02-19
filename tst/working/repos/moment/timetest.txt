@@ -1,5 +1,0 @@
-The time of 0 is 30.935958999999997 
-The time of 1 is 45.303218 
-The time of 5 is 45.605979 
-The time of 2 is 47.704964 
-The time of 3 is 41.563047999999995 
