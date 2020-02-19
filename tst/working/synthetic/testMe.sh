@@ -9,7 +9,7 @@ do
 	[ -e dynamic.json ] && rm dynamic.json
 
 	key=1 node main.js
-	cmp --silent ./dynamic.json ./staticSA.json || echo "files at t$i are different -- SA"
+	cmp --silent ./dynamic.json ./staticSA.json || { echo "files at t$i are different -- SA" && exit }
 	
 	[ -e dynamic.json ] && rm dynamic.json
 	key=9 node main.js
