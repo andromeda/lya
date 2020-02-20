@@ -22,4 +22,4 @@ $
 
 - https://hub.docker.com/_/couchdb
 - https://nozzlegear.com/blog/couchdb-replication-fails-when-running-in-a-docker-container
-
+- http://127.0.0.1:5984/_utils/
