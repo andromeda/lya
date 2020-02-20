@@ -1,0 +1,68 @@
+{
+  "main": {
+    "require('assert')": true,
+    "require('../lib/index')": true,
+    "require('./system/supports-colors').supportsColor": true,
+    "Object": true,
+    "RegExp": true,
+    "require('./custom/trap')": true,
+    "require('./custom/zalgo')": true,
+    "require('./maps/america')": true,
+    "require('./maps/zebra')": true,
+    "require('./maps/rainbow')": true,
+    "require('./maps/random')": true,
+    "require('./extendStringPrototype')": true,
+    "String": true,
+    "require('assert').equal": true,
+    "require('./colors').stylize": true,
+    "require('assert').ok": true,
+    "require('./colors').rainbow": true,
+    "Array": true,
+    "require('util').inspect": true,
+    "require('../lib/index').stylize": true
+  },
+  "index.js": {
+    "Object": true,
+    "require('./colors')": true,
+    "require('./styles')": true,
+    "RegExp": true,
+    "require('./system/supports-colors')": true,
+    "require('./has-flag.js')": true
+  },
+  "colors.js": {
+    "Object": true,
+    "require('util')": true
+  },
+  "styles.js": {
+    "Object": true
+  },
+  "supports-colors.js": {
+    "Object": true,
+    "require('os')": true
+  },
+  "has-flag.js": {
+    "Object": true
+  },
+  "trap.js": {
+    "Object": true
+  },
+  "zalgo.js": {
+    "Object": true
+  },
+  "america.js": {
+    "Object": true
+  },
+  "zebra.js": {
+    "Object": true
+  },
+  "rainbow.js": {
+    "Object": true
+  },
+  "random.js": {
+    "Object": true
+  },
+  "extendStringPrototype.js": {
+    "Object": true,
+    "require('./colors')": true
+  }
+}
