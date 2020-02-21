@@ -295,13 +295,13 @@ const getName = (wayFile) => {
 // We export the name of the curr module and pass proxy to the final function
 vm.runInThisContext = function(code, options) {
   const codeToRun = originalRun(code, options);
-  requireLevel++;
-  policy.updateCounter(requireLevel);
+  env.requireLevel++;
+  //policy.updateCounter(requireLevel);
   //policy.requireLevel++;
-  trueName[requireLevel] = getName(options['filename']);
+  trueName[env.requireLevel] = getName(options['filename']);
   if (!Object.prototype.hasOwnProperty.
-    call(accessMatrix,trueName[requireLevel])){
-    accessMatrix[trueName[requireLevel]] = {};
+    call(accessMatrix,trueName[env.requireLevel])){
+    accessMatrix[trueName[env.requireLevel]] = {};
   }
   //accessMatrix[trueName[requireLevel]] = {};
   return new Proxy(codeToRun, handlerAddArg);
@@ -316,17 +316,18 @@ Module.prototype.require = function(...args) {
   const type = typeof result;
   if (type != 'boolean' && type != 'symbol' && type != 'number' && type != 'string') {
     if ( objName.has(result) === false ) {
-      policy.objNameSet(result,path);
-      policy.objPathSet(result);
+      // Each time we update env we update locEnv too
+      env.objName.set(result, 'require(\'' + path + '\')');
+      env.objPath.set(result, env.trueName[env.requireLevel]);
       result = new Proxy(result, policy.exportHandler);
-      if (requireLevel !=0){
-        requireLevel--;
-        policy.updateCounter(requireLevel);
+      if (env.requireLevel !=0){
+        env.requireLevel--;
       }
     } else {
       result = new Proxy(result, policy.exportHandler);
-      policy.objNameSet(result,path);
-      policy.objPathSet(result);
+      env.objName.set(result, 'require(\'' + path + '\')');
+      env.objPath.set(result, env.trueName[env.requireLevel]);
+
     }
   }
   return result;

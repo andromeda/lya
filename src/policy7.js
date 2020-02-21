@@ -136,11 +136,6 @@ const exportsFuncHandler = {
   },
 };
 
-// We update the instance of require
-const updateCounter = (counter) => {
-  locEnv.requireLevel = counter;
-}
-
 // Read function so we print it in the export file
 // This is to catch the read
 const readFunction = (myFunc, name) => {
@@ -230,14 +225,7 @@ module.exports = (env) => {
     require : EnforcementCheck,
     moduleHandler : moduleHandler,
     globalHandler : globalHandler,
-    updateCounter : updateCounter,
     exportHandler : exportHandler,
     globalConstHandler : globalConstHandler,
-    objNameSet : (result, path) => {
-      locEnv.objName.set(result, 'require(\'' + path + '\')');
-    },
-    objPathSet : (result) => {
-      locEnv.objPath.set(result, locEnv.trueName[locEnv.requireLevel]);
-    },
   }
 };

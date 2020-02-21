@@ -89,11 +89,6 @@ const exportsFuncHandler = {
   },
 };
 
-// We update the instance of require
-const updateCounter = (counter) => {
-  locEnv.requireLevel = counter;
-}
-
 // This is the handler of the export object. Every time we require a module, and it has
 // export data we wrap those data in this handler. So this is the first layer of the 
 // export data wraping. 
@@ -167,14 +162,7 @@ module.exports = (env) => {
     require : requireHandler,
     globalHandler : globalHandler,
     moduleHandler : moduleHandler,
-    updateCounter : updateCounter,
     exportHandler : exportHandler,
     globalConstHandler : globalConstHandler,
-    objNameSet : (result, path) => {
-      locEnv.objName.set(result, 'require(\'' + path + '\')');
-    },
-    objPathSet : (result) => {
-      locEnv.objPath.set(result, locEnv.trueName[locEnv.requireLevel]);
-    },
   }
 };
