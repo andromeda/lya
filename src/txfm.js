@@ -317,18 +317,78 @@ Module.prototype.require = function(...args) {
       // Each time we update env we update locEnv too
       env.objName.set(result, 'require(\'' + path + '\')');
       env.objPath.set(result, trueName[env.requireLevel]);
-      result = new Proxy(result, policy.exportHandler);
+      result = new Proxy(result, exportHandler);
       if (env.requireLevel !=0){
         env.requireLevel--;
       }
     } else {
-      result = new Proxy(result, policy.exportHandler);
+      result = new Proxy(result, exportHandler);
       env.objName.set(result, 'require(\'' + path + '\')');
-      env.objPath.set(result, env.trueName[env.requireLevel]);
+      env.objPath.set(result, trueName[env.requireLevel]);
 
     }
   }
   return result;
+};
+
+// This is the handler of the export object. Every time we require a module, and it has
+// export data we wrap those data in this handler. So this is the first layer of the 
+// export data wraping. 
+const m1 = new WeakMap();
+const exportHandler = {
+  get: function(target, name, receiver) {
+    const type = typeof target[name];
+    if (type != 'undefined' && target[name] != null && typeof name === 'string' &&
+        (!(target[name] instanceof RegExp))) { // + udnefined
+      // If we try to grab an object we wrap it in this proxy
+      if (type === 'object') {
+        if ((!(Object.entries(target[name]).length === 0))) {
+          // We first return the obj to check that is not wraped in a proxy
+          if (m1.has(target[name])) {
+            return Reflect.get(target, name);
+          }
+
+          let truepath = env.objPath.get(receiver);
+          let truename = env.objName.get(receiver);
+          if (truename === undefined) {
+            truename = env.objName.get(target);
+          }
+          if (truepath === undefined) {
+            truepath = env.objPath.get(target);
+          } 
+          const localObject = target[name];
+
+          target[name] = new Proxy(target[name], exportHandler);
+          env.objName.set(localObject, truename + '.' + name);
+          env.objPath.set(localObject, truepath);
+
+          result = Reflect.get(target, name);
+          m1.set(result, true);
+
+          return result; 
+        }
+      } else if (type === 'function') {
+        // We first return the obj to check that is not wraped in a proxy
+        let localFunction = target[name];
+        if (!m1.has(target[name])){
+          Object.defineProperty(localFunction, 'name', {value: name});
+          target[name] = new Proxy(localFunction, policy.exportsFuncHandler);
+        }
+          
+        env.objPath.set(localFunction, env.trueName[env.requireLevel]);
+        env.objName.set(localFunction, env.objName.get(target));
+          
+        // Undefined fix
+        policy.readFunction(localFunction, env.objName.get(target));
+
+        result = Reflect.get(target, name);
+        m1.set(result, true);
+        return result;
+      }
+    }
+
+    return Reflect.get(target, name);
+  },
 };
 
 // We print all the results on the end of the program only if we dont
