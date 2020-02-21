@@ -13,6 +13,22 @@ $
 $ # Check that everything runs
 $ curl -X GET http://localhost:5984
 $ 
+$ # First we login in the second container after we find its name
+$ docker ps
+$ docker exec -it #name# bash
+$
+$ # We add all the ness stuf
+$ # in /usr/local/etc/couchdb/local.ini
+$ [couch_httpd_auth]
+$ public_fields = appdotnet, avatar, avatarMedium, avatarLarge, date, email, fields, freenode, fullname, github, homepage, name, roles, twitter, type, _id, _rev
+$ users_db_public = true
+$
+$ [httpd]
+$ secure_rewrites = false
+$
+$ [couchdb]
+$ delayed_commits = false
+$
 $ # We replicate the registry to local
 $ # https://skimdb.npmjs.com/registry or
 $ # https://replicate.npmjs.com/ (??)
