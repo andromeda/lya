@@ -242,6 +242,7 @@ const createFinalDecl = () => {
   return finalDecl;
 };
 
+// The first time this runs we create the decl
 const globalsDecl = () => {
   if (finalDecl === ' ') {
     userRemoves();
@@ -296,14 +297,11 @@ const getName = (wayFile) => {
 vm.runInThisContext = function(code, options) {
   const codeToRun = originalRun(code, options);
   env.requireLevel++;
-  //policy.updateCounter(requireLevel);
-  //policy.requireLevel++;
   trueName[env.requireLevel] = getName(options['filename']);
   if (!Object.prototype.hasOwnProperty.
     call(accessMatrix,trueName[env.requireLevel])){
     accessMatrix[trueName[env.requireLevel]] = {};
   }
-  //accessMatrix[trueName[requireLevel]] = {};
   return new Proxy(codeToRun, handlerAddArg);
 };
 
@@ -318,7 +316,7 @@ Module.prototype.require = function(...args) {
     if ( objName.has(result) === false ) {
       // Each time we update env we update locEnv too
       env.objName.set(result, 'require(\'' + path + '\')');
-      env.objPath.set(result, env.trueName[env.requireLevel]);
+      env.objPath.set(result, trueName[env.requireLevel]);
       result = new Proxy(result, policy.exportHandler);
       if (env.requireLevel !=0){
         env.requireLevel--;
