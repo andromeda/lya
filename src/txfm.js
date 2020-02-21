@@ -315,16 +315,16 @@ Module.prototype.require = function(...args) {
   if (type != 'boolean' && type != 'symbol' && type != 'number' && type != 'string') {
     if ( objName.has(result) === false ) {
       // Each time we update env we update locEnv too
-      env.objName.set(result, 'require(\'' + path + '\')');
-      env.objPath.set(result, trueName[env.requireLevel]);
+      objName.set(result, 'require(\'' + path + '\')');
+      objPath.set(result, trueName[env.requireLevel]);
       result = new Proxy(result, exportHandler);
       if (env.requireLevel !=0){
         env.requireLevel--;
       }
     } else {
       result = new Proxy(result, exportHandler);
-      env.objName.set(result, 'require(\'' + path + '\')');
-      env.objPath.set(result, trueName[env.requireLevel]);
+      objName.set(result, 'require(\'' + path + '\')');
+      objPath.set(result, trueName[env.requireLevel]);
 
     }
   }
@@ -348,19 +348,19 @@ const exportHandler = {
             return Reflect.get(target, name);
           }
 
-          let truepath = env.objPath.get(receiver);
-          let truename = env.objName.get(receiver);
+          let truepath = objPath.get(receiver);
+          let truename = objName.get(receiver);
           if (truename === undefined) {
-            truename = env.objName.get(target);
+            truename = objName.get(target);
           }
           if (truepath === undefined) {
-            truepath = env.objPath.get(target);
+            truepath = objPath.get(target);
           } 
           const localObject = target[name];
 
           target[name] = new Proxy(target[name], exportHandler);
-          env.objName.set(localObject, truename + '.' + name);
-          env.objPath.set(localObject, truepath);
+          objName.set(localObject, truename + '.' + name);
+          objPath.set(localObject, truepath);
 
           result = Reflect.get(target, name);
           m1.set(result, true);
@@ -375,11 +375,11 @@ const exportHandler = {
           target[name] = new Proxy(localFunction, policy.exportsFuncHandler);
         }
           
-        env.objPath.set(localFunction, env.trueName[env.requireLevel]);
-        env.objName.set(localFunction, env.objName.get(target));
+        objPath.set(localFunction, trueName[env.requireLevel]);
+        objName.set(localFunction, objName.get(target));
           
         // Undefined fix
-        policy.readFunction(localFunction, env.objName.get(target));
+        policy.readFunction(localFunction, objName.get(target));
 
         result = Reflect.get(target, name);
         m1.set(result, true);
