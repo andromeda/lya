@@ -3,7 +3,7 @@ if (parseInt(process.env.key) != 0) {
         SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
         analysisCh: parseInt(process.env.key),
         };
-        let lya = require("../../../../src/txfm.js");
+        let lya = require("../../../src/txfm.js");
         require = lya.configRequire(require, lyaConfig);
 }
 const time = process.hrtime();

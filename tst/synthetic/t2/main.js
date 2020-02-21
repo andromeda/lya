@@ -4,7 +4,7 @@ if (parseInt(process.env.key) != 0) {
         analysisCh: parseInt(process.env.key),
         removejson: ['hasOwnProperty'],
         };
-        let lya = require("../../../../src/txfm.js");
+        let lya = require("../../../src/txfm.js");
         require = lya.configRequire(require, lyaConfig);
 }
 const time = process.hrtime();
