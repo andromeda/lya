@@ -67,8 +67,8 @@ const env = {
 // 7) RWE Enforcement
 // 8) Global Object Analysis
 // 9) TypeOf Export Object Analysis
-let userChoice = (lyaConfig.analysisCh && [1, 2, 3, 4, 5, 6, 7, 8, 9].includes(lyaConfig.analysisCh))? lyaConfig.analysisCh : 1
-
+let userChoice = (lyaConfig.analysisCh && [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].includes(lyaConfig.analysisCh))? lyaConfig.analysisCh : 1
+console.log(lyaConfig.analysisCh)
 // You import the right policy depenting on the choice
 // of the user.
 let policy = require('./policy' + userChoice + '.js')(env);;
@@ -298,6 +298,7 @@ vm.runInThisContext = function(code, options) {
   const codeToRun = originalRun(code, options);
   env.requireLevel++;
   trueName[env.requireLevel] = getName(options['filename']);
+  // Should move to policies
   if (!Object.prototype.hasOwnProperty.
     call(accessMatrix,trueName[env.requireLevel])){
     accessMatrix[trueName[env.requireLevel]] = {};
