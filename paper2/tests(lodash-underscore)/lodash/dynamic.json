@@ -1,221 +1,298 @@
 {
   "main": {},
   "lodash.js": {},
-  "function": [
-    "require('lodash').chunk",
-    "require('lodash').chunk",
-    "require('lodash').compact",
-    "require('lodash').concat",
-    "require('lodash').difference",
-    "require('lodash').differenceBy",
-    "require('lodash').differenceBy",
-    "require('lodash').differenceWith",
-    "require('lodash').isEqual",
-    "require('lodash').isEqual",
-    "require('lodash').drop",
-    "require('lodash').drop",
-    "require('lodash').drop",
-    "require('lodash').drop",
-    "require('lodash').dropRight",
-    "require('lodash').dropRight",
-    "require('lodash').dropRight",
-    "require('lodash').dropRight",
-    "require('lodash').dropRightWhile",
-    "require('lodash').dropRightWhile",
-    "require('lodash').dropRightWhile",
-    "require('lodash').dropRightWhile",
-    "require('lodash').dropWhile",
-    "require('lodash').dropWhile",
-    "require('lodash').dropWhile",
-    "require('lodash').dropWhile",
-    "require('lodash').fill",
-    "require('lodash').fill",
-    "require('lodash').fill",
-    "require('lodash').findIndex",
-    "require('lodash').findIndex",
-    "require('lodash').findIndex",
-    "require('lodash').findIndex",
-    "require('lodash').findLastIndex",
-    "require('lodash').findLastIndex",
-    "require('lodash').findLastIndex",
-    "require('lodash').findLastIndex",
-    "require('lodash').flatten",
-    "require('lodash').flattenDeep",
-    "require('lodash').flattenDepth",
-    "require('lodash').flattenDepth",
-    "require('lodash').fromPairs",
-    "require('lodash').head",
-    "require('lodash').head",
-    "require('lodash').intersectionBy",
-    "require('lodash').intersectionBy",
-    "require('lodash').intersectionWith",
-    "require('lodash').isEqual",
-    "require('lodash').isEqual",
-    "require('lodash').isEqual",
-    "require('lodash').isEqual",
-    "require('lodash').isEqual",
-    "require('lodash').join",
-    "require('lodash').last",
-    "require('lodash').lastIndexOf",
-    "require('lodash').lastIndexOf",
-    "require('lodash').nth",
-    "require('lodash').nth",
-    "require('lodash').pull",
-    "require('lodash').pullAll",
-    "require('lodash').pullAllBy",
-    "require('lodash').pullAllWith",
-    "require('lodash').isEqual",
-    "require('lodash').isEqual",
-    "require('lodash').isEqual",
-    "require('lodash').pullAt",
-    "require('lodash').remove",
-    "require('lodash').reverse",
-    "require('lodash').sortedIndex",
-    "require('lodash').sortedIndexBy",
-    "require('lodash').sortedIndexBy",
-    "require('lodash').sortedIndexOf",
-    "require('lodash').sortedLastIndex",
-    "require('lodash').sortedLastIndexBy",
-    "require('lodash').sortedLastIndexBy",
-    "require('lodash').sortedLastIndexOf",
-    "require('lodash').sortedUniq",
-    "require('lodash').sortedUniqBy",
-    "require('lodash').tail",
-    "require('lodash').take",
-    "require('lodash').take",
-    "require('lodash').take",
-    "require('lodash').take",
-    "require('lodash').takeRight",
-    "require('lodash').takeRight",
-    "require('lodash').takeRight",
-    "require('lodash').takeRight",
-    "require('lodash').takeRightWhile",
-    "require('lodash').takeRightWhile",
-    "require('lodash').takeRightWhile",
-    "require('lodash').takeRightWhile",
-    "require('lodash').takeWhile",
-    "require('lodash').takeWhile",
-    "require('lodash').takeWhile",
-    "require('lodash').takeWhile",
-    "require('lodash').union",
-    "require('lodash').unionBy",
-    "require('lodash').unionBy",
-    "require('lodash').unionWith",
-    "require('lodash').isEqual",
-    "require('lodash').isEqual",
-    "require('lodash').isEqual",
-    "require('lodash').isEqual",
-    "require('lodash').uniq",
-    "require('lodash').uniqBy",
-    "require('lodash').uniqBy",
-    "require('lodash').uniqWith",
-    "require('lodash').isEqual",
-    "require('lodash').isEqual",
-    "require('lodash').zip",
-    "require('lodash').unzip",
-    "require('lodash').zip",
-    "require('lodash').unzipWith",
-    "require('lodash').add",
-    "require('lodash').add",
-    "require('lodash').add",
-    "require('lodash').without",
-    "require('lodash').xor",
-    "require('lodash').xorBy",
-    "require('lodash').xorBy",
-    "require('lodash').xorWith",
-    "require('lodash').isEqual",
-    "require('lodash').isEqual",
-    "require('lodash').isEqual",
-    "require('lodash').isEqual",
-    "require('lodash').isEqual",
-    "require('lodash').isEqual",
-    "require('lodash').isEqual",
-    "require('lodash').isEqual",
-    "require('lodash').zip",
-    "require('lodash').zipObject",
-    "require('lodash').zipObjectDeep",
-    "require('lodash').zipWith",
-    "require('lodash').countBy",
-    "require('lodash').countBy",
-    "require('lodash').every",
-    "require('lodash').every",
-    "require('lodash').every",
-    "require('lodash').every",
-    "require('lodash').filter",
-    "require('lodash').filter",
-    "require('lodash').filter",
-    "require('lodash').filter",
-    "require('lodash').find",
-    "require('lodash').find",
-    "require('lodash').find",
-    "require('lodash').find",
-    "require('lodash').findLast",
-    "require('lodash').flatMap",
-    "require('lodash').flatMapDeep",
-    "require('lodash').flatMapDepth",
-    "require('lodash').forEach",
-    "require('lodash').forEach",
-    "require('lodash').forEachRight",
-    "require('lodash').groupBy",
-    "require('lodash').groupBy",
-    "require('lodash').includes",
-    "require('lodash').includes",
-    "require('lodash').includes",
-    "require('lodash').includes",
-    "require('lodash').invokeMap",
-    "require('lodash').invokeMap",
-    "require('lodash').keyBy",
-    "require('lodash').keyBy",
-    "require('lodash').map",
-    "require('lodash').map",
-    "require('lodash').map",
-    "require('lodash').orderBy",
-    "require('lodash').partition",
-    "require('lodash').partition",
-    "require('lodash').partition",
-    "require('lodash').partition",
-    "require('lodash').reduce",
-    "require('lodash').reduce",
-    "require('lodash').reduceRight",
-    "require('lodash').reject",
-    "require('lodash').reject",
-    "require('lodash').reject",
-    "require('lodash').reject",
-    "require('lodash').sample",
-    "require('lodash').sampleSize",
-    "require('lodash').sampleSize",
-    "require('lodash').shuffle",
-    "require('lodash').size",
-    "require('lodash').size",
-    "require('lodash').size",
-    "require('lodash').some",
-    "require('lodash').some",
-    "require('lodash').some",
-    "require('lodash').some",
-    "require('lodash').sortBy",
-    "require('lodash').sortBy",
-    "require('lodash').now",
-    "require('lodash').defer",
-    "require('lodash').after",
-    "require('lodash').ary",
-    "require('lodash').map",
-    "require('lodash').bind",
-    "require('lodash').bind",
-    "require('lodash').valueOf",
-    "require('lodash').toString",
-    "require('lodash').bindKey",
-    "require('lodash').bindKey",
-    "require('lodash').valueOf",
-    "require('lodash').toString",
-    "require('lodash').curry",
-    "require('lodash').curryRight",
-    "require('lodash').defer",
-    "require('lodash').delay",
-    "require('lodash').flip",
-    "require('lodash').toArray",
-    "require('lodash').memoize",
-    "require('lodash').values",
-    "require('lodash').values",
-    "require('lodash').now"
-  ]
+  "object": {
+    "number": {
+      "object": {
+        "require('lodash').chunk": {},
+        "object": {
+          "object": {
+            "require('lodash').concat": {}
+          }
+        },
+        "require('lodash').drop": {},
+        "require('lodash').dropRight": {},
+        "require('lodash').fill": {},
+        "require('lodash').flattenDepth": {},
+        "require('lodash').take": {},
+        "require('lodash').takeRight": {},
+        "require('lodash').sampleSize": {}
+      },
+      "require('lodash').head": {},
+      "require('lodash').last": {},
+      "number": {
+        "require('lodash').lastIndexOf": {},
+        "number": {
+          "require('lodash').lastIndexOf": {}
+        },
+        "require('lodash').sortedIndex": {},
+        "require('lodash').sortedIndexOf": {},
+        "require('lodash').sortedLastIndex": {},
+        "require('lodash').sortedLastIndexOf": {},
+        "object": {
+          "require('lodash').without": {}
+        },
+        "boolean": {
+          "require('lodash').includes": {}
+        }
+      },
+      "string": {
+        "require('lodash').nth": {}
+      },
+      "boolean": {
+        "require('lodash').includes": {}
+      },
+      "require('lodash').sample": {},
+      "require('lodash').size": {}
+    },
+    "object": {
+      "require('lodash').compact": {},
+      "object": {
+        "require('lodash').difference": {},
+        "require('lodash').dropRightWhile": {},
+        "require('lodash').dropWhile": {},
+        "require('lodash').pullAll": {},
+        "require('lodash').pullAt": {},
+        "require('lodash').takeRightWhile": {},
+        "require('lodash').takeWhile": {},
+        "require('lodash').union": {},
+        "object": {
+          "require('lodash').zip": {},
+          "require('lodash').orderBy": {}
+        },
+        "require('lodash').xor": {},
+        "require('lodash').zipObject": {},
+        "require('lodash').zipObjectDeep": {},
+        "function": {
+          "object": {
+            "require('lodash').zipWith": {}
+          }
+        },
+        "require('lodash').filter": {},
+        "require('lodash').find": {},
+        "require('lodash').partition": {},
+        "require('lodash').reject": {},
+        "require('lodash').sortBy": {}
+      },
+      "function": {
+        "object": {
+          "require('lodash').differenceBy": {},
+          "require('lodash').differenceWith": {},
+          "require('lodash').intersectionBy": {},
+          "require('lodash').intersectionWith": {},
+          "require('lodash').pullAllWith": {},
+          "require('lodash').unionBy": {},
+          "require('lodash').unionWith": {},
+          "require('lodash').xorBy": {},
+          "require('lodash').xorWith": {}
+        },
+        "number": {
+          "require('lodash').sortedIndexBy": {},
+          "require('lodash').sortedLastIndexBy": {}
+        }
+      },
+      "string": {
+        "object": {
+          "require('lodash').differenceBy": {},
+          "require('lodash').intersectionBy": {},
+          "require('lodash').pullAllBy": {},
+          "require('lodash').unionBy": {},
+          "require('lodash').xorBy": {}
+        },
+        "number": {
+          "require('lodash').sortedIndexBy": {},
+          "require('lodash').sortedLastIndexBy": {}
+        }
+      },
+      "boolean": {
+        "require('lodash').isEqual": {},
+        "require('lodash').every": {},
+        "require('lodash').some": {}
+      },
+      "require('lodash').drop": {},
+      "require('lodash').dropRight": {},
+      "number": {
+        "require('lodash').findIndex": {},
+        "require('lodash').findLastIndex": {}
+      },
+      "require('lodash').flatten": {},
+      "require('lodash').flattenDeep": {},
+      "require('lodash').fromPairs": {},
+      "require('lodash').reverse": {},
+      "require('lodash').sortedUniq": {},
+      "require('lodash').tail": {},
+      "require('lodash').take": {},
+      "require('lodash').takeRight": {},
+      "require('lodash').uniq": {},
+      "require('lodash').unzip": {},
+      "require('lodash').shuffle": {},
+      "require('lodash').toArray": {},
+      "require('lodash').values": {}
+    },
+    "function": {
+      "object": {
+        "require('lodash').dropRightWhile": {},
+        "require('lodash').dropWhile": {},
+        "require('lodash').remove": {},
+        "require('lodash').sortedUniqBy": {},
+        "require('lodash').takeRightWhile": {},
+        "require('lodash').takeWhile": {},
+        "require('lodash').uniqBy": {},
+        "require('lodash').uniqWith": {},
+        "require('lodash').unzipWith": {},
+        "require('lodash').countBy": {},
+        "require('lodash').filter": {},
+        "require('lodash').find": {},
+        "require('lodash').flatMap": {},
+        "require('lodash').flatMapDeep": {},
+        "require('lodash').forEach": {},
+        "require('lodash').forEachRight": {},
+        "require('lodash').groupBy": {},
+        "require('lodash').keyBy": {},
+        "require('lodash').map": {},
+        "require('lodash').partition": {},
+        "object": {
+          "require('lodash').reduce": {},
+          "require('lodash').reduceRight": {}
+        },
+        "require('lodash').reject": {}
+      },
+      "number": {
+        "require('lodash').findIndex": {},
+        "require('lodash').findLastIndex": {},
+        "require('lodash').findLast": {},
+        "object": {
+          "require('lodash').flatMapDepth": {}
+        },
+        "number": {
+          "require('lodash').reduce": {}
+        }
+      },
+      "boolean": {
+        "require('lodash').every": {},
+        "require('lodash').some": {}
+      },
+      "string": {
+        "object": {
+          "require('lodash').invokeMap": {}
+        }
+      }
+    },
+    "string": {
+      "object": {
+        "require('lodash').dropRightWhile": {},
+        "require('lodash').dropWhile": {},
+        "require('lodash').fill": {},
+        "require('lodash').takeRightWhile": {},
+        "require('lodash').takeWhile": {},
+        "require('lodash').uniqBy": {},
+        "require('lodash').countBy": {},
+        "require('lodash').filter": {},
+        "require('lodash').find": {},
+        "require('lodash').groupBy": {},
+        "require('lodash').invokeMap": {},
+        "require('lodash').keyBy": {},
+        "require('lodash').map": {},
+        "require('lodash').partition": {},
+        "require('lodash').reject": {}
+      },
+      "number": {
+        "number": {
+          "object": {
+            "require('lodash').fill": {}
+          }
+        },
+        "require('lodash').findIndex": {},
+        "require('lodash').findLastIndex": {}
+      },
+      "string": {
+        "require('lodash').join": {},
+        "object": {
+          "require('lodash').pull": {}
+        },
+        "function": {
+          "require('lodash').bindKey": {}
+        }
+      },
+      "boolean": {
+        "require('lodash').every": {},
+        "require('lodash').some": {}
+      },
+      "function": {
+        "string": {
+          "function": {
+            "require('lodash').bindKey": {}
+          }
+        }
+      }
+    },
+    "undefined": {
+      "require('lodash').head": {}
+    }
+  },
+  "number": {
+    "number": {
+      "number": {
+        "require('lodash').add": {}
+      }
+    },
+    "require('lodash').now": {},
+    "function": {
+      "function": {
+        "require('lodash').after": {}
+      }
+    }
+  },
+  "string": {
+    "string": {
+      "boolean": {
+        "require('lodash').includes": {}
+      }
+    },
+    "number": {
+      "require('lodash').size": {}
+    },
+    "require('lodash').toString": {}
+  },
+  "function": {
+    "number": {
+      "object": {
+        "require('lodash').defer": {}
+      },
+      "function": {
+        "require('lodash').ary": {}
+      },
+      "string": {
+        "object": {
+          "require('lodash').delay": {}
+        }
+      }
+    },
+    "object": {
+      "string": {
+        "function": {
+          "require('lodash').bind": {}
+        }
+      },
+      "function": {
+        "string": {
+          "function": {
+            "require('lodash').bind": {}
+          }
+        }
+      }
+    },
+    "require('lodash').valueOf": {},
+    "function": {
+      "require('lodash').curry": {},
+      "require('lodash').curryRight": {},
+      "require('lodash').flip": {},
+      "require('lodash').memoize": {}
+    },
+    "string": {
+      "object": {
+        "require('lodash').defer": {}
+      }
+    }
+  }
 }
