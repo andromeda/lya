@@ -15,6 +15,9 @@ const timeCapsule = {};
 // Normalize all values (seconds and to microseconds)
 let toMillis = (a, b) => (a * 1e9 + b) * 1e-6;
 
+const updateRestData = (target, name, type) => {
+};
+
 // This the handler of the require function. Every time a "require" is used to load up a module
 // this handler is called. It updates the analysis data that are stored in the accessMatrix table.
 // TODO: add more
@@ -164,5 +167,6 @@ module.exports = (env) => {
     readFunction : readFunction,
     exportsFuncHandler : exportsFuncHandler,
     globalConstHandler : globalConstHandler,
+    updateRestData : updateRestData,
 	}
 };

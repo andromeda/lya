@@ -68,7 +68,7 @@ const env = {
 // 8) Global Object Analysis
 // 9) TypeOf Export Object Analysis
 let userChoice = (lyaConfig.analysisCh && [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].includes(lyaConfig.analysisCh))? lyaConfig.analysisCh : 1
-console.log(lyaConfig.analysisCh)
+
 // You import the right policy depenting on the choice
 // of the user.
 let policy = require('./policy' + userChoice + '.js')(env);;
@@ -385,6 +385,8 @@ const exportHandler = {
         result = Reflect.get(target, name);
         m1.set(result, true);
         return result;
+      } else if (type === 'number' || type === 'boolean' || type === 'string') {
+        policy.updateRestData(target, name, type);
       }
     }
 

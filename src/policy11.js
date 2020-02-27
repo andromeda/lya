@@ -16,15 +16,12 @@ const updateAnalysisData = (storedCalls, truename) => {
   if (Object.prototype.hasOwnProperty.
         call(storedCalls, 'calledName') === false) {
       storedCalls['calledName'] = {};
-      //storedCalls['calledName'][truename] = [];
   } else {
     if (Object.prototype.hasOwnProperty.
         call(storedCalls['calledName'], truename) === false) {
       storedCalls['calledName'][truename]= {};
     }
   }
-  //console.log('haha')
-  //console.log(storedCalls)
 };
 
 const updateTypeData = (store, type) => {
@@ -32,6 +29,9 @@ const updateTypeData = (store, type) => {
         call(store, type) === false) {
       store[type] = {};
   } 
+};
+
+const updateRestData = (target, name, type) => {
 };
 
 // This the handler of the require function. Every time a "require" is used to load up a module
@@ -130,5 +130,6 @@ module.exports = (env) => {
     readFunction : readFunction,
     exportsFuncHandler : exportsFuncHandler,
     globalConstHandler : globalConstHandler,
+    updateRestData : updateRestData,
   }
 };

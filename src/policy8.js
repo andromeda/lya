@@ -17,6 +17,9 @@ const updateAnalysisData = (storedCalls, truename) => {
     }
 };
 
+const updateRestData = (target, name, type) => {
+};
+
 // This the handler of the require function. Every time a "require" is used to load up a module
 // this handler is called. It updates the analysis data that are stored in the accessMatrix table.
 const requireHandler = {
@@ -120,5 +123,6 @@ module.exports = (env) => {
     readFunction : readFunction,
     exportsFuncHandler : exportsFuncHandler,
     globalConstHandler : globalConstHandler,
+    updateRestData : updateRestData,
 	}
 };

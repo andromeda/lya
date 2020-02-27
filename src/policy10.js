@@ -18,10 +18,21 @@ const endName = '@name';
 const updateAnalysisData = (storedCalls, truename, type) => {
   if (Object.prototype.hasOwnProperty.
         call(storedCalls, type) === false) {
-      storedCalls[type] = [truename];
+      storedCalls[type] = {};
+      storedCalls[type][truename] = {};
   } else {
-    storedCalls[type].push(truename);
+    if (Object.prototype.hasOwnProperty.
+      call(storedCalls[type], truename) === false) {
+      storedCalls[type][truename] = {};
+    }
   }
+};
+
+const updateRestData = (target, name, type) => {
+  // This is for the names
+  let truename = locEnv.objName.get(target);
+  truename = truename + '.' + name;
+  updateAnalysisData(locEnv.accessMatrix, truename, type);
 };
 
 // This the handler of the require function. Every time a "require" is used to load up a module
@@ -65,9 +76,7 @@ const moduleHandler = {
 const exportsFuncHandler = {
   apply: function(target, thisArg, argumentsList) {
     // This is for the names
-    let truename;
-    truename = locEnv.objName.get(target);
-    const currentName = locEnv.objPath.get(target);
+    let truename = locEnv.objName.get(target);
     truename = truename + '.' + target.name;
     updateAnalysisData(locEnv.accessMatrix, truename, 'function');
 
@@ -98,5 +107,6 @@ module.exports = (env) => {
     readFunction : readFunction,
     exportsFuncHandler : exportsFuncHandler,
     globalConstHandler : globalConstHandler,
+    updateRestData : updateRestData,
   }
 };

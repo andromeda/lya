@@ -42,6 +42,9 @@ const problemCheck = (line, char) => {
   }
 };
 
+const updateRestData = (target, name, type) => {
+};
+
 // The handler of require of Enforcement
 const EnforcementCheck = {
   apply: function(target) {
@@ -171,5 +174,6 @@ module.exports = (env) => {
     readFunction : readFunction,
     exportsFuncHandler : exportsFuncHandler,
     globalConstHandler : globalConstHandler,
+    updateRestData : updateRestData,
   }
 };

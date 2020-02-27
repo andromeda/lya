@@ -20,6 +20,9 @@ const requireHandler = {
   },
 };
 
+const updateRestData = (target, name, type) => {
+};
+
 // We add the R or W or E to the existing string
 const addEvent = (event, values, index) => {
   let storedValue = values[index];
@@ -146,5 +149,6 @@ module.exports = (env) => {
     readFunction : readFunction,
     exportsFuncHandler : exportsFuncHandler,
     globalConstHandler : globalConstHandler,
+    updateRestData : updateRestData,
 	}
 };
