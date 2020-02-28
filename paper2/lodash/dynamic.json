@@ -1,0 +1,342 @@
+{
+  "main": {},
+  "lodash.js": {},
+  "object": {
+    "number": {
+      "object": {
+        "require('lodash').chunk": {},
+        "object": {
+          "object": {
+            "require('lodash').concat": {}
+          }
+        },
+        "require('lodash').drop": {},
+        "require('lodash').dropRight": {},
+        "require('lodash').fill": {},
+        "require('lodash').flattenDepth": {},
+        "require('lodash').take": {},
+        "require('lodash').takeRight": {},
+        "require('lodash').sampleSize": {}
+      },
+      "require('lodash').head": {},
+      "require('lodash').last": {},
+      "number": {
+        "require('lodash').lastIndexOf": {},
+        "number": {
+          "require('lodash').lastIndexOf": {}
+        },
+        "require('lodash').sortedIndex": {},
+        "require('lodash').sortedIndexOf": {},
+        "require('lodash').sortedLastIndex": {},
+        "require('lodash').sortedLastIndexOf": {},
+        "object": {
+          "require('lodash').without": {}
+        },
+        "boolean": {
+          "require('lodash').includes": {}
+        }
+      },
+      "string": {
+        "require('lodash').nth": {}
+      },
+      "boolean": {
+        "require('lodash').includes": {
+          "Array": {}
+        }
+      },
+      "require('lodash').sample": {},
+      "require('lodash').size": {}
+    },
+    "object": {
+      "require('lodash').compact": {},
+      "object": {
+        "require('lodash').difference": {},
+        "require('lodash').dropRightWhile": {},
+        "require('lodash').dropWhile": {},
+        "require('lodash').pullAll": {},
+        "require('lodash').pullAt": {
+          "Array": {}
+        },
+        "require('lodash').takeRightWhile": {},
+        "require('lodash').takeWhile": {},
+        "require('lodash').union": {},
+        "object": {
+          "require('lodash').zip": {
+            "Array": {}
+          },
+          "require('lodash').orderBy": {
+            "Array": {}
+          }
+        },
+        "require('lodash').xor": {},
+        "require('lodash').zipObject": {},
+        "require('lodash').zipObjectDeep": {},
+        "function": {
+          "object": {
+            "require('lodash').zipWith": {
+              "Array": {}
+            }
+          }
+        },
+        "require('lodash').filter": {},
+        "require('lodash').find": {},
+        "require('lodash').partition": {},
+        "require('lodash').reject": {},
+        "require('lodash').sortBy": {
+          "Array": {}
+        }
+      },
+      "function": {
+        "object": {
+          "require('lodash').differenceBy": {
+            "Array": {}
+          },
+          "require('lodash').differenceWith": {},
+          "require('lodash').intersectionBy": {
+            "Array": {}
+          },
+          "require('lodash').intersectionWith": {},
+          "require('lodash').pullAllWith": {},
+          "require('lodash').unionBy": {},
+          "require('lodash').unionWith": {},
+          "require('lodash').xorBy": {
+            "Array": {}
+          },
+          "require('lodash').xorWith": {}
+        },
+        "number": {
+          "require('lodash').sortedIndexBy": {},
+          "require('lodash').sortedLastIndexBy": {}
+        }
+      },
+      "string": {
+        "object": {
+          "require('lodash').differenceBy": {
+            "Array": {}
+          },
+          "require('lodash').intersectionBy": {
+            "Array": {}
+          },
+          "require('lodash').pullAllBy": {
+            "Array": {}
+          },
+          "require('lodash').unionBy": {},
+          "require('lodash').xorBy": {
+            "Array": {}
+          }
+        },
+        "number": {
+          "require('lodash').sortedIndexBy": {},
+          "require('lodash').sortedLastIndexBy": {}
+        }
+      },
+      "boolean": {
+        "require('lodash').isEqual": {},
+        "require('lodash').every": {},
+        "require('lodash').some": {}
+      },
+      "require('lodash').drop": {},
+      "require('lodash').dropRight": {},
+      "number": {
+        "require('lodash').findIndex": {},
+        "require('lodash').findLastIndex": {}
+      },
+      "require('lodash').flatten": {},
+      "require('lodash').flattenDeep": {},
+      "require('lodash').fromPairs": {},
+      "require('lodash').reverse": {},
+      "require('lodash').sortedUniq": {},
+      "require('lodash').tail": {},
+      "require('lodash').take": {},
+      "require('lodash').takeRight": {},
+      "require('lodash').uniq": {},
+      "require('lodash').unzip": {
+        "Array": {}
+      },
+      "require('lodash').shuffle": {},
+      "require('lodash').toArray": {},
+      "require('lodash').values": {
+        "Array": {}
+      }
+    },
+    "function": {
+      "object": {
+        "require('lodash').dropRightWhile": {},
+        "require('lodash').dropWhile": {},
+        "require('lodash').remove": {},
+        "require('lodash').sortedUniqBy": {},
+        "require('lodash').takeRightWhile": {},
+        "require('lodash').takeWhile": {},
+        "require('lodash').uniqBy": {},
+        "require('lodash').uniqWith": {},
+        "require('lodash').unzipWith": {},
+        "require('lodash').countBy": {},
+        "require('lodash').filter": {},
+        "require('lodash').find": {},
+        "require('lodash').flatMap": {
+          "Array": {}
+        },
+        "require('lodash').flatMapDeep": {
+          "Array": {}
+        },
+        "require('lodash').forEach": {
+          "bound consoleCall": {}
+        },
+        "require('lodash').forEachRight": {
+          "bound consoleCall": {}
+        },
+        "require('lodash').groupBy": {},
+        "require('lodash').keyBy": {},
+        "require('lodash').map": {
+          "Array": {}
+        },
+        "require('lodash').partition": {},
+        "object": {
+          "require('lodash').reduce": {},
+          "require('lodash').reduceRight": {}
+        },
+        "require('lodash').reject": {}
+      },
+      "number": {
+        "require('lodash').findIndex": {},
+        "require('lodash').findLastIndex": {},
+        "require('lodash').findLast": {},
+        "object": {
+          "require('lodash').flatMapDepth": {
+            "Array": {}
+          }
+        },
+        "number": {
+          "require('lodash').reduce": {}
+        }
+      },
+      "boolean": {
+        "require('lodash').every": {},
+        "require('lodash').some": {}
+      },
+      "string": {
+        "object": {
+          "require('lodash').invokeMap": {}
+        }
+      }
+    },
+    "string": {
+      "object": {
+        "require('lodash').dropRightWhile": {},
+        "require('lodash').dropWhile": {},
+        "require('lodash').fill": {},
+        "require('lodash').takeRightWhile": {},
+        "require('lodash').takeWhile": {},
+        "require('lodash').uniqBy": {},
+        "require('lodash').countBy": {},
+        "require('lodash').filter": {},
+        "require('lodash').find": {},
+        "require('lodash').groupBy": {},
+        "require('lodash').invokeMap": {},
+        "require('lodash').keyBy": {},
+        "require('lodash').map": {
+          "Array": {}
+        },
+        "require('lodash').partition": {},
+        "require('lodash').reject": {}
+      },
+      "number": {
+        "number": {
+          "object": {
+            "require('lodash').fill": {}
+          }
+        },
+        "require('lodash').findIndex": {},
+        "require('lodash').findLastIndex": {}
+      },
+      "string": {
+        "require('lodash').join": {},
+        "object": {
+          "require('lodash').pull": {}
+        },
+        "function": {
+          "require('lodash').bindKey": {}
+        }
+      },
+      "boolean": {
+        "require('lodash').every": {},
+        "require('lodash').some": {}
+      },
+      "function": {
+        "string": {
+          "function": {
+            "require('lodash').bindKey": {}
+          }
+        }
+      }
+    },
+    "undefined": {
+      "require('lodash').head": {}
+    }
+  },
+  "number": {
+    "number": {
+      "number": {
+        "require('lodash').add": {}
+      }
+    },
+    "require('lodash').now": {},
+    "function": {
+      "function": {
+        "require('lodash').after": {}
+      }
+    }
+  },
+  "string": {
+    "string": {
+      "boolean": {
+        "require('lodash').includes": {}
+      }
+    },
+    "number": {
+      "require('lodash').size": {}
+    },
+    "require('lodash').toString": {}
+  },
+  "function": {
+    "number": {
+      "object": {
+        "require('lodash').defer": {}
+      },
+      "function": {
+        "require('lodash').ary": {}
+      },
+      "string": {
+        "object": {
+          "require('lodash').delay": {}
+        }
+      }
+    },
+    "object": {
+      "string": {
+        "function": {
+          "require('lodash').bind": {}
+        }
+      },
+      "function": {
+        "string": {
+          "function": {
+            "require('lodash').bind": {}
+          }
+        }
+      }
+    },
+    "require('lodash').valueOf": {},
+    "function": {
+      "require('lodash').curry": {},
+      "require('lodash').curryRight": {},
+      "require('lodash').flip": {},
+      "require('lodash').memoize": {}
+    },
+    "string": {
+      "object": {
+        "require('lodash').defer": {}
+      }
+    }
+  }
+}
