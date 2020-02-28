@@ -1,14 +1,27 @@
 // a simple math library
 module.exports = {
-  add: (a, b) => a + b,
-  sub: (a, b) => a - b,
+  add: (a, b) => {
+    console.log('haha');  
+    return a + b;
+  },
+  sub: (a, b) => {
+    global.timesAddCalled= 1;
+    console.log('mple');
+    return a - b;
+  },
   constants: {
     pi: 3.14,
     e: 2.71
   },
   fft: {
-    add: (a, b) => a + b,
-    mul: (a, b) => a * b,
+    add: (a, b) => {
+      console.log(global.timesAddCalled);
+      return a + b;
+    },
+    mul: (a, b) => {
+      Math.PI;
+      return a * b;
+    },
     e: 2.71 //added e here
   },
   abc: {  //test
