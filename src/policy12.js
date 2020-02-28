@@ -66,13 +66,11 @@ const globalHandler = {
 // module.
 const moduleHandler = {
   apply: function(target) {
-    const currentName = locEnv.trueName[locEnv.requireLevel];
     updateAnalysisData(storeThings, target.name);
 
     return Reflect.apply(...arguments);
   },
   get: function(target, name) {
-    const currentName = locEnv.trueName[locEnv.requireLevel];
     updateAnalysisData(storeThings, target.name);
 
     return Reflect.get(target, name);
@@ -124,7 +122,10 @@ const readFunction = (myFunc, name) => {
 const globalConstHandler = {
   get: function(target, name) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
-    updateAnalysisData(storeThings, target[name+name]);
+    if (target[name+name] != undefined) {
+      updateAnalysisData(storeThings, target[name+name]);
+    }
+
     return Reflect.get(target, name);
   },
 };

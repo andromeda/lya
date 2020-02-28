@@ -14,7 +14,6 @@
       "require('underscore').toArray": {},
       "require('underscore').compact": {},
       "require('underscore').initial": {
-        "undefined": {},
         "Math.max": {}
       },
       "require('underscore').rest": {},
@@ -156,7 +155,6 @@
         "require('underscore').indexOf": {},
         "require('underscore').lastIndexOf": {},
         "require('underscore').sortedIndex": {
-          "undefined": {},
           "Math.floor": {}
         }
       }
@@ -198,13 +196,11 @@
     "number": {
       "number": {
         "require('underscore').random": {
-          "undefined": {},
           "Math.random": {},
           "Math.floor": {}
         }
       },
       "require('underscore').random": {
-        "undefined": {},
         "Math.random": {},
         "Math.floor": {}
       }
@@ -223,7 +219,6 @@
     },
     "object": {
       "require('underscore').range": {
-        "undefined": {},
         "Math.ceil": {},
         "Math.max": {},
         "Array": {}
@@ -236,7 +231,6 @@
       "string": {
         "function": {
           "require('underscore').bind": {
-            "undefined": {},
             "Math.max": {},
             "Array": {}
           }
@@ -244,7 +238,6 @@
       },
       "function": {
         "require('underscore').bind": {
-          "undefined": {},
           "Math.max": {},
           "Array": {}
         }
@@ -254,7 +247,6 @@
     "number": {
       "function": {
         "require('underscore').partial": {
-          "undefined": {},
           "Math.max": {},
           "Array": {}
         }
@@ -262,7 +254,6 @@
       "string": {
         "object": {
           "require('underscore').delay": {
-            "undefined": {},
             "Math.max": {},
             "Array": {},
             "setTimeout": {}
@@ -274,7 +265,6 @@
       "require('underscore').memoize": {},
       "function": {
         "require('underscore').partial": {
-          "undefined": {},
           "Math.max": {},
           "Array": {}
         },
