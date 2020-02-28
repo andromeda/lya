@@ -1,20 +1,21 @@
 // This is the policy for true false analysis. Each time we access a variable
 // or a function we write it with true in a export file dynamic.json 
 let locEnv;
+let storeThings = {};
 
 // Holds the end of each name store of new assigned global variables
 // suffix for our own metadata
 const endName = '@name';
 
-// @storedCalls it is a table that contains all the analysis data
+// @store it is a table that contains all the analysis data
 // @truename the name of the current function, object etc that we want to add to
 // the table 
-// Given those two inputs we can update the analysis data that are stored in storedCalls
-const updateAnalysisData = (storedCalls, truename) => {
+// Update the analysis data that are stored in storedCalls
+const updateAnalysisData = (store, truename) => {
   if (Object.prototype.hasOwnProperty.
-        call(storedCalls, truename) === false) {
-      storedCalls[truename] = true;
-  }
+        call(store, truename) === false) {
+      store[truename] = {};
+  } 
 };
 
 const updateRestData = (target, name, type) => {
@@ -26,7 +27,6 @@ const requireHandler = {
   apply: function(target, thisArg, argumentsList) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
     const origReqModuleName = argumentsList[0];
-    locEnv.accessMatrix[currentName]['require(\'' + origReqModuleName + '\')'] = true;
     return Reflect.apply(...arguments);
   },
 };
@@ -35,12 +35,11 @@ const requireHandler = {
 // or call a variable, then we can print it on the export file.
 const globalHandler = {
   get: function(target, name) {
-    // XXX[target] != 'undefined'
     if (typeof name === 'string'){
       if (typeof target[name+endName] != 'undefined') {
         const currentName = locEnv.trueName[locEnv.requireLevel];
         const nameToShow = target[name+endName];
-        updateAnalysisData(locEnv.accessMatrix[currentName], nameToShow);
+        updateAnalysisData(storeThings, nameToShow)
       }
     }
 
@@ -50,11 +49,11 @@ const globalHandler = {
     if (typeof value === 'number') {
       const currentName = locEnv.trueName[locEnv.requireLevel];
       const nameToStore = 'global.' + name;
-      
+
       // In order to exist a disticton between the values we declared ourselfs
       // We declare one more field with key value that stores the name
       Object.defineProperty(target, name+endName, {value: nameToStore});
-      updateAnalysisData(locEnv.accessMatrix[currentName], nameToStore);
+      updateAnalysisData(storeThings, nameToStore);
     }
 
     return Reflect.set(target, name, value);
@@ -68,13 +67,13 @@ const globalHandler = {
 const moduleHandler = {
   apply: function(target) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
-    updateAnalysisData(locEnv.accessMatrix[currentName],target.name);
+    updateAnalysisData(storeThings, target.name);
 
     return Reflect.apply(...arguments);
   },
   get: function(target, name) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
-    updateAnalysisData(locEnv.accessMatrix[currentName], target.name);
+    updateAnalysisData(storeThings, target.name);
 
     return Reflect.get(target, name);
   },
@@ -85,38 +84,38 @@ const moduleHandler = {
 // exports this is the handler that we wrap the function.
 const exportsFuncHandler = {
   apply: function(target, thisArg, argumentsList) {
-    let truename;
-
-    truename = locEnv.objName.get(target);
-    const currentName = locEnv.objPath.get(target);
+    // This is for the names
+    let truename = locEnv.objName.get(target);
     truename = truename + '.' + target.name;
-    updateAnalysisData(locEnv.accessMatrix[currentName], truename);
+
+    // Here the input and the output type
+    let tempMatrix = locEnv.accessMatrix;
+    storeThings = {};
+
+    for (var i = 0; i < argumentsList.length; i++) {
+        const type = typeof argumentsList[i];
+        updateAnalysisData(tempMatrix, type)
+        tempMatrix = tempMatrix[type];
+    }
 
 
-    return Reflect.apply(...arguments);
+    const result = Reflect.apply(...arguments);
+    const outputType = typeof result;
     
+    updateAnalysisData(tempMatrix, outputType)
+    tempMatrix = tempMatrix[outputType];
+
+    updateAnalysisData(tempMatrix, truename);
+    tempMatrix[truename] = storeThings;
+    storeThings = {};
+
+    return result;
   },
 };
 
 // Read function so we print it in the export file
 // This is to catch the read
 const readFunction = (myFunc, name) => {
-  // TODO: fix myFunc.name
-  name = name + '.' + myFunc.name;
-  const currentPlace = locEnv.trueName[locEnv.requireLevel];
-  let storedCalls = locEnv.accessMatrix[currentPlace];
-
-  if (Object.prototype.hasOwnProperty.
-        call(storedCalls, name) === false) {
-      storedCalls[name] = true;
-
-      // TODO: More elegant fix to things happening after exit
-      // maybe change the process.on exit somehow????
-      if (global.end) {
-            require('fs').writeFileSync(lyaConfig.SAVE_RESULTS,
-        JSON.stringify(locEnv.accessMatrix, null, 2), 'utf-8');
-      }
-  }
 }
 
 // This is the handler of the global constanst variables, like Math.PI etc. We store the name 
@@ -125,8 +124,7 @@ const readFunction = (myFunc, name) => {
 const globalConstHandler = {
   get: function(target, name) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
-    updateAnalysisData(locEnv.accessMatrix[currentName], target[name+name]);
-
+    updateAnalysisData(storeThings, target[name+name]);
     return Reflect.get(target, name);
   },
 };

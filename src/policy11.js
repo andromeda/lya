@@ -40,7 +40,6 @@ const requireHandler = {
   apply: function(target, thisArg, argumentsList) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
     const origReqModuleName = argumentsList[0];
-    //locEnv.accessMatrix[currentName]['require(\'' + origReqModuleName + '\')'] = true;
     return Reflect.apply(...arguments);
   },
 };
@@ -81,19 +80,14 @@ const exportsFuncHandler = {
     truename = truename + '.' + target.name;
 
     // Here the input and the output type
-    let inputType = '';
     let tempMatrix = locEnv.accessMatrix;
 
-    if (!argumentsList.length) {
-      inputType += 'no-input';
-    } else {
-      for (var i = 0; i < argumentsList.length; i++) {
-        //inputType += i + '.' + typeof argumentsList[i] + ' ';
+    for (var i = 0; i < argumentsList.length; i++) {
         const type = typeof argumentsList[i];
         updateTypeData(tempMatrix, type)
         tempMatrix = tempMatrix[type];
-      }
     }
+
 
     const result = Reflect.apply(...arguments);
     const outputType = typeof result;
@@ -101,8 +95,6 @@ const exportsFuncHandler = {
     tempMatrix = tempMatrix[outputType];
 
     updateTypeData(tempMatrix, truename);
-    //console.log(tempMatrix);
-    //console.log(locEnv.accessMatrix);
     return result;
   },
 };
