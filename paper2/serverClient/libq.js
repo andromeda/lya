@@ -1,6 +1,6 @@
 const http = require('http');
 
-const data = 'this is the input';
+const data = 'Number -> Number -> Number';
 
 const options = {
   hostname: 'localhost',
@@ -9,7 +9,6 @@ const options = {
   method: 'POST',
   headers: {
     'Content-Type': 'text/plain',
-    //'Content-Length': data.length
   }
 }
 
@@ -17,7 +16,9 @@ const req = http.request(options, (res) => {
   console.log(`statusCode: ${res.statusCode}`)
 
   res.on('data', (d) => {
-    process.stdout.write(d)
+    let result = JSON.parse(d)
+    console.log('this is the result', result);
+
   })
 })
 
@@ -27,4 +28,3 @@ req.on('error', (error) => {
 
 req.write(data)
 req.end()
-
