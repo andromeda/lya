@@ -1,0 +1,96 @@
+{
+  "main": {},
+  "moment.js": {},
+  "string": {
+    "number": {
+      "require('moment').parseTwoDigitYear": {}
+    },
+    "object": {
+      "require('moment').utc": {},
+      "object": {
+        "require('moment').utc": {},
+        "require('moment').defineLocale": {},
+        "require('fs').createWriteStream": {}
+      },
+      "boolean": {
+        "object": {
+          "require('moment').utc": {}
+        }
+      },
+      "string": {
+        "object": {
+          "require('moment').utc": {}
+        },
+        "boolean": {
+          "object": {
+            "require('moment').utc": {}
+          }
+        },
+        "require('moment').locale": {}
+      },
+      "require('moment').localeData": {}
+    },
+    "string": {
+      "object": {
+        "require('moment').utc": {}
+      },
+      "boolean": {
+        "object": {
+          "require('moment').utc": {}
+        }
+      },
+      "string": {
+        "object": {
+          "require('moment').utc": {}
+        },
+        "boolean": {
+          "object": {
+            "require('moment').utc": {}
+          }
+        }
+      },
+      "require('moment').locale": {}
+    },
+    "require('moment').locale": {}
+  },
+  "number": {
+    "object": {
+      "require('moment').unix": {},
+      "require('moment').utc": {},
+      "require('moment').duration": {}
+    },
+    "string": {
+      "object": {
+        "require('moment').duration": {}
+      }
+    }
+  },
+  "object": {
+    "require('moment').utc": {},
+    "object": {
+      "require('moment').utc": {},
+      "require('moment').duration": {},
+      "require('moment').min": {},
+      "object": {
+        "require('moment').min": {},
+        "require('moment').max": {}
+      },
+      "require('moment').max": {}
+    },
+    "boolean": {
+      "require('moment').isMoment": {},
+      "require('moment').isDate": {},
+      "require('moment').isDuration": {}
+    },
+    "require('moment').duration": {},
+    "string": {
+      "require('moment').locale": {}
+    }
+  },
+  "fr.js": {},
+  "undefined": {
+    "object": {
+      "require('moment').duration": {}
+    }
+  }
+}

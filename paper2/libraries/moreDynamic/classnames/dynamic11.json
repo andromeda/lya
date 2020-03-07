@@ -1,0 +1,23 @@
+{
+  "main": {},
+  "bind.js": {},
+  "object": {
+    "function": {
+      "require('../bind').bind": {}
+    }
+  },
+  "string": {
+    "object": {
+      "object": {
+        "require('fs').createWriteStream": {}
+      }
+    },
+    "string": {
+      "undefined": {
+        "require('assert').equal": {}
+      }
+    }
+  },
+  "dedupe.js": {},
+  "index.js": {}
+}

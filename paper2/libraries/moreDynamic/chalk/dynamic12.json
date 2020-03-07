@@ -1,0 +1,37 @@
+{
+  "main": {},
+  "_supports-color.js": {},
+  "index.js": {},
+  "string": {
+    "string": {
+      "require('fs').realpathSync": {},
+      "string": {
+        "require('path').join": {},
+        "string": {
+          "require('path').join": {}
+        }
+      },
+      "require('ansi-styles').color.ansi.hex": {},
+      "require('ansi-styles').bgColor.ansi.hex": {},
+      "require('ansi-styles').color.ansi256.hex": {},
+      "require('ansi-styles').bgColor.ansi256.hex": {},
+      "require('ansi-styles').bgColor.ansi16m.hex": {}
+    },
+    "object": {
+      "require('module')._nodeModulePaths": {},
+      "string": {
+        "require('fs').realpathSync": {},
+        "require('module')._resolveFilename": {}
+      },
+      "boolean": {
+        "string": {
+          "require('module')._resolveFilename": {}
+        }
+      },
+      "object": {
+        "require('fs').createWriteStream": {}
+      }
+    }
+  },
+  "templates.js": {}
+}

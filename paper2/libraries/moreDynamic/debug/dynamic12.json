@@ -1,0 +1,64 @@
+{
+  "main": {},
+  "index.js": {},
+  "node.js": {},
+  "common.js": {},
+  "string": {
+    "object": {
+      "object": {
+        "require('fs').createWriteStream": {}
+      }
+    },
+    "undefined": {
+      "require('./node.js').enable": {}
+    },
+    "string": {
+      "undefined": {
+        "require('assert').deepStrictEqual": {}
+      }
+    },
+    "require('./node.js').disable": {}
+  },
+  "number": {
+    "boolean": {
+      "require('tty').isatty": {}
+    },
+    "object": {
+      "string": {
+        "require('util').inspect": {}
+      }
+    },
+    "number": {
+      "undefined": {
+        "require('assert').deepStrictEqual": {}
+      }
+    }
+  },
+  "function": {
+    "undefined": {
+      "require('assert').doesNotThrow": {}
+    },
+    "function": {
+      "undefined": {
+        "require('assert').deepStrictEqual": {}
+      }
+    }
+  },
+  "boolean": {
+    "undefined": {
+      "require('./node.js').enable": {}
+    },
+    "boolean": {
+      "undefined": {
+        "require('assert').deepStrictEqual": {}
+      }
+    }
+  },
+  "object": {
+    "object": {
+      "undefined": {
+        "require('assert').deepStrictEqual": {}
+      }
+    }
+  }
+}

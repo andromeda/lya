@@ -1,0 +1,17 @@
+{
+  "main": {},
+  "bind.js": {},
+  "function": {
+    "require('../bind').bind": {},
+    "require('fs').createWriteStream": {},
+    "require('assert').equal": {}
+  },
+  "number": {
+    "require('../bind').length": {}
+  },
+  "string": {
+    "require('../bind').name": {}
+  },
+  "dedupe.js": {},
+  "index.js": {}
+}

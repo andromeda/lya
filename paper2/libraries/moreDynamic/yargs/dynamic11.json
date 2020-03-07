@@ -1,0 +1,123 @@
+{
+  "main": {},
+  "object": {
+    "require('chai').should": {},
+    "string": {
+      "require('os-locale').sync": {}
+    },
+    "object": {
+      "require('/home/grigorisntousakis/thesis/lya/tst/repos/yargs/test/fixtures/cmddir/dream.js').builder": {},
+      "require('/home/grigorisntousakis/thesis/lya/tst/repos/yargs/test/fixtures/cmddir_cyclic/cyclic.js').builder": {},
+      "require('chai').expect": {},
+      "require('./fixtures/command-module').builder": {},
+      "require('../').parse": {},
+      "require('/home/grigorisntousakis/thesis/lya/tst/repos/yargs/test/fixtures/cmddir/deep/within-a-dream.js').builder": {},
+      "require('../').config": {}
+    },
+    "undefined": {
+      "require('./fixtures/command').handler": {},
+      "require('./fixtures/command-module').handler": {},
+      "require('/home/grigorisntousakis/thesis/lya/tst/repos/yargs/test/fixtures/cmddir/deep/within-a-dream.js').handler": {}
+    },
+    "require('../').env": {},
+    "require('../').help": {},
+    "require('../').getOptions": {},
+    "require('../').getContext": {},
+    "require('../').reset": {},
+    "require('../lib/yerror').prototype.valueOf": {}
+  },
+  "string": {
+    "object": {
+      "object": {
+        "require('fs').createWriteStream": {},
+        "require('../').parse": {}
+      },
+      "string": {
+        "require('find-up').sync": {}
+      },
+      "require('fs').readdirSync": {},
+      "require('fs').statSync": {},
+      "require('chai').expect": {},
+      "require('../').env": {},
+      "require('../').parse": {},
+      "require('fs').readFileSync": {}
+    },
+    "string": {
+      "require('path').dirname": {},
+      "string": {
+        "require('path').resolve": {},
+        "require('path').join": {},
+        "string": {
+          "require('path').resolve": {},
+          "string": {
+            "string": {
+              "require('path').join": {}
+            }
+          },
+          "require('path').join": {}
+        },
+        "require('fs').readFileSync": {}
+      },
+      "require('path').resolve": {}
+    },
+    "function": {
+      "object": {
+        "require('../').parse": {}
+      }
+    },
+    "require('../lib/yerror').prototype.toString": {},
+    "boolean": {
+      "require('yargs-test-extends').hasOwnProperty": {}
+    }
+  },
+  "index.js": {},
+  "buffer-stream.js": {},
+  "signals.js": {},
+  "function": {
+    "undefined": {
+      "require('./signals.js').forEach": {}
+    },
+    "string": {
+      "function": {
+        "require('util').deprecate": {}
+      }
+    },
+    "object": {
+      "require('./helpers/utils').checkOutput": {},
+      "require('chai').expect": {}
+    }
+  },
+  "errname.js": {},
+  "stdio.js": {},
+  "dream.js": {},
+  "within-a-dream.js": {},
+  "limbo.js": {},
+  "inception.js": {},
+  "cyclic.js": {},
+  "nameless.js": {},
+  "boolean": {
+    "object": {
+      "require('chai').expect": {},
+      "require('../').env": {},
+      "require('../').exitProcess": {}
+    },
+    "require('../').getExitProcess": {}
+  },
+  "instrumenter.js": {},
+  "get-own-property-symbols.js": {},
+  "es6.symbol.js": {},
+  "_global.js": {},
+  "levenshtein.js": {},
+  "command.js": {},
+  "command-module.js": {},
+  "undefined": {
+    "object": {
+      "require('chai').expect": {}
+    }
+  },
+  "number": {
+    "object": {
+      "require('chai').expect": {}
+    }
+  }
+}
