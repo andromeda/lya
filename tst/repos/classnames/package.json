@@ -14,7 +14,7 @@
     "benchmarks": "node ./benchmarks/run",
     "benchmarks-browserify": "./node_modules/.bin/browserify ./benchmarks/runInBrowser.js >./benchmarks/runInBrowser.bundle.js",
     "benchmarks-in-browser": "./node_modules/.bin/opn ./benchmarks/benchmarks.html",
-    "test": "mocha tests/*.js"
+    "test": "mocha test/*.js"
   },
   "keywords": [
     "react",

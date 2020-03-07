@@ -8,7 +8,7 @@ if (parseInt(process.env.npm_config_key) != 0) {
   analysisCh: parseInt(process.env.npm_config_key),
   POLICY: '../tst/working/repos/debug/debug-master/dynamic.json'
   };
-  let lya = require("../../../../../src/txfm.js");
+  let lya = require("../../../../src/txfm.js");
   require = lya.configRequire(require, lyaConfig);
 }
 const time = process.hrtime();
