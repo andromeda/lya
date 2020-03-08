@@ -1,11 +1,14 @@
-lyaConfig = {
-    SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
-    analysisCh: 12,
-};
-let lya = require("../../../src/txfm.js");
-require = lya.configRequire(require, lyaConfig);
-let m = require('./math.js');
+if (parseInt(process.env.key) != 0) {
+        lyaConfig = {
+        SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
+        analysisCh: parseInt(process.env.key),
+        removejson: ['hasOwnProperty'],
+        };
+        let lya = require("../../../src/txfm.js");
+        require = lya.configRequire(require, lyaConfig);
+}
 
+let m = require('./math.js');
 m.x = 3;
 
 //examples
