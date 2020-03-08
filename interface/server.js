@@ -11,8 +11,7 @@ http.createServer( (request, response) => {
   request.on('data', function (data) {
     const query = (data).toString();
     console.log('This is the query: ', query);
-    const accessPath = query.split(' -> ');
-    response.write(JSON.stringify(getFuctions(accessPath)));
+    response.write(JSON.stringify(getFuctions(query.split(' -> '))));
     response.end();
   });
 }).listen(conf.SERVER_PORT);
