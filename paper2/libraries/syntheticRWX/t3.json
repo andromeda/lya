@@ -1,0 +1,13 @@
+{
+  "main": {
+    "require('fs')": "R",
+    "global.x": "W",
+    "require('./m1.js')": "R",
+    "require('fs').createWriteStream": "RE"
+  },
+  "m1.js": {
+    "Object": "R",
+    "global.x": "R",
+    "bound consoleCall": "E"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "main": {
+    "require('./math.js')": "R",
+    "require('./math.js').fft.mul": "RE",
+    "require('./math.js').add": "RE",
+    "bound consoleCall": "E",
+    "Math.PI": "R",
+    "require('./math.js').fft.add": "RE",
+    "require('./math.js').sub": "RE",
+    "global.timesAddCalled": "WR"
+  },
+  "math.js": {
+    "Object": "R"
+  }
+}
