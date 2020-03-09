@@ -20,18 +20,21 @@ const generateHeader = (data, op) => {
 let put = (data, cb) => {
   const req = http.request(generateHeader(data), (res) => {
     console.log(`statusCode: ${res.statusCode}`)
+    let rawData = '';
 
-    res.on('data', (d) => {
-      let result = JSON.parse(d)
-      console.log('this is the result', result);
+    res.on('data', (chunk) => {
+      rawData += chunk;
+    });
 
-    })
+    res.on('end', () => {
+      console.log('this is the result', JSON.parse(rawData));
+    });
   })
 
   req.on('error', (error) => {
     console.error(error)
   })
-  
+
   req.write(data)
   req.end()
 }
@@ -49,7 +52,3 @@ const getInputData = (input) => {
 };
 // TODO: input file? to ask
 getInputData(process.argv);
-
-
-
-
