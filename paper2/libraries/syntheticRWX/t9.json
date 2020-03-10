@@ -1,6 +1,7 @@
 {
   "main": {
     "require('./math.js')": "R",
+    "require('./math.js').fft": "R",
     "require('./math.js').fft.mul": "RE",
     "require('./math.js').add": "RE",
     "bound consoleCall": "E",

@@ -4,6 +4,7 @@
     "require('./m1.js')": "R",
     "bound consoleCall": "E",
     "require('./m1.js').add": "RE",
+    "require('./m1.js').fft": "R",
     "require('./m1.js').fft.add": "RE",
     "require('fs').createWriteStream": "RE"
   },

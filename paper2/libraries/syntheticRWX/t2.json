@@ -2,6 +2,7 @@
   "main": {
     "require('fs')": "R",
     "require('./m1.js')": "R",
+    "require('path')": "R",
     "require('path').basename": "RE",
     "require('./m2.js')": "R",
     "require('fs').createWriteStream": "RE"
