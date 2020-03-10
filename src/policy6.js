@@ -105,7 +105,7 @@ const exportsFuncHandler = {
     let truename;
 
     truename = locEnv.objName.get(target);
-    const currentName = locEnv.objPath.get(target);
+    const currentName = locEnv.trueName[locEnv.requireLevel];
     truename = truename + '.' + target.name;
     updateAnalysisData(locEnv.accessMatrix[currentName], truename, 'E');
 
