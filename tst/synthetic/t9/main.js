@@ -2,7 +2,6 @@ if (parseInt(process.env.key) != 0) {
         lyaConfig = {
         SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
         analysisCh: parseInt(process.env.key),
-        removejson: ['hasOwnProperty'],
         };
         let lya = require("../../../src/txfm.js");
         require = lya.configRequire(require, lyaConfig);
