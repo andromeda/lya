@@ -23,11 +23,25 @@ const requireHandler = {
 const updateRestData = (target, name, type) => {
 };
 
+// TODO:find a more elegant way for the order
 // We add the R or W or E to the existing string
 const addEvent = (event, values, index) => {
   let storedValue = values[index];
   if (!storedValue.includes(event)){
-    storedValue += event;
+    if (event === 'r') {
+      storedValue = event + storedValue;
+    } else if (event === 'x') {
+      storedValue = storedValue + event;
+    } else {
+        if (storedValue.length === 2) {
+          storedValue = storedValue.slice(0) + event + storedValue.slice(1);
+        } else if (storedValue == 'r') {
+          storedValue = storedValue + event;
+        } else {
+          storedValue = event + storedValue;
+        }
+    }
+
     values[index] = storedValue;
   }
 };
