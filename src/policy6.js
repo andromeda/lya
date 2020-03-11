@@ -15,7 +15,7 @@ const requireHandler = {
   apply: function(target, thisArg, argumentsList) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
     const origReqModuleName = argumentsList[0];
-    locEnv.accessMatrix[currentName]['require(\'' + origReqModuleName + '\')'] = 'R';
+    locEnv.accessMatrix[currentName]['require(\'' + origReqModuleName + '\')'] = 'r';
     return Reflect.apply(...arguments);
   },
 };
@@ -55,7 +55,7 @@ const globalHandler = {
       if (typeof target[name+endName] != 'undefined') {
         const currentName = locEnv.trueName[locEnv.requireLevel];
         const nameToShow = target[name+endName];
-        updateAnalysisData(locEnv.accessMatrix[currentName], nameToShow, 'R');
+        updateAnalysisData(locEnv.accessMatrix[currentName], nameToShow, 'r');
       }
     }
 
@@ -69,7 +69,7 @@ const globalHandler = {
       // In order to exist a disticton between the values we declared ourselfs
       // We declare one more field with key value that stores the name
       Object.defineProperty(target, name+endName, {value: nameToStore});
-      updateAnalysisData(locEnv.accessMatrix[currentName], nameToStore, 'W');
+      updateAnalysisData(locEnv.accessMatrix[currentName], nameToStore, 'w');
 
       return result;
     }
@@ -85,13 +85,13 @@ const globalHandler = {
 const moduleHandler = {
   apply: function(target) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
-    updateAnalysisData(locEnv.accessMatrix[currentName], target.name, 'E');
+    updateAnalysisData(locEnv.accessMatrix[currentName], target.name, 'x');
 
     return Reflect.apply(...arguments);
   },
   get: function(target, name) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
-    updateAnalysisData(locEnv.accessMatrix[currentName], target.name, 'R');
+    updateAnalysisData(locEnv.accessMatrix[currentName], target.name, 'r');
 
     return Reflect.get(target, name);
   },
@@ -107,7 +107,7 @@ const exportsFuncHandler = {
     truename = locEnv.objName.get(target);
     const currentName = locEnv.trueName[locEnv.requireLevel];
     truename = truename + '.' + target.name;
-    updateAnalysisData(locEnv.accessMatrix[currentName], truename, 'E');
+    updateAnalysisData(locEnv.accessMatrix[currentName], truename, 'x');
 
     return Reflect.apply(...arguments);
   },
@@ -124,14 +124,14 @@ const readFunction = (myFunc, name) => {
 
   if (Object.prototype.hasOwnProperty.
         call(storedCalls, name) === false) {
-    storedCalls[name] = 'R';
+    storedCalls[name] = 'r';
   }
 
   if (Object.prototype.hasOwnProperty.
         call(storedCalls, wholeName) === false) {
-    storedCalls[wholeName] = 'R';
+    storedCalls[wholeName] = 'r';
   } else {
-    addEvent('R', storedCalls, wholeName);
+    addEvent('r', storedCalls, wholeName);
   }
 };
 
@@ -141,7 +141,7 @@ const readFunction = (myFunc, name) => {
 const globalConstHandler = {
   get: function(target, name) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
-    updateAnalysisData(locEnv.accessMatrix[currentName], target[name+name], 'R');
+    updateAnalysisData(locEnv.accessMatrix[currentName], target[name+name], 'r');
 
     return Reflect.get(target, name);
   },
