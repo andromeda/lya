@@ -34,7 +34,7 @@ const addEvent = (event, values, index) => {
       storedValue = storedValue + event;
     } else {
         if (storedValue.length === 2) {
-          storedValue = storedValue.slice(0) + event + storedValue.slice(1);
+          storedValue = storedValue[0] + event + storedValue[1];
         } else if (storedValue == 'r') {
           storedValue = storedValue + event;
         } else {
