@@ -1,0 +1,11 @@
+{
+  "main": {
+    "require('./m1.js')": "R",
+    "require('./m1.js').valueOf": "RE",
+    "require('./m1.js').toString": "RE"
+  },
+  "m1.js": {
+    "Object": "R",
+    "Math.PI": "R"
+  }
+}

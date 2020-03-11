@@ -1,0 +1,13 @@
+{
+  "/Users/nv/wrk/andromeda/mir/static-analysis/tests/t3/main.js": {
+    "global": "r",
+    "global.x": "w",
+    "require": "rx"
+  },
+  "/Users/nv/wrk/andromeda/mir/static-analysis/tests/t3/m1.js": {
+    "console": "r",
+    "console.error": "rx",
+    "global": "r",
+    "global.x": "r"
+  }
+}

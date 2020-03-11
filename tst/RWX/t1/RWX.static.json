@@ -1,0 +1,15 @@
+{
+  "/Users/nv/wrk/andromeda/mir/static-analysis/tests/t1/m2.js": {
+    "module": "r",
+    "module.exports": "w"
+  },
+  "/Users/nv/wrk/andromeda/mir/static-analysis/tests/t1/main.js": {
+    "require": "rx",
+    "require('./m1.js')": "r",
+    "require('fs')": "r",
+    "require('fs').createWriteStream": "rx"
+  },
+  "/Users/nv/wrk/andromeda/mir/static-analysis/tests/t1/m1.js": {
+    "require": "rx"
+  }
+}

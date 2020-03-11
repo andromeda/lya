@@ -1,0 +1,15 @@
+{
+  "main": {
+    "require('fs')": "r",
+    "require('./m1.js')": "r",
+    "require('fs').createWriteStream": "x"
+  },
+  "m1.js": {
+    "Number": "x",
+    "require('./m2.js')": "r",
+    "require('./m2.js').add": "rx"
+  },
+  "m2.js": {
+    "Object": "x"
+  }
+}
