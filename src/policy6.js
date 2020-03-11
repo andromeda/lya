@@ -120,9 +120,10 @@ const exportsFuncHandler = {
 
     truename = locEnv.objName.get(target);
     const currentName = locEnv.trueName[locEnv.requireLevel];
-    truename = truename + '.' + target.name;
-    updateAnalysisData(locEnv.accessMatrix[currentName], truename, 'x');
-
+    if (currentName === locEnv.objPath.get(target)) {
+      truename = truename + '.' + target.name;
+      updateAnalysisData(locEnv.accessMatrix[currentName], truename, 'x');
+    }
     return Reflect.apply(...arguments);
   },
 };
