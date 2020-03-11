@@ -2,7 +2,7 @@
 no-shadow-restricted-names: "off" */
 
 // We use this global value to know if the program has ended or not
-// necessary for enforcement analysis(5, 7) 
+// necessary for enforcement analysis(5, 7)
 global.end= false;
 
 // We import and declare all the necessary modules
@@ -15,7 +15,7 @@ const originalWrap = Module.wrap;
 const originalRequire = Module.prototype.require;
 const originalRun = vm.runInThisContext;
 
-// `require` name stack / tree 
+// `require` name stack / tree
 // require( ...require('..')... )
 // main: 0;
 // m1: 1;
@@ -25,7 +25,8 @@ let requireLevel = 0;
 const globalProxies = {};
 const accessMatrix = {};
 
-trueName[0] = 'main';
+// TODO: fix main.js name -> find true name
+trueName[0] = process.cwd() + '/' + 'main.js';
 accessMatrix[trueName[0]] = {};
 
 // Holds the end of each name store of new assigned global variables
@@ -41,7 +42,7 @@ const objPath = new WeakMap();
 
 // @globals.json contains all the functions we want to wrap in a proxy
 // @staticGlobals.json contains all the global variables that contain static functions
-// @constantGlobals.json has all the constants of the static variables 
+// @constantGlobals.json has all the constants of the static variables
 // We read and store the data of the json file
 const globals = require('./globals.json');
 const sglobals = require('./staticGlobals.json');
@@ -209,7 +210,7 @@ const createFinalDecl = () => {
         }
       }
     }
-    finalDecl += upValue + ' = new Proxy(' + upValue + ', pr["proxyExportHandler"]);\n';  
+    finalDecl += upValue + ' = new Proxy(' + upValue + ', pr["proxyExportHandler"]);\n';
 
   }
 
@@ -287,17 +288,11 @@ Module.wrap = (script) => {
   return wrappedScript;
 };
 
-// Returns the last location of a path
-const getName = (wayFile) => {
-  const splited = wayFile.split('/');
-  return splited[splited.length - 1];
-};
-
 // We export the name of the curr module and pass proxy to the final function
 vm.runInThisContext = function(code, options) {
   const codeToRun = originalRun(code, options);
   env.requireLevel++;
-  trueName[env.requireLevel] = getName(options['filename']);
+  trueName[env.requireLevel] = options['filename'];
   // Should move to policies
   if (!Object.prototype.hasOwnProperty.
     call(accessMatrix,trueName[env.requireLevel])){
@@ -310,7 +305,7 @@ vm.runInThisContext = function(code, options) {
 Module.prototype.require = function(...args) {
   const path = args[0];
   let result = originalRequire.apply(this, args);
-  // If false that means that we pass from here for the 
+  // If false that means that we pass from here for the
   // first time.
   const type = typeof result;
   if (type != 'boolean' && type != 'symbol' && type != 'number' && type != 'string') {
@@ -333,8 +328,8 @@ Module.prototype.require = function(...args) {
 };
 
 // This is the handler of the export object. Every time we require a module, and it has
-// export data we wrap those data in this handler. So this is the first layer of the 
-// export data wraping. 
+// export data we wrap those data in this handler. So this is the first layer of the
+// export data wraping.
 const m1 = new WeakMap();
 const exportHandler = {
   get: function(target, name, receiver) {
@@ -356,7 +351,7 @@ const exportHandler = {
           }
           if (truepath === undefined) {
             truepath = objPath.get(target);
-          } 
+          }
           const localObject = target[name];
 
           target[name] = new Proxy(target[name], exportHandler);
@@ -366,7 +361,7 @@ const exportHandler = {
           result = Reflect.get(target, name);
           m1.set(result, true);
 
-          return result; 
+          return result;
         }
       } else if (type === 'function') {
         // We first return the obj to check that is not wraped in a proxy
@@ -375,10 +370,10 @@ const exportHandler = {
           Object.defineProperty(localFunction, 'name', {value: name});
           target[name] = new Proxy(localFunction, policy.exportsFuncHandler);
         }
-          
+
         objPath.set(localFunction, trueName[env.requireLevel]);
         objName.set(localFunction, objName.get(target));
-          
+
         // Undefined fix
         policy.readFunction(localFunction, objName.get(target));
 
