@@ -26,23 +26,11 @@ const updateRestData = (target, name, type) => {
 // TODO:find a more elegant way for the order
 // We add the R or W or E to the existing string
 const addEvent = (event, values, index) => {
-  let storedValue = values[index];
-  if (!storedValue.includes(event)){
-    if (event === 'r') {
-      storedValue = event + storedValue;
-    } else if (event === 'x') {
-      storedValue = storedValue + event;
-    } else {
-        if (storedValue.length === 2) {
-          storedValue = storedValue[0] + event + storedValue[1];
-        } else if (storedValue == 'r') {
-          storedValue = storedValue + event;
-        } else {
-          storedValue = event + storedValue;
-        }
-    }
-
-    values[index] = storedValue;
+  let permissions = values[index];
+  if (!permissions.includes(event)){
+    permissions += event;
+    permissions = permissions.split("").sort().join('');
+    values[index] = permissions;
   }
 };
 
@@ -99,8 +87,12 @@ const globalHandler = {
 const moduleHandler = {
   apply: function(target) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
-    updateAnalysisData(locEnv.accessMatrix[currentName], target.name, 'x');
-
+    if (locEnv.methodNames.has(target)) {
+      updateAnalysisData(locEnv.accessMatrix[currentName],
+        locEnv.methodNames.get(target), 'x');
+    } else {
+      updateAnalysisData(locEnv.accessMatrix[currentName], target.name, 'x');
+    }
     return Reflect.apply(...arguments);
   },
   get: function(target, name) {

@@ -54,5 +54,11 @@
 		"preventExtensions",
 		"set",
 		"setPrototypeOf"
+	],
+	"process": [
+		"hrtime",
+		"cpuUsage",
+		"cwd",
+		"exit"
 	]
 }
