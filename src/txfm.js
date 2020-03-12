@@ -36,9 +36,12 @@ const endName = '@name';
 // This holds the string of the transformations inside modules
 let finalDecl = ' ';
 
+
+
 // WeakMaps to store the name and the path for every object value
 const objName = new WeakMap();
 const objPath = new WeakMap();
+const methodNames = new WeakMap();
 
 // @globals.json contains all the functions we want to wrap in a proxy
 // @staticGlobals.json contains all the global variables that contain static functions
@@ -47,6 +50,7 @@ const objPath = new WeakMap();
 const globals = require('./globals.json');
 const sglobals = require('./staticGlobals.json');
 const cglobals = require('./constantGlobals.json');
+const toSaveNames = require('./saveNames.json');
 // const jsonPrototypeData = require('./prototypeGlobals.json');
 
 // We make a test on fragment
@@ -56,6 +60,7 @@ const env = {
   accessMatrix: accessMatrix,
   objName : objName,
   objPath : objPath,
+  methodNames : methodNames
 };
 
 // We return the choice of the user
@@ -85,6 +90,19 @@ globalProxies['proxyExportHandler'] = policy.globalConstHandler;
 // Returns the right require handler for the case
 const mainRequire = (original) => {
   return new Proxy(original, policy.require);
+};
+
+// This function stores the names of the given object to 
+// methodNames WeakMap ~> stores names of objs like console etc
+function generateNames(obj) {
+  for (k in obj) {
+    const functionNames = global[obj[k]];
+    for (name in functionNames){
+      if (typeof name === 'string' && name != undefined) {
+        methodNames.set(functionNames[name], obj[k] + '.' + name);
+      }
+    }
+  };
 };
 
 // The handler of compiledWrapper
@@ -247,6 +265,7 @@ const createFinalDecl = () => {
 const globalsDecl = () => {
   if (finalDecl === ' ') {
     userRemoves();
+    generateNames(toSaveNames);
     return createFinalDecl();
   } else {
     return finalDecl;
