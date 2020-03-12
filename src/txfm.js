@@ -42,6 +42,7 @@ let finalDecl = ' ';
 const objName = new WeakMap();
 const objPath = new WeakMap();
 const methodNames = new WeakMap();
+const storePureFunctions = new WeakMap();
 
 // @globals.json contains all the functions we want to wrap in a proxy
 // @staticGlobals.json contains all the global variables that contain static functions
@@ -388,11 +389,16 @@ const exportHandler = {
         if (!m1.has(target[name])){
           Object.defineProperty(localFunction, 'name', {value: name});
           target[name] = new Proxy(localFunction, policy.exportsFuncHandler);
+
+          // We keep in storePureFunctions the function without the proxy
+          storePureFunctions.set(target[name], localFunction);
+          objPath.set(localFunction, trueName[env.requireLevel]);
+          objName.set(localFunction, objName.get(target));
+        } else {
+          objPath.set(storePureFunctions.get(localFunction), trueName[env.requireLevel]);
+          objName.set(storePureFunctions.get(localFunction), objName.get(target));
         }
-
-        objPath.set(localFunction, trueName[env.requireLevel]);
-        objName.set(localFunction, objName.get(target));
-
+        
         // Undefined fix
         policy.readFunction(localFunction, objName.get(target));
 
