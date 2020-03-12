@@ -48,6 +48,11 @@ const updateAnalysisData = (storedCalls, truename, mode) => {
   }
 };
 
+const exportObj = () => {
+  const currentName = locEnv.trueName[locEnv.requireLevel];
+  updateAnalysisData(locEnv.accessMatrix[currentName], 'module.export', 'w');
+}
+
 // The handler of the global variable.Every time we access the global variabe in order to declare
 // or call a variable, then we can print it on the export file.
 const globalHandler = {
@@ -164,5 +169,6 @@ module.exports = (env) => {
     exportsFuncHandler : exportsFuncHandler,
     globalConstHandler : globalConstHandler,
     updateRestData : updateRestData,
+    exportObj : exportObj
 	}
 };
