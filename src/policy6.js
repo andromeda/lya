@@ -87,8 +87,12 @@ const globalHandler = {
 const moduleHandler = {
   apply: function(target) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
-    updateAnalysisData(locEnv.accessMatrix[currentName], target.name, 'x');
-
+    if (locEnv.methodNames.has(target)) {
+      updateAnalysisData(locEnv.accessMatrix[currentName],
+        locEnv.methodNames.get(target), 'x');
+    } else {
+      updateAnalysisData(locEnv.accessMatrix[currentName], target.name, 'x');
+    }
     return Reflect.apply(...arguments);
   },
   get: function(target, name) {
