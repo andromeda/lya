@@ -1,13 +1,13 @@
 {
   "main": {
-    "global": "R",
-    "global.x": "W",
-    "require('./m1.js')": "R"
+    "global": "r",
+    "global.x": "w",
+    "require('./m1.js')": "r"
   },
   "m1.js": {
-    "Object": "R",
-    "global.x": "R",
-    "console": "R",
-    "console.error": "E"
+    "Object": "r",
+    "global.x": "r",
+    "console": "r",
+    "console.error": "x"
   }
 }

@@ -1,0 +1,12 @@
+{
+  "/Users/nv/wrk/andromeda/mir/static-analysis/tests/t10/main.js": {
+    "require": "x",
+    "require('./m1.js')": "r",
+    "require('./m1.js').r": "wr",
+    "require('./m1.js').w": "w",
+    "require('./m1.js').x": "rx"
+  },
+  "/Users/nv/wrk/andromeda/mir/static-analysis/tests/t10/m1.js": {
+    "module.exports": "w"
+  }
+}

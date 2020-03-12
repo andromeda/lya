@@ -1,0 +1,14 @@
+{
+  "/Users/nv/wrk/andromeda/mir/static-analysis/tests/t7/RWX.static.js": {},
+  "/Users/nv/wrk/andromeda/mir/static-analysis/tests/t7/main.js": {
+    "console.log": "rx",
+    "require": "x",
+    "require('./m1.js')": "r",
+    "require('./m1.js').add": "rx",
+    "require('./m1.js').fft": "r",
+    "require('./m1.js').fft.add": "rx"
+  },
+  "/Users/nv/wrk/andromeda/mir/static-analysis/tests/t7/m1.js": {
+    "module.exports": "w"
+  }
+}

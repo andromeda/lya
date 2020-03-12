@@ -1,0 +1,14 @@
+{
+  "/Users/nv/wrk/andromeda/mir/static-analysis/tests/t8/m2.js": {
+    "module.exports": "w"
+  },
+  "/Users/nv/wrk/andromeda/mir/static-analysis/tests/t8/main.js": {
+    "console.log": "rx",
+    "require": "x",
+    "require('./m1.js')": "r",
+    "require('./m2.js')": "r"
+  },
+  "/Users/nv/wrk/andromeda/mir/static-analysis/tests/t8/m1.js": {
+    "module.exports": "w"
+  }
+}

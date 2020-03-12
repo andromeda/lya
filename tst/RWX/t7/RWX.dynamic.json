@@ -1,0 +1,13 @@
+{
+  "main": {
+    "require('./m1.js')": "R",
+    "console": "R",
+    "console.log": "E",
+    "require('./m1.js').add": "RE",
+    "require('./m1.js').fft": "R",
+    "require('./m1.js').fft.add": "RE"
+  },
+  "m1.js": {
+    "Object": "R"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "main": {
+    "console": "r",
+    "console.log": "rx",
+    "require": "x",
+    "require('./math.js')": "r",
+    "require('./math.js').add": "rx",
+    "require('./math.js').constants": "r",
+    "require('./math.js').constants.e": "r",
+    "require('./math.js').constants.pi": "wr",
+    "require('./math.js').fft": "r",
+    "require('./math.js').fft.add": "rx",
+    "require('./math.js').fft.e": "r",
+    "require('./math.js').fft.mul": "wrx",
+    "require('./math.js').sub": "rx",
+    "require('./math.js').x": "wr"
+  },
+  "math.js": {
+    "Math.PI": "r",
+    "console.log": "rx",
+    "global.timesAddCalled": "wr",
+    "module.exports": "w",
+    "Object": "r"
+  }
+}

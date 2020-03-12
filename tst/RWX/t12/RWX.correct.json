@@ -1,0 +1,7 @@
+{
+  "main.js": {
+    "require": "x",
+    "require('./m1.js')": "x"
+  },
+  "m1.js": {}
+}

@@ -1,0 +1,16 @@
+{
+  "main": {
+    "require('./m1.js')": "r",
+    "console": "r",
+    "console.log": "x",
+    "require('./m2.js')": "r"
+  },
+  "m1.js": {
+    "module.exports": "w",
+    "Object": "r"
+  },
+  "m2.js": {
+    "module.exports": "w",
+    "Object": "r"
+  }
+}

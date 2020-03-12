@@ -1,36 +1,36 @@
 {
   "main": {
-    "require('fs')": "R",
-    "require('./m1.js')": "R",
-    "console": "R",
-    "console.log": "RX",
-    "require('./m2.js')": "R",
-    "require('./m1.js').fst": "R",
-    "require('./m2.js').fst": "R",
-    "require('fs').createWriteStream": "RX"
+    "require('fs')": "r",
+    "require('./m1.js')": "r",
+    "console": "r",
+    "console.log": "rx",
+    "require('./m2.js')": "r",
+    "require('./m1.js').fst": "r",
+    "require('./m2.js').fst": "r",
+    "require('fs').createWriteStream": "rx"
   },
   "m1.js": {
-    "Object": "R",
-    "require('fs')": "R",
-    "require('fs').openSync": "R",
-    "require('fs').readFileSync": "RX",
-    "require('./m2.js')": "R"
+    "Object": "r",
+    "require('fs')": "r",
+    "require('fs').openSync": "r",
+    "require('fs').readFileSync": "rx",
+    "require('./m2.js')": "r"
   },
   "m2.js": {
-    "Object": "R",
-    "require('fs')": "R",
-    "require('./m3.js')": "R",
-    "require('fs').readFileSync": "RX",
-    "console": "R",
-    "console.log": "RX",
-    "require('fs').rmdirSync": "R",
-    "require('fs').mkdirSync": "R"
+    "Object": "r",
+    "require('fs')": "r",
+    "require('./m3.js')": "r",
+    "require('fs').readFileSync": "rx",
+    "console": "r",
+    "console.log": "rx",
+    "require('fs').rmdirSync": "r",
+    "require('fs').mkdirSync": "r"
   },
   "m3.js": {
-    "Object": "R",
-    "require('fs')": "R",
-    "require('fs').readFileSync": "RX",
-    "console": "R",
-    "console.log": "RX",
+    "Object": "r",
+    "require('fs')": "r",
+    "require('fs').readFileSync": "rx",
+    "console": "r",
+    "console.log": "rx",
   }
 }

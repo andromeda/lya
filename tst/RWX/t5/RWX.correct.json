@@ -1,29 +1,29 @@
 {
   "main": {
-    "require('./m1.js')": "R",
-    "global.test": "W"
+    "require('./m1.js')": "r",
+    "global.test": "w"
   },
   "m1.js": {
-    "Object": "R",
-    "Math.abs": "E",
-    "global.test": "W",
-    "require('./m2.js')": "R"
+    "Object": "r",
+    "Math.abs": "x",
+    "global.test": "w",
+    "require('./m2.js')": "r"
   },
   "m2.js": {
-    "Object": "R",
-    "console": "R",
-    "console.log": "E",
-    "require('./m3.js')": "R",
-    "require('./m4.js')": "R"
+    "Object": "r",
+    "console": "r",
+    "console.log": "x",
+    "require('./m3.js')": "r",
+    "require('./m4.js')": "r"
   },
   "m3.js": {
-    "Object": "R",
-    "console": "R",
-    "console.log": "E"
+    "Object": "r",
+    "console": "r",
+    "console.log": "x"
   },
   "m4.js": {
-    "Object": "R",
-    "console": "R",
-    "console.log": "E"
+    "Object": "r",
+    "console": "r",
+    "console.log": "x"
   }
 }

@@ -1,0 +1,15 @@
+{
+  "main": {
+    "require('./m1.js')": "R",
+    "console": "R",
+    "console.log": "X",
+    "require": "X",
+    "require('./m2.js')": "R"
+  },
+  "m1.js": {
+    "Object": "R"
+  },
+  "m2.js": {
+    "Object": "R"
+  }
+}
