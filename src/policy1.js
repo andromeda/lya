@@ -135,7 +135,9 @@ const readFunction = (myFunc, name) => {
 const globalConstHandler = {
   get: function(target, name) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
-    updateAnalysisData(locEnv.accessMatrix[currentName], target[name+name]);
+    if (target[name+name]) {
+      updateAnalysisData(locEnv.accessMatrix[currentName], target[name+name]);
+    }
 
     return Reflect.get(target, name);
   },
