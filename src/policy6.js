@@ -147,13 +147,16 @@ const readFunction = (myFunc, name) => {
   }
 };
 
+// TODO: fix this by using the weakMap to store names
 // This is the handler of the global constanst variables, like Math.PI etc. We store the name
 // in the same object but we use a different name, for example, for Math.PI we store the
 // name "Math.PI" in the object Math.PIPI. That way we can have accurate name analysis.
 const globalConstHandler = {
   get: function(target, name) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
-    updateAnalysisData(locEnv.accessMatrix[currentName], target[name+name], 'r');
+    if (target[name+name]) {
+      updateAnalysisData(locEnv.accessMatrix[currentName], target[name+name], 'r');
+    }
 
     return Reflect.get(target, name);
   },
