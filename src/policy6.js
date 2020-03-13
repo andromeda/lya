@@ -15,7 +15,8 @@ const requireHandler = {
   apply: function(target, thisArg, argumentsList) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
     const origReqModuleName = argumentsList[0];
-    locEnv.accessMatrix[currentName]['require(\'' + origReqModuleName + '\')'] = 'r';
+    exportObj('require', 'x');
+    locEnv.accessMatrix[currentName]['require(\'' + origReqModuleName + '\')'] = 'x';
     return Reflect.apply(...arguments);
   },
 };
@@ -48,9 +49,10 @@ const updateAnalysisData = (storedCalls, truename, mode) => {
   }
 };
 
-const exportObj = () => {
+const exportObj = (name, action) => {
+  action = (action === undefined) ? 'w' : action;
   const currentName = locEnv.trueName[locEnv.requireLevel];
-  updateAnalysisData(locEnv.accessMatrix[currentName], 'module.export', 'w');
+  updateAnalysisData(locEnv.accessMatrix[currentName], name, action);
 }
 
 // The handler of the global variable.Every time we access the global variabe in order to declare

@@ -330,7 +330,7 @@ Module.prototype.require = function(...args) {
 
   // If they are things in export obj we write it in analysis
   if (Object.keys(result).length) {
-    policy.exportObj();
+    policy.exportObj('module.export');
   }
 
   const type = typeof result;
@@ -417,6 +417,11 @@ const exportHandler = {
 
     return Reflect.get(target, name);
   },
+  set: function(target, name, value) {
+    // We catch the declaration of a value
+    policy.exportObj(objName.get(target) + '.' +name);
+    return Reflect.set(target, name, value);
+  }
 };
 
 // We print all the results on the end of the program only if we dont
