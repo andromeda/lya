@@ -1,8 +1,3 @@
-// env is {
-//   trueName : trueName,
-//   requireLevel : requireLevel,
-//   accessMatrix: accessMatrix,
-// }
 let locEnv;
 
 // Holds the end of each name store of new assigned global variables
@@ -22,6 +17,7 @@ const requireHandler = {
 };
 
 const updateRestData = (target, name, type) => {
+  exportObj(locEnv.objName.get(target) + '.' +name, 'r');
 };
 
 // TODO:find a more elegant way for the order
@@ -96,7 +92,9 @@ const moduleHandler = {
     const currentName = locEnv.trueName[locEnv.requireLevel];
     if (locEnv.methodNames.has(target)) {
       updateAnalysisData(locEnv.accessMatrix[currentName],
-        locEnv.methodNames.get(target), 'x');
+        locEnv.methodNames.get(target).split('.')[0], 'r');
+      updateAnalysisData(locEnv.accessMatrix[currentName],
+        locEnv.methodNames.get(target), 'rx');
     } else {
       updateAnalysisData(locEnv.accessMatrix[currentName], target.name, 'x');
     }

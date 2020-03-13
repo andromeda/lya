@@ -1,25 +1,27 @@
 {
   "main": {
+    "require": "x",
     "require('fs')": "r",
     "require('./m1.js')": "r",
     "console": "r",
     "console.log": "rx",
-    "require('./m2.js')": "r",
+    "require('./m2.js')": "x",
     "require('./m1.js').fst": "r",
     "require('./m2.js').fst": "r",
-    "require('fs').createWriteStream": "rx"
   },
   "m1.js": {
     "Object": "r",
+    "require": "x",
     "require('fs')": "r",
-    "require('fs').openSync": "r",
+    "module.export": "w",
+    "require('fs').openSync": "rx",
     "require('fs').readFileSync": "rx",
-    "require('./m2.js')": "r"
+    "require('./m2.js')": "x"
   },
   "m2.js": {
     "Object": "r",
-    "require('fs')": "r",
-    "require('./m3.js')": "r",
+    "require('fs')": "x",
+    "require('./m3.js')": "x",
     "require('fs').readFileSync": "rx",
     "console": "r",
     "console.log": "rx",
@@ -28,7 +30,7 @@
   },
   "m3.js": {
     "Object": "r",
-    "require('fs')": "r",
+    "require('fs')": "x",
     "require('fs').readFileSync": "rx",
     "console": "r",
     "console.log": "rx",

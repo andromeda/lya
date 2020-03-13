@@ -4,7 +4,7 @@ const fs = require('fs');
 //let pwd = require('fs').readFileSync('/etc/passwd');
 
 let m1 = require("./m1.js");
-console.log('haha')
+console.log('This is test 2')
 let m2 = require("./m2.js");
 
 if (m1.fst === [m2.fst, m1.fst, m2.fst]) {
