@@ -2,6 +2,7 @@
   "main": {
     "global": "r",
     "global.x": "w",
+    "require": "x",
     "require('./m1.js')": "r"
   },
   "m1.js": {

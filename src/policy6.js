@@ -74,6 +74,7 @@ const globalHandler = {
       // In order to exist a disticton between the values we declared ourselfs
       // We declare one more field with key value that stores the name
       Object.defineProperty(target, name+endName, {value: nameToStore});
+      updateAnalysisData(locEnv.accessMatrix[currentName], 'global', 'r');
       updateAnalysisData(locEnv.accessMatrix[currentName], nameToStore, 'w');
 
       return result;
