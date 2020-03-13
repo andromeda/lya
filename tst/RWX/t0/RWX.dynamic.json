@@ -1,10 +1,10 @@
 {
-  "main": {
-    "require": "x",
-    "require('./m1.js')": "x",
-    "require('./m1.js').r": "r",
-    "require('./m1.js').w": "w",
-    "require('./m1.js').x": "x"
+  "/Users/nv/wrk/andromeda/lya/tst/RWX/t0/main.js": {
+    "require('./m1.js')": "r",
+    "require('./m1.js').x": "rx",
+    "require('./m1.js').r": "r"
+  },
+  "/Users/nv/wrk/andromeda/lya/tst/RWX/t0/m1.js": {
+    "Object": "r"
   }
 }
-
