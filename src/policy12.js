@@ -1,5 +1,5 @@
 // This is the policy for true false analysis. Each time we access a variable
-// or a function we write it with true in a export file dynamic.json 
+// or a function we write it with true in a export file dynamic.json
 let locEnv;
 let storeThings = {};
 
@@ -9,17 +9,20 @@ const endName = '@name';
 
 // @store it is a table that contains all the analysis data
 // @truename the name of the current function, object etc that we want to add to
-// the table 
+// the table
 // Update the analysis data that are stored in storedCalls
 const updateAnalysisData = (store, truename) => {
   if (Object.prototype.hasOwnProperty.
         call(store, truename) === false) {
       store[truename] = {};
-  } 
+  }
 };
 
 const updateRestData = (target, name, type) => {
 };
+
+const exportObj = () => {
+}
 
 // This the handler of the require function. Every time a "require" is used to load up a module
 // this handler is called. It updates the analysis data that are stored in the accessMatrix table.
@@ -31,7 +34,7 @@ const requireHandler = {
   },
 };
 
-// The handler of the global variable.Every time we access the global variabe in order to declare 
+// The handler of the global variable.Every time we access the global variabe in order to declare
 // or call a variable, then we can print it on the export file.
 const globalHandler = {
   get: function(target, name) {
@@ -61,8 +64,8 @@ const globalHandler = {
 };
 
 // The handler of the all the function that are called inside a module. Every time we
-// load a module with require it first execute all the code and then prepary and exports 
-// all the export data. We use this handler to catch all the code that is executed on the 
+// load a module with require it first execute all the code and then prepary and exports
+// all the export data. We use this handler to catch all the code that is executed on the
 // module.
 const moduleHandler = {
   apply: function(target) {
@@ -77,7 +80,7 @@ const moduleHandler = {
   },
 };
 
-// The handler of the functions on the export module. Every time we require a module 
+// The handler of the functions on the export module. Every time we require a module
 // and we have exports, we wrap them in a handler. Each time we call a function from inside
 // exports this is the handler that we wrap the function.
 const exportsFuncHandler = {
@@ -99,7 +102,7 @@ const exportsFuncHandler = {
 
     const result = Reflect.apply(...arguments);
     const outputType = typeof result;
-    
+
     updateAnalysisData(tempMatrix, outputType)
     tempMatrix = tempMatrix[outputType];
 
@@ -116,8 +119,8 @@ const exportsFuncHandler = {
 const readFunction = (myFunc, name) => {
 }
 
-// This is the handler of the global constanst variables, like Math.PI etc. We store the name 
-// in the same object but we use a different name, for example, for Math.PI we store the 
+// This is the handler of the global constanst variables, like Math.PI etc. We store the name
+// in the same object but we use a different name, for example, for Math.PI we store the
 // name "Math.PI" in the object Math.PIPI. That way we can have accurate name analysis.
 const globalConstHandler = {
   get: function(target, name) {
@@ -140,5 +143,6 @@ module.exports = (env) => {
     exportsFuncHandler : exportsFuncHandler,
     globalConstHandler : globalConstHandler,
     updateRestData : updateRestData,
+    exportObj : exportObj,
   }
 };

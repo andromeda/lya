@@ -93,7 +93,7 @@ const mainRequire = (original) => {
   return new Proxy(original, policy.require);
 };
 
-// This function stores the names of the given object to 
+// This function stores the names of the given object to
 // methodNames WeakMap ~> stores names of objs like console etc
 function generateNames(obj) {
   for (k in obj) {
@@ -327,6 +327,12 @@ Module.prototype.require = function(...args) {
   let result = originalRequire.apply(this, args);
   // If false that means that we pass from here for the
   // first time.
+
+  // If they are things in export obj we write it in analysis
+  if (Object.keys(result).length) {
+    policy.exportObj();
+  }
+
   const type = typeof result;
   if (type != 'boolean' && type != 'symbol' && type != 'number' && type != 'string') {
     if ( objName.has(result) === false ) {
@@ -341,7 +347,6 @@ Module.prototype.require = function(...args) {
       result = new Proxy(result, exportHandler);
       objName.set(result, 'require(\'' + path + '\')');
       objPath.set(result, trueName[env.requireLevel]);
-
     }
   }
   return result;
@@ -398,7 +403,7 @@ const exportHandler = {
           objPath.set(storePureFunctions.get(localFunction), trueName[env.requireLevel]);
           objName.set(storePureFunctions.get(localFunction), objName.get(target));
         }
-        
+
         // Undefined fix
         policy.readFunction(localFunction, objName.get(target));
 

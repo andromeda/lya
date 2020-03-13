@@ -1,5 +1,5 @@
 // This is the policy for counter analysis. Each time we access a variable
-// or a function we increment a counter in a export file dynamic.json 
+// or a function we increment a counter in a export file dynamic.json
 let locEnv;
 
 // Holds the end of each name store of new assigned global variables
@@ -8,9 +8,9 @@ const endName = '@name';
 
 // @storedCalls it is a table that contains all the analysis data
 // @truename the name of the current function, object etc that we want to add to
-// the table 
+// the table
 // Given those two inputs we can update the analysis data that are stored in storedCalls
-const updateAnalysisData = (storedCalls, truename, arguments) => {
+const updateAnalysisData = (storedCalls, truename) => {
   if (Object.prototype.hasOwnProperty.
         call(storedCalls, truename) === false) {
       storedCalls[truename] = 1;
@@ -18,6 +18,11 @@ const updateAnalysisData = (storedCalls, truename, arguments) => {
       storedCalls[truename]++;
     }
 };
+
+const exportObj = () => {
+  const currentName = locEnv.trueName[locEnv.requireLevel];
+  updateAnalysisData(locEnv.accessMatrix[currentName], 'module.export');
+}
 
 const updateRestData = (target, name, type) => {
 };
@@ -34,7 +39,7 @@ const requireHandler = {
   },
 };
 
-// The handler of the global variable.Every time we access the global variabe in order to declare 
+// The handler of the global variable.Every time we access the global variabe in order to declare
 // or call a variable, then we can print it on the export file.
 const globalHandler = {
   get: function(target, name) {
@@ -46,7 +51,7 @@ const globalHandler = {
         updateAnalysisData(locEnv.accessMatrix[currentName], nameToShow);
       }
     }
-    
+
     return Reflect.get(target, name);
   },
   set: function(target, name, value) {
@@ -67,15 +72,15 @@ const globalHandler = {
 };
 
 // The handler of the all the function that are called inside a module. Every time we
-// load a module with require it first execute all the code and then prepary and exports 
-// all the export data. We use this handler to catch all the code that is executed on the 
+// load a module with require it first execute all the code and then prepary and exports
+// all the export data. We use this handler to catch all the code that is executed on the
 // module.
 const moduleHandler = {
   apply: function(target) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
     updateAnalysisData(locEnv.accessMatrix[currentName],target.name);
 
-    return Reflect.apply(...arguments); 
+    return Reflect.apply(...arguments);
   },
   get: function(target, name) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
@@ -85,7 +90,7 @@ const moduleHandler = {
   },
 };
 
-// The handler of the functions on the export module. Every time we require a module 
+// The handler of the functions on the export module. Every time we require a module
 // and we have exports, we wrap them in a handler. Each time we call a function from inside
 // exports this is the handler that we wrap the function.
 const exportsFuncHandler = {
@@ -97,7 +102,7 @@ const exportsFuncHandler = {
     truename = truename + '.' + target.name;
     updateAnalysisData(locEnv.accessMatrix[currentName], truename);
 
-    return Reflect.apply(...arguments); 
+    return Reflect.apply(...arguments);
   },
 };
 
@@ -116,8 +121,8 @@ const readFunction = (myFunc, name) => {
   }
 }
 
-// This is the handler of the global constanst variables, like Math.PI etc. We store the name 
-// in the same object but we use a different name, for example, for Math.PI we store the 
+// This is the handler of the global constanst variables, like Math.PI etc. We store the name
+// in the same object but we use a different name, for example, for Math.PI we store the
 // name "Math.PI" in the object Math.PIPI. That way we can have accurate name analysis.
 const globalConstHandler = {
   get: function(target, name) {
@@ -138,5 +143,6 @@ module.exports = (env) => {
     exportsFuncHandler : exportsFuncHandler,
     globalConstHandler : globalConstHandler,
     updateRestData : updateRestData,
+    exportObj : exportObj,
 	}
 };
