@@ -1,0 +1,9 @@
+if (parseInt(process.env.key) != 0) {
+  lyaConfig = {
+    SAVE_RESULTS: require("path").join(__dirname, "RWX.dynamic.json"),
+    analysisCh: 6, // RWX is analysis 6
+  };
+  let lya = require("../../../src/txfm.js");
+  require = lya.configRequire(require, lyaConfig);
+}
+
