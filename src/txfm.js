@@ -329,7 +329,7 @@ Module.prototype.require = function(...args) {
   // first time.
 
   // If they are things in export obj we write it in analysis
-  if (Object.keys(result).length) {
+  if (Object.keys(result).length && env.requireLevel != 0) {
     policy.exportObj('module.export');
   }
 
