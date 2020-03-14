@@ -15,11 +15,6 @@ const originalWrap = Module.wrap;
 const originalRequire = Module.prototype.require;
 const originalRun = vm.runInThisContext;
 
-// `require` name stack / tree
-// require( ...require('..')... )
-// main: 0;
-// m1: 1;
-// m2: 2;
 const trueName = [];
 let requireLevel = 0;
 const globalProxies = {};
@@ -36,14 +31,12 @@ const endName = '@name';
 // This holds the string of the transformations inside modules
 let finalDecl = ' ';
 
-
-
 // WeakMaps to store the name and the path for every object value
 const objName = new WeakMap();
 const objPath = new WeakMap();
 const methodNames = new WeakMap();
 const storePureFunctions = new WeakMap();
-const m1 = new WeakMap();
+const withProxy = new WeakMap();
 const globalNames = new Map();
 
 // @globals.json contains all the functions we want to wrap in a proxy
@@ -54,7 +47,6 @@ const globals = require('./globals.json');
 const sglobals = require('./staticGlobals.json');
 const cglobals = require('./constantGlobals.json');
 const toSaveNames = require('./saveNames.json');
-// const jsonPrototypeData = require('./prototypeGlobals.json');
 
 // We make a test on fragment
 const env = {
@@ -78,7 +70,6 @@ global = new Proxy(global, policy.globalHandler);
 
 // A proxy to use it in Math.PI etc
 globalProxies['proxyExportHandler'] = policy.globalConstHandler;
-
 
 // Case handler
 // Returns the right require handler for the case
@@ -119,22 +110,18 @@ const handlerAddArg= {
 const proxyWrap = function(handler, obj) {
   if (typeof obj === 'function') {
     obj = new Proxy(obj, handler);
-    return obj;
-  }
-
-  for (const key in obj) {
-    if (Object.prototype.hasOwnProperty.call(obj, key)) {
-      const type = typeof obj[key];
-      if (type === 'number' || type === 'boolean' ) {
-        console.log('Do nothing');
-      } else if (type === 'object') {
-        obj[key] = proxyWrap(obj[key]);
-      } else {
-        obj[key] = new Proxy(obj[key], handler);
+  } else if (typeof obj === 'object') {
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        const type = typeof obj[key];
+        if (type === 'object') {
+          obj[key] = proxyWrap(obj[key]);
+        } else if (type != 'number' && type != 'boolean' ) {
+          obj[key] = new Proxy(obj[key], handler);
+        }
       }
     }
   }
-
   return obj;
 };
 
@@ -297,7 +284,7 @@ const exportHandler = {
       if (type === 'object') {
         if ((!(Object.entries(target[name]).length === 0))) {
           // We first return the obj to check that is not wraped in a proxy
-          if (m1.has(target[name])) {
+          if (withProxy.has(target[name])) {
             return Reflect.get(target, name);
           }
 
@@ -316,14 +303,14 @@ const exportHandler = {
           objPath.set(localObject, truepath);
 
           result = Reflect.get(target, name);
-          m1.set(result, true);
+          withProxy.set(result, true);
 
           return result;
         }
       } else if (type === 'function') {
         // We first return the obj to check that is not wraped in a proxy
         let localFunction = target[name];
-        if (!m1.has(target[name])){
+        if (!withProxy.has(target[name])){
           Object.defineProperty(localFunction, 'name', {value: name});
           target[name] = new Proxy(localFunction, policy.exportsFuncHandler);
 
@@ -340,7 +327,7 @@ const exportHandler = {
         policy.readFunction(localFunction, objName.get(target));
 
         result = Reflect.get(target, name);
-        m1.set(result, true);
+        withProxy.set(result, true);
         return result;
       } else if (type === 'number' || type === 'boolean' || type === 'string') {
         policy.updateRestData(target, name, type);

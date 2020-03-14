@@ -1,7 +1,7 @@
-// Test for constantGlobals like Math.PI, Math.LN10 synthetic
+// Test for constantGlobals like Math.pow, Math.abs synthetic
 lyaConfig = {
 SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
-analysisCh: 1,
+analysisCh: 6,
 };
 let lya = require("../../../src/txfm.js");
 require = lya.configRequire(require, lyaConfig);
