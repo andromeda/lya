@@ -44,6 +44,7 @@ const objPath = new WeakMap();
 const methodNames = new WeakMap();
 const storePureFunctions = new WeakMap();
 const m1 = new WeakMap();
+const globalNames = new Map();
 
 // @globals.json contains all the functions we want to wrap in a proxy
 // @staticGlobals.json contains all the global variables that contain static functions
@@ -62,7 +63,8 @@ const env = {
   accessMatrix: accessMatrix,
   objName : objName,
   objPath : objPath,
-  methodNames : methodNames
+  methodNames : methodNames,
+  globalNames : globalNames
 };
 
 let userChoice = (lyaConfig.analysisCh && [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].includes(lyaConfig.analysisCh))? lyaConfig.analysisCh : 1
@@ -145,43 +147,33 @@ const createGlobal = (name, finalDecl) => {
   return finalDecl;
 };
 
-const createStaticGlobal = (name, finalDecl, upValue) => {
+const createCSGlobal = (name, finalDecl, upValue, nameStore) => {
   if (global[upValue][name] != undefined) {
     const nameToShow = upValue + '.' + name;
-    globalProxies[nameToShow] = proxyWrap(policy.moduleHandler, global[upValue][name]);
+    globalProxies[nameToShow] =  proxyWrap(policy.moduleHandler, global[upValue][name]);
     finalDecl += nameToShow + ' = pr["' + nameToShow +'"];\n';
-    methodNames.set(global[upValue][name], nameToShow);
+    nameStore.set(global[upValue][name], nameToShow);
+
   }
 
   return finalDecl;
 };
 
-const createConstantGlobal = (name, finalDecl, upValue) => {
-  if (global[upValue][name] != undefined) {
-    const nameToShow = upValue + '.' + name;
-    globalProxies[nameToShow] =  global[upValue][name];
-    finalDecl += nameToShow + ' = pr["' + nameToShow +'"];\n';
-    finalDecl += nameToShow + name + ' = "' + nameToShow + '";\n';
-  }
-
-  return finalDecl;
-};
-
-const passJSONFiles = (finalDecl, func, json) => {
+const passJSONFiles = (finalDecl, func, json, nameStore) => {
   for (const upValue in json) {
-    if (Object.prototype.hasOwnProperty.call(globals, upValue)) {
-      const globalVariables = globals[upValue];
+    if (Object.prototype.hasOwnProperty.call(json, upValue)) {
+      const globalVariables = json[upValue];
       for (const declName in globalVariables) {
         if (Object.prototype.hasOwnProperty.call(globalVariables, declName)) {
           const name = globalVariables[declName];
-          finalDecl = func(name, finalDecl);
+          finalDecl = func(name, finalDecl, upValue, nameStore);
         }
       }
     }
   }
 
   return finalDecl;
-}
+};
 
 // We need to add all the global prototype variable declarations in the script
 const createFinalDecl = () => {
@@ -192,13 +184,12 @@ const createFinalDecl = () => {
       for (const declName in globalVariables) {
         if (Object.prototype.hasOwnProperty.call(globalVariables, declName)) {
           const name = globalVariables[declName];
-          finalDecl = createStaticGlobal(name, finalDecl, upValue);
+          finalDecl = createCSGlobal(name, finalDecl, upValue, methodNames);
         }
       }
     }
   }
-
-  finalDecl = passJSONFiles(finalDecl, createConstantGlobal, cglobals);
+  finalDecl = passJSONFiles(finalDecl, createCSGlobal, cglobals, globalNames);
   finalDecl += 'Math = new Proxy( Math, pr["proxyExportHandler"]);\n';
   finalDecl = passJSONFiles(finalDecl, createGlobal, globals);
 
@@ -256,7 +247,6 @@ vm.runInThisContext = function(code, options) {
   const codeToRun = originalRun(code, options);
   env.requireLevel++;
   trueName[env.requireLevel] = options['filename'];
-  // Should move to policies
   if (!Object.prototype.hasOwnProperty.
     call(accessMatrix,trueName[env.requireLevel])){
     accessMatrix[trueName[env.requireLevel]] = {};

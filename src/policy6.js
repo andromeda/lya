@@ -103,7 +103,12 @@ const moduleHandler = {
   },
   get: function(target, name) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
-    updateAnalysisData(locEnv.accessMatrix[currentName], target.name, 'r');
+    if (locEnv.methodNames.has(target)) {
+      updateAnalysisData(locEnv.accessMatrix[currentName],
+        locEnv.methodNames.get(target), 'r');
+    } else {
+      updateAnalysisData(locEnv.accessMatrix[currentName], target.name, 'r');
+    }
 
     return Reflect.get(target, name);
   },
@@ -148,15 +153,12 @@ const readFunction = (myFunc, name) => {
   }
 };
 
-// TODO: fix this by using the weakMap to store names
-// This is the handler of the global constanst variables, like Math.PI etc. We store the name
-// in the same object but we use a different name, for example, for Math.PI we store the
-// name "Math.PI" in the object Math.PIPI. That way we can have accurate name analysis.
 const globalConstHandler = {
   get: function(target, name) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
-    if (locEnv.methodNames.has(target)) {
-      updateAnalysisData(locEnv.accessMatrix[currentName], locEnv.methodNames.get(target), 'r');
+    if (locEnv.globalNames.has(target[name])) {
+      updateAnalysisData(locEnv.accessMatrix[currentName], 
+        locEnv.globalNames.get(target[name]), 'r');
     }
 
     return Reflect.get(target, name);
