@@ -1,8 +1,3 @@
-// env is {
-//   trueName : trueName,
-//   requireLevel : requireLevel,
-//   accessMatrix: accessMatrix,
-// }
 let locEnv;
 
 // Holds the end of each name store of new assigned global variables
@@ -15,12 +10,14 @@ const requireHandler = {
   apply: function(target, thisArg, argumentsList) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
     const origReqModuleName = argumentsList[0];
-    locEnv.accessMatrix[currentName]['require(\'' + origReqModuleName + '\')'] = 'r';
+    exportObj('require', 'x');
+    locEnv.accessMatrix[currentName]['require(\'' + origReqModuleName + '\')'] = 'x';
     return Reflect.apply(...arguments);
   },
 };
 
 const updateRestData = (target, name, type) => {
+  exportObj(locEnv.objName.get(target) + '.' +name, 'r');
 };
 
 // TODO:find a more elegant way for the order
@@ -48,9 +45,10 @@ const updateAnalysisData = (storedCalls, truename, mode) => {
   }
 };
 
-const exportObj = () => {
+const exportObj = (name, action) => {
+  action = (action === undefined) ? 'w' : action;
   const currentName = locEnv.trueName[locEnv.requireLevel];
-  updateAnalysisData(locEnv.accessMatrix[currentName], 'module.export', 'w');
+  updateAnalysisData(locEnv.accessMatrix[currentName], name, action);
 }
 
 // The handler of the global variable.Every time we access the global variabe in order to declare
@@ -76,6 +74,7 @@ const globalHandler = {
       // In order to exist a disticton between the values we declared ourselfs
       // We declare one more field with key value that stores the name
       Object.defineProperty(target, name+endName, {value: nameToStore});
+      updateAnalysisData(locEnv.accessMatrix[currentName], 'global', 'r');
       updateAnalysisData(locEnv.accessMatrix[currentName], nameToStore, 'w');
 
       return result;
@@ -94,7 +93,9 @@ const moduleHandler = {
     const currentName = locEnv.trueName[locEnv.requireLevel];
     if (locEnv.methodNames.has(target)) {
       updateAnalysisData(locEnv.accessMatrix[currentName],
-        locEnv.methodNames.get(target), 'x');
+        locEnv.methodNames.get(target).split('.')[0], 'r');
+      updateAnalysisData(locEnv.accessMatrix[currentName],
+        locEnv.methodNames.get(target), 'rx');
     } else {
       updateAnalysisData(locEnv.accessMatrix[currentName], target.name, 'x');
     }
@@ -102,7 +103,12 @@ const moduleHandler = {
   },
   get: function(target, name) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
-    updateAnalysisData(locEnv.accessMatrix[currentName], target.name, 'r');
+    if (locEnv.methodNames.has(target)) {
+      updateAnalysisData(locEnv.accessMatrix[currentName],
+        locEnv.methodNames.get(target), 'r');
+    } else {
+      updateAnalysisData(locEnv.accessMatrix[currentName], target.name, 'r');
+    }
 
     return Reflect.get(target, name);
   },
@@ -147,15 +153,12 @@ const readFunction = (myFunc, name) => {
   }
 };
 
-// TODO: fix this by using the weakMap to store names
-// This is the handler of the global constanst variables, like Math.PI etc. We store the name
-// in the same object but we use a different name, for example, for Math.PI we store the
-// name "Math.PI" in the object Math.PIPI. That way we can have accurate name analysis.
 const globalConstHandler = {
   get: function(target, name) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
-    if (target[name+name]) {
-      updateAnalysisData(locEnv.accessMatrix[currentName], target[name+name], 'r');
+    if (locEnv.globalNames.has(target[name])) {
+      updateAnalysisData(locEnv.accessMatrix[currentName], 
+        locEnv.globalNames.get(target[name]), 'r');
     }
 
     return Reflect.get(target, name);
