@@ -50,7 +50,7 @@ function lyaStartUp(lyaConfig, callerRequire) {
   const endName = '@name';
 
   // This holds the string of the transformations inside modules
-  let finalDecl = ' ';
+  let moduleProlog = ' ';
 
   // WeakMaps to store the name and the path for every object value
   const objName = new WeakMap();
@@ -149,72 +149,63 @@ function lyaStartUp(lyaConfig, callerRequire) {
     return obj;
   };
 
-  const createGlobal = (name, finalDecl) => {
+  const createGlobal = (name, moduleProlog) => {
     if (global[name] != undefined) {
       globalProxies[name] = proxyWrap(policy.moduleHandler, global[name]);
-      finalDecl = 'let ' + name + ' = pr["' + name +'"];\n' + finalDecl;
+      moduleProlog = 'let ' + name + ' = pr["' + name +'"];\n' + moduleProlog;
     }
 
-    return finalDecl;
+    return moduleProlog;
   };
 
-  const createCSGlobal = (name, finalDecl, upValue, nameStore) => {
+  const createCSGlobal = (name, moduleProlog, upValue, nameStore) => {
     if (global[upValue][name] != undefined) {
-      const nameToShow = upValue + '.' + name;
-      globalProxies[nameToShow] =  proxyWrap(policy.moduleHandler, global[upValue][name]);
-      finalDecl += nameToShow + ' = pr["' + nameToShow +'"];\n';
-      nameStore.set(global[upValue][name], nameToShow);
-
+      const functionName = upValue + '.' + name;
+      globalProxies[functionName] =  proxyWrap(policy.moduleHandler, global[upValue][name]);
+      moduleProlog += functionName + ' = pr["' + functionName +'"];\n';
+      nameStore.set(global[upValue][name], functionName);
     }
 
-    return finalDecl;
+    return moduleProlog;
   };
 
-  const passJSONFiles = (finalDecl, func, json, nameStore) => {
+  // TODO: Fix names!
+  const declareName = (name, moduleProlog) => 'let ' + name + ' = {};\n' + moduleProlog;
+  const passJSONFiles = (moduleProlog, func, json, nameStore, declareName) => {
     for (const upValue in json) {
       if (Object.prototype.hasOwnProperty.call(json, upValue)) {
         const globalVariables = json[upValue];
+        moduleProlog = (declareName ? declareName(upValue, moduleProlog) : moduleProlog);
         for (const declName in globalVariables) {
           if (Object.prototype.hasOwnProperty.call(globalVariables, declName)) {
             const name = globalVariables[declName];
-            finalDecl = func(name, finalDecl, upValue, nameStore);
+            moduleProlog = func(name, moduleProlog, upValue, nameStore);
           }
         }
       }
     }
 
-    return finalDecl;
+    return moduleProlog;
   };
 
   // We need to add all the global prototype variable declarations in the script
-  const createFinalDecl = () => {
-    for (const upValue in sglobals) {
-      if (Object.prototype.hasOwnProperty.call(sglobals, upValue)) {
-        const globalVariables = sglobals[upValue];
-        finalDecl = 'let ' + upValue + ' = {};\n' + finalDecl;
-        for (const declName in globalVariables) {
-          if (Object.prototype.hasOwnProperty.call(globalVariables, declName)) {
-            const name = globalVariables[declName];
-            finalDecl = createCSGlobal(name, finalDecl, upValue, methodNames);
-          }
-        }
-      }
-    }
-    finalDecl = passJSONFiles(finalDecl, createCSGlobal, cglobals, globalNames);
-    finalDecl += 'Math = new Proxy( Math, pr["proxyExportHandler"]);\n';
-    finalDecl = passJSONFiles(finalDecl, createGlobal, globals);
+  const createModuleProlog = () => {
+    moduleProlog = passJSONFiles(moduleProlog, createCSGlobal, sglobals, methodNames, declareName);
+    moduleProlog = passJSONFiles(moduleProlog, createCSGlobal, cglobals, globalNames);
+    moduleProlog += 'Math = new Proxy( Math, pr["proxyExportHandler"]);\n';
+    moduleProlog = passJSONFiles(moduleProlog, createGlobal, globals);
 
-    return finalDecl;
+    return moduleProlog;
   };
 
   // The first time this runs we create the decl
   const globalsDecl = () => {
-    if (finalDecl === ' ') {
+    if (moduleProlog === ' ') {
       userRemoves();
       generateNames(toSaveNames);
-      return createFinalDecl();
+      return createModuleProlog();
     } else {
-      return finalDecl;
+      return moduleProlog;
     }
   };
 
