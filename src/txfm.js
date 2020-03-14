@@ -43,6 +43,7 @@ const objName = new WeakMap();
 const objPath = new WeakMap();
 const methodNames = new WeakMap();
 const storePureFunctions = new WeakMap();
+const m1 = new WeakMap();
 
 // @globals.json contains all the functions we want to wrap in a proxy
 // @staticGlobals.json contains all the global variables that contain static functions
@@ -64,16 +65,6 @@ const env = {
   methodNames : methodNames
 };
 
-// We return the choice of the user
-// 1) True - False Analysis
-// 2) Times calling a function
-// 3) Time Analysis
-// 4) Time Analysis2.0
-// 5) Enforcement Analysis
-// 6) RWE Analysis
-// 7) RWE Enforcement
-// 8) Global Object Analysis
-// 9) TypeOf Export Object Analysis
 let userChoice = (lyaConfig.analysisCh && [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].includes(lyaConfig.analysisCh))? lyaConfig.analysisCh : 1
 
 // You import the right policy depenting on the choice
@@ -145,39 +136,30 @@ const proxyWrap = function(handler, obj) {
   return obj;
 };
 
-// We declare the data on the same time to pass them inside wrapped function
 const createGlobal = (name, finalDecl) => {
   if (global[name] != undefined) {
     globalProxies[name] = proxyWrap(policy.moduleHandler, global[name]);
-    finalDecl = 'let ' + name + ' = pr.' + name +';\n' + finalDecl;
+    finalDecl = 'let ' + name + ' = pr["' + name +'"];\n' + finalDecl;
   }
 
   return finalDecl;
 };
 
-// We use it to pass the static global data inside module
-// FIXME: name injectGlobal?
-// FIXME: give example here
 const createStaticGlobal = (name, finalDecl, upValue) => {
   if (global[upValue][name] != undefined) {
     const nameToShow = upValue + '.' + name;
     globalProxies[nameToShow] = proxyWrap(policy.moduleHandler, global[upValue][name]);
-    // We save the declared wraped functions in new local
     finalDecl += nameToShow + ' = pr["' + nameToShow +'"];\n';
-    // And we change the name to a better one
-    finalDecl += 'Object.defineProperty(' + upValue + '.' +
-      name + ',"name", {value:"' + nameToShow + '"});\n';
+    methodNames.set(global[upValue][name], nameToShow);
   }
 
   return finalDecl;
 };
 
-// We cant wrap it in a proxy cause they are numbers -- Math.PI
 const createConstantGlobal = (name, finalDecl, upValue) => {
   if (global[upValue][name] != undefined) {
     const nameToShow = upValue + '.' + name;
     globalProxies[nameToShow] =  global[upValue][name];
-    // We save the declared wraped functions in new local
     finalDecl += nameToShow + ' = pr["' + nameToShow +'"];\n';
     finalDecl += nameToShow + name + ' = "' + nameToShow + '";\n';
   }
@@ -185,26 +167,24 @@ const createConstantGlobal = (name, finalDecl, upValue) => {
   return finalDecl;
 };
 
-// // We use it to pass the static global data inside module
-// const createPrototypeGlobal = (name, finalDecl, upValue) => {
-//   if (global[upValue][name] != undefined) {
-//     const finalName = upValue + name + 'prototype';
-//     const passName = '.prototype.' + name;
-//     const nameToShow = upValue + passName;
-//     globalProxies[finalName] = proxyWrap(handler,
-//         global[upValue]['prototype'][name]);
-//     // We save the declared wraped functions in new local
-//     finalDecl = finalDecl + upValue + passName + ' = pr.' + finalName +';\n';
-//     // And we change the name to a better one
-//     finalDecl = finalDecl + 'Object.defineProperty(' + upValue +
-//       passName + ',"name", {value:"' + nameToShow + '"});\n';
-//   }
-//   return finalDecl;
-// };
+const passJSONFiles = (finalDecl, func, json) => {
+  for (const upValue in json) {
+    if (Object.prototype.hasOwnProperty.call(globals, upValue)) {
+      const globalVariables = globals[upValue];
+      for (const declName in globalVariables) {
+        if (Object.prototype.hasOwnProperty.call(globalVariables, declName)) {
+          const name = globalVariables[declName];
+          finalDecl = func(name, finalDecl);
+        }
+      }
+    }
+  }
+
+  return finalDecl;
+}
 
 // We need to add all the global prototype variable declarations in the script
 const createFinalDecl = () => {
-  // This is for the static global Data --Math,JSON etc
   for (const upValue in sglobals) {
     if (Object.prototype.hasOwnProperty.call(sglobals, upValue)) {
       const globalVariables = sglobals[upValue];
@@ -218,46 +198,9 @@ const createFinalDecl = () => {
     }
   }
 
-  // This is for the constant global Data --Math.PI, Math.LOG2E etc
-  for (const upValue in cglobals) {
-    if (Object.prototype.hasOwnProperty.call(cglobals, upValue)) {
-      const globalVariables = cglobals[upValue];
-      for (const declName in globalVariables) {
-        if (Object.prototype.hasOwnProperty.call(globalVariables, declName)) {
-          const name = globalVariables[declName];
-          finalDecl = createConstantGlobal(name, finalDecl, upValue);
-        }
-      }
-    }
-    finalDecl += upValue + ' = new Proxy(' + upValue + ', pr["proxyExportHandler"]);\n';
-
-  }
-
-
-  // This is for the static global Data --Math,JSON etc
-  // for (const upValue in jsonPrototypeData) {
-  //  if (Object.prototype.hasOwnProperty.call(jsonPrototypeData, upValue)) {
-  //    const globalVariables = jsonPrototypeData[upValue];
-  //    for (const declName in globalVariables) {
-  //    if (Object.prototype.hasOwnProperty.call(jsonPrototypeData, upValue)) {
-  //        const name = globalVariables[declName];
-  //        finalDecl = createPrototypeGlobal(name, finalDecl, upValue);
-  //       }
-  //     }
-  //   }
-  // }
-
-  for (const upValue in globals) {
-    if (Object.prototype.hasOwnProperty.call(globals, upValue)) {
-      const globalVariables = globals[upValue];
-      for (const declName in globalVariables) {
-        if (Object.prototype.hasOwnProperty.call(globalVariables, declName)) {
-          const name = globalVariables[declName];
-          finalDecl = createGlobal(name, finalDecl);
-        }
-      }
-    }
-  }
+  finalDecl = passJSONFiles(finalDecl, createConstantGlobal, cglobals);
+  finalDecl += 'Math = new Proxy( Math, pr["proxyExportHandler"]);\n';
+  finalDecl = passJSONFiles(finalDecl, createGlobal, globals);
 
   return finalDecl;
 };
@@ -355,7 +298,6 @@ Module.prototype.require = function(...args) {
 // This is the handler of the export object. Every time we require a module, and it has
 // export data we wrap those data in this handler. So this is the first layer of the
 // export data wraping.
-const m1 = new WeakMap();
 const exportHandler = {
   get: function(target, name, receiver) {
     const type = typeof target[name];
