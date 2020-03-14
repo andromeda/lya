@@ -7,7 +7,7 @@
     "console.log": "rx",
     "require('./m2.js')": "x",
     "require('./m1.js').fst": "r",
-    "require('./m2.js').fst": "r",
+    "require('./m2.js').fst": "r"
   },
   "m1.js": {
     "Object": "r",
@@ -33,6 +33,6 @@
     "require('fs')": "x",
     "require('fs').readFileSync": "rx",
     "console": "r",
-    "console.log": "rx",
+    "console.log": "rx"
   }
 }
