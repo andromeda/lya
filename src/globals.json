@@ -29,7 +29,9 @@
     "isFinite",
     "isNaN",
     "isPrototypeOf",
+    "JSON",
     "Map",
+    "Math",
     "NaN",
     "Number",
     "Object",
@@ -39,7 +41,7 @@
     "propertyIsEnumerable",
     "Proxy",
     "RangeError",
-    "ReferenceError",
+    "ReferenceError", 
     "RegExp",
     "Set",
     "SharedArrayBuffer",
@@ -81,5 +83,5 @@
     "DTRACE_HTTP_SERVER_RESPONSE",
     "DTRACE_HTTP_CLIENT_REQUEST",
     "DTRACE_HTTP_CLIENT_RESPONSE"
-        ]      
+        ]
 }

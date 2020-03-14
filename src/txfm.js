@@ -60,13 +60,8 @@ function lyaStartUp(lyaConfig, callerRequire) {
   const withProxy = new WeakMap();
   const globalNames = new Map();
 
-  // @globals.json contains all the functions we want to wrap in a proxy
-  // @staticGlobals.json contains all the global variables that contain static functions
-  // @constantGlobals.json has all the constants of the static variables
   // We read and store the data of the json file
   const globals = require('./globals.json');
-  const sglobals = require('./staticGlobals.json');
-  const cglobals = require('./constantGlobals.json');
   const toSaveNames = require('./saveNames.json');
 
   // We make a test on fragment
@@ -85,8 +80,7 @@ function lyaStartUp(lyaConfig, callerRequire) {
   let a = lyaConfig.analysis || preset.ALLOW_DENY;
   let userChoice = Object.keys(preset).map((e) => preset[e]).includes(a)? a : preset.ALLOW_DENY;
 
-  // You import the right policy depenting on the choice
-  // of the user.
+  // You import the right policy depenting on the choice of the user.
   let policy = require('./policy' + userChoice + '.js')(env);;
 
   // We wrap the global variable in a proxy
@@ -128,58 +122,67 @@ function lyaStartUp(lyaConfig, callerRequire) {
       return Reflect.apply( ...arguments);
     },
   };
-
+  // TODO: fix the structure of the func
   // We wrap every function on global obj that exists in globals.json
   // Returns the proxy obj we want
-  const proxyWrap = function(handler, obj) {
+  const proxyWrap = function(handler, obj, givenFunc) {
     if (typeof obj === 'function') {
       obj = new Proxy(obj, handler);
     } else if (typeof obj === 'object') {
-      for (const key in obj) {
-        if (Object.prototype.hasOwnProperty.call(obj, key)) {
-          const type = typeof obj[key];
-          if (type === 'object') {
-            obj[key] = proxyWrap(obj[key]);
-          } else if (type != 'number' && type != 'boolean' ) {
-            obj[key] = new Proxy(obj[key], handler);
+      // When properties are not enumerated
+      if (Object.keys(obj).length === 0) {
+        const values = Object.getOwnPropertyNames(obj);
+        for (const key in values) {
+          if (Object.prototype.hasOwnProperty.call(values, key)) {
+            const name = values[key];
+            if (Object.prototype.hasOwnProperty.call(obj, name)) {
+              const type = typeof obj[name];
+              if (type === 'object') {
+                obj[name] = proxyWrap(obj[name]);
+              } else if (type === 'function'){
+                methodNames.set(obj[name], givenFunc + '.' + name);
+                obj[name] = new Proxy(obj[name], handler);
+              } else if (type === 'number'){
+                globalNames.set(obj[name], givenFunc + '.' + name);
+              }
+            }
+          }
+        }
+      // For every normal case 
+      } else {
+        for (const key in obj) {
+          if (Object.prototype.hasOwnProperty.call(obj, key)) {
+            const type = typeof obj[key];
+            if (type === 'object') {
+              obj[key] = proxyWrap(obj[key]);
+            } else {
+              obj[key] = new Proxy(obj[key], handler);
+            }
           }
         }
       }
     }
+
     return obj;
   };
 
   const createGlobal = (name, moduleProlog) => {
     if (global[name] != undefined) {
-      globalProxies[name] = proxyWrap(policy.moduleHandler, global[name]);
+      globalProxies[name] = proxyWrap(policy.moduleHandler, global[name], name);
       moduleProlog = 'let ' + name + ' = pr["' + name +'"];\n' + moduleProlog;
     }
-
     return moduleProlog;
   };
 
-  const createCSGlobal = (name, moduleProlog, upValue, nameStore) => {
-    if (global[upValue][name] != undefined) {
-      const functionName = upValue + '.' + name;
-      globalProxies[functionName] =  proxyWrap(policy.moduleHandler, global[upValue][name]);
-      moduleProlog += functionName + ' = pr["' + functionName +'"];\n';
-      nameStore.set(global[upValue][name], functionName);
-    }
-
-    return moduleProlog;
-  };
-
-  // TODO: Fix names!
-  const declareName = (name, moduleProlog) => 'let ' + name + ' = {};\n' + moduleProlog;
-  const passJSONFiles = (moduleProlog, func, json, nameStore, declareName) => {
+  // TODO: fix names
+  const passJSONFiles = (moduleProlog, func, json) => {
     for (const upValue in json) {
       if (Object.prototype.hasOwnProperty.call(json, upValue)) {
         const globalVariables = json[upValue];
-        moduleProlog = (declareName ? declareName(upValue, moduleProlog) : moduleProlog);
         for (const declName in globalVariables) {
           if (Object.prototype.hasOwnProperty.call(globalVariables, declName)) {
             const name = globalVariables[declName];
-            moduleProlog = func(name, moduleProlog, upValue, nameStore);
+            moduleProlog = func(name, moduleProlog);
           }
         }
       }
@@ -190,11 +193,8 @@ function lyaStartUp(lyaConfig, callerRequire) {
 
   // We need to add all the global prototype variable declarations in the script
   const createModuleProlog = () => {
-    moduleProlog = passJSONFiles(moduleProlog, createCSGlobal, sglobals, methodNames, declareName);
-    moduleProlog = passJSONFiles(moduleProlog, createCSGlobal, cglobals, globalNames);
     moduleProlog += 'Math = new Proxy( Math, pr["proxyExportHandler"]);\n';
     moduleProlog = passJSONFiles(moduleProlog, createGlobal, globals);
-
     return moduleProlog;
   };
 
