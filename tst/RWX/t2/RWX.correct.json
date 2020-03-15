@@ -1,16 +1,13 @@
 {
   "main": {
     "require": "x",
-    "require('fs')": "r",
-    "require('./m1.js')": "r",
-    "console": "r",
-    "console.log": "rx",
+    "require('fs')": "x",
+    "require('./m1.js')": "x",
     "require('./m2.js')": "x",
     "require('./m1.js').fst": "r",
     "require('./m2.js').fst": "r"
   },
   "m1.js": {
-    "Object": "r",
     "require": "x",
     "require('fs')": "r",
     "module.export": "w",
@@ -19,6 +16,7 @@
     "require('./m2.js')": "x"
   },
   "m2.js": {
+    "require": "x",
     "require('fs')": "x",
     "require('./m3.js')": "x",
     "require('fs').readFileSync": "rx",
