@@ -102,7 +102,8 @@ function lyaStartUp(lyaConfig, callerRequire) {
       const functionNames = global[obj[k]];
       for (name in functionNames){
         if (typeof name === 'string' && name != undefined) {
-          methodNames.set(functionNames[name], obj[k] + '.' + name);
+          const nameToStore = obj[k] + '.' + name;
+          methodNames.set(functionNames[name], nameToStore);
         }
       }
     };
@@ -122,47 +123,45 @@ function lyaStartUp(lyaConfig, callerRequire) {
       return Reflect.apply( ...arguments);
     },
   };
-  // TODO: fix the structure of the func
+
+  const saveName = (obj, name, givenFunc) => methodNames.set(obj[name], givenFunc + '.' + name);
+  const getObjLength = (obj) => Object.keys(obj).length;
+  const getObjValues = (obj) => Object.getOwnPropertyNames(obj);
+
   // We wrap every function on global obj that exists in globals.json
   // Returns the proxy obj we want
+  const objTypeAction = (obj, name, handler, givenFunc, nameSave) => {
+    if (Object.prototype.hasOwnProperty.call(obj, name)) {
+      const objType = typeof obj[name];
+      if (objType === 'object') {
+        obj[name] = proxyWrap(obj[name]);
+      } else if (objType === 'function'){
+        nameSave ? saveName (obj, name, givenFunc) : null;
+        obj[name] = new Proxy(obj[name], handler);
+      } else if (objType === 'number'){
+        globalNames.set(obj[name], givenFunc + '.' + name);
+      }
+    }
+    return obj[name];
+  }
+
   const proxyWrap = function(handler, obj, givenFunc) {
-    if (typeof obj === 'function') {
+    const objType = typeof obj;
+    if (objType === 'function') {
       obj = new Proxy(obj, handler);
-    } else if (typeof obj === 'object') {
-      // When properties are not enumerated
-      if (Object.keys(obj).length === 0) {
-        const values = Object.getOwnPropertyNames(obj);
+    } else if (objType === 'object') {
+      if (!getObjLength(obj)) {
+        const values = getObjValues(obj);
         for (const key in values) {
-          if (Object.prototype.hasOwnProperty.call(values, key)) {
-            const name = values[key];
-            if (Object.prototype.hasOwnProperty.call(obj, name)) {
-              const type = typeof obj[name];
-              if (type === 'object') {
-                obj[name] = proxyWrap(obj[name]);
-              } else if (type === 'function'){
-                methodNames.set(obj[name], givenFunc + '.' + name);
-                obj[name] = new Proxy(obj[name], handler);
-              } else if (type === 'number'){
-                globalNames.set(obj[name], givenFunc + '.' + name);
-              }
-            }
-          }
+          const name = values[key];
+          obj[name] = objTypeAction(obj, name, handler, givenFunc, true);
         }
-      // For every normal case 
       } else {
         for (const key in obj) {
-          if (Object.prototype.hasOwnProperty.call(obj, key)) {
-            const type = typeof obj[key];
-            if (type === 'object') {
-              obj[key] = proxyWrap(obj[key]);
-            } else {
-              obj[key] = new Proxy(obj[key], handler);
-            }
-          }
+          obj[key] = objTypeAction(obj, key, handler, givenFunc, false);
         }
       }
     }
-
     return obj;
   };
 
@@ -174,15 +173,14 @@ function lyaStartUp(lyaConfig, callerRequire) {
     return moduleProlog;
   };
 
-  // TODO: fix names
-  const passJSONFiles = (moduleProlog, func, json) => {
-    for (const upValue in json) {
-      if (Object.prototype.hasOwnProperty.call(json, upValue)) {
-        const globalVariables = json[upValue];
-        for (const declName in globalVariables) {
-          if (Object.prototype.hasOwnProperty.call(globalVariables, declName)) {
-            const name = globalVariables[declName];
-            moduleProlog = func(name, moduleProlog);
+  const passJSONFile = (moduleProlog, func, json) => {
+    for (const funcClass in json) {
+      if (Object.prototype.hasOwnProperty.call(json, funcClass)) {
+        const builtInObj  = json[funcClass];
+        for (const counter in builtInObj) {
+          if (Object.prototype.hasOwnProperty.call(builtInObj, counter)) {
+            const functionName = builtInObj[counter];
+            moduleProlog = func(functionName, moduleProlog);
           }
         }
       }
@@ -194,7 +192,7 @@ function lyaStartUp(lyaConfig, callerRequire) {
   // We need to add all the global prototype variable declarations in the script
   const createModuleProlog = () => {
     moduleProlog += 'Math = new Proxy( Math, pr["proxyExportHandler"]);\n';
-    moduleProlog = passJSONFiles(moduleProlog, createGlobal, globals);
+    moduleProlog = passJSONFile(moduleProlog, createGlobal, globals);
     return moduleProlog;
   };
 
@@ -264,7 +262,7 @@ function lyaStartUp(lyaConfig, callerRequire) {
     // first time.
 
     // If they are things in export obj we write it in analysis
-    if (Object.keys(result).length && env.requireLevel != 0) {
+    if (getObjLength(result) && env.requireLevel != 0) {
       policy.exportObj('module.export');
     }
 
@@ -290,62 +288,56 @@ function lyaStartUp(lyaConfig, callerRequire) {
   // This is the handler of the export object. Every time we require a module, and it has
   // export data we wrap those data in this handler. So this is the first layer of the
   // export data wraping.
+  const namePathSet = (key, name, path) => {
+    objName.set(key, name);
+    objPath.set(key, path);
+  }
+
   const exportHandler = {
     get: function(target, name, receiver) {
-      const type = typeof target[name];
-      if (type != 'undefined' && target[name] != null && typeof name === 'string' &&
-          (!(target[name] instanceof RegExp))) { // + udnefined
-        // If we try to grab an object we wrap it in this proxy
-        if (type === 'object') {
-          if ((!(Object.entries(target[name]).length === 0))) {
-            // We first return the obj to check that is not wraped in a proxy
+      const exportType = typeof(target[name]);
+      if (exportType != 'undefined' && target[name] != null && typeof name === 'string' &&
+          (!(target[name] instanceof RegExp))) {
+        if (exportType === 'object') {
+          if (Object.entries(target[name]).length) {
+
             if (withProxy.has(target[name])) {
               return Reflect.get(target, name);
             }
 
-            let truepath = objPath.get(receiver);
             let truename = objName.get(receiver);
-            if (truename === undefined) {
-              truename = objName.get(target);
-            }
-            if (truepath === undefined) {
-              truepath = objPath.get(target);
-            }
+            const truepath = objPath.get(receiver);
             const localObject = target[name];
-
+            truename = truename + '.' + name;
             target[name] = new Proxy(target[name], exportHandler);
-            objName.set(localObject, truename + '.' + name);
-            objPath.set(localObject, truepath);
 
+            namePathSet(localObject, truename, truepath);
             result = Reflect.get(target, name);
             withProxy.set(result, true);
 
             return result;
           }
-        } else if (type === 'function') {
-          // We first return the obj to check that is not wraped in a proxy
-          let localFunction = target[name];
+        } else if (exportType === 'function') {
+          const localFunction = target[name];
+          const truename = objName.get(target);
+          const truepath = trueName[env.requireLevel];
           if (!withProxy.has(target[name])){
             Object.defineProperty(localFunction, 'name', {value: name});
             target[name] = new Proxy(localFunction, policy.exportsFuncHandler);
-
-            // We keep in storePureFunctions the function without the proxy
             storePureFunctions.set(target[name], localFunction);
-            objPath.set(localFunction, trueName[env.requireLevel]);
-            objName.set(localFunction, objName.get(target));
+            namePathSet(localFunction, truename, truepath);
           } else {
-            objPath.set(storePureFunctions.get(localFunction), trueName[env.requireLevel]);
-            objName.set(storePureFunctions.get(localFunction), objName.get(target));
+            const key = storePureFunctions.get(localFunction);
+            namePathSet(key, truename, truepath);
           }
-
-          // Undefined fix
           policy.readFunction(localFunction, objName.get(target));
-
           result = Reflect.get(target, name);
           withProxy.set(result, true);
+
           return result;
-        } else if (type === 'number' || type === 'boolean' || type === 'string') {
-          policy.updateRestData(target, name, type);
+        } else if (exportType === 'number' || exportType === 'boolean' ||
+            exportType === 'string') {
+          policy.updateRestData(target, name, exportType);
         }
       }
 
