@@ -147,22 +147,23 @@ function lyaStartUp(lyaConfig, callerRequire) {
     return localGlobal[name];
   }
 
-  const proxyWrap = function(handler, obj, givenFunc) {
-    const objType = typeof obj;
+  const proxyWrap = function(handler, origGlobal, givenFunc) {
+    const objType = typeof origGlobal;
     let localGlobal = {};
     if (objType === 'function') {
-      localGlobal = new Proxy(obj, handler);
+      localGlobal = new Proxy(origGlobal, handler);
     } else if (objType === 'object') {
-      if (!getObjLength(obj)) {
-        const values = getObjValues(obj);
+      if (!getObjLength(origGlobal)) {
+        const values = getObjValues(origGlobal);
         for (const key in values) {
           const name = values[key];
-          localGlobal[name] = objTypeAction(obj, name, handler, givenFunc, true);
+          localGlobal[name] = objTypeAction(origGlobal, name, handler, givenFunc, true);
         }
       } else {
-        for (const key in obj) {
-          localGlobal[key] = objTypeAction(obj, key, handler, givenFunc, false);
+        for (const key in origGlobal) {
+          origGlobal[key] = objTypeAction(origGlobal, key, handler, givenFunc, false);
         }
+        return origGlobal;
       }
     }
     return localGlobal;
@@ -309,7 +310,13 @@ function lyaStartUp(lyaConfig, callerRequire) {
             }
 
             let truename = objName.get(receiver);
-            const truepath = objPath.get(receiver);
+            let truepath = objPath.get(receiver);
+
+            if (truename === undefined) {
+              truename = objName.get(target);
+              truepath = objPath.get(target);
+            }
+
             const localObject = target[name];
             truename = truename + '.' + name;
             target[name] = new Proxy(target[name], exportHandler);
