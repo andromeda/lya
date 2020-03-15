@@ -2,6 +2,8 @@
   "main": {
     "require": "x",
     "require('fs')": "x",
+    "console": "r",
+    "console.log": "rx",
     "require('./m1.js')": "x",
     "require('./m2.js')": "x",
     "require('./m1.js').fst": "r",
@@ -22,6 +24,7 @@
     "require('fs').readFileSync": "rx",
     "console": "r",
     "console.log": "rx",
+    "module.export": "w",
     "require('fs').rmdirSync": "r",
     "require('fs').mkdirSync": "r",
     "require('./m3.js').fst": "r"
@@ -32,6 +35,6 @@
     "require('fs').readFileSync": "rx",
     "console": "r",
     "console.log": "rx",
-    "module.export": "w",
+    "module.export": "w"
   }
 }
