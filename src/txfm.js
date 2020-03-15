@@ -131,38 +131,41 @@ function lyaStartUp(lyaConfig, callerRequire) {
   // We wrap every function on global obj that exists in globals.json
   // Returns the proxy obj we want
   const objTypeAction = (obj, name, handler, givenFunc, nameSave) => {
+    let localGlobal = {};
     if (Object.prototype.hasOwnProperty.call(obj, name)) {
       const objType = typeof obj[name];
       if (objType === 'object') {
-        obj[name] = proxyWrap(obj[name]);
+        localGlobal[name] = proxyWrap(obj[name]);
       } else if (objType === 'function'){
         nameSave ? saveName (obj, name, givenFunc) : null;
-        obj[name] = new Proxy(obj[name], handler);
+        localGlobal[name] = new Proxy(obj[name], handler);
       } else if (objType === 'number'){
         globalNames.set(obj[name], givenFunc + '.' + name);
+        localGlobal[name] = obj[name];
       }
     }
-    return obj[name];
+    return localGlobal[name];
   }
 
   const proxyWrap = function(handler, obj, givenFunc) {
     const objType = typeof obj;
+    let localGlobal = {};
     if (objType === 'function') {
-      obj = new Proxy(obj, handler);
+      localGlobal = new Proxy(obj, handler);
     } else if (objType === 'object') {
       if (!getObjLength(obj)) {
         const values = getObjValues(obj);
         for (const key in values) {
           const name = values[key];
-          obj[name] = objTypeAction(obj, name, handler, givenFunc, true);
+          localGlobal[name] = objTypeAction(obj, name, handler, givenFunc, true);
         }
       } else {
         for (const key in obj) {
-          obj[key] = objTypeAction(obj, key, handler, givenFunc, false);
+          localGlobal[key] = objTypeAction(obj, key, handler, givenFunc, false);
         }
       }
     }
-    return obj;
+    return localGlobal;
   };
 
   const createGlobal = (name, moduleProlog) => {
