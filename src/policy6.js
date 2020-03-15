@@ -157,7 +157,9 @@ const globalConstHandler = {
   get: function(target, name) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
     if (locEnv.globalNames.has(target[name])) {
-      updateAnalysisData(locEnv.accessMatrix[currentName], 
+      updateAnalysisData(locEnv.accessMatrix[currentName],
+        locEnv.globalNames.get(target[name]).split('.')[0], 'r');
+      updateAnalysisData(locEnv.accessMatrix[currentName],
         locEnv.globalNames.get(target[name]), 'r');
     }
 
