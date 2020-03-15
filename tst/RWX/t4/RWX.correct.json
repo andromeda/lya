@@ -1,9 +1,9 @@
 {
   "main": {
-    "require('./m1.js')": "r"
+    "require": "x",
+    "require('./m1.js')": "x"
   },
   "m1.js": {
-    "Object": "r",
     "Array": "r",
     "ArrayBuffer": "r",
     "Float32Array": "r",
@@ -43,15 +43,15 @@
     "eval": "x"
   },
   "m2.js": {
-    "Object": "r",
     "Promise": "r",
     "setTimeout": "x",
     "Reflect.get": "x",
-    "bound consoleCall": "x",
-    "require('./m3.js')": "r"
+    "console": "r",
+    "console.log": "rx",
+    "require": "x",
+    "require('./m3.js')": "x"
   },
   "m3.js": {
-    "Object": "r",
     "RangeError": "r",
     "ReferenceError": "r",
     "eval": "x",
@@ -62,7 +62,8 @@
     "RegExp": "r",
     "WeakMap": "r",
     "WeakSet": "r",
-    "require('./m4.js')": "r"
+    "require": "x",
+    "require('./m4.js')": "x"
   },
   "m4.js": {
     "Object": "r",

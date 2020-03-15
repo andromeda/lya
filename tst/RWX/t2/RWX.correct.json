@@ -19,20 +19,21 @@
     "require('./m2.js')": "x"
   },
   "m2.js": {
-    "Object": "r",
     "require('fs')": "x",
     "require('./m3.js')": "x",
     "require('fs').readFileSync": "rx",
     "console": "r",
     "console.log": "rx",
     "require('fs').rmdirSync": "r",
-    "require('fs').mkdirSync": "r"
+    "require('fs').mkdirSync": "r",
+    "require('./m3.js').fst": "r"
   },
   "m3.js": {
-    "Object": "r",
+    "require": "x",
     "require('fs')": "x",
     "require('fs').readFileSync": "rx",
     "console": "r",
-    "console.log": "rx"
+    "console.log": "rx",
+    "module.export": "w",
   }
 }

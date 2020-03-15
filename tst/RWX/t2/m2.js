@@ -13,4 +13,3 @@ module.exports = {
   mk: mk,
   fst: m3.fst
 }
- 
