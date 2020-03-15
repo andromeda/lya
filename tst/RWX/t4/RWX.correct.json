@@ -45,6 +45,7 @@
   "m2.js": {
     "Promise": "r",
     "setTimeout": "x",
+    "Reflect": "r",
     "Reflect.get": "x",
     "console": "r",
     "console.log": "rx",
