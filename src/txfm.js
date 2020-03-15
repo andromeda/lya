@@ -91,8 +91,8 @@ function lyaStartUp(lyaConfig, callerRequire) {
 
   // Case handler
   // Returns the right require handler for the case
-  const mainRequire = (original) => {
-    return new Proxy(original, policy.require);
+  const moduleInput = (original, handler) => {
+    return new Proxy(original, handler);
   };
 
   // This function stores the names of the given object to
@@ -116,7 +116,7 @@ function lyaStartUp(lyaConfig, callerRequire) {
     apply: function(target, thisArg, argumentsList) {
       // We catch local require in order to wrap it
       let localRequire = argumentsList[1];
-      localRequire = mainRequire(localRequire);
+      localRequire = moduleInput(localRequire, policy.require);
       argumentsList[1] = localRequire;// We wrap require
       argumentsList[5] = globalProxies;// We pass the global values with the proxies
 
@@ -193,9 +193,17 @@ function lyaStartUp(lyaConfig, callerRequire) {
     return moduleProlog;
   };
 
+  const wrapSpecGlobal = (moduleProlog, globalFunc, specFunc) => {
+    const name = globalFunc + '.' + specFunc;
+    globalProxies[name] = new Proxy(global[globalFunc][specFunc], exportHandler);
+    objName.set(global[globalFunc][specFunc], globalFunc);
+    return moduleProlog += name + '= pr["' + name +'"];\n'
+  }
+
   // We need to add all the global prototype variable declarations in the script
   const createModuleProlog = () => {
-    moduleProlog += 'Math = new Proxy( Math, pr["proxyExportHandler"]);\n';
+    moduleProlog = wrapSpecGlobal(moduleProlog, 'process', 'env');
+    moduleProlog += 'Math = new Proxy(Math, pr["proxyExportHandler"]);\n';
     moduleProlog = passJSONFile(moduleProlog, createGlobal, globals);
     return moduleProlog;
   };
@@ -371,7 +379,7 @@ function lyaStartUp(lyaConfig, callerRequire) {
     }
   });
 
-  return mainRequire(callerRequire);
+  return moduleInput(callerRequire, policy.require);
 }
 
 module.exports = {
