@@ -115,10 +115,22 @@ function lyaStartUp(lyaConfig, callerRequire) {
   const handlerAddArg= {
     apply: function(target, thisArg, argumentsList) {
       // We catch local require in order to wrap it
-      let localRequire = argumentsList[1];
-      localRequire = moduleInput(localRequire, policy.require);
-      argumentsList[1] = localRequire;// We wrap require
-      argumentsList[5] = globalProxies;// We pass the global values with the proxies
+
+      const localExports = argumentsList[0];
+      const localRequire = argumentsList[1];
+      const localModule = argumentsList[2];
+      const wrapExports = moduleInput(localExports, policy.require);
+      const wraplRequire = moduleInput(localRequire, policy.require);
+      const wraplModule = moduleInput(localModule, policy.require);
+
+      argumentsList[0] = wrapExports;
+      argumentsList[1] = wraplRequire;
+      argumentsList[2] = wraplModule;
+      argumentsList[5] = globalProxies;
+
+      methodNames.set(localExports, 'exports');
+      methodNames.set(localRequire, 'require');
+      methodNames.set(localModule, 'module');
 
       return Reflect.apply( ...arguments);
     },
@@ -272,11 +284,6 @@ function lyaStartUp(lyaConfig, callerRequire) {
     let result = originalRequire.apply(this, args);
     // If false that means that we pass from here for the
     // first time.
-
-    // If they are things in export obj we write it in analysis
-    if (getObjLength(result) && env.requireLevel != 0) {
-      policy.exportObj('module.export');
-    }
 
     const type = typeof result;
     if (type != 'boolean' && type != 'symbol' && type != 'number' && type != 'string') {

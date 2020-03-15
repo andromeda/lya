@@ -14,6 +14,23 @@ const requireHandler = {
     locEnv.accessMatrix[currentName]['require(\'' + origReqModuleName + '\')'] = 'x';
     return Reflect.apply(...arguments);
   },
+  get: function(target, name) {
+    const currentName = locEnv.trueName[locEnv.requireLevel];
+    if (locEnv.methodNames.has(target)) {
+      updateAnalysisData(locEnv.accessMatrix[currentName],
+        locEnv.methodNames.get(target), 'r');
+    }
+    return Reflect.get(target, name);
+  },
+  set: function(target, name, value) {
+    const currentName = locEnv.trueName[locEnv.requireLevel];
+    if (locEnv.methodNames.has(target)) {
+      const nameToStore = locEnv.methodNames.get(target) + '.' + name;
+      updateAnalysisData(locEnv.accessMatrix[currentName], nameToStore, 'w');
+    }
+    return Reflect.set(target, name, value);
+  }
+
 };
 
 const updateRestData = (target, name, type) => {
