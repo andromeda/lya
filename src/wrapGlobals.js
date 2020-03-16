@@ -1,28 +1,29 @@
-
-// https://2ality.com/2016/11/trace-globals-proxy.html
-let _glob;
-if (typeof global !== 'undefined') {
-  _glob = global; 
-  console.log("pointing _glob to global");
-} else {
-  _glob = self;
-  console.log("pointing _glob to self");
+function sandboxJS(js) {
+  var whitelist = ["alert","console","navigator","location"];
+  var handlers = {
+    get(target, propKey, receiver) {
+        console.log("get");
+        return Reflect.get(target, propKey, receiver);
+    },
+    set(target, propKey, value, receiver) {
+        console.log("set");
+        return Reflect.set(target, propKey, value, receiver);
+    },
+    has(target, propKey, context) {
+      console.log("has");
+      return Reflect.has(target, propKey, context)
+    }
+  };
+  var proxy = new Proxy(global, handlers);
+  var proxyName = `proxy${Math.floor(Math.random() * 1E9)}`;
+  var fn = new Function(proxyName,`with(${proxyName}){${js}}`);
+  return fn.call(this, proxy);
 }
 
-function evalCode(code) {
-    const func = new Function ("proxy", "with (proxy) {" + code + "}");
-    const proxy = new Proxy(_glob, {
-        get(target, propKey, receiver) {
-            console.log(`GET ${String(propKey)}`); // (B)
-            return Reflect.get(target, propKey, receiver);
-        },
-        set(target, propKey, value, receiver) { // (C)
-            console.log(`SET ${String(propKey)}=${value}`);
-            return Reflect.set(target, propKey, value, receiver);
-        },
-    });
-    return func(proxy);
-}
-
-evalCode('x = 3')
-console.log(x)
+// sandboxJS("console.log(2)");        // 2
+// sandboxJS("console.log(history)");  // Error, Not allowed: history
+sandboxJS("x = 3");
+console.log("=====");
+sandboxJS("x = 4");
+console.log("=====");
+sandboxJS("console.log(x)");
