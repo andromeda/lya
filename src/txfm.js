@@ -36,14 +36,13 @@ function lyaStartUp(lyaConfig, callerRequire) {
   const originalRequire = Module.prototype.require;
   const originalRun = vm.runInThisContext;
 
-  const trueName = [];
+  const moduleName = [];
   let requireLevel = 0;
   const globalProxies = {};
-  const accessMatrix = {};
+  const analysisResult = {};
 
-  // TODO: fix main.js name -> find true name
-  trueName[0] = process.cwd() + '/' + 'main.js';
-  accessMatrix[trueName[0]] = {};
+  moduleName[0] = process.cwd() + '/' + 'main.js';
+  analysisResult[moduleName[0]] = {};
 
   // Holds the end of each name store of new assigned global variables
   // suffix for our own metadata
@@ -66,9 +65,9 @@ function lyaStartUp(lyaConfig, callerRequire) {
 
   // We make a test on fragment
   const env = {
-    trueName : trueName,
+    moduleName : moduleName,
     requireLevel : requireLevel,
-    accessMatrix: accessMatrix,
+    analysisResult: analysisResult,
     objName : objName,
     objPath : objPath,
     methodNames : methodNames,
@@ -270,10 +269,10 @@ function lyaStartUp(lyaConfig, callerRequire) {
   vm.runInThisContext = function(code, options) {
     const codeToRun = originalRun(code, options);
     env.requireLevel++;
-    trueName[env.requireLevel] = options['filename'];
+    moduleName[env.requireLevel] = options['filename'];
     if (!Object.prototype.hasOwnProperty.
-      call(accessMatrix,trueName[env.requireLevel])){
-      accessMatrix[trueName[env.requireLevel]] = {};
+      call(analysisResult,moduleName[env.requireLevel])){
+      analysisResult[moduleName[env.requireLevel]] = {};
     }
     return new Proxy(codeToRun, handlerAddArg);
   };
@@ -290,7 +289,7 @@ function lyaStartUp(lyaConfig, callerRequire) {
       if ( objName.has(result) === false ) {
         // Each time we update env we update locEnv too
         objName.set(result, 'require(\'' + path + '\')');
-        objPath.set(result, trueName[env.requireLevel]);
+        objPath.set(result, moduleName[env.requireLevel]);
         result = new Proxy(result, exportHandler);
         if (env.requireLevel !=0){
           env.requireLevel--;
@@ -298,7 +297,7 @@ function lyaStartUp(lyaConfig, callerRequire) {
       } else {
         result = new Proxy(result, exportHandler);
         objName.set(result, 'require(\'' + path + '\')');
-        objPath.set(result, trueName[env.requireLevel]);
+        objPath.set(result, moduleName[env.requireLevel]);
       }
     }
     return result;
@@ -345,7 +344,7 @@ function lyaStartUp(lyaConfig, callerRequire) {
         } else if (exportType === 'function') {
           const localFunction = target[name];
           const truename = objName.get(target);
-          const truepath = trueName[env.requireLevel];
+          const truepath = moduleName[env.requireLevel];
           if (!withProxy.has(target[name])){
             Object.defineProperty(localFunction, 'name', {value: name});
             target[name] = new Proxy(localFunction, policy.exportsFuncHandler);
@@ -382,7 +381,7 @@ function lyaStartUp(lyaConfig, callerRequire) {
     global.end = true;
     if (lyaConfig.SAVE_RESULTS && userChoice != 5 && userChoice != 7) {
       fs.writeFileSync(lyaConfig.SAVE_RESULTS,
-          JSON.stringify(accessMatrix, null, 2), 'utf-8');
+          JSON.stringify(analysisResult, null, 2), 'utf-8');
     }
   });
 
