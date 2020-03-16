@@ -88,12 +88,6 @@ function lyaStartUp(lyaConfig, callerRequire) {
   // A proxy to use it in Math.PI etc
   globalProxies['proxyExportHandler'] = policy.globalConstHandler;
 
-  // Case handler
-  // Returns the right require handler for the case
-  const setProxy = (original, handler) => {
-    return new Proxy(original, handler);
-  };
-
   // This function stores the names of the given object to
   // methodNames WeakMap ~> stores names of objs like console etc
   function generateNames(obj) {
@@ -125,7 +119,7 @@ function lyaStartUp(lyaConfig, callerRequire) {
       localCopy = obj[count];
     }
     methodNames.set(localCopy, moduleInputNames[count]);
-    return setProxy(localCopy, policy.require);
+    return new Proxy(localCopy, policy.require);
   }
 
   // We wrap the input values of every module in a proxy
@@ -389,7 +383,7 @@ function lyaStartUp(lyaConfig, callerRequire) {
     }
   });
 
-  return setProxy(callerRequire, policy.require);
+  return new Proxy(callerRequire, policy.require);
 }
 
 module.exports = {
