@@ -90,7 +90,7 @@ function lyaStartUp(lyaConfig, callerRequire) {
 
   // Case handler
   // Returns the right require handler for the case
-  const moduleInput = (original, handler) => {
+  const setProxy = (original, handler) => {
     return new Proxy(original, handler);
   };
 
@@ -108,29 +108,33 @@ function lyaStartUp(lyaConfig, callerRequire) {
     };
   };
 
-  // The handler of compiledWrapper
-  // We wrap the compiledWrapper code in a proxy so
-  // when it is called it will do this actions =>
+  const moduleInputNames = [
+    'exports',
+    'require',
+    'module',
+    '__filename',
+    '__dirname'
+  ];
+
+  const wrapModuleInputs = (obj, count) => {
+    const type = typeof obj[count];
+    let localCopy;
+    if (type === 'string') {
+      localCopy = new String(obj[count]);
+    } else {
+      localCopy = obj[count];
+    }
+    methodNames.set(localCopy, moduleInputNames[count]);
+    return setProxy(localCopy, policy.require);
+  }
+
+  // We wrap the input values of every module in a proxy
   const handlerAddArg= {
     apply: function(target, thisArg, argumentsList) {
-      // We catch local require in order to wrap it
-
-      const localExports = argumentsList[0];
-      const localRequire = argumentsList[1];
-      const localModule = argumentsList[2];
-      const wrapExports = moduleInput(localExports, policy.require);
-      const wraplRequire = moduleInput(localRequire, policy.require);
-      const wraplModule = moduleInput(localModule, policy.require);
-
-      argumentsList[0] = wrapExports;
-      argumentsList[1] = wraplRequire;
-      argumentsList[2] = wraplModule;
+      for (let count=0; count < 5; count++) {
+        argumentsList[count] = wrapModuleInputs(argumentsList, count);
+      };
       argumentsList[5] = globalProxies;
-
-      methodNames.set(localExports, 'exports');
-      methodNames.set(localRequire, 'require');
-      methodNames.set(localModule, 'module');
-
       return Reflect.apply( ...arguments);
     },
   };
@@ -385,7 +389,7 @@ function lyaStartUp(lyaConfig, callerRequire) {
     }
   });
 
-  return moduleInput(callerRequire, policy.require);
+  return setProxy(callerRequire, policy.require);
 }
 
 module.exports = {
