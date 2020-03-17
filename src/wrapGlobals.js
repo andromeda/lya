@@ -2,7 +2,7 @@
 // https://2ality.com/2016/11/trace-globals-proxy.html
 let _glob;
 if (typeof global !== 'undefined') {
-  _glob = global; 
+  _glob = global;
   console.log("pointing _glob to global");
 } else {
   _glob = self;
