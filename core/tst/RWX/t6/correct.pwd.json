@@ -1,5 +1,5 @@
 {
-  "main": {
+  "PWD_REPLACE/main": {
     "require": "x",
     "require('./m1.js')": "r",
     "console": "r",
@@ -7,7 +7,7 @@
     "require('./m1.js').valueOf": "rx",
     "require('./m1.js').toString": "rx"
   },
-  "m1.js": {
+  "PWD_REPLACE/m1.js": {
     "console": "r",
     "console.log": "rx",
     "Math": "r",

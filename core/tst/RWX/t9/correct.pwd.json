@@ -1,5 +1,5 @@
 {
-  "main": {
+  "PWD_REPLACE/main": {
     "console": "r",
     "console.log": "rx",
     "require": "x",
@@ -15,7 +15,7 @@
     "require('./math.js').sub": "rx",
     "require('./math.js').x": "wr"
   },
-  "math.js": {
+  "PWD_REPLACE/math.js": {
     "Math.PI": "r",
     "console.log": "rx",
     "global.timesAddCalled": "wr",

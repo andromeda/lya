@@ -1,12 +1,13 @@
 {
-  "main": {
+  "PWD_REPLACE/main": {
     "require": "x",
     "require('./m1.js')": "x",
     "require('./m1.js').r": "r",
     "require('./m1.js').w": "w",
-    "require('./m1.js').x": "rx"
+    "require('./m1.js').x": "x"
   },
-  "m1.js": {
-    "module.export": "w"
+  "PWD_REPLACE/m1.js": {
+    "module.exports": "w"
   }
 }
+

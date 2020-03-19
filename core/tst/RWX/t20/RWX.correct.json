@@ -1,7 +1,0 @@
-{
-  "/Users/nv/wrk/andromeda/lya/tst/RWX/t20/main.js": {
-    "require": "x",
-    "require('./m1.js')": "r"
-  },
-  "/Users/nv/wrk/andromeda/lya/tst/RWX/t20/m1.js": {}
-}

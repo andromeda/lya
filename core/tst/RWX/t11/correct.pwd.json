@@ -1,10 +1,10 @@
 {
-  "main.js": {
+  "PWD_REPLACE/main.js": {
     "require": "x",
     "require('./m1.js')": "x",
     "require('./m1.js').r": "wrx",
     "require('./m1.js').w": "wrx",
     "require('./m1.js').x": "wrx"
   },
-  "m1.js": {}
+  "PWD_REPLACE/m1.js": {}
 }

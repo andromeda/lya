@@ -1,17 +1,17 @@
 {
-  "/Users/nv/wrk/andromeda/lya/tst/RWX/t1/main.js": {
+  "PWD_REPLACE/main.js": {
     "require": "x",
     "require('fs')": "x",
     "require('./m1.js')": "x",
     "require('fs').createWriteStream": "rx"
   },
-  "/Users/nv/wrk/andromeda/lya/tst/RWX/t1/m1.js": {
+  "PWD_REPLACE/m1.js": {
     "Number": "x",
     "require": "x",
     "require('./m2.js')": "x",
     "require('./m2.js').add": "rx"
   },
-  "/Users/nv/wrk/andromeda/lya/tst/RWX/t1/m2.js": {
+  "PWD_REPLACE/m2.js": {
     "module.export": "w",
     "Object": "x"
   }

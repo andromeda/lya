@@ -1,9 +1,9 @@
 {
-  "/home/grigorisntousakis/thesis/lya/tst/RWX/t4/main.js": {
+  "PWD_REPLACE/main.js": {
     "require": "x",
     "require('./m1.js')": "x"
   },
-  "/home/grigorisntousakis/thesis/lya/tst/RWX/t4/m1.js": {
+  "PWD_REPLACE/m1.js": {
     "Array": "r",
     "ArrayBuffer": "r",
     "Float32Array": "r",
@@ -45,7 +45,7 @@
     "Error": "rx",
     "eval": "x"
   },
-  "/home/grigorisntousakis/thesis/lya/tst/RWX/t4/m2.js": {
+  "PWD_REPLACE/m2.js": {
     "Promise": "r",
     "setTimeout": "x",
     "Reflect": "r",
@@ -55,7 +55,7 @@
     "require": "x",
     "require('./m3.js')": "x"
   },
-  "/home/grigorisntousakis/thesis/lya/tst/RWX/t4/m3.js": {
+  "PWD_REPLACE/m3.js": {
     "RangeError": "r",
     "ReferenceError": "r",
     "eval": "x",
@@ -69,7 +69,7 @@
     "require": "x",
     "require('./m4.js')": "x"
   },
-  "/home/grigorisntousakis/thesis/lya/tst/RWX/t4/m4.js": {
+  "PWD_REPLACE/m4.js": {
     "Number": "r"
   }
 }

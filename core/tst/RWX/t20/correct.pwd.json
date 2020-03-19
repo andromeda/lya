@@ -1,0 +1,7 @@
+{
+  "PWD_REPLACE/main.js": {
+    "require": "x",
+    "require('./m1.js')": "r"
+  },
+  "PWD_REPLACE/m1.js": {}
+}

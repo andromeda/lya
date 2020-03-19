@@ -1,11 +1,11 @@
 {
-  "main": {
+  "PWD_REPLACE/main": {
     "global": "r",
     "global.x": "w",
     "require": "x",
     "require('./m1.js')": "x"
   },
-  "m1.js": {
+  "PWD_REPLACE/m1.js": {
     "global.x": "r",
     "console": "r",
     "console.error": "rx"
