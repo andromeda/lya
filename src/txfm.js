@@ -19,6 +19,11 @@ const preset = {
   SUB_TYPES: 12
 };
 
+const nodeVersion = process.versions.node.split('.');
+if (nodeVersion[0] !== 8 && nodeVersion[1] !== 9){
+  console.error("Lya has been tested with Node v8.9.4, not " + process.version);
+}
+
 function lyaStartUp(lyaConfig, callerRequire) {
 
   // We use this global value to know if the program has ended or not

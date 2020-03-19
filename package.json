@@ -1,7 +1,7 @@
 {
-  "name": "@andromeda/txfm",
-  "version": "0.1.0",
-  "description": "Dynamic Analysis at the Boundaries of Third-Party Modules",
+  "name": "@andromeda/lya",
+  "version": "0.0.1",
+  "description": "A Program Dialysis Library",
   "main": "src/txfm.js",
   "scripts": {
     "test": "npm run l && npm run t",
@@ -23,13 +23,23 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/andromeda/txfm.git"
+    "url": "git+https://github.com/andromeda/lya.git"
   },
-  "author": "Grigoris Ntousakis",
+  "contributors": [
+    {
+      "name": "Grigoris Ntousakis",
+      "email": "greco1996@gmail.com"
+    },
+    {
+      "name": "Nikos Vasilakis",
+      "email": "nikos@vasilak.is",
+      "url": "http://nikos.vasilak.is"
+    }
+  ],
   "bugs": {
-    "url": "https://github.com/andromeda/txfm/issues"
+    "url": "https://github.com/andromeda/lya/issues"
   },
-  "homepage": "https://github.com/andromeda/txfm#readme",
+  "homepage": "https://github.com/andromeda/lya#readme",
   "devDependencies": {
     "chai": "^4.2.0",
     "chalk": "^3.0.0",
@@ -47,13 +57,13 @@
     "tap": "^14.10.2",
     "tape": "^4.11.0",
     "underscore": "^1.9.2",
-    "yargs": "^15.0.2"
-  },
-  "dependencies": {
+    "yargs": "^15.0.2",
     "debug": "^4.1.1",
     "hashish": "0.0.4",
     "mocha": "^6.2.2",
     "node-sass": "^4.13.1",
-    "uuid": "^3.3.3"
-  }
+    "uuid": "^3.3.3",
+    "json-diff": "^0.5.4",
+    "lodash.isequal": "^4.5.0"
+  },
 }
