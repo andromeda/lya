@@ -2,11 +2,27 @@
 
 set -e
 
-for d in t*/; do
-  cd $d;
-  ./run.sh
+analysis() {
+  # Dynamic analysis comes from a different segment so that
+  # static analysis does not get confused
+  cat correct.pwd.json | sed "s/PWD_REPLACE/$(pwd)/" > correct.json
+  cat ../prologue.lya ./main.js ../epilogue.lya > generated.test
+  # Replace node with cat to see the generated script
+  node generated.test
   # run main and compare results with static
-  # node -e 'require("assert").deepStrictEqual(require("./RWX.dynamic.json"), require("./RWX.correct.json"));'
-  node -e 'var eq = require("lodash.isequal"); var c = require("./RWX.correct.json"); var d = require("./RWX.dynamic.json"); if (!eq(c, d)) { console.log(require("json-diff").diffString(c, d)); process.exit(-1); }'
+  # node -e 'require("assert").deepStrictEqual(require("./dynamic.json"), require("./correct.json"));'
+  node -e 'var eq = require("lodash.isequal"); var c = require("./correct.json"); var d = require("./dynamic.json"); if (!eq(c, d)) { console.log(require("json-diff").diffString(c, d)); process.exit(-1); }'
+}
+
+if [ "$#" -eq 1 ]; then
+  cd $1
+  analysis
   cd ..
-done
+else
+  for d in t*/; do
+    cd $d;
+    analysis
+    cd ..
+  done
+fi
+
