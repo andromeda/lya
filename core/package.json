@@ -65,5 +65,5 @@
     "uuid": "^3.3.3",
     "json-diff": "^0.5.4",
     "lodash.isequal": "^4.5.0"
-  },
+  }
 }

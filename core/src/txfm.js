@@ -20,7 +20,7 @@ const preset = {
 };
 
 const nodeVersion = process.versions.node.split('.');
-if (nodeVersion[0] !== 8 && nodeVersion[1] !== 9){
+if (nodeVersion[0] !== '8' && nodeVersion[1] !== '9'){
   console.error("Lya has been tested with Node v8.9.4, not " + process.version);
 }
 
