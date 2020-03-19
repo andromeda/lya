@@ -7,6 +7,7 @@
     "require('./m1.js').x": "rx"
   },
   "PWD_REPLACE/m1.js": {
-    "module.export": "w"
+    "Object": "x",
+    "module.exports": "w"
   }
 }

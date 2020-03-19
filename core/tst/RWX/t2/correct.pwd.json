@@ -1,5 +1,5 @@
 {
-  "PWD_REPLACE/main": {
+  "PWD_REPLACE/main.js": {
     "require": "x",
     "require('fs')": "x",
     "console": "r",

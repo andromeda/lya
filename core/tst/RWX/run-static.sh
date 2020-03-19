@@ -3,7 +3,7 @@
 set -e
 
 analysis() {
-  cat correct.pwd.json | sed "s/PWD_REPLACE/$(pwd)/" > correct.json
+  cat correct.pwd.json | sed "s;PWD_REPLACE;$(pwd);" > correct.json
   java -jar ../../../mir-sa.jar . | grep "^{" | jq .  > static.json
   node -e 'var eq = require("lodash.isequal"); var c = require("./correct.json"); var d = require("./static.json"); if (!eq(c, d)) { console.log(require("json-diff").diffString(c, d)); process.exit(-1); }'
 }
