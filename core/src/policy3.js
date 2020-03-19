@@ -5,7 +5,7 @@ let locEnv;
 const endName = '@name';
 
 // Normalize all values (seconds and to microseconds)
-let toMillis = (a, b) => (a * 1e9 + b) * 1e-6;
+const toMillis = (a, b) => (a * 1e9 + b) * 1e-6;
 
 // @storedCalls it is a table that contains all the analysis data
 // @truename the name of the current function, object etc that we want to add to the table
@@ -13,23 +13,23 @@ let toMillis = (a, b) => (a * 1e9 + b) * 1e-6;
 // Given those two inputs we can update the analysis data that are stored in storedCalls
 const updateAnalysisData = (storedCalls, truename, arguments) => {
   if (Object.prototype.hasOwnProperty.
-        call(storedCalls, truename) === false) {
-      const time = process.hrtime();
-      const result = Reflect.apply( ...arguments);
-      const diff = process.hrtime(time);
-      storedCalls[truename] = toMillis(diff[0], diff[1]);
+      call(storedCalls, truename) === false) {
+    const time = process.hrtime();
+    const result = Reflect.apply( ...arguments);
+    const diff = process.hrtime(time);
+    storedCalls[truename] = toMillis(diff[0], diff[1]);
 
-      return result;
-    }
+    return result;
+  }
 
-    return Reflect.apply(...arguments);
+  return Reflect.apply(...arguments);
 };
 
 const updateRestData = (target, name, type) => {
 };
 
 const exportObj = () => {
-}
+};
 
 // This the handler of the require function. Every time a "require" is used to load up a module
 // this handler is called. It updates the analysis data that are stored in the accessMatrix table.
@@ -89,7 +89,7 @@ const exportsFuncHandler = {
 // Read function so we print it in the export file
 // This is to catch the read
 const readFunction = (myFunc, name) => {
-}
+};
 
 // This is the handler of the global constanst variables, like Math.PI etc. We store the name
 // in the same object but we use a different name, for example, for Math.PI we store the
@@ -102,15 +102,15 @@ const globalConstHandler = {
 };
 
 module.exports = (env) => {
-	locEnv = env;
-	return {
-		require : requireHandler,
-    moduleHandler : moduleHandler,
-    globalHandler : globalHandler,
-    readFunction : readFunction,
-    exportsFuncHandler : exportsFuncHandler,
-    globalConstHandler : globalConstHandler,
-    updateRestData : updateRestData,
-    exportObj : exportObj,
-	}
+  locEnv = env;
+  return {
+    require: requireHandler,
+    moduleHandler: moduleHandler,
+    globalHandler: globalHandler,
+    readFunction: readFunction,
+    exportsFuncHandler: exportsFuncHandler,
+    globalConstHandler: globalConstHandler,
+    updateRestData: updateRestData,
+    exportObj: exportObj,
+  };
 };

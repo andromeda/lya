@@ -13,13 +13,13 @@ const endName = '@name';
 const timeCapsule = {};
 
 // Normalize all values (seconds and to microseconds)
-let toMillis = (a, b) => (a * 1e9 + b) * 1e-6;
+const toMillis = (a, b) => (a * 1e9 + b) * 1e-6;
 
 const updateRestData = (target, name, type) => {
 };
 
 const exportObj = () => {
-}
+};
 // This the handler of the require function. Every time a "require" is used to load up a module
 // this handler is called. It updates the analysis data that are stored in the accessMatrix table.
 // TODO: add more
@@ -51,59 +51,59 @@ const requireHandler = {
 };
 
 const exportFuncControl = (storedCalls, truename, arguments) => {
-	if (Object.prototype.hasOwnProperty.
-        call(storedCalls, truename) === false) {
-      const time = process.hrtime();
-      const result = Reflect.apply( ...arguments);
-      const diff = process.hrtime(time);
-      const thisTime = toMillis(diff[0], diff[1]);
+  if (Object.prototype.hasOwnProperty.
+      call(storedCalls, truename) === false) {
+    const time = process.hrtime();
+    const result = Reflect.apply( ...arguments);
+    const diff = process.hrtime(time);
+    const thisTime = toMillis(diff[0], diff[1]);
 
-      if (timeCapsule[locEnv.requireLevel]) {
-        timeCapsule[locEnv.requireLevel] += toMillis(diff[0], diff[1]);
-      } else {
-        timeCapsule[locEnv.requireLevel] = toMillis(diff[0], diff[1]);
-      }
-
-      if (timeCapsule[locEnv.requireLevel+1] != undefined) {
-        storedCalls[truename] = thisTime -
-          timeCapsule[locEnv.requireLevel+1];
-        timeCapsule[locEnv.requireLevel+1] = 0;
-      } else {
-        storedCalls[truename] = thisTime;
-      }
-
-      return result;
+    if (timeCapsule[locEnv.requireLevel]) {
+      timeCapsule[locEnv.requireLevel] += toMillis(diff[0], diff[1]);
+    } else {
+      timeCapsule[locEnv.requireLevel] = toMillis(diff[0], diff[1]);
     }
 
-    return Reflect.apply(...arguments);
+    if (timeCapsule[locEnv.requireLevel+1] != undefined) {
+      storedCalls[truename] = thisTime -
+          timeCapsule[locEnv.requireLevel+1];
+      timeCapsule[locEnv.requireLevel+1] = 0;
+    } else {
+      storedCalls[truename] = thisTime;
+    }
+
+    return result;
+  }
+
+  return Reflect.apply(...arguments);
 };
 
 const onModuleControlFunc = (storedCalls, truename, arguments) => {
-	if (Object.prototype.hasOwnProperty.
-        call(storedCalls, truename) === false) {
-      const time = process.hrtime();
-      const result = Reflect.apply( ...arguments);
-      const diff = process.hrtime(time);
-      const thisTime = toMillis(diff[0], diff[1]);
+  if (Object.prototype.hasOwnProperty.
+      call(storedCalls, truename) === false) {
+    const time = process.hrtime();
+    const result = Reflect.apply( ...arguments);
+    const diff = process.hrtime(time);
+    const thisTime = toMillis(diff[0], diff[1]);
 
-      if (timeCapsule[locEnv.requireLevel]) {
-        timeCapsule[locEnv.requireLevel] += toMillis(diff[0], diff[1]);
-      } else {
-        timeCapsule[locEnv.requireLevel] = toMillis(diff[0], diff[1]);
-      }
-
-      if (timeCapsule[locEnv.requireLevel+1]) {
-        storedCalls[truename] = thisTime -
-          timeCapsule[locEnv.requireLevel+1];
-        timeCapsule[locEnv.requireLevel+1] = 0;
-      } else {
-        storedCalls[truename] = thisTime;
-      }
-
-      return result;
+    if (timeCapsule[locEnv.requireLevel]) {
+      timeCapsule[locEnv.requireLevel] += toMillis(diff[0], diff[1]);
+    } else {
+      timeCapsule[locEnv.requireLevel] = toMillis(diff[0], diff[1]);
     }
 
-    return Reflect.apply(...arguments);
+    if (timeCapsule[locEnv.requireLevel+1]) {
+      storedCalls[truename] = thisTime -
+          timeCapsule[locEnv.requireLevel+1];
+      timeCapsule[locEnv.requireLevel+1] = 0;
+    } else {
+      storedCalls[truename] = thisTime;
+    }
+
+    return result;
+  }
+
+  return Reflect.apply(...arguments);
 };
 
 // The handler of the global variable.Every time we access the global variabe in order to declare
@@ -148,7 +148,7 @@ const exportsFuncHandler = {
 // Read function so we print it in the export file
 // This is to catch the read
 const readFunction = (myFunc, name) => {
-}
+};
 
 // This is the handler of the global constanst variables, like Math.PI etc. We store the name
 // in the same object but we use a different name, for example, for Math.PI we store the
@@ -161,15 +161,15 @@ const globalConstHandler = {
 };
 
 module.exports = (env) => {
-	locEnv = env;
-	return {
-		require : requireHandler,
-    moduleHandler : moduleHandler,
-    globalHandler : globalHandler,
-    readFunction : readFunction,
-    exportsFuncHandler : exportsFuncHandler,
-    globalConstHandler : globalConstHandler,
-    updateRestData : updateRestData,
-    exportObj : exportObj
-	}
+  locEnv = env;
+  return {
+    require: requireHandler,
+    moduleHandler: moduleHandler,
+    globalHandler: globalHandler,
+    readFunction: readFunction,
+    exportsFuncHandler: exportsFuncHandler,
+    globalConstHandler: globalConstHandler,
+    updateRestData: updateRestData,
+    exportObj: exportObj,
+  };
 };

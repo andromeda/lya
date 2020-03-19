@@ -12,8 +12,8 @@ const endName = '@name';
 // Given those two inputs we can update the analysis data that are stored in storedCalls
 const updateAnalysisData = (storedCalls, truename) => {
   if (Object.prototype.hasOwnProperty.
-        call(storedCalls, truename) === false) {
-      storedCalls[truename] = true;
+      call(storedCalls, truename) === false) {
+    storedCalls[truename] = true;
   }
 };
 
@@ -23,7 +23,7 @@ const updateRestData = (target, name, type) => {
 const exportObj = () => {
   const currentName = locEnv.trueName[locEnv.requireLevel];
   updateAnalysisData(locEnv.accessMatrix[currentName], 'module.export');
-}
+};
 
 // This the handler of the require function. Every time a "require" is used to load up a module
 // this handler is called. It updates the analysis data that are stored in the accessMatrix table.
@@ -41,7 +41,7 @@ const requireHandler = {
 const globalHandler = {
   get: function(target, name) {
     // XXX[target] != 'undefined'
-    if (typeof name === 'string'){
+    if (typeof name === 'string') {
       if (typeof target[name+endName] != 'undefined') {
         const currentName = locEnv.trueName[locEnv.requireLevel];
         const nameToShow = target[name+endName];
@@ -75,7 +75,7 @@ const moduleHandler = {
     const currentName = locEnv.trueName[locEnv.requireLevel];
     if (locEnv.methodNames.has(target)) {
       updateAnalysisData(locEnv.accessMatrix[currentName],
-        locEnv.methodNames.get(target));
+          locEnv.methodNames.get(target));
     } else {
       updateAnalysisData(locEnv.accessMatrix[currentName], target.name);
     }
@@ -104,7 +104,6 @@ const exportsFuncHandler = {
 
 
     return Reflect.apply(...arguments);
-
   },
 };
 
@@ -114,20 +113,20 @@ const readFunction = (myFunc, name) => {
   // TODO: fix myFunc.name
   name = name + '.' + myFunc.name;
   const currentPlace = locEnv.trueName[locEnv.requireLevel];
-  let storedCalls = locEnv.accessMatrix[currentPlace];
+  const storedCalls = locEnv.accessMatrix[currentPlace];
 
   if (Object.prototype.hasOwnProperty.
-        call(storedCalls, name) === false) {
-      storedCalls[name] = true;
+      call(storedCalls, name) === false) {
+    storedCalls[name] = true;
 
-      // TODO: More elegant fix to things happening after exit
-      // maybe change the process.on exit somehow????
-      if (global.end) {
-            require('fs').writeFileSync(lyaConfig.SAVE_RESULTS,
-        JSON.stringify(locEnv.accessMatrix, null, 2), 'utf-8');
-      }
+    // TODO: More elegant fix to things happening after exit
+    // maybe change the process.on exit somehow????
+    if (global.end) {
+      require('fs').writeFileSync(lyaConfig.SAVE_RESULTS,
+          JSON.stringify(locEnv.accessMatrix, null, 2), 'utf-8');
+    }
   }
-}
+};
 
 // This is the handler of the global constanst variables, like Math.PI etc. We store the name
 // in the same object but we use a different name, for example, for Math.PI we store the
@@ -146,13 +145,13 @@ const globalConstHandler = {
 module.exports = (env) => {
   locEnv = env;
   return {
-    require : requireHandler,
-    globalHandler : globalHandler,
-    moduleHandler : moduleHandler,
-    readFunction : readFunction,
-    exportsFuncHandler : exportsFuncHandler,
-    globalConstHandler : globalConstHandler,
-    updateRestData : updateRestData,
-    exportObj : exportObj,
-  }
+    require: requireHandler,
+    globalHandler: globalHandler,
+    moduleHandler: moduleHandler,
+    readFunction: readFunction,
+    exportsFuncHandler: exportsFuncHandler,
+    globalConstHandler: globalConstHandler,
+    updateRestData: updateRestData,
+    exportObj: exportObj,
+  };
 };

@@ -17,12 +17,12 @@ const endName = '@name';
 // Update the analysis data that are stored in storedCalls
 const updateAnalysisData = (storedCalls, truename, type) => {
   if (Object.prototype.hasOwnProperty.
-        call(storedCalls, type) === false) {
-      storedCalls[type] = {};
-      storedCalls[type][truename] = {};
+      call(storedCalls, type) === false) {
+    storedCalls[type] = {};
+    storedCalls[type][truename] = {};
   } else {
     if (Object.prototype.hasOwnProperty.
-      call(storedCalls[type], truename) === false) {
+        call(storedCalls[type], truename) === false) {
       storedCalls[type][truename] = {};
     }
   }
@@ -36,7 +36,7 @@ const updateRestData = (target, name, type) => {
 };
 
 const exportObj = () => {
-}
+};
 
 
 // This the handler of the require function. Every time a "require" is used to load up a module
@@ -45,7 +45,7 @@ const requireHandler = {
   apply: function(target, thisArg, argumentsList) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
     const origReqModuleName = argumentsList[0];
-    //locEnv.accessMatrix[currentName]['require(\'' + origReqModuleName + '\')'] = true;
+    // locEnv.accessMatrix[currentName]['require(\'' + origReqModuleName + '\')'] = true;
     return Reflect.apply(...arguments);
   },
 };
@@ -91,7 +91,7 @@ const exportsFuncHandler = {
 // Read function so we print it in the export file
 // This is to catch the read
 const readFunction = (myFunc, name) => {
-}
+};
 
 // This is the handler of the global constanst variables, like Math.PI etc. We store the name
 // in the same object but we use a different name, for example, for Math.PI we store the
@@ -105,13 +105,13 @@ const globalConstHandler = {
 module.exports = (env) => {
   locEnv = env;
   return {
-    require : requireHandler,
-    globalHandler : globalHandler,
-    moduleHandler : moduleHandler,
-    readFunction : readFunction,
-    exportsFuncHandler : exportsFuncHandler,
-    globalConstHandler : globalConstHandler,
-    updateRestData : updateRestData,
-    exportObj : exportObj,
-  }
+    require: requireHandler,
+    globalHandler: globalHandler,
+    moduleHandler: moduleHandler,
+    readFunction: readFunction,
+    exportsFuncHandler: exportsFuncHandler,
+    globalConstHandler: globalConstHandler,
+    updateRestData: updateRestData,
+    exportObj: exportObj,
+  };
 };

@@ -12,17 +12,17 @@ const endName = '@name';
 // Given those two inputs we can update the analysis data that are stored in storedCalls
 const updateAnalysisData = (storedCalls, truename) => {
   if (Object.prototype.hasOwnProperty.
-        call(storedCalls, truename) === false) {
-      storedCalls[truename] = 1;
-    } else {
-      storedCalls[truename]++;
-    }
+      call(storedCalls, truename) === false) {
+    storedCalls[truename] = 1;
+  } else {
+    storedCalls[truename]++;
+  }
 };
 
 const exportObj = () => {
   const currentName = locEnv.trueName[locEnv.requireLevel];
   updateAnalysisData(locEnv.accessMatrix[currentName], 'module.export');
-}
+};
 
 const updateRestData = (target, name, type) => {
 };
@@ -44,7 +44,7 @@ const requireHandler = {
 const globalHandler = {
   get: function(target, name) {
     // XXX[target] != 'undefined'
-    if (typeof name === 'string'){
+    if (typeof name === 'string') {
       if (typeof target[name+endName] != 'undefined') {
         const currentName = locEnv.trueName[locEnv.requireLevel];
         const nameToShow = target[name+endName];
@@ -78,7 +78,7 @@ const globalHandler = {
 const moduleHandler = {
   apply: function(target) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
-    updateAnalysisData(locEnv.accessMatrix[currentName],target.name);
+    updateAnalysisData(locEnv.accessMatrix[currentName], target.name);
 
     return Reflect.apply(...arguments);
   },
@@ -111,15 +111,15 @@ const exportsFuncHandler = {
 const readFunction = (myFunc, name) => {
   name = name + '.' + myFunc.name;
   const currentPlace = locEnv.trueName[locEnv.requireLevel];
-  let storedCalls = locEnv.accessMatrix[currentPlace];
+  const storedCalls = locEnv.accessMatrix[currentPlace];
 
   if (Object.prototype.hasOwnProperty.
-        call(storedCalls, name) === false) {
-      storedCalls[name] = 1;
+      call(storedCalls, name) === false) {
+    storedCalls[name] = 1;
   } else {
     storedCalls[name]++;
   }
-}
+};
 
 // This is the handler of the global constanst variables, like Math.PI etc. We store the name
 // in the same object but we use a different name, for example, for Math.PI we store the
@@ -134,15 +134,15 @@ const globalConstHandler = {
 };
 
 module.exports = (env) => {
-	locEnv = env;
-	return {
-		require : requireHandler,
-    moduleHandler : moduleHandler,
-    globalHandler : globalHandler,
-    readFunction : readFunction,
-    exportsFuncHandler : exportsFuncHandler,
-    globalConstHandler : globalConstHandler,
-    updateRestData : updateRestData,
-    exportObj : exportObj,
-	}
+  locEnv = env;
+  return {
+    require: requireHandler,
+    moduleHandler: moduleHandler,
+    globalHandler: globalHandler,
+    readFunction: readFunction,
+    exportsFuncHandler: exportsFuncHandler,
+    globalConstHandler: globalConstHandler,
+    updateRestData: updateRestData,
+    exportObj: exportObj,
+  };
 };

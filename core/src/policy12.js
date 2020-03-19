@@ -13,8 +13,8 @@ const endName = '@name';
 // Update the analysis data that are stored in storedCalls
 const updateAnalysisData = (store, truename) => {
   if (Object.prototype.hasOwnProperty.
-        call(store, truename) === false) {
-      store[truename] = {};
+      call(store, truename) === false) {
+    store[truename] = {};
   }
 };
 
@@ -22,7 +22,7 @@ const updateRestData = (target, name, type) => {
 };
 
 const exportObj = () => {
-}
+};
 
 // This the handler of the require function. Every time a "require" is used to load up a module
 // this handler is called. It updates the analysis data that are stored in the accessMatrix table.
@@ -38,11 +38,11 @@ const requireHandler = {
 // or call a variable, then we can print it on the export file.
 const globalHandler = {
   get: function(target, name) {
-    if (typeof name === 'string'){
+    if (typeof name === 'string') {
       if (typeof target[name+endName] != 'undefined') {
         const currentName = locEnv.trueName[locEnv.requireLevel];
         const nameToShow = target[name+endName];
-        updateAnalysisData(storeThings, nameToShow)
+        updateAnalysisData(storeThings, nameToShow);
       }
     }
 
@@ -93,17 +93,17 @@ const exportsFuncHandler = {
     let tempMatrix = locEnv.accessMatrix;
     storeThings = {};
 
-    for (var i = 0; i < argumentsList.length; i++) {
-        const type = typeof argumentsList[i];
-        updateAnalysisData(tempMatrix, type)
-        tempMatrix = tempMatrix[type];
+    for (let i = 0; i < argumentsList.length; i++) {
+      const type = typeof argumentsList[i];
+      updateAnalysisData(tempMatrix, type);
+      tempMatrix = tempMatrix[type];
     }
 
 
     const result = Reflect.apply(...arguments);
     const outputType = typeof result;
 
-    updateAnalysisData(tempMatrix, outputType)
+    updateAnalysisData(tempMatrix, outputType);
     tempMatrix = tempMatrix[outputType];
 
     updateAnalysisData(tempMatrix, truename);
@@ -117,7 +117,7 @@ const exportsFuncHandler = {
 // Read function so we print it in the export file
 // This is to catch the read
 const readFunction = (myFunc, name) => {
-}
+};
 
 // This is the handler of the global constanst variables, like Math.PI etc. We store the name
 // in the same object but we use a different name, for example, for Math.PI we store the
@@ -136,13 +136,13 @@ const globalConstHandler = {
 module.exports = (env) => {
   locEnv = env;
   return {
-    require : requireHandler,
-    globalHandler : globalHandler,
-    moduleHandler : moduleHandler,
-    readFunction : readFunction,
-    exportsFuncHandler : exportsFuncHandler,
-    globalConstHandler : globalConstHandler,
-    updateRestData : updateRestData,
-    exportObj : exportObj,
-  }
+    require: requireHandler,
+    globalHandler: globalHandler,
+    moduleHandler: moduleHandler,
+    readFunction: readFunction,
+    exportsFuncHandler: exportsFuncHandler,
+    globalConstHandler: globalConstHandler,
+    updateRestData: updateRestData,
+    exportObj: exportObj,
+  };
 };

@@ -16,16 +16,15 @@ const preset = {
   EXPORT_TYPE: 9,
   COARSE_TYPES: 10,
   SIMPLE_TYPES: 11,
-  SUB_TYPES: 12
+  SUB_TYPES: 12,
 };
 
 const nodeVersion = process.versions.node.split('.');
-if (nodeVersion[0] !== '8' && nodeVersion[1] !== '9'){
-  console.error("Lya has been tested with Node v8.9.4, not " + process.version);
+if (nodeVersion[0] !== '8' && nodeVersion[1] !== '9') {
+  console.error('Lya has been tested with Node v8.9.4, not ' + process.version);
 }
 
 function lyaStartUp(lyaConfig, callerRequire) {
-
   // We use this global value to know if the program has ended or not
   // necessary for enforcement analysis(5, 7)
   // TODO: make this library local, like presets
@@ -42,7 +41,7 @@ function lyaStartUp(lyaConfig, callerRequire) {
   const originalRun = vm.runInThisContext;
 
   const moduleName = [];
-  let requireLevel = 0;
+  const requireLevel = 0;
   const analysisResult = {};
 
   moduleName[0] = process.cwd() + '/' + 'main.js';
@@ -69,22 +68,22 @@ function lyaStartUp(lyaConfig, callerRequire) {
 
   // We make a test on fragment
   const env = {
-    moduleName : moduleName,
-    requireLevel : requireLevel,
+    moduleName: moduleName,
+    requireLevel: requireLevel,
     analysisResult: analysisResult,
-    objName : objName,
-    objPath : objPath,
-    methodNames : methodNames,
-    globalNames : globalNames
+    objName: objName,
+    objPath: objPath,
+    methodNames: methodNames,
+    globalNames: globalNames,
   };
 
   // We return the choice of the user
   // TODO: define a var currentAnalysis and use it everywhere
-  let a = lyaConfig.analysis || preset.ALLOW_DENY;
-  let userChoice = Object.keys(preset).map((e) => preset[e]).includes(a)? a : preset.ALLOW_DENY;
+  const a = lyaConfig.analysis || preset.ALLOW_DENY;
+  const userChoice = Object.keys(preset).map((e) => preset[e]).includes(a)? a : preset.ALLOW_DENY;
 
   // You import the right policy depenting on the choice of the user.
-  let policy = require('./policy' + userChoice + '.js')(env);;
+  const policy = require('./policy' + userChoice + '.js')(env);
 
   // We wrap the global variable in a proxy
   global = new Proxy(global, policy.globalHandler);
@@ -94,21 +93,21 @@ function lyaStartUp(lyaConfig, callerRequire) {
   function generateNames(obj) {
     for (k in obj) {
       const functionNames = global[obj[k]];
-      for (name in functionNames){
+      for (name in functionNames) {
         if (typeof name === 'string' && name != undefined) {
           const nameToStore = obj[k] + '.' + name;
           methodNames.set(functionNames[name], nameToStore);
         }
       }
-    };
-  };
+    }
+  }
 
   const moduleInputNames = [
     'exports',
     'require',
     'module',
     '__filename',
-    '__dirname'
+    '__dirname',
   ];
 
   const wrapModuleInputs = (obj, count) => {
@@ -121,19 +120,19 @@ function lyaStartUp(lyaConfig, callerRequire) {
     }
     methodNames.set(localCopy, moduleInputNames[count]);
     return new Proxy(localCopy, policy.require);
-  }
+  };
 
   const createLocalGlobal = () => {
-    let globalProxies = passJSONFile(localGlobal, globals, {});
+    const globalProxies = passJSONFile(localGlobal, globals, {});
     globalProxies['proxyExportHandler'] = policy.globalConstHandler;
     return wrapSpecGlobal(globalProxies, 'process', 'env');
-  }
+  };
   // We wrap the input values of every module in a proxy
   const handlerAddArg= {
     apply: function(target, thisArg, argumentsList) {
       for (let count=0; count < 5; count++) {
         argumentsList[count] = wrapModuleInputs(argumentsList, count);
-      };
+      }
       argumentsList[5] = createLocalGlobal();
       return Reflect.apply( ...arguments);
     },
@@ -146,21 +145,21 @@ function lyaStartUp(lyaConfig, callerRequire) {
   // We wrap every function on global obj that exists in globals.json
   // Returns the proxy obj we want
   const objTypeAction = (obj, name, handler, givenFunc, nameSave) => {
-    let localGlobal = {};
+    const localGlobal = {};
     if (Object.prototype.hasOwnProperty.call(obj, name)) {
       const objType = typeof obj[name];
       if (objType === 'object') {
         localGlobal[name] = proxyWrap(obj[name]);
-      } else if (objType === 'function'){
-        nameSave ? saveName (obj, name, givenFunc) : null;
+      } else if (objType === 'function') {
+        nameSave ? saveName(obj, name, givenFunc) : null;
         localGlobal[name] = new Proxy(obj[name], handler);
-      } else if (objType === 'number'){
+      } else if (objType === 'number') {
         globalNames.set(obj[name], givenFunc + '.' + name);
         localGlobal[name] = obj[name];
       }
     }
     return localGlobal[name];
-  }
+  };
 
   const proxyWrap = function(handler, origGlobal, givenFunc) {
     const objType = typeof origGlobal;
@@ -189,7 +188,7 @@ function lyaStartUp(lyaConfig, callerRequire) {
       globalProxies[name] = proxyWrap(policy.moduleHandler, global[name], name);
     }
     return globalProxies;
-  }
+  };
 
   const declareGlobal = (name, moduleProlog) => {
     if (global[name] != undefined) {
@@ -202,7 +201,7 @@ function lyaStartUp(lyaConfig, callerRequire) {
   const passJSONFile = (func, json, returnObj) => {
     for (const funcClass in json) {
       if (Object.prototype.hasOwnProperty.call(json, funcClass)) {
-        const builtInObj  = json[funcClass];
+        const builtInObj = json[funcClass];
         for (const counter in builtInObj) {
           if (Object.prototype.hasOwnProperty.call(builtInObj, counter)) {
             const functionName = builtInObj[counter];
@@ -220,7 +219,7 @@ function lyaStartUp(lyaConfig, callerRequire) {
     globalProxies[name] = new Proxy(global[globalFunc][specFunc], exportHandler);
     objName.set(global[globalFunc][specFunc], globalFunc);
     return globalProxies;
-  }
+  };
 
   // We need to add all the global prototype variable declarations in the script
   const createModuleProlog = () => {
@@ -282,7 +281,7 @@ function lyaStartUp(lyaConfig, callerRequire) {
     env.requireLevel++;
     moduleName[env.requireLevel] = options['filename'];
     if (!Object.prototype.hasOwnProperty.
-      call(analysisResult,moduleName[env.requireLevel])){
+        call(analysisResult, moduleName[env.requireLevel])) {
       analysisResult[moduleName[env.requireLevel]] = {};
     }
     return new Proxy(codeToRun, handlerAddArg);
@@ -302,7 +301,7 @@ function lyaStartUp(lyaConfig, callerRequire) {
         objName.set(result, 'require(\'' + path + '\')');
         objPath.set(result, moduleName[env.requireLevel]);
         result = new Proxy(result, exportHandler);
-        if (env.requireLevel !=0){
+        if (env.requireLevel !=0) {
           env.requireLevel--;
         }
       } else {
@@ -320,7 +319,7 @@ function lyaStartUp(lyaConfig, callerRequire) {
   const namePathSet = (key, name, path) => {
     objName.set(key, name);
     objPath.set(key, path);
-  }
+  };
 
   const exportHandler = {
     get: function(target, name, receiver) {
@@ -329,7 +328,6 @@ function lyaStartUp(lyaConfig, callerRequire) {
           (!(target[name] instanceof RegExp))) {
         if (exportType === 'object') {
           if (Object.entries(target[name]).length) {
-
             if (withProxy.has(target[name])) {
               return Reflect.get(target, name);
             }
@@ -356,7 +354,7 @@ function lyaStartUp(lyaConfig, callerRequire) {
           const localFunction = target[name];
           const truename = objName.get(target);
           const truepath = moduleName[env.requireLevel];
-          if (!withProxy.has(target[name])){
+          if (!withProxy.has(target[name])) {
             Object.defineProperty(localFunction, 'name', {value: name});
             target[name] = new Proxy(localFunction, policy.exportsFuncHandler);
             storePureFunctions.set(target[name], localFunction);
@@ -382,7 +380,7 @@ function lyaStartUp(lyaConfig, callerRequire) {
       // We catch the declaration of a value
       policy.exportObj(objName.get(target) + '.' +name);
       return Reflect.set(target, name, value);
-    }
+    },
   };
 
   // We print all the results on the end of the program only if we dont

@@ -17,7 +17,7 @@ const createDynamicObj = () => {
   // We save all the json data inside an object
   const appDir = path.join(path.dirname(require.main.filename), 'dynamic.json');
   let dynamicData;
-  //console.log(lyaConfig.POLICY,'lala')
+  // console.log(lyaConfig.POLICY,'lala')
   try {
     dynamicData = require(lyaConfig.POLICY || appDir);
   } catch (e) {
@@ -34,9 +34,9 @@ dynamicObj = createDynamicObj();
 // Given those two inputs we can update the analysis data that are stored in storedCalls
 const updateAnalysisData = (storedCalls, truename) => {
   if (Object.prototype.hasOwnProperty.call(storedCalls, truename) === false) {
-      throw new Error('Something went badly wrong in ' + truename);
-    }
-}
+    throw new Error('Something went badly wrong in ' + truename);
+  }
+};
 
 const updateRestData = (target, name, type) => {
 };
@@ -44,7 +44,7 @@ const updateRestData = (target, name, type) => {
 const exportObj = () => {
   const currentName = locEnv.trueName[locEnv.requireLevel];
   updateAnalysisData(locEnv.accessMatrix[currentName], 'module.export');
-}
+};
 
 // The handler of require of Enforcement
 const EnforcementCheck = {
@@ -131,13 +131,13 @@ const exportsFuncHandler = {
 const readFunction = (myFunc, name) => {
   name = name + '.' + myFunc.name;
   const currentPlace = locEnv.trueName[locEnv.requireLevel];
-  let storedCalls = dynamicObj[currentPlace];
+  const storedCalls = dynamicObj[currentPlace];
 
   if (Object.prototype.hasOwnProperty.
-        call(storedCalls, name) === false) {
-      throw new Error('Something went badly wrong in ' + name);
+      call(storedCalls, name) === false) {
+    throw new Error('Something went badly wrong in ' + name);
   }
-}
+};
 
 // This is the handler of the global constanst variables, like Math.PI etc. We store the name
 // in the same object but we use a different name, for example, for Math.PI we store the
@@ -152,15 +152,15 @@ const globalConstHandler = {
 };
 
 module.exports = (env) => {
-	locEnv = env;
-	return {
-		require : EnforcementCheck,
-    moduleHandler : moduleHandler,
-    globalHandler : globalHandler,
-    readFunction : readFunction,
-    exportsFuncHandler : exportsFuncHandler,
-    globalConstHandler : globalConstHandler,
-    updateRestData : updateRestData,
-    exportObj : exportObj
-	}
+  locEnv = env;
+  return {
+    require: EnforcementCheck,
+    moduleHandler: moduleHandler,
+    globalHandler: globalHandler,
+    readFunction: readFunction,
+    exportsFuncHandler: exportsFuncHandler,
+    globalConstHandler: globalConstHandler,
+    updateRestData: updateRestData,
+    exportObj: exportObj,
+  };
 };

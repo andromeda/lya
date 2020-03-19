@@ -15,8 +15,8 @@ const endName = '@name';
 const updateAnalysisData = (storedCalls, truename, inputType, outputType) => {
   const saveData = 'input: ' + inputType + ' => output: ' + outputType;
   if (Object.prototype.hasOwnProperty.
-        call(storedCalls, truename) === false) {
-      storedCalls[truename] = saveData;
+      call(storedCalls, truename) === false) {
+    storedCalls[truename] = saveData;
   } else {
     if (!storedCalls[truename].includes(saveData)) {
       storedCalls[truename] += ' || ' + saveData;
@@ -28,7 +28,7 @@ const updateRestData = (target, name, type) => {
 };
 
 const exportObj = () => {
-}
+};
 
 // This the handler of the require function. Every time a "require" is used to load up a module
 // this handler is called. It updates the analysis data that are stored in the accessMatrix table.
@@ -36,7 +36,7 @@ const requireHandler = {
   apply: function(target, thisArg, argumentsList) {
     const currentName = locEnv.trueName[locEnv.requireLevel];
     const origReqModuleName = argumentsList[0];
-    //locEnv.accessMatrix[currentName]['require(\'' + origReqModuleName + '\')'] = true;
+    // locEnv.accessMatrix[currentName]['require(\'' + origReqModuleName + '\')'] = true;
     return Reflect.apply(...arguments);
   },
 };
@@ -83,7 +83,7 @@ const exportsFuncHandler = {
     if (!argumentsList.length) {
       inputType += 'no-input';
     } else {
-      for (var i = 0; i < argumentsList.length; i++) {
+      for (let i = 0; i < argumentsList.length; i++) {
         inputType += i + '.' + typeof argumentsList[i] + ' ';
       }
     }
@@ -98,7 +98,7 @@ const exportsFuncHandler = {
 // Read function so we print it in the export file
 // This is to catch the read
 const readFunction = (myFunc, name) => {
-}
+};
 
 // This is the handler of the global constanst variables, like Math.PI etc. We store the name
 // in the same object but we use a different name, for example, for Math.PI we store the
@@ -112,13 +112,13 @@ const globalConstHandler = {
 module.exports = (env) => {
   locEnv = env;
   return {
-    require : requireHandler,
-    globalHandler : globalHandler,
-    moduleHandler : moduleHandler,
-    readFunction : readFunction,
-    exportsFuncHandler : exportsFuncHandler,
-    globalConstHandler : globalConstHandler,
-    updateRestData : updateRestData,
-    exportObj : exportObj
-  }
+    require: requireHandler,
+    globalHandler: globalHandler,
+    moduleHandler: moduleHandler,
+    readFunction: readFunction,
+    exportsFuncHandler: exportsFuncHandler,
+    globalConstHandler: globalConstHandler,
+    updateRestData: updateRestData,
+    exportObj: exportObj,
+  };
 };

@@ -46,7 +46,7 @@ const updateRestData = (target, name, type) => {
 };
 
 const exportObj = () => {
-}
+};
 
 // The handler of require of Enforcement
 const EnforcementCheck = {
@@ -54,10 +54,10 @@ const EnforcementCheck = {
     const currentName = locEnv.trueName[locEnv.requireLevel];
     const nameReq = target.name + '(\'' + arguments[2][0] +// In arguments[2][0]
       '\')';// Is the name we use to import
-    //problemCheck(dynamicObj[currentName][nameReq])
+    // problemCheck(dynamicObj[currentName][nameReq])
     if ((Object.prototype.hasOwnProperty.
         call(dynamicObj, currentName, nameReq) === false ||
-          problemCheck(dynamicObj[currentName][nameReq],'R')) && !global.end) {
+          problemCheck(dynamicObj[currentName][nameReq], 'R')) && !global.end) {
       throw new Error('Something went badly wrong on the require!');
     }
 
@@ -73,8 +73,8 @@ const EnforcementCheck = {
 const CheckAnalysisData = (storedCalls, truename, mode) => {
   if ((Object.prototype.hasOwnProperty.call(storedCalls, truename) === false ||
     problemCheck(storedCalls[truename], mode)) && !global.end) {
-      throw new Error('Something went badly wrong in ' + truename);
-    }
+    throw new Error('Something went badly wrong in ' + truename);
+  }
 };
 
 // The handler of the global variable.Every time we access the global variabe in order to declare
@@ -147,12 +147,12 @@ const exportsFuncHandler = {
 const readFunction = (myFunc, name) => {
   name = name + '.' + myFunc.name;
   const currentPlace = locEnv.trueName[locEnv.requireLevel];
-  let storedCalls = dynamicObj[currentPlace];
+  const storedCalls = dynamicObj[currentPlace];
 
   if ((Object.prototype.hasOwnProperty.
-        call(storedCalls, name) === false ||
+      call(storedCalls, name) === false ||
           problemCheck(storedCalls[name], 'R')) && !global.end) {
-      throw new Error('Something went badly wrong in ' + name);
+    throw new Error('Something went badly wrong in ' + name);
   }
 };
 
@@ -171,13 +171,13 @@ const globalConstHandler = {
 module.exports = (env) => {
   locEnv = env;
   return {
-    require : EnforcementCheck,
-    moduleHandler : moduleHandler,
-    globalHandler : globalHandler,
-    readFunction : readFunction,
-    exportsFuncHandler : exportsFuncHandler,
-    globalConstHandler : globalConstHandler,
-    updateRestData : updateRestData,
-    exportObj : exportObj
-  }
+    require: EnforcementCheck,
+    moduleHandler: moduleHandler,
+    globalHandler: globalHandler,
+    readFunction: readFunction,
+    exportsFuncHandler: exportsFuncHandler,
+    globalConstHandler: globalConstHandler,
+    updateRestData: updateRestData,
+    exportObj: exportObj,
+  };
 };
