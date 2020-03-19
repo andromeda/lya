@@ -5,15 +5,32 @@ let locEnv;
 const endName = '@name';
 
 // This the handler of the require function. Every time a "require" is used to load up a module
-// this handler is called. It updates the analysis data that are stored in the accessMatrix table.
+// this handler is called. It updates the analysis data that are stored in the analysisResult table.
 const requireHandler = {
   apply: function(target, thisArg, argumentsList) {
-    const currentName = locEnv.trueName[locEnv.requireLevel];
+    const currentName = locEnv.moduleName[locEnv.requireLevel];
     const origReqModuleName = argumentsList[0];
     exportObj('require', 'x');
-    locEnv.accessMatrix[currentName]['require(\'' + origReqModuleName + '\')'] = 'x';
+    locEnv.analysisResult[currentName]['require(\'' + origReqModuleName + '\')'] = 'x';
     return Reflect.apply(...arguments);
   },
+  get: function(target, name) {
+    const currentName = locEnv.moduleName[locEnv.requireLevel];
+    if (locEnv.methodNames.has(target)) {
+      updateAnalysisData(locEnv.analysisResult[currentName],
+        locEnv.methodNames.get(target), 'r');
+    }
+    return Reflect.get(target, name);
+  },
+  set: function(target, name, value) {
+    const currentName = locEnv.moduleName[locEnv.requireLevel];
+    if (locEnv.methodNames.has(target)) {
+      const nameToStore = locEnv.methodNames.get(target) + '.' + name;
+      updateAnalysisData(locEnv.analysisResult[currentName], nameToStore, 'w');
+    }
+    return Reflect.set(target, name, value);
+  }
+
 };
 
 const updateRestData = (target, name, type) => {
@@ -47,8 +64,8 @@ const updateAnalysisData = (storedCalls, truename, mode) => {
 
 const exportObj = (name, action) => {
   action = (action === undefined) ? 'w' : action;
-  const currentName = locEnv.trueName[locEnv.requireLevel];
-  updateAnalysisData(locEnv.accessMatrix[currentName], name, action);
+  const currentName = locEnv.moduleName[locEnv.requireLevel];
+  updateAnalysisData(locEnv.analysisResult[currentName], name, action);
 }
 
 // The handler of the global variable.Every time we access the global variabe in order to declare
@@ -58,9 +75,9 @@ const globalHandler = {
     // XXX[target] != 'undefined'
     if (typeof name === 'string') {
       if (typeof target[name+endName] != 'undefined') {
-        const currentName = locEnv.trueName[locEnv.requireLevel];
+        const currentName = locEnv.moduleName[locEnv.requireLevel];
         const nameToShow = target[name+endName];
-        updateAnalysisData(locEnv.accessMatrix[currentName], nameToShow, 'r');
+        updateAnalysisData(locEnv.analysisResult[currentName], nameToShow, 'r');
       }
     }
 
@@ -68,14 +85,14 @@ const globalHandler = {
   },
   set: function(target, name, value) {
     if (typeof value === 'number') {
-      const currentName = locEnv.trueName[locEnv.requireLevel];
+      const currentName = locEnv.moduleName[locEnv.requireLevel];
       const nameToStore = 'global.' + name;
       const result = Reflect.set(target, name, value);
       // In order to exist a disticton between the values we declared ourselfs
       // We declare one more field with key value that stores the name
       Object.defineProperty(target, name+endName, {value: nameToStore});
-      updateAnalysisData(locEnv.accessMatrix[currentName], 'global', 'r');
-      updateAnalysisData(locEnv.accessMatrix[currentName], nameToStore, 'w');
+      updateAnalysisData(locEnv.analysisResult[currentName], 'global', 'r');
+      updateAnalysisData(locEnv.analysisResult[currentName], nameToStore, 'w');
 
       return result;
     }
@@ -90,24 +107,24 @@ const globalHandler = {
 // module.
 const moduleHandler = {
   apply: function(target) {
-    const currentName = locEnv.trueName[locEnv.requireLevel];
+    const currentName = locEnv.moduleName[locEnv.requireLevel];
     if (locEnv.methodNames.has(target)) {
-      updateAnalysisData(locEnv.accessMatrix[currentName],
+      updateAnalysisData(locEnv.analysisResult[currentName],
         locEnv.methodNames.get(target).split('.')[0], 'r');
-      updateAnalysisData(locEnv.accessMatrix[currentName],
+      updateAnalysisData(locEnv.analysisResult[currentName],
         locEnv.methodNames.get(target), 'rx');
     } else {
-      updateAnalysisData(locEnv.accessMatrix[currentName], target.name, 'x');
+      updateAnalysisData(locEnv.analysisResult[currentName], target.name, 'x');
     }
     return Reflect.apply(...arguments);
   },
   get: function(target, name) {
-    const currentName = locEnv.trueName[locEnv.requireLevel];
+    const currentName = locEnv.moduleName[locEnv.requireLevel];
     if (locEnv.methodNames.has(target)) {
-      updateAnalysisData(locEnv.accessMatrix[currentName],
+      updateAnalysisData(locEnv.analysisResult[currentName],
         locEnv.methodNames.get(target), 'r');
     } else {
-      updateAnalysisData(locEnv.accessMatrix[currentName], target.name, 'r');
+      updateAnalysisData(locEnv.analysisResult[currentName], target.name, 'r');
     }
 
     return Reflect.get(target, name);
@@ -122,10 +139,10 @@ const exportsFuncHandler = {
     let truename;
 
     truename = locEnv.objName.get(target);
-    const currentName = locEnv.trueName[locEnv.requireLevel];
+    const currentName = locEnv.moduleName[locEnv.requireLevel];
     if (currentName === locEnv.objPath.get(target)) {
       truename = truename + '.' + target.name;
-      updateAnalysisData(locEnv.accessMatrix[currentName], truename, 'x');
+      updateAnalysisData(locEnv.analysisResult[currentName], truename, 'x');
     }
     return Reflect.apply(...arguments);
   },
@@ -137,8 +154,8 @@ const exportsFuncHandler = {
 const readFunction = (myFunc, name) => {
 
   const wholeName = name + '.' + myFunc.name;
-  const currentPlace = locEnv.trueName[locEnv.requireLevel];
-  let storedCalls = locEnv.accessMatrix[currentPlace];
+  const currentPlace = locEnv.moduleName[locEnv.requireLevel];
+  let storedCalls = locEnv.analysisResult[currentPlace];
 
   if (Object.prototype.hasOwnProperty.
         call(storedCalls, name) === false) {
@@ -155,9 +172,11 @@ const readFunction = (myFunc, name) => {
 
 const globalConstHandler = {
   get: function(target, name) {
-    const currentName = locEnv.trueName[locEnv.requireLevel];
+    const currentName = locEnv.moduleName[locEnv.requireLevel];
     if (locEnv.globalNames.has(target[name])) {
-      updateAnalysisData(locEnv.accessMatrix[currentName], 
+      updateAnalysisData(locEnv.analysisResult[currentName],
+        locEnv.globalNames.get(target[name]).split('.')[0], 'r');
+      updateAnalysisData(locEnv.analysisResult[currentName],
         locEnv.globalNames.get(target[name]), 'r');
     }
 

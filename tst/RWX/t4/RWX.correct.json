@@ -1,26 +1,28 @@
 {
-  "main": {
-    "require('./m1.js')": "r"
+  "/home/grigorisntousakis/thesis/lya/tst/RWX/t4/main.js": {
+    "require": "x",
+    "require('./m1.js')": "x"
   },
-  "m1.js": {
-    "Object": "r",
+  "/home/grigorisntousakis/thesis/lya/tst/RWX/t4/m1.js": {
     "Array": "r",
     "ArrayBuffer": "r",
     "Float32Array": "r",
     "Float64Array": "r",
     "Function": "r",
-    "undefined": "r",
-    "Math.pow": "x",
+    "Object": "r",
+    "Math": "r",
+    "Math.pow": "rx",
     "Int16Array": "r",
     "Int32Array": "r",
     "Int8Array": "r",
     "isFinite": "x",
     "isNaN": "x",
-    "JSON.parse": "x",
+    "JSON": "r",
+    "JSON.parse": "rx",
     "Map": "r",
-    "Math.abs": "x",
-    "Math.exp": "x",
-    "Math.cos": "x",
+    "Math.abs": "rx",
+    "Math.exp": "rx",
+    "Math.cos": "rx",
     "Number": "r",
     "Set": "r",
     "String": "r",
@@ -32,7 +34,8 @@
     "Uint32Array": "r",
     "Uint8ClampedArray": "r",
     "unescape": "x",
-    "require('./m2.js')": "r",
+    "require": "x",
+    "require('./m2.js')": "x",
     "Boolean": "r",
     "DataView": "r",
     "Date": "r",
@@ -42,16 +45,17 @@
     "Error": "rx",
     "eval": "x"
   },
-  "m2.js": {
-    "Object": "r",
+  "/home/grigorisntousakis/thesis/lya/tst/RWX/t4/m2.js": {
     "Promise": "r",
     "setTimeout": "x",
-    "Reflect.get": "x",
-    "bound consoleCall": "x",
-    "require('./m3.js')": "r"
+    "Reflect": "r",
+    "Reflect.get": "rx",
+    "console": "r",
+    "console.log": "rx",
+    "require": "x",
+    "require('./m3.js')": "x"
   },
-  "m3.js": {
-    "Object": "r",
+  "/home/grigorisntousakis/thesis/lya/tst/RWX/t4/m3.js": {
     "RangeError": "r",
     "ReferenceError": "r",
     "eval": "x",
@@ -62,16 +66,10 @@
     "RegExp": "r",
     "WeakMap": "r",
     "WeakSet": "r",
-    "require('./m4.js')": "r"
+    "require": "x",
+    "require('./m4.js')": "x"
   },
-  "m4.js": {
-    "Object": "r",
-    "Number": "r",
-    "toExponential": "x",
-    "toFixed": "x",
-    "toLocaleString": "x",
-    "toPrecision": "x",
-    "toString": "x",
-    "valueOf": "x"
+  "/home/grigorisntousakis/thesis/lya/tst/RWX/t4/m4.js": {
+    "Number": "r"
   }
 }

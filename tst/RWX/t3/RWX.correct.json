@@ -3,12 +3,11 @@
     "global": "r",
     "global.x": "w",
     "require": "x",
-    "require('./m1.js')": "r"
+    "require('./m1.js')": "x"
   },
   "m1.js": {
-    "Object": "r",
     "global.x": "r",
     "console": "r",
-    "console.error": "x"
+    "console.error": "rx"
   }
 }

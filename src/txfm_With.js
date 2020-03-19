@@ -19,11 +19,6 @@ const preset = {
   SUB_TYPES: 12
 };
 
-const nodeVersion = process.versions.node.split('.');
-if (nodeVersion[0] !== 8 && nodeVersion[1] !== 9){
-  console.error("Lya has been tested with Node v8.9.4, not " + process.version);
-}
-
 function lyaStartUp(lyaConfig, callerRequire) {
 
   // We use this global value to know if the program has ended or not
@@ -134,6 +129,8 @@ function lyaStartUp(lyaConfig, callerRequire) {
         argumentsList[count] = wrapModuleInputs(argumentsList, count);
       };
       argumentsList[5] = globalProxies;
+      argumentsList[6] = global;
+
       return Reflect.apply( ...arguments);
     },
   };
@@ -219,6 +216,7 @@ function lyaStartUp(lyaConfig, callerRequire) {
     moduleProlog = wrapSpecGlobal(moduleProlog, 'process', 'env');
     moduleProlog += 'Math = new Proxy(Math, pr["proxyExportHandler"]);\n';
     moduleProlog = passJSONFile(moduleProlog, createGlobal, globals);
+    moduleProlog = 'with (globalRock) {\n' + moduleProlog;
     return moduleProlog;
   };
 
@@ -262,9 +260,9 @@ function lyaStartUp(lyaConfig, callerRequire) {
 
   // We do some stuff and then call original warp
   Module.wrap = (script) => {
-    script = globalsDecl() + script;
+    script = globalsDecl() + script + '}';
     let wrappedScript = originalWrap(script);
-    wrappedScript = wrappedScript.replace('__dirname)', '__dirname, pr)');
+    wrappedScript = wrappedScript.replace('__dirname)', '__dirname, pr, globalRock)');
     return wrappedScript;
   };
 
