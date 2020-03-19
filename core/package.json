@@ -6,7 +6,7 @@
   "scripts": {
     "test": "npm run l && npm run t",
     "l": "./node_modules/.bin/eslint ./src",
-    "t": "./tst/run-tests.sh"
+    "t": "cd tst; ./run-tests.sh"
   },
   "eslintConfig": {
     "extends": [
