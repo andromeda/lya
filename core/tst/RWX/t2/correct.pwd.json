@@ -3,7 +3,7 @@
     "require": "x",
     "require('fs')": "x",
     "console": "r",
-    "console.log": "rx",
+    "console.log": "x",
     "require('./m1.js')": "x",
     "require('./m2.js')": "x",
     "require('./m1.js').fst": "r",
@@ -11,7 +11,7 @@
   },
   "PWD_REPLACE/m1.js": {
     "require": "x",
-    "require('fs')": "r",
+    "require('fs')": "x",
     "module": "r",
     "module.exports": "w",
     "require('fs').openSync": "r",
@@ -24,7 +24,7 @@
     "require('./m3.js')": "x",
     "require('fs').readFileSync": "rx",
     "console": "r",
-    "console.log": "rx",
+    "console.log": "x",
     "module": "r",
     "module.parent": "r",
     "module.exports": "w",
@@ -37,7 +37,7 @@
     "require('fs')": "x",
     "require('fs').readFileSync": "rx",
     "console": "r",
-    "console.log": "rx",
+    "console.log": "x",
     "module": "r",
     "module.exports": "w"
   }

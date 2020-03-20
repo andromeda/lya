@@ -8,6 +8,6 @@
   "PWD_REPLACE/m1.js": {
     "global.x": "r",
     "console": "r",
-    "console.log": "rx"
+    "console.log": "x"
   }
 }
