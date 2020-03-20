@@ -26,6 +26,7 @@ const requireHandler = {
     const currentName = locEnv.moduleName[locEnv.requireLevel];
     if (locEnv.methodNames.has(target)) {
       const nameToStore = locEnv.methodNames.get(target) + '.' + name;
+      updateAnalysisData(locEnv.analysisResult[currentName], locEnv.methodNames.get(target), 'r');
       updateAnalysisData(locEnv.analysisResult[currentName], nameToStore, 'w');
     }
     return Reflect.set(target, name, value);
@@ -112,7 +113,7 @@ const moduleHandler = {
       updateAnalysisData(locEnv.analysisResult[currentName],
         locEnv.methodNames.get(target).split('.')[0], 'r');
       updateAnalysisData(locEnv.analysisResult[currentName],
-        locEnv.methodNames.get(target), 'rx');
+        locEnv.methodNames.get(target), 'x');
     } else {
       updateAnalysisData(locEnv.analysisResult[currentName], target.name, 'x');
     }
