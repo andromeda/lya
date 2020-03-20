@@ -12,8 +12,9 @@
   "PWD_REPLACE/m1.js": {
     "require": "x",
     "require('fs')": "r",
-    "module.export": "w",
-    "require('fs').openSync": "rx",
+    "module": "r",
+    "module.exports": "w",
+    "require('fs').openSync": "r",
     "require('fs').readFileSync": "rx",
     "require('./m2.js')": "x"
   },
@@ -24,7 +25,9 @@
     "require('fs').readFileSync": "rx",
     "console": "r",
     "console.log": "rx",
-    "module.export": "w",
+    "module": "r",
+    "module.parent": "r",
+    "module.exports": "w",
     "require('fs').rmdirSync": "r",
     "require('fs').mkdirSync": "r",
     "require('./m3.js').fst": "r"
@@ -35,6 +38,7 @@
     "require('fs').readFileSync": "rx",
     "console": "r",
     "console.log": "rx",
-    "module.export": "w"
+    "module": "r",
+    "module.exports": "w"
   }
 }

@@ -1,16 +1,17 @@
 {
-  "PWD_REPLACE/main": {
-    "require('./m1.js')": "r",
+  "PWD_REPLACE/main.js": {
+    "require": "x",
+    "require('./m1.js')": "x",
     "console": "r",
     "console.log": "x",
-    "require('./m2.js')": "r"
+    "require('./m2.js')": "x"
   },
   "PWD_REPLACE/m1.js": {
-    "module.exports": "w",
-    "Object": "r"
+    "module": "r",
+    "module.exports": "w"
   },
   "PWD_REPLACE/m2.js": {
-    "module.exports": "w",
-    "Object": "r"
+    "module": "r",
+    "module.exports": "w"
   }
 }

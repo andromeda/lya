@@ -1,5 +1,5 @@
 {
-  "PWD_REPLACE/main": {
+  "PWD_REPLACE/main.js": {
     "require": "x",
     "require('./m1.js')": "r",
     "console": "r",
@@ -12,6 +12,6 @@
     "console.log": "rx",
     "Math": "r",
     "Math.PI": "r",
-    "module.export": "w"
+    "module.exports": "w"
   }
 }

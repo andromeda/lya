@@ -12,7 +12,7 @@
     "require('./m2.js').add": "rx"
   },
   "PWD_REPLACE/m2.js": {
-    "module.exports": "w",
-    "Object": "x"
+    "module": "r",
+    "module.exports": "w"
   }
 }

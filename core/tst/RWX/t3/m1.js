@@ -1,1 +1,1 @@
-console.error(global.x, y)
+console.log(global.x, y)

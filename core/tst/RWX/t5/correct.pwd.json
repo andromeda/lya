@@ -1,5 +1,5 @@
 {
-  "PWD_REPLACE/main": {
+  "PWD_REPLACE/main.js": {
     "require": "x",
     "require('./m1.js')": "x",
     "global": "r",
@@ -22,10 +22,10 @@
   },
   "PWD_REPLACE/m3.js": {
     "console": "r",
-    "console.log": "rx"
+    "console.log": "x"
   },
   "PWD_REPLACE/m4.js": {
     "console": "r",
-    "console.log": "rx"
+    "console.log": "x"
   }
 }

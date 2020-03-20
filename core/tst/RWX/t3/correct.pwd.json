@@ -1,5 +1,5 @@
 {
-  "PWD_REPLACE/main": {
+  "PWD_REPLACE/main.js": {
     "global": "r",
     "global.x": "w",
     "require": "x",
@@ -8,6 +8,6 @@
   "PWD_REPLACE/m1.js": {
     "global.x": "r",
     "console": "r",
-    "console.error": "rx"
+    "console.log": "rx"
   }
 }
