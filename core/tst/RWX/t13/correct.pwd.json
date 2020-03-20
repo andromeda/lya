@@ -1,14 +1,15 @@
 {
   "PWD_REPLACE/main.js": {
     "require": "x",
-    "require('./m1.js')": "r"
+    "require('./m1.js')": "x"
   },
   "PWD_REPLACE/m1.js": {
-    "console.log": "rx",
+    "console": "r",
+    "console.log": "x",
     "__filename": "r",
     "__dirname": "r",
     "module": "r",
     "require": "r",
-    "module.exports": "r"
+    "exports": "r"
   }
 }

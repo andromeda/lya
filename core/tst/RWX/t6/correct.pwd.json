@@ -1,17 +1,18 @@
 {
   "PWD_REPLACE/main.js": {
     "require": "x",
-    "require('./m1.js')": "r",
+    "require('./m1.js')": "x",
     "console": "r",
-    "console.log": "rx",
+    "console.log": "x",
     "require('./m1.js').valueOf": "rx",
     "require('./m1.js').toString": "rx"
   },
   "PWD_REPLACE/m1.js": {
     "console": "r",
-    "console.log": "rx",
+    "console.log": "x",
     "Math": "r",
     "Math.PI": "r",
+    "module": "r",
     "module.exports": "w"
   }
 }

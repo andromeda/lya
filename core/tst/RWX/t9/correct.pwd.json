@@ -1,24 +1,25 @@
 {
-  "PWD_REPLACE/main": {
+  "PWD_REPLACE/main.js": {
     "console": "r",
-    "console.log": "rx",
+    "console.log": "x",
     "require": "x",
-    "require('./math.js')": "r",
+    "require('./math.js')": "x",
     "require('./math.js').add": "rx",
     "require('./math.js').constants": "r",
     "require('./math.js').constants.e": "r",
-    "require('./math.js').constants.pi": "wr",
+    "require('./math.js').constants.pi": "rw",
     "require('./math.js').fft": "r",
     "require('./math.js').fft.add": "rx",
     "require('./math.js').fft.e": "r",
-    "require('./math.js').fft.mul": "wrx",
+    "require('./math.js').fft.mul": "rwx",
     "require('./math.js').sub": "rx",
-    "require('./math.js').x": "wr"
+    "require('./math.js').x": "rw"
   },
   "PWD_REPLACE/math.js": {
     "Math.PI": "r",
-    "console.log": "rx",
+    "console.log": "x",
     "global.timesAddCalled": "wr",
+    "module": "r",
     "module.exports": "w",
     "Object": "r"
   }
