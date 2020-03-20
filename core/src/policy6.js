@@ -18,7 +18,7 @@ const requireHandler = {
     const currentName = locEnv.moduleName[locEnv.requireLevel];
     if (locEnv.methodNames.has(target)) {
       updateAnalysisData(locEnv.analysisResult[currentName],
-        locEnv.methodNames.get(target), 'r');
+          locEnv.methodNames.get(target), 'r');
     }
     return Reflect.get(target, name);
   },
@@ -30,7 +30,7 @@ const requireHandler = {
       updateAnalysisData(locEnv.analysisResult[currentName], nameToStore, 'w');
     }
     return Reflect.set(target, name, value);
-  }
+  },
 
 };
 
@@ -42,9 +42,9 @@ const updateRestData = (target, name, type) => {
 // We add the R or W or E to the existing string
 const addEvent = (event, values, index) => {
   let permissions = values[index];
-  if (!permissions.includes(event)){
+  if (!permissions.includes(event)) {
     permissions += event;
-    permissions = permissions.split("").sort().join('');
+    permissions = permissions.split('').sort().join('');
     values[index] = permissions;
   }
 };
@@ -55,8 +55,8 @@ const addEvent = (event, values, index) => {
 // @mode the mode of the current access (R,W or E)
 // Given those two inputs we can update the analysis data that are stored in storedCalls
 const updateAnalysisData = (storedCalls, truename, mode) => {
-	if (Object.prototype.hasOwnProperty.
-        call(storedCalls, truename) === false) {
+  if (Object.prototype.hasOwnProperty.
+      call(storedCalls, truename) === false) {
     storedCalls[truename] = mode;
   } else {
     addEvent(mode, storedCalls, truename);
@@ -67,7 +67,7 @@ const exportObj = (name, action) => {
   action = (action === undefined) ? 'w' : action;
   const currentName = locEnv.moduleName[locEnv.requireLevel];
   updateAnalysisData(locEnv.analysisResult[currentName], name, action);
-}
+};
 
 // The handler of the global variable.Every time we access the global variabe in order to declare
 // or call a variable, then we can print it on the export file.
@@ -111,9 +111,9 @@ const moduleHandler = {
     const currentName = locEnv.moduleName[locEnv.requireLevel];
     if (locEnv.methodNames.has(target)) {
       updateAnalysisData(locEnv.analysisResult[currentName],
-        locEnv.methodNames.get(target).split('.')[0], 'r');
+          locEnv.methodNames.get(target).split('.')[0], 'r');
       updateAnalysisData(locEnv.analysisResult[currentName],
-        locEnv.methodNames.get(target), 'x');
+          locEnv.methodNames.get(target), 'x');
     } else {
       updateAnalysisData(locEnv.analysisResult[currentName], target.name, 'x');
     }
@@ -123,7 +123,7 @@ const moduleHandler = {
     const currentName = locEnv.moduleName[locEnv.requireLevel];
     if (locEnv.methodNames.has(target)) {
       updateAnalysisData(locEnv.analysisResult[currentName],
-        locEnv.methodNames.get(target), 'r');
+          locEnv.methodNames.get(target), 'r');
     } else {
       updateAnalysisData(locEnv.analysisResult[currentName], target.name, 'r');
     }
@@ -153,18 +153,17 @@ const exportsFuncHandler = {
 // This is to catch the read of a called function
 // require("math.js").fft && require("math.js").fft.mult
 const readFunction = (myFunc, name) => {
-
   const wholeName = name + '.' + myFunc.name;
   const currentPlace = locEnv.moduleName[locEnv.requireLevel];
-  let storedCalls = locEnv.analysisResult[currentPlace];
+  const storedCalls = locEnv.analysisResult[currentPlace];
 
   if (Object.prototype.hasOwnProperty.
-        call(storedCalls, name) === false) {
+      call(storedCalls, name) === false) {
     storedCalls[name] = 'r';
   }
 
   if (Object.prototype.hasOwnProperty.
-        call(storedCalls, wholeName) === false) {
+      call(storedCalls, wholeName) === false) {
     storedCalls[wholeName] = 'r';
   } else {
     addEvent('r', storedCalls, wholeName);
@@ -176,9 +175,9 @@ const globalConstHandler = {
     const currentName = locEnv.moduleName[locEnv.requireLevel];
     if (locEnv.globalNames.has(target[name])) {
       updateAnalysisData(locEnv.analysisResult[currentName],
-        locEnv.globalNames.get(target[name]).split('.')[0], 'r');
+          locEnv.globalNames.get(target[name]).split('.')[0], 'r');
       updateAnalysisData(locEnv.analysisResult[currentName],
-        locEnv.globalNames.get(target[name]), 'r');
+          locEnv.globalNames.get(target[name]), 'r');
     }
 
     return Reflect.get(target, name);
@@ -186,15 +185,15 @@ const globalConstHandler = {
 };
 
 module.exports = (env) => {
-	locEnv = env;
-	return {
-		require : requireHandler,
-    moduleHandler : moduleHandler,
-    globalHandler : globalHandler,
-    readFunction : readFunction,
-    exportsFuncHandler : exportsFuncHandler,
-    globalConstHandler : globalConstHandler,
-    updateRestData : updateRestData,
-    exportObj : exportObj
-	}
+  locEnv = env;
+  return {
+    require: requireHandler,
+    moduleHandler: moduleHandler,
+    globalHandler: globalHandler,
+    readFunction: readFunction,
+    exportsFuncHandler: exportsFuncHandler,
+    globalConstHandler: globalConstHandler,
+    updateRestData: updateRestData,
+    exportObj: exportObj,
+  };
 };
