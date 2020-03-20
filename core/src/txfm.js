@@ -150,7 +150,10 @@ const lyaStartUp = (lyaConfig, callerRequire) => {
         localGlobal[name] = proxyWrap(obj[name]);
       } else if (objType === 'function') {
         nameSave ? saveName(obj, name, givenFunc) : null;
-        localGlobal[name] = new Proxy(obj[name], handler);
+        const noProxyOrig = new Proxy(obj[name], {});
+        methodNames.set(noProxyOrig, givenFunc + '.' + name);
+        objPath.set(noProxyOrig, moduleName[env.requireLevel]);
+        localGlobal[name] = new Proxy(noProxyOrig, handler);
       } else if (objType === 'number') {
         globalNames.set(obj[name], givenFunc + '.' + name);
         localGlobal[name] = obj[name];
@@ -163,27 +166,30 @@ const lyaStartUp = (lyaConfig, callerRequire) => {
     const objType = typeof origGlobal;
     let localGlobal = {};
     if (objType === 'function') {
-      localGlobal = new Proxy(origGlobal, handler);
+      const noProxyOrig = new Proxy(origGlobal, {});
+      //methodNames.set(noProxyOrig, givenFunc);
+      objPath.set(noProxyOrig, moduleName[env.requireLevel]);
+      localGlobal = new Proxy(noProxyOrig, handler);
     } else if (objType === 'object') {
-      if (!getObjLength(origGlobal)) {
-        const values = getObjValues(origGlobal);
-        for (const key in values) {
-          if (Object.prototype.hasOwnProperty.call(values, key)) {
-            const name = values[key];
-            localGlobal[name] = objTypeAction(origGlobal, name, handler,
+        if (!getObjLength(origGlobal)) {
+          const values = getObjValues(origGlobal);
+          for (const key in values) {
+            if (Object.prototype.hasOwnProperty.call(values, key)) {
+              const name = values[key];
+              localGlobal[name] = objTypeAction(origGlobal, name, handler,
                 givenFunc, true);
+            }
           }
-        }
-      } else {
-        for (const key in origGlobal) {
-          if (Object.prototype.hasOwnProperty.call(origGlobal, key)) {
-            origGlobal[key] = objTypeAction(origGlobal, key,
-                handler, givenFunc, false);
+        } else {
+          for (const key in origGlobal) {
+            if (Object.prototype.hasOwnProperty.call(origGlobal, key)) {
+              origGlobal[key] = objTypeAction(origGlobal, key, handler,
+                givenFunc, false);
+            }
           }
+          return origGlobal;
         }
-        return origGlobal;
       }
-    }
     return localGlobal;
   };
 
