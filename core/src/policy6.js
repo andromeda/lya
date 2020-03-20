@@ -70,6 +70,11 @@ const updateAnalysisData = (storedCalls, truename, mode) => {
 const exportObj = (name, action) => {
   action = (action === undefined) ? 'w' : action;
   const currentName = locEnv.moduleName[locEnv.requireLevel];
+
+  if (name.split('.').length === 3) {
+    updateAnalysisData(locEnv.analysisResult[currentName],
+      name.split('.')[0] + '.' + name.split('.')[1], 'r');
+  }
   updateAnalysisData(locEnv.analysisResult[currentName], name, action);
 };
 
