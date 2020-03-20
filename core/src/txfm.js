@@ -19,7 +19,7 @@ const preset = {
   SUB_TYPES: 12,
 };
 
-function lyaStartUp(lyaConfig, callerRequire) {
+const lyaStartUp = (lyaConfig, callerRequire) => {
   // We use this global value to know if the program has ended or not
   // necessary for enforcement analysis(5, 7)
   // TODO: make this library local, like presets
@@ -76,7 +76,8 @@ function lyaStartUp(lyaConfig, callerRequire) {
   // We return the choice of the user
   // TODO: define a var currentAnalysis and use it everywhere
   const a = lyaConfig.analysis || preset.ALLOW_DENY;
-  const userChoice = Object.keys(preset).map((e) => preset[e]).includes(a)? a : preset.ALLOW_DENY;
+  const userChoice = Object.keys(preset).map((e) => preset[e]).includes(a)? a :
+      preset.ALLOW_DENY;
 
   // You import the right policy depenting on the choice of the user.
   const policy = require('./policy' + userChoice + '.js')(env);
@@ -89,17 +90,19 @@ function lyaStartUp(lyaConfig, callerRequire) {
 
   // This function stores the names of the given object to
   // methodNames WeakMap ~> stores names of objs like console etc
-  function generateNames(obj) {
-    for (k in obj) {
-      const functionNames = global[obj[k]];
-      for (name in functionNames) {
-        if (typeof name === 'string' && name != undefined) {
-          const nameToStore = obj[k] + '.' + name;
-          methodNames.set(functionNames[name], nameToStore);
+  const generateNames= (obj) => {
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        const functionNames = global[obj[key]];
+        for (const name in functionNames) {
+          if (typeof name === 'string') {
+            const nameToStore = obj[key] + '.' + name;
+            methodNames.set(functionNames[name], nameToStore);
+          }
         }
       }
     }
-  }
+  };
 
   const moduleInputNames = [
     'exports',
@@ -132,7 +135,8 @@ function lyaStartUp(lyaConfig, callerRequire) {
     },
   };
 
-  const saveName = (obj, name, givenFunc) => methodNames.set(obj[name], givenFunc + '.' + name);
+  const saveName = (obj, name, givenFunc) => methodNames.set(obj[name],
+      givenFunc + '.' + name);
   const getObjLength = (obj) => Object.keys(obj).length;
   const getObjValues = (obj) => Object.getOwnPropertyNames(obj);
 
@@ -164,12 +168,18 @@ function lyaStartUp(lyaConfig, callerRequire) {
       if (!getObjLength(origGlobal)) {
         const values = getObjValues(origGlobal);
         for (const key in values) {
-          const name = values[key];
-          localGlobal[name] = objTypeAction(origGlobal, name, handler, givenFunc, true);
+          if (Object.prototype.hasOwnProperty.call(values, key)) {
+            const name = values[key];
+            localGlobal[name] = objTypeAction(origGlobal, name, handler,
+                givenFunc, true);
+          }
         }
       } else {
         for (const key in origGlobal) {
-          origGlobal[key] = objTypeAction(origGlobal, key, handler, givenFunc, false);
+          if (Object.prototype.hasOwnProperty.call(origGlobal, key)) {
+            origGlobal[key] = objTypeAction(origGlobal, key,
+                handler, givenFunc, false);
+          }
         }
         return origGlobal;
       }
@@ -178,7 +188,7 @@ function lyaStartUp(lyaConfig, callerRequire) {
   };
 
   const createGlobal = (name, moduleProlog) => {
-    if (global[name] != undefined) {
+    if (global[name] !== undefined) {
       globalProxies[name] = proxyWrap(policy.moduleHandler, global[name], name);
       moduleProlog = 'let ' + name + ' = pr["' + name +'"];\n' + moduleProlog;
     }
@@ -203,7 +213,8 @@ function lyaStartUp(lyaConfig, callerRequire) {
 
   const wrapSpecGlobal = (moduleProlog, globalFunc, specFunc) => {
     const name = globalFunc + '.' + specFunc;
-    globalProxies[name] = new Proxy(global[globalFunc][specFunc], exportHandler);
+    globalProxies[name] = new Proxy(global[globalFunc][specFunc],
+        exportHandler);
     objName.set(global[globalFunc][specFunc], name);
     return moduleProlog += name + '= pr["' + name +'"];\n';
   };
@@ -230,7 +241,7 @@ function lyaStartUp(lyaConfig, callerRequire) {
   // User can remove things from json file that create conf
   const userRemoves = () => {
     const list = lyaConfig.removejson;
-    if (list != undefined) {
+    if (list !== undefined) {
       for (let i = 0; i < list.length; i++) {
         const value = list[i];
         for (const upValue in globals) {
@@ -282,13 +293,14 @@ function lyaStartUp(lyaConfig, callerRequire) {
     // first time.
 
     const type = typeof result;
-    if (type != 'boolean' && type != 'symbol' && type != 'number' && type != 'string') {
-      if ( objName.has(result) === false ) {
+    if (type !== 'boolean' && type !== 'symbol' &&
+          type !== 'number' && type !== 'string') {
+      if (!objName.has(result)) {
         // Each time we update env we update locEnv too
         objName.set(result, 'require(\'' + path + '\')');
         objPath.set(result, moduleName[env.requireLevel]);
         result = new Proxy(result, exportHandler);
-        if (env.requireLevel !=0) {
+        if (env.requireLevel !== 0) {
           env.requireLevel--;
         }
       } else {
@@ -300,9 +312,9 @@ function lyaStartUp(lyaConfig, callerRequire) {
     return result;
   };
 
-  // This is the handler of the export object. Every time we require a module, and it has
-  // export data we wrap those data in this handler. So this is the first layer of the
-  // export data wraping.
+  // This is the handler of the export object. Every time we require a module,
+  // and it has export data we wrap those data in this handler. So this is
+  // the first So this is the first layer of the export data wraping.
   const namePathSet = (key, name, path) => {
     objName.set(key, name);
     objPath.set(key, path);
@@ -311,8 +323,8 @@ function lyaStartUp(lyaConfig, callerRequire) {
   const exportHandler = {
     get: function(target, name, receiver) {
       const exportType = typeof(target[name]);
-      if (exportType != 'undefined' && target[name] != null && typeof name === 'string' &&
-          (!(target[name] instanceof RegExp))) {
+      if (exportType !== 'undefined' && target[name] != null &&
+          typeof name === 'string' && (!(target[name] instanceof RegExp))) {
         if (exportType === 'object') {
           if (Object.entries(target[name]).length) {
             if (withProxy.has(target[name])) {
@@ -332,7 +344,7 @@ function lyaStartUp(lyaConfig, callerRequire) {
             target[name] = new Proxy(target[name], exportHandler);
 
             namePathSet(localObject, truename, truepath);
-            result = Reflect.get(target, name);
+            const result = Reflect.get(target, name);
             withProxy.set(result, true);
 
             return result;
@@ -351,7 +363,7 @@ function lyaStartUp(lyaConfig, callerRequire) {
             namePathSet(key, truename, truepath);
           }
           policy.readFunction(localFunction, objName.get(target));
-          result = Reflect.get(target, name);
+          const result = Reflect.get(target, name);
           withProxy.set(result, true);
 
           return result;
@@ -375,7 +387,7 @@ function lyaStartUp(lyaConfig, callerRequire) {
   // print anything.
   process.on('exit', function() {
     global.end = true;
-    if (lyaConfig.SAVE_RESULTS && userChoice != 5 && userChoice != 7) {
+    if (lyaConfig.SAVE_RESULTS && userChoice !== 5 && userChoice !== 7) {
       fs.writeFileSync(lyaConfig.SAVE_RESULTS,
           JSON.stringify(analysisResult, null, 2), 'utf-8');
     }

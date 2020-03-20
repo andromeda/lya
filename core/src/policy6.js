@@ -4,15 +4,17 @@ let locEnv;
 // suffix for our own metadata
 const endName = '@name';
 
-// This the handler of the require function. Every time a "require" is used to load up a module
-// this handler is called. It updates the analysis data that are stored in the analysisResult table.
+// This the handler of the require function. Every time a "require"
+// is used to load up a module this handler is called. It updates
+// the analysis data that are stored in the analysisResult table.
 const requireHandler = {
   apply: function(target, thisArg, argumentsList) {
     const currentName = locEnv.moduleName[locEnv.requireLevel];
     const origReqModuleName = argumentsList[0];
     exportObj('require', 'x');
-    locEnv.analysisResult[currentName]['require(\'' + origReqModuleName + '\')'] = 'x';
-    return Reflect.apply(...arguments);
+    locEnv.analysisResult[currentName]['require(\'' +
+      origReqModuleName + '\')'] = 'x';
+    return Reflect.apply(target, thisArg, argumentsList);
   },
   get: function(target, name) {
     const currentName = locEnv.moduleName[locEnv.requireLevel];
@@ -26,7 +28,8 @@ const requireHandler = {
     const currentName = locEnv.moduleName[locEnv.requireLevel];
     if (locEnv.methodNames.has(target)) {
       const nameToStore = locEnv.methodNames.get(target) + '.' + name;
-      updateAnalysisData(locEnv.analysisResult[currentName], locEnv.methodNames.get(target), 'r');
+      updateAnalysisData(locEnv.analysisResult[currentName],
+          locEnv.methodNames.get(target), 'r');
       updateAnalysisData(locEnv.analysisResult[currentName], nameToStore, 'w');
     }
     return Reflect.set(target, name, value);
@@ -53,7 +56,8 @@ const addEvent = (event, values, index) => {
 // @truename the name of the current function, object etc that we want to add to
 // the table
 // @mode the mode of the current access (R,W or E)
-// Given those two inputs we can update the analysis data that are stored in storedCalls
+// Given those two inputs we can update the analysis data that are stored
+// in storedCalls.
 const updateAnalysisData = (storedCalls, truename, mode) => {
   if (Object.prototype.hasOwnProperty.
       call(storedCalls, truename) === false) {
@@ -69,8 +73,8 @@ const exportObj = (name, action) => {
   updateAnalysisData(locEnv.analysisResult[currentName], name, action);
 };
 
-// The handler of the global variable.Every time we access the global variabe in order to declare
-// or call a variable, then we can print it on the export file.
+// The handler of the global variable.Every time we access the global variabe
+// in order to declare or call a variable, we can print it on the export file.
 const globalHandler = {
   get: function(target, name) {
     // XXX[target] != 'undefined'
@@ -89,7 +93,7 @@ const globalHandler = {
       const currentName = locEnv.moduleName[locEnv.requireLevel];
       const nameToStore = 'global.' + name;
       const result = Reflect.set(target, name, value);
-      // In order to exist a disticton between the values we declared ourselfs
+      // In order to exist a distinction between the values we declared ourselfs
       // We declare one more field with key value that stores the name
       Object.defineProperty(target, name+endName, {value: nameToStore});
       updateAnalysisData(locEnv.analysisResult[currentName], 'global', 'r');
@@ -102,12 +106,12 @@ const globalHandler = {
   },
 };
 
-// The handler of the all the function that are called inside a module. Every time we
-// load a module with require it first execute all the code and then prepary and exports
-// all the export data. We use this handler to catch all the code that is executed on the
-// module.
+// The handler of the all the function that are called inside a module.
+// Every time we load a module with require it first execute all the code
+// and then prepare and exports all the export data. We use this handler
+// to catch all the code that is executed on the module.
 const moduleHandler = {
-  apply: function(target) {
+  apply: function(target, thisArg, argumentsList) {
     const currentName = locEnv.moduleName[locEnv.requireLevel];
     if (locEnv.methodNames.has(target)) {
       updateAnalysisData(locEnv.analysisResult[currentName],
@@ -117,7 +121,7 @@ const moduleHandler = {
     } else {
       updateAnalysisData(locEnv.analysisResult[currentName], target.name, 'x');
     }
-    return Reflect.apply(...arguments);
+    return Reflect.apply(target, thisArg, argumentsList);
   },
   get: function(target, name) {
     const currentName = locEnv.moduleName[locEnv.requireLevel];
@@ -132,9 +136,10 @@ const moduleHandler = {
   },
 };
 
-// The handler of the functions on the export module. Every time we require a module
-// and we have exports, we wrap them in a handler. Each time we call a function from inside
-// exports this is the handler that we wrap the function.
+// The handler of the functions on the export module. Every time we
+// require a module and we have exports, we wrap them in a handler.
+// Each time we call a function from inside exports this is the handler
+// that we wrap the function.
 const exportsFuncHandler = {
   apply: function(target, thisArg, argumentsList) {
     let truename;
@@ -145,7 +150,7 @@ const exportsFuncHandler = {
       truename = truename + '.' + target.name;
       updateAnalysisData(locEnv.analysisResult[currentName], truename, 'x');
     }
-    return Reflect.apply(...arguments);
+    return Reflect.apply(target, thisArg, argumentsList);
   },
 };
 
