@@ -204,7 +204,7 @@ function lyaStartUp(lyaConfig, callerRequire) {
   const wrapSpecGlobal = (moduleProlog, globalFunc, specFunc) => {
     const name = globalFunc + '.' + specFunc;
     globalProxies[name] = new Proxy(global[globalFunc][specFunc], exportHandler);
-    objName.set(global[globalFunc][specFunc], globalFunc);
+    objName.set(global[globalFunc][specFunc], name);
     return moduleProlog += name + '= pr["' + name +'"];\n';
   };
 
