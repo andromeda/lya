@@ -60,7 +60,6 @@ const lyaStartUp = (lyaConfig, callerRequire) => {
 
   // We read and store the data of the json file
   const globals = require('./globals.json');
-  const toSaveNames = require('./saveNames.json');
 
   // We make a test on fragment
   const env = {
@@ -87,22 +86,6 @@ const lyaStartUp = (lyaConfig, callerRequire) => {
 
   // A proxy to use it in Math.PI etc
   globalProxies['proxyExportHandler'] = policy.globalConstHandler;
-
-  // This function stores the names of the given object to
-  // methodNames WeakMap ~> stores names of objs like console etc
-  const generateNames= (obj) => {
-    for (const key in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, key)) {
-        const functionNames = global[obj[key]];
-        for (const name in functionNames) {
-          if (typeof name === 'string') {
-            const nameToStore = obj[key] + '.' + name;
-            methodNames.set(functionNames[name], nameToStore);
-          }
-        }
-      }
-    }
-  };
 
   const moduleInputNames = [
     'exports',
@@ -237,7 +220,6 @@ const lyaStartUp = (lyaConfig, callerRequire) => {
   const globalsDecl = () => {
     if (moduleProlog === ' ') {
       userRemoves();
-      generateNames(toSaveNames);
       return createModuleProlog();
     } else {
       return moduleProlog;
