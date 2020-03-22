@@ -87,11 +87,13 @@
       "DTRACE_HTTP_CLIENT_RESPONSE"
     ]
   },
-  "locals": [
-    "exports",
-    "require",
-    "module",
-    "__filename",
-    "__dirname"
-  ]
+  "locals": {
+    "node": [
+      "exports",
+      "require",
+      "module",
+      "__filename",
+      "__dirname"
+    ]
+  }
 }

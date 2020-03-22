@@ -1,9 +1,10 @@
 /* eslint prefer-rest-params: "off", no-global-assign: "off",
 no-shadow-restricted-names: "off" */
 
-// TODO simple: use this rather than numbers.
-// TODO later: replace numbers with configurable analysis paths, such that
-//      users can optionally provide their own paths via the same config object.
+const Module = require('module');
+const vm = require('vm');
+const fs = require('fs');
+
 const preset = {
   ALLOW_DENY: './allow-deny.js',
   CALL_NUMBERS: './call-numbers.js',
@@ -19,11 +20,7 @@ const preset = {
   SUB_TYPES: './sub-types.js',
 };
 
-const lyaStartUp = (lyaConfig, callerRequire) => {
-  // We import and declare all the necessary modules
-  const Module = require('module');
-  const vm = require('vm');
-  const fs = require('fs');
+const lyaStartUp = (callerRequire, lyaConfig) => {
 
   // All the necessary modules for swap
   const originalWrap = Module.wrap;
@@ -65,20 +62,12 @@ const lyaStartUp = (lyaConfig, callerRequire) => {
     objPath: objPath,
     methodNames: methodNames,
     globalNames: globalNames,
-    // We use this global value to know if the program has ended or not
-    // necessary for enforcement analysis(5, 7)
+    // Signal if program has ended, necessary for enforcements
     end: false,
   };
 
-  // return the choice of the user
-  // TODO: define a var currentAnalysis and use it everywhere
-  const analysis = lyaConfig.analysis || preset.ALLOW_DENY;
-  if (fs.existsSync(analysis)) {
-    console.error('Analysis file not found: ', analysis);
-  }
-
   // Import the right policy depending on the choice of the user.
-  const policy = require(analysis)(env);
+  const policy = require(lyaConfig.analysis)(env);
 
   // We wrap the global variable in a proxy
   global = new Proxy(global, policy.globalHandler);
@@ -86,7 +75,8 @@ const lyaStartUp = (lyaConfig, callerRequire) => {
   // A proxy to use it in Math.PI etc
   globalProxies['proxyExportHandler'] = policy.globalConstHandler;
 
-  const moduleInputNames = defaultNames.locals;
+  // TODO: this should come from generate
+  const moduleInputNames = defaultNames.locals.node;
 
   const wrapModuleInputs = (obj, count) => {
     const type = typeof obj[count];
@@ -211,7 +201,7 @@ const lyaStartUp = (lyaConfig, callerRequire) => {
   // The first time this runs we create the decl
   const globalsDecl = () => {
     if (moduleProlog === ' ') {
-      userRemoves();
+      generateGlobals();
       return createModuleProlog();
     } else {
       return moduleProlog;
@@ -219,30 +209,26 @@ const lyaStartUp = (lyaConfig, callerRequire) => {
   };
 
   // User can remove things from json file that create conf
-  const userRemoves = () => {
-    const list = lyaConfig.removejson;
-    if (list !== undefined) {
-      for (let i = 0; i < list.length; i++) {
-        const value = list[i];
-        for (const upValue in defaultNames.globals) {
-          if (Object.prototype.hasOwnProperty.call(defaultNames.globals, upValue)) {
-            if (upValue === value) {
-              defaultNames.globals.remove(upValue);
-            }
-            const globalVariables = defaultNames.globals[upValue];
-            for (const declName in globalVariables) {
-              if (Object.prototype.hasOwnProperty.
-                  call(globalVariables, declName)) {
-                const name = globalVariables[declName];
-                if (name === value) {
-                  delete globalVariables[declName];
-                }
-              }
-            }
-          }
+  const flattenAndSkip = (groups, under) => {
+    groups.filter((e) => {
+      lyaConfig.removejson.indexOf(e)
+    }).forEach((e) => {
+      for (const v in defaultNames[under][e]) {
+        if (!lyaConfig.removejson.indexOf(v)) {
+          defaultNames[under][v] = true;
         }
       }
-    }
+      // TODO: remove e
+      // delete defaultNames[under][e];
+    });
+  };
+
+  // User can remove things from json file that create conf
+  const generateGlobals = () => {
+    // flatten globals under defaultNames.globals.*
+    flattenAndSkip(["es", "node", "other"], "globals");
+    // flatten locals under defaultNames.globals.*
+    flattenAndSkip(["node"], "locals");
   };
 
   // We do some stuff and then call original warp
@@ -362,12 +348,10 @@ const lyaStartUp = (lyaConfig, callerRequire) => {
     },
   };
 
-  // We print all the results on the end of the program only if we dont
-  // use it for enforcement analysis(5, 7) cause we dont want to
-  // print anything.
+  // We print all the results at the end of the analysis
   process.on('exit', function() {
     env.end = true;
-    if (lyaConfig.SAVE_RESULTS && !/ENFORCEMENT$/.test(analysis)) {
+    if (lyaConfig.SAVE_RESULTS && !/ENFORCEMENT$/.test(lyaConfig.analysis)) {
       fs.writeFileSync(lyaConfig.SAVE_RESULTS,
           JSON.stringify(analysisResult, null, 2), 'utf-8');
     }
@@ -378,8 +362,13 @@ const lyaStartUp = (lyaConfig, callerRequire) => {
 
 module.exports = {
   preset: preset,
-  configRequire: (origRequire, origConfig) => {
-    // TODO: fix order
-    return lyaStartUp(origConfig, origRequire);
+  configRequire: (origRequire, conf) => {
+    conf.analysis = conf.analysis || preset.ALLOW_DENY;
+    if (fs.existsSync(conf.analysis)) {
+      console.error('Analysis file not found: ', conf.analysis);
+    }
+    // TODO: maybe exapand to a local
+    conf.removejson = conf.removejson || [];
+    return lyaStartUp(origRequire, conf);
   },
 };
