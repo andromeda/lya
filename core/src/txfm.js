@@ -1,6 +1,7 @@
 /* eslint prefer-rest-params: "off", no-global-assign: "off",
 no-shadow-restricted-names: "off" */
 
+const nativeModules = Object.keys(process.binding('natives'));
 const Module = require('module');
 const vm = require('vm');
 const fs = require('fs');
@@ -268,7 +269,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
         objName.set(result, 'require(\'' + path + '\')');
         objPath.set(result, moduleName[env.requireLevel]);
         result = new Proxy(result, exportHandler);
-        if (env.requireLevel !== 0) {
+        if (env.requireLevel !== 0 && nativeModules.indexOf(path) === -1) {
           env.requireLevel--;
         }
       } else {
