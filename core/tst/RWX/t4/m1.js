@@ -3,7 +3,8 @@
 // "escape",
 // "EvalError",
 
-const arr = Array.of(1, 2, 3);
+const arr1 = Array.of(1, 2, 3);
+const arr2 = new Array(2);
 const buffer = new ArrayBuffer(16);
 const testFloat32 = new Float32Array(12);
 const testFloat64 = new Float64Array(12);
@@ -74,7 +75,7 @@ var res = str.valueOf();
 parseFloat(4.24342423)
 parseInt(1231)
 
-var uint8 = new Uint8Array(arr);
+var uint8 = new Uint8Array(arr1);
 var uint16 = new Uint16Array(2);
 var uint32 = new Uint32Array(2);
 var uintc8 = new Uint8ClampedArray(2);

@@ -20,7 +20,7 @@ if [ "$#" -eq 1 ]; then
   analysis
   cd ..
 else
-  for d in t*/; do
+  for d in t?/ t??/; do
     cd $d;
     analysis
     cd ..
