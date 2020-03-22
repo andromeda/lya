@@ -32,7 +32,6 @@ const lyaStartUp = (lyaConfig, callerRequire) => {
 
   const moduleName = [];
   const requireLevel = 0;
-  const globalProxies = {};
   const analysisResult = {};
 
   moduleName[0] = process.cwd() + '/' + 'main.js';
@@ -83,9 +82,6 @@ const lyaStartUp = (lyaConfig, callerRequire) => {
   // We wrap the global variable in a proxy
   global = new Proxy(global, policy.globalHandler);
 
-  // A proxy to use it in Math.PI etc
-  globalProxies['proxyExportHandler'] = policy.globalConstHandler;
-
   const moduleInputNames = defaultNames.locals;
 
   const wrapModuleInputs = (obj, count) => {
@@ -100,13 +96,22 @@ const lyaStartUp = (lyaConfig, callerRequire) => {
     return new Proxy(localCopy, policy.require);
   };
 
+  const setLocalGlobal = () => {
+    let localGlobal = {};
+    localGlobal = passJSONFile(createGlobal, defaultNames.globals);
+    localGlobal['proxyExportHandler'] = policy.globalConstHandler;
+    localGlobal['process.env'] = new Proxy(global['process']['env'], exportHandler);
+    objName.set(global['process']['env'], 'process.env');
+    return localGlobal;
+  }
+
   // We wrap the input values of every module in a proxy
   const handlerAddArg= {
     apply: function(target, thisArg, argumentsList) {
       for (let count=0; count < 5; count++) {
         argumentsList[count] = wrapModuleInputs(argumentsList, count);
       }
-      argumentsList[5] = globalProxies;
+      argumentsList[5] = setLocalGlobal();
       return Reflect.apply( ...arguments);
     },
   };
@@ -168,43 +173,39 @@ const lyaStartUp = (lyaConfig, callerRequire) => {
     return localGlobal;
   };
 
-  const createGlobal = (name, prologue) => {
+  const createGlobal = (name) => {
     if (global[name] !== undefined) {
-      globalProxies[name] = proxyWrap(policy.moduleHandler, global[name], name);
-      prologue = 'let ' + name + ' = localGlobal["' + name +'"];\n' + prologue;
+      return proxyWrap(policy.moduleHandler, global[name], name);
     }
-    return prologue;
+    return 0;
   };
 
-  const passJSONFile = (prologue, func, json) => {
+  const setDeclaration = (name) => {
+    prologue = 'let ' + name + ' = localGlobal["' + name +'"];\n' + prologue;
+  }
+
+  const passJSONFile = (func, json) => {
+    let returnValue = {};
     for (const funcClass in json) {
       if (Object.prototype.hasOwnProperty.call(json, funcClass)) {
         const builtInObj = json[funcClass];
         for (const counter in builtInObj) {
           if (Object.prototype.hasOwnProperty.call(builtInObj, counter)) {
             const functionName = builtInObj[counter];
-            prologue = func(functionName, prologue);
+            returnValue[functionName] = func(functionName);
           }
         }
       }
     }
 
-    return prologue;
+    return returnValue;
   };
 
-  const wrapSpecGlobal = (prologue, globalFunc, specFunc) => {
-    const name = globalFunc + '.' + specFunc;
-    globalProxies[name] = new Proxy(global[globalFunc][specFunc],
-        exportHandler);
-    objName.set(global[globalFunc][specFunc], name);
-    return prologue += name + '= localGlobal["' + name +'"];\n';
-  };
-
-  // We need to add all the global prototype variable declarations in the script
+  // This will run once and produce prologue string
   const setProlog = () => {
-    prologue = wrapSpecGlobal(prologue, 'process', 'env');
+    prologue = 'process.env = localGlobal["process.env"];\n';
     prologue += 'Math = new Proxy(Math, localGlobal["proxyExportHandler"]);\n';
-    prologue = passJSONFile(prologue, createGlobal, defaultNames.globals);
+    passJSONFile(setDeclaration, defaultNames.globals);
     return prologue;
   };
 

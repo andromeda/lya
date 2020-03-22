@@ -117,7 +117,7 @@ const globalHandler = {
 // to catch all the code that is executed on the module.
 const moduleHandler = {
   apply: function(target, thisArg, argumentsList) {
-    const currentName = locEnv.moduleName[locEnv.requireLevel];
+    const currentName = locEnv.objPath.get(target);
     if (locEnv.methodNames.has(target)) {
       updateAnalysisData(locEnv.analysisResult[currentName],
           locEnv.methodNames.get(target).split('.')[0], 'r');
@@ -129,7 +129,7 @@ const moduleHandler = {
     return Reflect.apply(target, thisArg, argumentsList);
   },
   get: function(target, name) {
-    const currentName = locEnv.moduleName[locEnv.requireLevel];
+    const currentName = locEnv.objPath.get(target);
     if (locEnv.methodNames.has(target)) {
       updateAnalysisData(locEnv.analysisResult[currentName],
           locEnv.methodNames.get(target), 'r');
