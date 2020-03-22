@@ -21,7 +21,6 @@ const preset = {
 };
 
 const lyaStartUp = (callerRequire, lyaConfig) => {
-
   // All the necessary modules for swap
   const originalWrap = Module.wrap;
   const originalRequire = Module.prototype.require;
@@ -39,7 +38,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   const endName = '@name';
 
   // This holds the string of the transformations inside modules
-  let prologue = ' ';
+  let prologue = '';
 
   // WeakMaps to store the name and the path for every object value
   const objName = new WeakMap();
@@ -173,8 +172,8 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   };
 
   const setDeclaration = (name) => {
-    prologue = 'let ' + name + ' = localGlobal["' + name +'"];\n' + prologue;
-  }
+    prologue += 'let ' + name + ' = localGlobal["' + name +'"];\n';
+  };
 
   const passJSONFile = (func, json) => {
     let returnValue = {};
@@ -194,21 +193,20 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   };
 
   // This will run once and produce prologue string
-  const setProlog = () => {
-    prologue = 'process.env = localGlobal["process.env"];\n';
-    prologue += 'Math = new Proxy(Math, localGlobal["proxyExportHandler"]);\n';
+  const setPrologue = () => {
     passJSONFile(setDeclaration, defaultNames.globals);
+    prologue += 'process.env = localGlobal["process.env"];\n';
+    prologue += 'Math = new Proxy(Math, localGlobal["proxyExportHandler"]);\n';
     return prologue;
   };
 
   // The first time this runs we create the decl
-  const getProlog = () => {
-    if (prologue === ' ') {
-      generateGlobals();
-      return setProlog();
-    } else {
+  const getPrologue = () => {
+    if (prologue !== '') {
       return prologue;
     }
+    generateGlobals();
+    return setPrologue();
   };
 
   // User can remove things from json file that create conf
@@ -234,11 +232,11 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     flattenAndSkip(["node"], "locals");
   };
 
-  // We do some stuff and then call original warp
+  // extend wrap to take additional argument
   Module.wrap = (script) => {
-    script = getProlog() + script;
+    script = getPrologue() + script;
     let wrappedScript = originalWrap(script);
-    wrappedScript = wrappedScript.replace('__dirname)', '__dirname, localGlobal)');
+    wrappedScript = wrappedScript.replace('dirname)', 'dirname, localGlobal)');
     return wrappedScript;
   };
 
@@ -359,7 +357,6 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
           JSON.stringify(analysisResult, null, 2), 'utf-8');
     }
   });
-
   return new Proxy(callerRequire, policy.require);
 };
 
