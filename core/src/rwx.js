@@ -17,7 +17,7 @@ const requireHandler = {
     return Reflect.apply(target, thisArg, argumentsList);
   },
   get: function(target, name) {
-    const currentName = locEnv.moduleName[locEnv.requireLevel];
+    const currentName = locEnv.objPath.get(target);
     if (locEnv.methodNames.has(target)) {
       updateAnalysisData(locEnv.analysisResult[currentName],
           locEnv.methodNames.get(target), 'r');
@@ -25,7 +25,7 @@ const requireHandler = {
     return Reflect.get(target, name);
   },
   set: function(target, name, value) {
-    const currentName = locEnv.moduleName[locEnv.requireLevel];
+    const currentName = locEnv.objPath.get(target);
     if (locEnv.methodNames.has(target)) {
       const nameToStore = locEnv.methodNames.get(target) + '.' + name;
       updateAnalysisData(locEnv.analysisResult[currentName],

@@ -82,6 +82,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       localCopy = obj[count];
     }
     methodNames.set(localCopy, moduleInputNames[count]);
+    objPath.set(localCopy, moduleName[env.requireLevel]);
     return new Proxy(localCopy, policy.require);
   };
 
