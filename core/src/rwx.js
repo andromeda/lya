@@ -117,7 +117,7 @@ const globalHandler = {
 // to catch all the code that is executed on the module.
 const moduleHandler = {
   apply: function(target, thisArg, argumentsList) {
-    const currentName = locEnv.moduleName[locEnv.requireLevel];
+    const currentName = locEnv.objPath.get(target);
     if (locEnv.methodNames.has(target)) {
       updateAnalysisData(locEnv.analysisResult[currentName],
           locEnv.methodNames.get(target).split('.')[0], 'r');
@@ -129,7 +129,7 @@ const moduleHandler = {
     return Reflect.apply(target, thisArg, argumentsList);
   },
   get: function(target, name) {
-    const currentName = locEnv.moduleName[locEnv.requireLevel];
+    const currentName = locEnv.objPath.get(target);
     if (locEnv.methodNames.has(target)) {
       updateAnalysisData(locEnv.analysisResult[currentName],
           locEnv.methodNames.get(target), 'r');
@@ -139,6 +139,13 @@ const moduleHandler = {
 
     return Reflect.get(target, name);
   },
+  construct: function(target, args) {
+    const currentName = locEnv.moduleName[locEnv.requireLevel];
+    if (target.name !== 'Proxy') {
+      updateAnalysisData(locEnv.analysisResult[currentName], target.name, 'x');
+    }
+    return new target(...args);
+  }
 };
 
 // The handler of the functions on the export module. Every time we

@@ -29,7 +29,6 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 
   const moduleName = [];
   const requireLevel = 0;
-  const globalProxies = {};
   const analysisResult = {};
 
   moduleName[0] = process.cwd() + '/' + 'main.js';
@@ -40,7 +39,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   const endName = '@name';
 
   // This holds the string of the transformations inside modules
-  let moduleProlog = ' ';
+  let prologue = ' ';
 
   // WeakMaps to store the name and the path for every object value
   const objName = new WeakMap();
@@ -72,9 +71,6 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   // We wrap the global variable in a proxy
   global = new Proxy(global, policy.globalHandler);
 
-  // A proxy to use it in Math.PI etc
-  globalProxies['proxyExportHandler'] = policy.globalConstHandler;
-
   // TODO: this should come from generate
   const moduleInputNames = defaultNames.locals.node;
 
@@ -90,13 +86,22 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     return new Proxy(localCopy, policy.require);
   };
 
+  const setLocalGlobal = () => {
+    let localGlobal = {};
+    localGlobal = passJSONFile(createGlobal, defaultNames.globals);
+    localGlobal['proxyExportHandler'] = policy.globalConstHandler;
+    localGlobal['process.env'] = new Proxy(global['process']['env'], exportHandler);
+    objName.set(global['process']['env'], 'process.env');
+    return localGlobal;
+  }
+
   // We wrap the input values of every module in a proxy
   const handlerAddArg= {
     apply: function(target, thisArg, argumentsList) {
       for (let count=0; count < 5; count++) {
         argumentsList[count] = wrapModuleInputs(argumentsList, count);
       }
-      argumentsList[5] = globalProxies;
+      argumentsList[5] = setLocalGlobal();
       return Reflect.apply( ...arguments);
     },
   };
@@ -158,53 +163,49 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     return localGlobal;
   };
 
-  const createGlobal = (name, moduleProlog) => {
+  const createGlobal = (name) => {
     if (global[name] !== undefined) {
-      globalProxies[name] = proxyWrap(policy.moduleHandler, global[name], name);
-      moduleProlog = 'let ' + name + ' = localGlobal["' + name +'"];\n' + moduleProlog;
+      return proxyWrap(policy.moduleHandler, global[name], name);
     }
-    return moduleProlog;
+    return 0;
   };
 
-  const passJSONFile = (moduleProlog, func, json) => {
+  const setDeclaration = (name) => {
+    prologue = 'let ' + name + ' = localGlobal["' + name +'"];\n' + prologue;
+  }
+
+  const passJSONFile = (func, json) => {
+    let returnValue = {};
     for (const funcClass in json) {
       if (Object.prototype.hasOwnProperty.call(json, funcClass)) {
         const builtInObj = json[funcClass];
         for (const counter in builtInObj) {
           if (Object.prototype.hasOwnProperty.call(builtInObj, counter)) {
             const functionName = builtInObj[counter];
-            moduleProlog = func(functionName, moduleProlog);
+            returnValue[functionName] = func(functionName);
           }
         }
       }
     }
 
-    return moduleProlog;
+    return returnValue;
   };
 
-  const wrapSpecGlobal = (moduleProlog, globalFunc, specFunc) => {
-    const name = globalFunc + '.' + specFunc;
-    globalProxies[name] = new Proxy(global[globalFunc][specFunc],
-        exportHandler);
-    objName.set(global[globalFunc][specFunc], name);
-    return moduleProlog += name + '= localGlobal["' + name +'"];\n';
-  };
-
-  // We need to add all the global prototype variable declarations in the script
-  const createModuleProlog = () => {
-    moduleProlog = wrapSpecGlobal(moduleProlog, 'process', 'env');
-    moduleProlog += 'Math = new Proxy(Math, localGlobal["proxyExportHandler"]);\n';
-    moduleProlog = passJSONFile(moduleProlog, createGlobal, defaultNames.globals);
-    return moduleProlog;
+  // This will run once and produce prologue string
+  const setProlog = () => {
+    prologue = 'process.env = localGlobal["process.env"];\n';
+    prologue += 'Math = new Proxy(Math, localGlobal["proxyExportHandler"]);\n';
+    passJSONFile(setDeclaration, defaultNames.globals);
+    return prologue;
   };
 
   // The first time this runs we create the decl
-  const globalsDecl = () => {
-    if (moduleProlog === ' ') {
+  const getProlog = () => {
+    if (prologue === ' ') {
       generateGlobals();
-      return createModuleProlog();
+      return setProlog();
     } else {
-      return moduleProlog;
+      return prologue;
     }
   };
 
@@ -233,7 +234,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 
   // We do some stuff and then call original warp
   Module.wrap = (script) => {
-    script = globalsDecl() + script;
+    script = getProlog() + script;
     let wrappedScript = originalWrap(script);
     wrappedScript = wrappedScript.replace('__dirname)', '__dirname, localGlobal)');
     return wrappedScript;
