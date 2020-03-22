@@ -5,18 +5,18 @@ no-shadow-restricted-names: "off" */
 // TODO later: replace numbers with configurable analysis paths, such that
 //      users can optionally provide their own paths via the same config object.
 const preset = {
-  ALLOW_DENY: 1,
-  CALL_NUMBERS: 2,
-  PROFILING: 3,
-  PROFILING_RELATIVE: 4,
-  ALLOW_DENY_ENFORCEMENT: 5,
-  RWX: 6,
-  RWX_ENFORCEMENT: 7,
-  GLOBAL_ONLY: 8,
-  EXPORT_TYPE: 9,
-  COARSE_TYPES: 10,
-  SIMPLE_TYPES: 11,
-  SUB_TYPES: 12,
+  ALLOW_DENY: './allow-deny.js',
+  CALL_NUMBERS: './call-numbers.js',
+  PROFILING: './profiling.js',
+  PROFILING_RELATIVE: './profiling-relative.js',
+  ALLOW_DENY_ENFORCEMENT: './allow-deny-enforcement.js',
+  RWX: './rwx.js',
+  RWX_ENFORCEMENT: './rwx-enforcement.js',
+  GLOBAL_ONLY: './global-only.js',
+  EXPORT_TYPE: './export-type.js',
+  COARSE_TYPES: './coarse-types.js',
+  SIMPLE_TYPES: './simple-types.js',
+  SUB_TYPES: './sub-types.js',
 };
 
 const lyaStartUp = (lyaConfig, callerRequire) => {
@@ -70,14 +70,15 @@ const lyaStartUp = (lyaConfig, callerRequire) => {
     end: false,
   };
 
-  // We return the choice of the user
+  // return the choice of the user
   // TODO: define a var currentAnalysis and use it everywhere
-  const a = lyaConfig.analysis || preset.ALLOW_DENY;
-  const userChoice = Object.keys(preset).map((e) => preset[e]).includes(a)? a :
-      preset.ALLOW_DENY;
+  const analysis = lyaConfig.analysis || preset.ALLOW_DENY;
+  if (fs.existsSync(analysis)) {
+    console.error('Analysis file not found: ', analysis);
+  }
 
-  // You import the right policy depenting on the choice of the user.
-  const policy = require('./policy' + userChoice + '.js')(env);
+  // Import the right policy depending on the choice of the user.
+  const policy = require(analysis)(env);
 
   // We wrap the global variable in a proxy
   global = new Proxy(global, policy.globalHandler);
@@ -367,7 +368,7 @@ const lyaStartUp = (lyaConfig, callerRequire) => {
   // print anything.
   process.on('exit', function() {
     env.end = true;
-    if (lyaConfig.SAVE_RESULTS && userChoice !== 5 && userChoice !== 7) {
+    if (lyaConfig.SAVE_RESULTS && !/ENFORCEMENT$/.test(analysis)) {
       fs.writeFileSync(lyaConfig.SAVE_RESULTS,
           JSON.stringify(analysisResult, null, 2), 'utf-8');
     }
