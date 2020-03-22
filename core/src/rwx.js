@@ -139,6 +139,13 @@ const moduleHandler = {
 
     return Reflect.get(target, name);
   },
+  construct: function(target, args) {
+    const currentName = locEnv.moduleName[locEnv.requireLevel];
+    if (target.name !== 'Proxy') {
+      updateAnalysisData(locEnv.analysisResult[currentName], target.name, 'x');
+    }
+    return new target(...args);
+  }
 };
 
 // The handler of the functions on the export module. Every time we

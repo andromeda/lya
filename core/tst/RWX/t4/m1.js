@@ -1,6 +1,6 @@
 //
 // deperacted
-// "escape", 
+// "escape",
 // "EvalError",
 
 const arr = Array.of(1, 2, 3);
@@ -10,7 +10,7 @@ const testFloat64 = new Float64Array(12);
 
 var adder = new Function('a', 'b', 'return a + b');
 
-// hasOwnProperty 
+// hasOwnProperty
 const object1 = new Object();
 object1.property1 = 42;
 object1.hasOwnProperty('property1');
@@ -69,7 +69,7 @@ var testToString = new Object();
 testToString.toString(); // returns [object Object]
 
 var str = "Hello World!";
-var res = str.valueOf(); 
+var res = str.valueOf();
 
 parseFloat(4.24342423)
 parseInt(1231)
