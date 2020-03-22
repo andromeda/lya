@@ -179,7 +179,7 @@ const lyaStartUp = (lyaConfig, callerRequire) => {
   const createGlobal = (name, moduleProlog) => {
     if (global[name] !== undefined) {
       globalProxies[name] = proxyWrap(policy.moduleHandler, global[name], name);
-      moduleProlog = 'let ' + name + ' = pr["' + name +'"];\n' + moduleProlog;
+      moduleProlog = 'let ' + name + ' = localGlobal["' + name +'"];\n' + moduleProlog;
     }
     return moduleProlog;
   };
@@ -205,13 +205,13 @@ const lyaStartUp = (lyaConfig, callerRequire) => {
     globalProxies[name] = new Proxy(global[globalFunc][specFunc],
         exportHandler);
     objName.set(global[globalFunc][specFunc], name);
-    return moduleProlog += name + '= pr["' + name +'"];\n';
+    return moduleProlog += name + '= localGlobal["' + name +'"];\n';
   };
 
   // We need to add all the global prototype variable declarations in the script
   const createModuleProlog = () => {
     moduleProlog = wrapSpecGlobal(moduleProlog, 'process', 'env');
-    moduleProlog += 'Math = new Proxy(Math, pr["proxyExportHandler"]);\n';
+    moduleProlog += 'Math = new Proxy(Math, localGlobal["proxyExportHandler"]);\n';
     moduleProlog = passJSONFile(moduleProlog, createGlobal, globals);
     return moduleProlog;
   };
@@ -257,7 +257,7 @@ const lyaStartUp = (lyaConfig, callerRequire) => {
   Module.wrap = (script) => {
     script = globalsDecl() + script;
     let wrappedScript = originalWrap(script);
-    wrappedScript = wrappedScript.replace('__dirname)', '__dirname, pr)');
+    wrappedScript = wrappedScript.replace('__dirname)', '__dirname, localGlobal)');
     return wrappedScript;
   };
 
