@@ -100,8 +100,10 @@ const lyaStartUp = (lyaConfig, callerRequire) => {
     let localGlobal = {};
     localGlobal = passJSONFile(createGlobal, defaultNames.globals);
     localGlobal['proxyExportHandler'] = policy.globalConstHandler;
-    localGlobal['process.env'] = new Proxy(global['process']['env'], exportHandler);
-    objName.set(global['process']['env'], 'process.env');
+    const noProxyOrig = new Proxy(global['process']['env'], {});
+    localGlobal['process.env'] = new Proxy(noProxyOrig, exportHandler);
+    objName.set(noProxyOrig, 'process.env');
+
     return localGlobal;
   }
 
