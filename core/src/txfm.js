@@ -158,11 +158,10 @@ const lyaStartUp = (lyaConfig, callerRequire) => {
       } else {
         for (const key in origGlobal) {
           if (Object.prototype.hasOwnProperty.call(origGlobal, key)) {
-            origGlobal[key] = objTypeAction(origGlobal, key, handler,
+            localGlobal[key] = objTypeAction(origGlobal, key, handler,
                 givenFunc, false);
           }
         }
-        return origGlobal;
       }
     }
     return localGlobal;
