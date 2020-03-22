@@ -2,8 +2,6 @@
   "PWD_REPLACE/main.js": {
     "require": "x",
     "require('fs')": "x",
-    "console": "r",
-    "console.log": "x",
     "require('./m1.js')": "x",
     "require('./m2.js')": "x",
     "require('./m1.js').fst": "r",
@@ -14,7 +12,6 @@
     "require('fs')": "x",
     "module": "r",
     "module.exports": "w",
-    "require('fs').openSync": "r",
     "require('fs').readFileSync": "rx",
     "require('./m2.js')": "x"
   },
@@ -26,7 +23,6 @@
     "console": "r",
     "console.log": "x",
     "module": "r",
-    "module.parent": "r",
     "module.exports": "w",
     "require('fs').rmdirSync": "r",
     "require('fs').mkdirSync": "r",
