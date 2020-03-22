@@ -20,11 +20,6 @@ const preset = {
 };
 
 const lyaStartUp = (lyaConfig, callerRequire) => {
-  // We use this global value to know if the program has ended or not
-  // necessary for enforcement analysis(5, 7)
-  // TODO: make this library local, like presets
-  global.end = false;
-
   // We import and declare all the necessary modules
   const Module = require('module');
   const vm = require('vm');
@@ -59,7 +54,7 @@ const lyaStartUp = (lyaConfig, callerRequire) => {
   const globalNames = new Map();
 
   // We read and store the data of the json file
-  const globals = require('./globals.json');
+  const defaultNames = require('./default-names.json');
 
   // We make a test on fragment
   const env = {
@@ -70,6 +65,9 @@ const lyaStartUp = (lyaConfig, callerRequire) => {
     objPath: objPath,
     methodNames: methodNames,
     globalNames: globalNames,
+    // We use this global value to know if the program has ended or not
+    // necessary for enforcement analysis(5, 7)
+    end: false,
   };
 
   // We return the choice of the user
@@ -87,13 +85,7 @@ const lyaStartUp = (lyaConfig, callerRequire) => {
   // A proxy to use it in Math.PI etc
   globalProxies['proxyExportHandler'] = policy.globalConstHandler;
 
-  const moduleInputNames = [
-    'exports',
-    'require',
-    'module',
-    '__filename',
-    '__dirname',
-  ];
+  const moduleInputNames = defaultNames.locals;
 
   const wrapModuleInputs = (obj, count) => {
     const type = typeof obj[count];
@@ -123,7 +115,7 @@ const lyaStartUp = (lyaConfig, callerRequire) => {
   const getObjLength = (obj) => Object.keys(obj).length;
   const getObjValues = (obj) => Object.getOwnPropertyNames(obj);
 
-  // We wrap every function on global obj that exists in globals.json
+  // We wrap every function on global obj that exists in default-names.json
   // Returns the proxy obj we want
   const objTypeAction = (obj, name, handler, givenFunc, nameSave) => {
     const localGlobal = {};
@@ -150,29 +142,29 @@ const lyaStartUp = (lyaConfig, callerRequire) => {
     let localGlobal = {};
     if (objType === 'function') {
       const noProxyOrig = new Proxy(origGlobal, {});
-      //methodNames.set(noProxyOrig, givenFunc);
+      // methodNames.set(noProxyOrig, givenFunc);
       objPath.set(noProxyOrig, moduleName[env.requireLevel]);
       localGlobal = new Proxy(noProxyOrig, handler);
     } else if (objType === 'object') {
-        if (!getObjLength(origGlobal)) {
-          const values = getObjValues(origGlobal);
-          for (const key in values) {
-            if (Object.prototype.hasOwnProperty.call(values, key)) {
-              const name = values[key];
-              localGlobal[name] = objTypeAction(origGlobal, name, handler,
+      if (!getObjLength(origGlobal)) {
+        const values = getObjValues(origGlobal);
+        for (const key in values) {
+          if (Object.prototype.hasOwnProperty.call(values, key)) {
+            const name = values[key];
+            localGlobal[name] = objTypeAction(origGlobal, name, handler,
                 givenFunc, true);
-            }
           }
-        } else {
-          for (const key in origGlobal) {
-            if (Object.prototype.hasOwnProperty.call(origGlobal, key)) {
-              origGlobal[key] = objTypeAction(origGlobal, key, handler,
-                givenFunc, false);
-            }
-          }
-          return origGlobal;
         }
+      } else {
+        for (const key in origGlobal) {
+          if (Object.prototype.hasOwnProperty.call(origGlobal, key)) {
+            origGlobal[key] = objTypeAction(origGlobal, key, handler,
+                givenFunc, false);
+          }
+        }
+        return origGlobal;
       }
+    }
     return localGlobal;
   };
 
@@ -212,7 +204,7 @@ const lyaStartUp = (lyaConfig, callerRequire) => {
   const createModuleProlog = () => {
     moduleProlog = wrapSpecGlobal(moduleProlog, 'process', 'env');
     moduleProlog += 'Math = new Proxy(Math, localGlobal["proxyExportHandler"]);\n';
-    moduleProlog = passJSONFile(moduleProlog, createGlobal, globals);
+    moduleProlog = passJSONFile(moduleProlog, createGlobal, defaultNames.globals);
     return moduleProlog;
   };
 
@@ -232,12 +224,12 @@ const lyaStartUp = (lyaConfig, callerRequire) => {
     if (list !== undefined) {
       for (let i = 0; i < list.length; i++) {
         const value = list[i];
-        for (const upValue in globals) {
-          if (Object.prototype.hasOwnProperty.call(globals, upValue)) {
+        for (const upValue in defaultNames.globals) {
+          if (Object.prototype.hasOwnProperty.call(defaultNames.globals, upValue)) {
             if (upValue === value) {
-              globals.remove(upValue);
+              defaultNames.globals.remove(upValue);
             }
-            const globalVariables = globals[upValue];
+            const globalVariables = defaultNames.globals[upValue];
             for (const declName in globalVariables) {
               if (Object.prototype.hasOwnProperty.
                   call(globalVariables, declName)) {
@@ -374,7 +366,7 @@ const lyaStartUp = (lyaConfig, callerRequire) => {
   // use it for enforcement analysis(5, 7) cause we dont want to
   // print anything.
   process.on('exit', function() {
-    global.end = true;
+    env.end = true;
     if (lyaConfig.SAVE_RESULTS && userChoice !== 5 && userChoice !== 7) {
       fs.writeFileSync(lyaConfig.SAVE_RESULTS,
           JSON.stringify(analysisResult, null, 2), 'utf-8');
@@ -382,7 +374,7 @@ const lyaStartUp = (lyaConfig, callerRequire) => {
   });
 
   return new Proxy(callerRequire, policy.require);
-}
+};
 
 module.exports = {
   preset: preset,

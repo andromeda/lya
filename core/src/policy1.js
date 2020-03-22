@@ -121,7 +121,7 @@ const readFunction = (myFunc, name) => {
 
     // TODO: More elegant fix to things happening after exit
     // maybe change the process.on exit somehow????
-    if (global.end) {
+    if (locEnv.end) {
       require('fs').writeFileSync(lyaConfig.SAVE_RESULTS,
           JSON.stringify(locEnv.accessMatrix, null, 2), 'utf-8');
     }

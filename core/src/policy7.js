@@ -1,4 +1,4 @@
-// TODO: Find a more elegant solution than !global.end
+// TODO: Find a more elegant solution than !locEnv.end
 // env is {
 //   trueName : trueName,
 //   requireLevel : requireLevel,
@@ -57,7 +57,7 @@ const EnforcementCheck = {
     // problemCheck(dynamicObj[currentName][nameReq])
     if ((Object.prototype.hasOwnProperty.
         call(dynamicObj, currentName, nameReq) === false ||
-          problemCheck(dynamicObj[currentName][nameReq], 'R')) && !global.end) {
+          problemCheck(dynamicObj[currentName][nameReq], 'R')) && !locEnv.end) {
       throw new Error('Something went badly wrong on the require!');
     }
 
@@ -72,7 +72,7 @@ const EnforcementCheck = {
 // Given those two inputs we can update the analysis data that are stored in storedCalls
 const CheckAnalysisData = (storedCalls, truename, mode) => {
   if ((Object.prototype.hasOwnProperty.call(storedCalls, truename) === false ||
-    problemCheck(storedCalls[truename], mode)) && !global.end) {
+    problemCheck(storedCalls[truename], mode)) && !locEnv.end) {
     throw new Error('Something went badly wrong in ' + truename);
   }
 };
@@ -151,7 +151,7 @@ const readFunction = (myFunc, name) => {
 
   if ((Object.prototype.hasOwnProperty.
       call(storedCalls, name) === false ||
-          problemCheck(storedCalls[name], 'R')) && !global.end) {
+          problemCheck(storedCalls[name], 'R')) && !locEnv.end) {
     throw new Error('Something went badly wrong in ' + name);
   }
 };
