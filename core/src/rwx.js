@@ -13,7 +13,7 @@ const requireHandler = {
     const origReqModuleName = argumentsList[0];
     exportObj('require', 'x');
     locEnv.analysisResult[currentName]['require(\'' +
-      origReqModuleName + '\')'] = 'x';
+      origReqModuleName + '\')'] = 'i';
     return Reflect.apply(target, thisArg, argumentsList);
   },
   get: function(target, name) {
@@ -87,6 +87,7 @@ const globalHandler = {
       if (typeof target[name+endName] != 'undefined') {
         const currentName = locEnv.moduleName[locEnv.requireLevel];
         const nameToShow = target[name+endName];
+        updateAnalysisData(locEnv.analysisResult[currentName], 'global', 'r');
         updateAnalysisData(locEnv.analysisResult[currentName], nameToShow, 'r');
       }
     }
@@ -169,21 +170,16 @@ const exportsFuncHandler = {
 // Read function so we print it in the export file
 // This is to catch the read of a called function
 // require("math.js").fft && require("math.js").fft.mult
-const readFunction = (myFunc, name) => {
-  const wholeName = name + '.' + myFunc.name;
+const readFunction = (name, type) => {
   const currentPlace = locEnv.moduleName[locEnv.requireLevel];
   const storedCalls = locEnv.analysisResult[currentPlace];
+  const action = type === 'function' ? 'x' : 'r';
 
   if (Object.prototype.hasOwnProperty.
       call(storedCalls, name) === false) {
-    storedCalls[name] = 'r';
-  }
-
-  if (Object.prototype.hasOwnProperty.
-      call(storedCalls, wholeName) === false) {
-    storedCalls[wholeName] = 'r';
+    storedCalls[name] = action;
   } else {
-    addEvent('r', storedCalls, wholeName);
+    addEvent(action, storedCalls, name);
   }
 };
 

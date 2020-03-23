@@ -260,18 +260,16 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   Module.prototype.require = function(...args) {
     const path = args[0];
     let result = originalRequire.apply(this, args);
-    // If false that means that we pass from here for the
-    // first time.
-
     const type = typeof result;
+
     if (type !== 'boolean' && type !== 'symbol' &&
           type !== 'number' && type !== 'string') {
       if (!objName.has(result)) {
-        // Each time we update env we update locEnv too
         objName.set(result, 'require(\'' + path + '\')');
         objPath.set(result, moduleName[env.requireLevel]);
         result = new Proxy(result, exportHandler);
-        if (env.requireLevel !== 0 && nativeModules.indexOf(path) === -1) {
+        if (env.requireLevel !== 0 &&
+          nativeModules.indexOf(path) === -1) {
           env.requireLevel--;
         }
       } else {
@@ -290,8 +288,12 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     objName.set(key, name);
     objPath.set(key, path);
   };
-
+  // TODO: Fix names for exportHandler
   const exportHandler = {
+    apply: function(target, thisArg, argumentsList) {
+      policy.readFunction(objName.get(target), 'function');
+      return Reflect.apply(target, thisArg, argumentsList);
+    },
     get: function(target, name, receiver) {
       const exportType = typeof(target[name]);
       if (exportType !== 'undefined' && target[name] != null &&
@@ -304,17 +306,19 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 
             let truename = objName.get(receiver);
             let truepath = objPath.get(receiver);
-
             if (truename === undefined) {
               truename = objName.get(target);
               truepath = objPath.get(target);
             }
 
             const localObject = target[name];
+            policy.readFunction(truename, exportType);
+
             truename = truename + '.' + name;
             target[name] = new Proxy(target[name], exportHandler);
-
             namePathSet(localObject, truename, truepath);
+            // NOTE: May i need a second readFunction here
+
             const result = Reflect.get(target, name);
             withProxy.set(result, true);
 
@@ -333,13 +337,16 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
             const key = storePureFunctions.get(localFunction);
             namePathSet(key, truename, truepath);
           }
-          policy.readFunction(localFunction, objName.get(target));
+          policy.readFunction(truename);
+          policy.readFunction(truename + '.' + name);
+
           const result = Reflect.get(target, name);
           withProxy.set(result, true);
 
           return result;
         } else if (exportType === 'number' || exportType === 'boolean' ||
             exportType === 'string') {
+          policy.readFunction(objName.get(target));
           policy.updateRestData(target, name, exportType);
         }
       }
