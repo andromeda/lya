@@ -12,7 +12,7 @@
     "module.exports": "w"
   },
   "PWD_REPLACE/m2.js": {
-    "module": "r",
-    "module.exports": "w"
+     "module": "r",
+     "module.exports": "w"
   }
 }
