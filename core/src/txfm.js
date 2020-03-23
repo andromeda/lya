@@ -144,6 +144,12 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       // methodNames.set(noProxyOrig, objName);
       objPath.set(noProxyOrig, moduleName[env.requireLevel]);
       localGlobal = new Proxy(noProxyOrig, handler);
+      // TODO: Add the if code !getObjLength(origGlobal)
+      // under here if want to wrap the second level under
+      // functions. lines (150...158);
+      // etc to Catch : Array.of, Object.keys, constructor.getOwnPropertyNames
+      // maybe add this as an input from the user, to specify the depth of 
+      // the analysis.
     } else if (objType === 'object') {
       if (!getObjLength(origGlobal)) {
         const values = getObjValues(origGlobal);
