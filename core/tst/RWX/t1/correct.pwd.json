@@ -2,13 +2,13 @@
   "PWD_REPLACE/main.js": {
     "require": "x",
     "require('fs')": "ir",
-    "require('./m1.js')": "r",
+    "require('./m1.js')": "i",
     "require('fs').createWriteStream": "x"
   },
   "PWD_REPLACE/m1.js": {
     "Number": "x",
     "require": "x",
-    "require('./m2.js')": "ri",
+    "require('./m2.js')": "ir",
     "require('./m2.js').add": "x"
   },
   "PWD_REPLACE/m2.js": {
