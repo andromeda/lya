@@ -1,0 +1,16 @@
+{
+  "PWD_REPLACE/main.js": {
+    "require": "x",
+    "require('./m1.js')": "x"
+  },
+  "PWD_REPLACE/m1.js": {
+    "require": "x",
+    "require('./m2.js')": "x",
+    "module": "r",
+    "module.exports": "w"
+  },
+  "PWD_REPLACE/m2.js": {
+    "console": "r",
+    "console.log": "x"
+  }
+}
