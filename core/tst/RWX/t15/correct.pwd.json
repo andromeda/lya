@@ -1,9 +1,10 @@
 {
   "PWD_REPLACE/main.js": {
     "require": "x",
-    "require('./m1.js')": "r"
+    "require('./m1.js')": "i"
   },
   "PWD_REPLACE/m1.js": {
+    "process": "r",
     "process.env": "r",
     "process.env.HOME": "r",
     "process.env.PATH": "r",

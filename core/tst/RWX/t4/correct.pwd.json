@@ -5,6 +5,7 @@
   },
   "PWD_REPLACE/m1.js": {
     "Array": "rx",
+    "Array.of": "x",
     "ArrayBuffer": "x",
     "Float32Array": "x",
     "Float64Array": "x",

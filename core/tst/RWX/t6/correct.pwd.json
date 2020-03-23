@@ -1,9 +1,7 @@
 {
   "PWD_REPLACE/main.js": {
     "require": "x",
-    "require('./m1.js')": "x",
-    "require('./m1.js').valueOf": "rx",
-    "require('./m1.js').toString": "rx"
+    "require('./m1.js')": "ir"
   },
   "PWD_REPLACE/m1.js": {
     "console": "r",

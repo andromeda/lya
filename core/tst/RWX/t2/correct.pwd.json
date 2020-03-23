@@ -22,6 +22,7 @@
     "console": "r",
     "console.log": "x",
     "module": "r",
+    "module.parent": "r",
     "module.exports": "w",
     "require('fs').rmdirSync": "r",
     "require('fs').mkdirSync": "r",
