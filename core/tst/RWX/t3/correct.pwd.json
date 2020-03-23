@@ -6,6 +6,7 @@
     "require('./m1.js')": "i"
   },
   "PWD_REPLACE/m1.js": {
+    "global": "r",
     "global.x": "r",
     "console": "r",
     "console.log": "x"
