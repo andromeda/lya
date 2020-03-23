@@ -189,7 +189,7 @@ const readFunction = (myFunc, name) => {
 
 const globalConstHandler = {
   get: function(target, name) {
-    const currentName = locEnv.moduleName[locEnv.requireLevel];
+    const currentName = locEnv.objPath.get(target);
     if (locEnv.globalNames.has(target[name])) {
       updateAnalysisData(locEnv.analysisResult[currentName],
           locEnv.globalNames.get(target[name]).split('.')[0], 'r');
