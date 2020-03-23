@@ -136,12 +136,12 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     return localGlobal[name];
   };
 
-  const proxyWrap = function(handler, origGlobal, givenFunc) {
+  const proxyWrap = function(handler, origGlobal, objName) {
     const objType = typeof origGlobal;
     let localGlobal = {};
     if (objType === 'function') {
       const noProxyOrig = new Proxy(origGlobal, {});
-      // methodNames.set(noProxyOrig, givenFunc);
+      // methodNames.set(noProxyOrig, objName);
       objPath.set(noProxyOrig, moduleName[env.requireLevel]);
       localGlobal = new Proxy(noProxyOrig, handler);
     } else if (objType === 'object') {
@@ -151,14 +151,14 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
           if (Object.prototype.hasOwnProperty.call(values, key)) {
             const name = values[key];
             localGlobal[name] = objTypeAction(origGlobal, name, handler,
-                givenFunc, true);
+                objName, true);
           }
         }
       } else {
         for (const key in origGlobal) {
           if (Object.prototype.hasOwnProperty.call(origGlobal, key)) {
             localGlobal[key] = objTypeAction(origGlobal, key, handler,
-                givenFunc, false);
+                objName, false);
           }
         }
       }
@@ -168,7 +168,9 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 
   const createGlobal = (name) => {
     if (global[name] !== undefined) {
-      return proxyWrap(policy.moduleHandler, global[name], name);
+      const proxyObj = proxyWrap(policy.moduleHandler, global[name], name);
+      objPath.set(proxyObj, moduleName[env.requireLevel]);
+      return proxyObj;
     }
     return 0;
   };
