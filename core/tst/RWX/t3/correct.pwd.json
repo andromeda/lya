@@ -3,7 +3,7 @@
     "global": "r",
     "global.x": "w",
     "require": "x",
-    "require('./m1.js')": "x"
+    "require('./m1.js')": "i"
   },
   "PWD_REPLACE/m1.js": {
     "global.x": "r",
