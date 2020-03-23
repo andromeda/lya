@@ -1,7 +1,7 @@
 {
   "PWD_REPLACE/main.js": {
     "require": "x",
-    "require('./math.js')": "x",
+    "require('./math.js')": "ir",
     "require('./math.js').add": "rx",
     "require('./math.js').constants": "r",
     "require('./math.js').constants.e": "r",
@@ -14,12 +14,12 @@
     "require('./math.js').x": "rw"
   },
   "PWD_REPLACE/math.js": {
+    "Math": "r",
     "Math.PI": "r",
     "console": "r",
     "console.log": "x",
     "global.timesAddCalled": "rw",
     "module": "r",
-    "module.exports": "w",
-    "Object": "r"
+    "module.exports": "w"
   }
 }

@@ -1,7 +1,7 @@
 {
   "PWD_REPLACE/main.js": {
     "require": "x",
-    "require('./m1.js')": "x"
+    "require('./m1.js')": "i"
   },
   "PWD_REPLACE/m1.js": {
     "module": "r",
