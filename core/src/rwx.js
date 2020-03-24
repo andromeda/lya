@@ -175,7 +175,7 @@ const exportsFuncHandler = {
 const readFunction = (name, type) => {
   const currentPlace = locEnv.moduleName[locEnv.requireLevel];
   const storedCalls = locEnv.analysisResult[currentPlace];
-  const action = type === 'function' ? 'x' : 'r';
+  const action = type === 'function' ? 'rx' : 'r';
 
   if (Object.prototype.hasOwnProperty.
       call(storedCalls, name) === false) {
