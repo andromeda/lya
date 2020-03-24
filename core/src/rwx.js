@@ -11,7 +11,7 @@ const requireHandler = {
   apply: function(target, thisArg, argumentsList) {
     const currentName = locEnv.moduleName[locEnv.requireLevel];
     const origReqModuleName = argumentsList[0];
-    exportObj('require', 'x');
+    exportObj('require', 'rx');
     locEnv.analysisResult[currentName]['require(\'' +
       origReqModuleName + '\')'] = 'i';
     return Reflect.apply(target, thisArg, argumentsList);
@@ -123,8 +123,9 @@ const moduleHandler = {
       updateAnalysisData(locEnv.analysisResult[currentName],
           locEnv.methodNames.get(target).split('.')[0], 'r');
       updateAnalysisData(locEnv.analysisResult[currentName],
-          locEnv.methodNames.get(target), 'x');
+          locEnv.methodNames.get(target), 'rx');
     } else {
+      updateAnalysisData(locEnv.analysisResult[currentName], target.name, 'r');
       updateAnalysisData(locEnv.analysisResult[currentName], target.name, 'x');
     }
     return Reflect.apply(target, thisArg, argumentsList);
@@ -143,6 +144,7 @@ const moduleHandler = {
   construct: function(target, args) {
     const currentName = locEnv.moduleName[locEnv.requireLevel];
     if (target.name !== 'Proxy') {
+      updateAnalysisData(locEnv.analysisResult[currentName], target.name, 'r');
       updateAnalysisData(locEnv.analysisResult[currentName], target.name, 'x');
     }
     return new target(...args);
