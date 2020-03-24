@@ -11,14 +11,14 @@
     "require('fs')": "ir",
     "module": "r",
     "module.exports": "w",
-    "require('fs').readFileSync": "x",
+    "require('fs').readFileSync": "rx",
     "require('./m2.js')": "i"
   },
   "PWD_REPLACE/m2.js": {
     "require": "x",
     "require('fs')": "ir",
     "require('./m3.js')": "ir",
-    "require('fs').readFileSync": "x",
+    "require('fs').readFileSync": "rx",
     "console": "r",
     "console.log": "x",
     "module": "r",
@@ -31,7 +31,7 @@
   "PWD_REPLACE/m3.js": {
     "require": "x",
     "require('fs')": "ir",
-    "require('fs').readFileSync": "x",
+    "require('fs').readFileSync": "rx",
     "console": "r",
     "console.log": "x",
     "module": "r",

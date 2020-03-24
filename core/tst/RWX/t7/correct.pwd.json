@@ -2,9 +2,9 @@
   "PWD_REPLACE/main.js": {
     "require": "x",
     "require('./m1.js')": "ir",
-    "require('./m1.js').add": "x",
+    "require('./m1.js').add": "rx",
     "require('./m1.js').fft": "r",
-    "require('./m1.js').fft.add": "x"
+    "require('./m1.js').fft.add": "rx"
   },
   "PWD_REPLACE/m1.js": {
     "module": "r",
