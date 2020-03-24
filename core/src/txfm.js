@@ -294,7 +294,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     objName.set(key, name);
     objPath.set(key, path);
   };
-  // TODO: Fix names for exportHandler
+  
   const exportHandler = {
     apply: function(target, thisArg, argumentsList) {
       policy.readFunction(objName.get(target), 'function');
@@ -309,46 +309,40 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
             if (withProxy.has(target[name])) {
               return Reflect.get(target, name);
             }
+            const currObject = target[name];
+            const fatherName = objName.get(receiver) ? objName.get(receiver) : 
+              objName.get(target);
+            const birthplace = objPath.get(receiver) ? objPath.get(receiver) :
+              objPath.get(target);
+            const childName = fatherName + '.' + name;
 
-            let truename = objName.get(receiver);
-            let truepath = objPath.get(receiver);
-            if (truename === undefined) {
-              truename = objName.get(target);
-              truepath = objPath.get(target);
-            }
-
-            const localObject = target[name];
-            policy.readFunction(truename, exportType);
-
-            truename = truename + '.' + name;
+            policy.readFunction(fatherName, exportType);
             target[name] = new Proxy(target[name], exportHandler);
-            namePathSet(localObject, truename, truepath);
-            // NOTE: May i need a second readFunction here
+            namePathSet(currObject, childName, birthplace);
 
             const result = Reflect.get(target, name);
             withProxy.set(result, true);
-
             return result;
           }
         } else if (exportType === 'function') {
-          const localFunction = target[name];
-          const truename = objName.get(target);
-          const truepath = moduleName[env.requireLevel];
+          const currFunction = target[name];
+          const fatherName = objName.get(target);
+          const birthplace = moduleName[env.requireLevel];
           if (!withProxy.has(target[name])) {
-            Object.defineProperty(localFunction, 'name', {value: name});
-            target[name] = new Proxy(localFunction, policy.exportsFuncHandler);
-            storePureFunctions.set(target[name], localFunction);
-            namePathSet(localFunction, truename, truepath);
+            Object.defineProperty(currFunction, 'name', {value: name});
+            target[name] = new Proxy(currFunction, policy.exportsFuncHandler);
+            storePureFunctions.set(target[name], currFunction);
+            namePathSet(currFunction, fatherName, birthplace);
           } else {
-            const key = storePureFunctions.get(localFunction);
-            namePathSet(key, truename, truepath);
+            const key = storePureFunctions.get(currFunction);
+            namePathSet(key, fatherName, birthplace);
           }
-          policy.readFunction(truename);
-          policy.readFunction(truename + '.' + name);
+
+          policy.readFunction(fatherName);
+          policy.readFunction(fatherName + '.' + name);
 
           const result = Reflect.get(target, name);
           withProxy.set(result, true);
-
           return result;
         } else if (exportType === 'number' || exportType === 'boolean' ||
             exportType === 'string') {
