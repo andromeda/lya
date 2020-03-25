@@ -1,9 +1,5 @@
 let locEnv;
 
-// Holds the end of each name store of new assigned global variables
-// suffix for our own metadata
-const endName = '@name';
-
 const updateRestData = (target, name, type) => {
   exportObj(locEnv.objName.get(target) + '.' +name, 'r');
 };
@@ -127,12 +123,10 @@ const moduleHandler = {
 // e.g., module.exports --- but only function application?
 const exportsFuncHandler = {
   apply: function(target, thisArg, argumentsList) {
-    let truename;
-
-    truename = locEnv.objName.get(target);
+    const birthplace = locEnv.objName.get(target);
     const currentName = locEnv.moduleName[locEnv.requireLevel];
     if (currentName === locEnv.objPath.get(target)) {
-      truename = truename + '.' + target.name;
+      const truename = birthplace + '.' + target.name;
       updateAnalysisData(locEnv.analysisResult[currentName], truename, 'x');
     }
     return Reflect.apply(target, thisArg, argumentsList);
