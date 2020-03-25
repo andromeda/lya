@@ -1,44 +1,3 @@
-/*
-
-# Analysis interface (analysis hooks):
-analysis.onRead = (target, name) => {...}
-analysis.onWrite = (target, name, value) => {}
-analysis.onCallPre = (target, thisArg, argumentsList) => {...}
-analysis.onCallPost = (target, thisArg, argumentsList) => {...}
-
-+ ? id of module attempting accesss: (absolute file path)
-+ ? path of target from "root": [process, env, HOME]
-- ? name of target: (no need, it **has to be** the last element of list)
-
-# Utility / helper functions
-lya.getObjectPath (target[name]) -> {
-  absolutePath: [process, env, HOME]
-}
-
-lya.getModuleInfo (o) -> {
-  absoluteID: "/blah/foo/bar/lodash.js",
-  importString: "lodash.js",
-}
-
-# Options
-lya.analysisDepth
-lya.roots = ["user-globals", "node-globals"]
-lya.granularity = ["prototype", "Object.keys", "ourFunctions"]
-
-examples:
-let x = process.env.HOME // {process: r, env: r}
-let x = Math.PI          // {process: r, env: r}
-
-root: to whom does the value belong? (full absolute name)
-- user-globals: e.g., global.x, x,                                   [global, x]
-- es-globals: Math, Map, Array,                                      [Math, PI]
-- node-globals: console, setImmediate,                               [console, log]
-- module-locals: exports, require, module, __filename, __dirname     [require]
-- module-returns: exports, module.exports                            [ID, math, pi]
-
-main:
-  require("math").add(1, 2)  // [blah/foo/bar/math.js, add] [/../../main.js]
- */
 let locEnv;
 
 // Holds the end of each name store of new assigned global variables
@@ -85,41 +44,6 @@ const exportObj = (name, action) => {
   updateAnalysisData(locEnv.analysisResult[currentName], name, action);
 };
 
-// The handler of the global variable.Every time we access the global variabe
-// in order to declare or call a variable, we can print it on the export file.
-// e.g., global.x, global.y; but not x, y;
-const globalHandler = {
-  get: function(target, name) {
-    // XXX[target] != 'undefined'
-    if (typeof name === 'string') {
-      if (typeof target[name+endName] != 'undefined') {
-        const currentName = locEnv.moduleName[locEnv.requireLevel];
-        const nameToShow = target[name+endName];
-        updateAnalysisData(locEnv.analysisResult[currentName], 'global', 'r');
-        updateAnalysisData(locEnv.analysisResult[currentName], nameToShow, 'r');
-      }
-    }
-
-    return Reflect.get(target, name);
-  },
-  set: function(target, name, value) {
-    if (typeof value === 'number') {
-      const currentName = locEnv.moduleName[locEnv.requireLevel];
-      const nameToStore = 'global.' + name;
-      const result = Reflect.set(target, name, value);
-      // In order to exist a distinction between the values we declared ourselfs
-      // We declare one more field with key value that stores the name
-      Object.defineProperty(target, name+endName, {value: nameToStore});
-      updateAnalysisData(locEnv.analysisResult[currentName], 'global', 'r');
-      updateAnalysisData(locEnv.analysisResult[currentName], nameToStore, 'w');
-
-      return result;
-    }
-
-    return Reflect.set(target, name, value);
-  },
-};
-
 // The handler of the all the function that are called inside a module.
 // Every time we load a module with require it first execute all the code
 // and then prepare and exports all the export data. We use this handler
@@ -129,8 +53,8 @@ const globalHandler = {
 const moduleHandler = {
   apply: function(target, thisArg, argumentsList) {
     const currentName = locEnv.objPath.get(target);
+    const moduleName = locEnv.moduleName[locEnv.requireLevel];
     if (target.name === 'require') {
-      const moduleName = locEnv.moduleName[locEnv.requireLevel];
       const origReqModuleName = argumentsList[0];
       exportObj('require', 'rx');
       locEnv.analysisResult[moduleName]['require(\'' +
@@ -148,18 +72,25 @@ const moduleHandler = {
   },
   get: function(target, name) {
     const currentName = locEnv.objPath.get(target);
-    if (locEnv.globalNames.has(target[name])) {
+    if (locEnv.globalNames.has(name)) {
+      const moduleName = locEnv.moduleName[locEnv.requireLevel];
+      updateAnalysisData(locEnv.analysisResult[moduleName],
+        locEnv.globalNames.get(name).split('.')[0], 'r');
+      updateAnalysisData(locEnv.analysisResult[moduleName],
+        locEnv.globalNames.get(name), 'r');
+    } else if (locEnv.globalNames.has(target[name])) {
       updateAnalysisData(locEnv.analysisResult[currentName],
         locEnv.globalNames.get(target[name]).split('.')[0], 'r');
       updateAnalysisData(locEnv.analysisResult[currentName],
         locEnv.globalNames.get(target[name]), 'r');
     } else if (locEnv.methodNames.has(target[name])) {
       updateAnalysisData(locEnv.analysisResult[currentName],
-          locEnv.methodNames.get(target), 'r');
-    } else if (locEnv.methodNames.has(target)) {
+          locEnv.methodNames.get(target[name]), 'r');
+          console.log(locEnv.methodNames.get(target[name]));
+    } else if (locEnv.methodNames.has(target) &&
+        locEnv.methodNames.get(target) !== 'global') {
       updateAnalysisData(locEnv.analysisResult[currentName],
           locEnv.methodNames.get(target), 'r');
-    // TODO: remove the target.name from here
     } else if (target.name) {
       updateAnalysisData(locEnv.analysisResult[currentName], target.name, 'r');
     }
@@ -173,6 +104,9 @@ const moduleHandler = {
       updateAnalysisData(locEnv.analysisResult[currentName],
           locEnv.methodNames.get(target), 'r');
       updateAnalysisData(locEnv.analysisResult[currentName], nameToStore, 'w');
+      if (locEnv.methodNames.get(target) === 'global') {
+        locEnv.globalNames.set(name, nameToStore);
+      }
     }
     return Reflect.set(target, name, value);
   },
@@ -225,7 +159,6 @@ module.exports = (env) => {
   locEnv = env;
   return {
     moduleHandler: moduleHandler,
-    globalHandler: globalHandler,
     readFunction: readFunction,
     exportsFuncHandler: exportsFuncHandler,
     updateRestData: updateRestData,

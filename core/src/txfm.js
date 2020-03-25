@@ -68,8 +68,11 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   // Import the right policy depending on the choice of the user.
   const policy = require(lyaConfig.analysis)(env);
 
+  // TODO: Make this local to every module by passing it in prologue
   // We wrap the global variable in a proxy
-  global = new Proxy(global, policy.globalHandler);
+  methodNames.set(global, 'global');
+  objPath.set(global, moduleName[env.requireLevel])
+  global = new Proxy(global, policy.moduleHandler);
 
   // TODO: this should come from generate
   const moduleInputNames = defaultNames.locals.node;
