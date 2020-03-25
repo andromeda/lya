@@ -1,3 +1,20 @@
+### Refactoring
+
+* fix test cases
+* refactor
+
+Quantum vs. non-quantum / symmetric vs. symmetric
+
+### Cases
+
+Test the following cases:
+
+```JavaScript
+R: module.parent
+R: module.exports 
+X: Array.of
+X: n.toString()
+```
 
 ### New `lya` Interface
 

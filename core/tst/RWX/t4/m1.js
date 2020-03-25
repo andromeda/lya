@@ -3,8 +3,8 @@
 // "escape",
 // "EvalError",
 
-const arr1 = Array.of(1, 2, 3);
-const arr2 = new Array(2);
+//const arr1 = Array.of(1, 2, 3);
+const arr1 = new Array(2);
 const buffer = new ArrayBuffer(16);
 const testFloat32 = new Float32Array(12);
 const testFloat64 = new Float64Array(12);
