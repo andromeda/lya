@@ -50,3 +50,44 @@ to access a value diff than before(R and try RE, E and we try RW etc)
 * Clearup String from handlerObject
 
 * Handle module cache and circular dependencies
+
+## Interface
+
+### Analysis interface (analysis hooks)
+analysis.onRead = (target, name) => {...}
+analysis.onWrite = (target, name, value) => {}
+analysis.onCallPre = (target, thisArg, argumentsList) => {...}
+analysis.onCallPost = (target, thisArg, argumentsList) => {...}
+
++ ? id of module attempting accesss: (absolute file path)
++ ? path of target from "root": [process, env, HOME]
+- ? name of target: (no need, it **has to be** the last element of list)
+
+### Utility / helper functions
+lya.getObjectPath (target[name]) -> {
+  absolutePath: [process, env, HOME]
+}
+
+lya.getModuleInfo (o) -> {
+  absoluteID: "/blah/foo/bar/lodash.js",
+  importString: "lodash.js",
+}
+
+### Options
+lya.analysisDepth
+lya.roots = ["user-globals", "node-globals"]
+lya.granularity = ["prototype", "Object.keys", "ourFunctions"]
+
+examples:
+let x = process.env.HOME // {process: r, env: r}
+let x = Math.PI          // {process: r, env: r}
+
+root: to whom does the value belong? (full absolute name)
+- user-globals: e.g., global.x, x,                                   [global, x]
+- es-globals: Math, Map, Array,                                      [Math, PI]
+- node-globals: console, setImmediate,                               [console, log]
+- module-locals: exports, require, module, __filename, __dirname     [require]
+- module-returns: exports, module.exports                            [ID, math, pi]
+
+main:
+  require("math").add(1, 2)  // [blah/foo/bar/math.js, add] [/../../main.js]
