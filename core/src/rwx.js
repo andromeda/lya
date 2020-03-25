@@ -45,47 +45,10 @@ let locEnv;
 // suffix for our own metadata
 const endName = '@name';
 
-// This the handler of the require function. Every time a "require"
-// is used to load up a module this handler is called. It updates
-// the analysis data that are stored in the analysisResult table.
-// eg require, __dirname, __filename, ...
-const requireHandler = {
-  apply: function(target, thisArg, argumentsList) {
-    const currentName = locEnv.moduleName[locEnv.requireLevel];
-    const origReqModuleName = argumentsList[0];
-    exportObj('require', 'rx');
-    locEnv.analysisResult[currentName]['require(\'' +
-      origReqModuleName + '\')'] = 'i';
-    return Reflect.apply(target, thisArg, argumentsList);
-  },
-  get: function(target, name) {
-    // DB[target]: R
-    // DB[target[name]]: R
-    const currentName = locEnv.objPath.get(target);
-    if (locEnv.methodNames.has(target)) {
-      updateAnalysisData(locEnv.analysisResult[currentName],
-          locEnv.methodNames.get(target), 'r');
-    }
-    return Reflect.get(target, name);
-  },
-  set: function(target, name, value) {
-    const currentName = locEnv.objPath.get(target);
-    if (locEnv.methodNames.has(target)) {
-      const nameToStore = locEnv.methodNames.get(target) + '.' + name;
-      updateAnalysisData(locEnv.analysisResult[currentName],
-          locEnv.methodNames.get(target), 'r');
-      updateAnalysisData(locEnv.analysisResult[currentName], nameToStore, 'w');
-    }
-    return Reflect.set(target, name, value);
-  },
-
-};
-
 const updateRestData = (target, name, type) => {
   exportObj(locEnv.objName.get(target) + '.' +name, 'r');
 };
 
-// TODO:find a more elegant way for the order
 // We add the R or W or E to the existing string
 const addEvent = (event, values, index) => {
   let permissions = values[index];
@@ -166,7 +129,13 @@ const globalHandler = {
 const moduleHandler = {
   apply: function(target, thisArg, argumentsList) {
     const currentName = locEnv.objPath.get(target);
-    if (locEnv.methodNames.has(target)) {
+    if (target.name === 'require') {
+      const moduleName = locEnv.moduleName[locEnv.requireLevel];
+      const origReqModuleName = argumentsList[0];
+      exportObj('require', 'rx');
+      locEnv.analysisResult[moduleName]['require(\'' +
+        origReqModuleName + '\')'] = 'i';
+    } else if (locEnv.methodNames.has(target)) {
       updateAnalysisData(locEnv.analysisResult[currentName],
           locEnv.methodNames.get(target).split('.')[0], 'r');
       updateAnalysisData(locEnv.analysisResult[currentName],
@@ -184,7 +153,10 @@ const moduleHandler = {
         locEnv.globalNames.get(target[name]).split('.')[0], 'r');
       updateAnalysisData(locEnv.analysisResult[currentName],
         locEnv.globalNames.get(target[name]), 'r');
-    }else if (locEnv.methodNames.has(target[name])) {
+    } else if (locEnv.methodNames.has(target[name])) {
+      updateAnalysisData(locEnv.analysisResult[currentName],
+          locEnv.methodNames.get(target), 'r');
+    } else if (locEnv.methodNames.has(target)) {
       updateAnalysisData(locEnv.analysisResult[currentName],
           locEnv.methodNames.get(target), 'r');
     // TODO: remove the target.name from here
@@ -193,6 +165,16 @@ const moduleHandler = {
     }
 
     return Reflect.get(target, name);
+  },
+  set: function(target, name, value) {
+    const currentName = locEnv.objPath.get(target);
+    if (locEnv.methodNames.has(target)) {
+      const nameToStore = locEnv.methodNames.get(target) + '.' + name;
+      updateAnalysisData(locEnv.analysisResult[currentName],
+          locEnv.methodNames.get(target), 'r');
+      updateAnalysisData(locEnv.analysisResult[currentName], nameToStore, 'w');
+    }
+    return Reflect.set(target, name, value);
   },
   construct: function(target, args) {
     const currentName = locEnv.moduleName[locEnv.requireLevel];
@@ -242,7 +224,6 @@ const readFunction = (name, type) => {
 module.exports = (env) => {
   locEnv = env;
   return {
-    require: requireHandler,
     moduleHandler: moduleHandler,
     globalHandler: globalHandler,
     readFunction: readFunction,

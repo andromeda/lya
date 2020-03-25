@@ -85,7 +85,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     }
     methodNames.set(localCopy, moduleInputNames[count]);
     objPath.set(localCopy, moduleName[env.requireLevel]);
-    return new Proxy(localCopy, policy.require);
+    return new Proxy(localCopy, policy.moduleHandler);
   };
 
   const setLocalGlobal = () => {
@@ -367,7 +367,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
           JSON.stringify(analysisResult, null, 2), 'utf-8');
     }
   });
-  return new Proxy(callerRequire, policy.require);
+  return new Proxy(callerRequire, policy.moduleHandler);
 };
 
 module.exports = {
