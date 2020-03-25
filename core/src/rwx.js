@@ -1,3 +1,44 @@
+/*
+
+# Analysis interface (analysis hooks):
+analysis.onRead = (target, name) => {...}
+analysis.onWrite = (target, name, value) => {}
+analysis.onCallPre = (target, thisArg, argumentsList) => {...}
+analysis.onCallPost = (target, thisArg, argumentsList) => {...}
+
++ ? id of module attempting accesss: (absolute file path)
++ ? path of target from "root": [process, env, HOME]
+- ? name of target: (no need, it **has to be** the last element of list)
+
+# Utility / helper functions
+lya.getObjectPath (target[name]) -> {
+  absolutePath: [process, env, HOME]
+}
+
+lya.getModuleInfo (o) -> {
+  absoluteID: "/blah/foo/bar/lodash.js",
+  importString: "lodash.js",
+}
+
+# Options
+lya.analysisDepth
+lya.roots = ["user-globals", "node-globals"]
+lya.granularity = ["prototype", "Object.keys", "ourFunctions"]
+
+examples:
+let x = process.env.HOME // {process: r, env: r}
+let x = Math.PI          // {process: r, env: r}
+
+root: to whom does the value belong? (full absolute name)
+- user-globals: e.g., global.x, x,                                   [global, x]
+- es-globals: Math, Map, Array,                                      [Math, PI]
+- node-globals: console, setImmediate,                               [console, log]
+- module-locals: exports, require, module, __filename, __dirname     [require]
+- module-returns: exports, module.exports                            [ID, math, pi]
+
+main:
+  require("math").add(1, 2)  // [blah/foo/bar/math.js, add] [/../../main.js]
+ */
 let locEnv;
 
 // Holds the end of each name store of new assigned global variables
@@ -7,6 +48,7 @@ const endName = '@name';
 // This the handler of the require function. Every time a "require"
 // is used to load up a module this handler is called. It updates
 // the analysis data that are stored in the analysisResult table.
+// eg require, __dirname, __filename, ...
 const requireHandler = {
   apply: function(target, thisArg, argumentsList) {
     const currentName = locEnv.moduleName[locEnv.requireLevel];
@@ -17,6 +59,8 @@ const requireHandler = {
     return Reflect.apply(target, thisArg, argumentsList);
   },
   get: function(target, name) {
+    // DB[target]: R
+    // DB[target[name]]: R
     const currentName = locEnv.objPath.get(target);
     if (locEnv.methodNames.has(target)) {
       updateAnalysisData(locEnv.analysisResult[currentName],
@@ -80,6 +124,7 @@ const exportObj = (name, action) => {
 
 // The handler of the global variable.Every time we access the global variabe
 // in order to declare or call a variable, we can print it on the export file.
+// e.g., global.x, global.y; but not x, y;
 const globalHandler = {
   get: function(target, name) {
     // XXX[target] != 'undefined'
@@ -116,6 +161,8 @@ const globalHandler = {
 // Every time we load a module with require it first execute all the code
 // and then prepare and exports all the export data. We use this handler
 // to catch all the code that is executed on the module.
+// handler of Prologue:
+// e.g., console.log, Array, Math, Object, ...
 const moduleHandler = {
   apply: function(target, thisArg, argumentsList) {
     const currentName = locEnv.objPath.get(target);
@@ -155,6 +202,7 @@ const moduleHandler = {
 // require a module and we have exports, we wrap them in a handler.
 // Each time we call a function from inside exports this is the handler
 // that we wrap the function.
+// e.g., module.exports --- but only function application?
 const exportsFuncHandler = {
   apply: function(target, thisArg, argumentsList) {
     let truename;

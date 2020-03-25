@@ -27,3 +27,42 @@ console.log('=====');
 sandboxJS('x = 4');
 console.log('=====');
 sandboxJS('console.log(x)');
+
+/*
+Examples of closures etc
+env.global = new Proxy(global, createHandler(["user-global"], ...));
+
+createHandler(root, ..){
+
+  return {
+    get: ...
+    ...
+    ... new Proxy(target[name], createHandler(root.push("target"))]))
+
+
+
+
+}
+}
+
+add1 = createAdd();
+add1(3) // 0 + 3
+add1(3) // 6
+
+add2 = createAdd(100)
+add2(3) // 103
+
+add1(3) // 9
+
+
+createAdd = (init) => {
+
+  let sum = init || 0;
+
+  return (n) => {
+    sum += n
+    return sum;
+  }
+};
+*/
+

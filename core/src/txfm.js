@@ -74,6 +74,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   // TODO: this should come from generate
   const moduleInputNames = defaultNames.locals.node;
 
+  // require, __dirname, __filename
   const wrapModuleInputs = (obj, count) => {
     const type = typeof obj[count];
     let localCopy;
@@ -294,7 +295,8 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     objName.set(key, name);
     objPath.set(key, path);
   };
-  
+
+
   const exportHandler = {
     apply: function(target, thisArg, argumentsList) {
       policy.readFunction(objName.get(target), 'function');
