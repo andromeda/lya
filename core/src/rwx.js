@@ -179,10 +179,16 @@ const moduleHandler = {
   },
   get: function(target, name) {
     const currentName = locEnv.objPath.get(target);
-    if (locEnv.methodNames.has(target)) {
+    if (locEnv.globalNames.has(target[name])) {
+      updateAnalysisData(locEnv.analysisResult[currentName],
+        locEnv.globalNames.get(target[name]).split('.')[0], 'r');
+      updateAnalysisData(locEnv.analysisResult[currentName],
+        locEnv.globalNames.get(target[name]), 'r');
+    }else if (locEnv.methodNames.has(target[name])) {
       updateAnalysisData(locEnv.analysisResult[currentName],
           locEnv.methodNames.get(target), 'r');
-    } else {
+    // TODO: remove the target.name from here
+    } else if (target.name) {
       updateAnalysisData(locEnv.analysisResult[currentName], target.name, 'r');
     }
 
@@ -233,20 +239,6 @@ const readFunction = (name, type) => {
   }
 };
 
-const globalConstHandler = {
-  get: function(target, name) {
-    const currentName = locEnv.objPath.get(target);
-    if (locEnv.globalNames.has(target[name])) {
-      updateAnalysisData(locEnv.analysisResult[currentName],
-          locEnv.globalNames.get(target[name]).split('.')[0], 'r');
-      updateAnalysisData(locEnv.analysisResult[currentName],
-          locEnv.globalNames.get(target[name]), 'r');
-    }
-
-    return Reflect.get(target, name);
-  },
-};
-
 module.exports = (env) => {
   locEnv = env;
   return {
@@ -255,7 +247,6 @@ module.exports = (env) => {
     globalHandler: globalHandler,
     readFunction: readFunction,
     exportsFuncHandler: exportsFuncHandler,
-    globalConstHandler: globalConstHandler,
     updateRestData: updateRestData,
     exportObj: exportObj,
   };

@@ -91,7 +91,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   const setLocalGlobal = () => {
     let localGlobal = {};
     localGlobal = passJSONFile(createGlobal, defaultNames.globals);
-    localGlobal['proxyExportHandler'] = policy.globalConstHandler;
+    localGlobal['proxyExportHandler'] = policy.moduleHandler;
     const noProxyOrig = new Proxy(global['process']['env'], {});
     localGlobal['process.env'] = new Proxy(noProxyOrig, exportHandler);
     objName.set(noProxyOrig, 'process.env');
@@ -110,8 +110,6 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     },
   };
 
-  const saveName = (obj, name, givenFunc) => methodNames.set(obj[name],
-      givenFunc + '.' + name);
   const getObjLength = (obj) => Object.keys(obj).length;
   const getObjValues = (obj) => Object.getOwnPropertyNames(obj);
 
@@ -124,7 +122,6 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       if (objType === 'object') {
         localGlobal[name] = proxyWrap(obj[name]);
       } else if (objType === 'function') {
-        nameSave ? saveName(obj, name, givenFunc) : null;
         const noProxyOrig = new Proxy(obj[name], {});
         methodNames.set(noProxyOrig, givenFunc + '.' + name);
         objPath.set(noProxyOrig, moduleName[env.requireLevel]);
@@ -149,7 +146,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       // under here if want to wrap the second level under
       // functions. lines (150...158);
       // etc to Catch : Array.of, Object.keys, constructor.getOwnPropertyNames
-      // maybe add this as an input from the user, to specify the depth of 
+      // maybe add this as an input from the user, to specify the depth of
       // the analysis.
     } else if (objType === 'object') {
       if (!getObjLength(origGlobal)) {
@@ -158,14 +155,14 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
           if (Object.prototype.hasOwnProperty.call(values, key)) {
             const name = values[key];
             localGlobal[name] = objTypeAction(origGlobal, name, handler,
-                objName, true);
+                objName);
           }
         }
       } else {
         for (const key in origGlobal) {
           if (Object.prototype.hasOwnProperty.call(origGlobal, key)) {
             localGlobal[key] = objTypeAction(origGlobal, key, handler,
-                objName, false);
+                objName);
           }
         }
       }
@@ -312,7 +309,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
               return Reflect.get(target, name);
             }
             const currObject = target[name];
-            const fatherName = objName.get(receiver) ? objName.get(receiver) : 
+            const fatherName = objName.get(receiver) ? objName.get(receiver) :
               objName.get(target);
             const birthplace = objPath.get(receiver) ? objPath.get(receiver) :
               objPath.get(target);
