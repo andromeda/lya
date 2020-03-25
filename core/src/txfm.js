@@ -332,7 +332,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
           const birthplace = moduleName[env.requireLevel];
           if (!withProxy.has(target[name])) {
             Object.defineProperty(currFunction, 'name', {value: name});
-            target[name] = new Proxy(currFunction, policy.exportsFuncHandler);
+            target[name] = new Proxy(currFunction, policy.moduleHandler);
             storePureFunctions.set(target[name], currFunction);
             namePathSet(currFunction, fatherName, birthplace);
           } else {

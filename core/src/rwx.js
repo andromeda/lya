@@ -49,21 +49,29 @@ const exportObj = (name, action) => {
 const moduleHandler = {
   apply: function(target, thisArg, argumentsList) {
     const currentName = locEnv.objPath.get(target);
-    const moduleName = locEnv.moduleName[locEnv.requireLevel];
+    const birthplace = locEnv.objName.get(target); // module-returns
+    const currentModule = locEnv.moduleName[locEnv.requireLevel];
     if (target.name === 'require') {
       const origReqModuleName = argumentsList[0];
       exportObj('require', 'rx');
-      locEnv.analysisResult[moduleName]['require(\'' +
+      locEnv.analysisResult[currentModule]['require(\'' +
         origReqModuleName + '\')'] = 'i';
     } else if (locEnv.methodNames.has(target)) {
       updateAnalysisData(locEnv.analysisResult[currentName],
           locEnv.methodNames.get(target).split('.')[0], 'r');
       updateAnalysisData(locEnv.analysisResult[currentName],
           locEnv.methodNames.get(target), 'rx');
-    } else {
+    } else if (birthplace) {
+      if (currentModule === currentName) {
+        const truename = birthplace + '.' + target.name;
+        updateAnalysisData(locEnv.analysisResult[currentName], truename, 'x');
+      }
+    }
+    else {
       updateAnalysisData(locEnv.analysisResult[currentName], target.name, 'r');
       updateAnalysisData(locEnv.analysisResult[currentName], target.name, 'x');
     }
+
     return Reflect.apply(target, thisArg, argumentsList);
   },
   get: function(target, name) {
@@ -116,23 +124,6 @@ const moduleHandler = {
   }
 };
 
-// The handler of the functions on the export module. Every time we
-// require a module and we have exports, we wrap them in a handler.
-// Each time we call a function from inside exports this is the handler
-// that we wrap the function.
-// e.g., module.exports --- but only function application?
-const exportsFuncHandler = {
-  apply: function(target, thisArg, argumentsList) {
-    const birthplace = locEnv.objName.get(target);
-    const currentName = locEnv.moduleName[locEnv.requireLevel];
-    if (currentName === locEnv.objPath.get(target)) {
-      const truename = birthplace + '.' + target.name;
-      updateAnalysisData(locEnv.analysisResult[currentName], truename, 'x');
-    }
-    return Reflect.apply(target, thisArg, argumentsList);
-  },
-};
-
 // Read function so we print it in the export file
 // This is to catch the read of a called function
 // require("math.js").fft && require("math.js").fft.mult
@@ -154,7 +145,6 @@ module.exports = (env) => {
   return {
     moduleHandler: moduleHandler,
     readFunction: readFunction,
-    exportsFuncHandler: exportsFuncHandler,
     updateRestData: updateRestData,
     exportObj: exportObj,
   };
