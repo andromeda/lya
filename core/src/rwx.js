@@ -59,7 +59,6 @@ const readFunction = (name, type) => {
 module.exports = (env) => {
   locEnv = env;
   return {
-    moduleHandler: moduleHandler,
     readFunction: readFunction,
     updateRestData: updateRestData,
     exportObj: exportObj,

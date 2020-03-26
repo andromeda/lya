@@ -73,7 +73,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       const currentModule = env.moduleName[env.requireLevel];
       if (target.name === 'require') {
         const origReqModuleName = argumentsList[0];
-        exportObj('require', 'rx');
+        policy.exportObj('require', 'rx');
         env.analysisResult[currentModule]['require(\'' +
           origReqModuleName + '\')'] = 'i';
       } else if (env.methodNames.has(target)) {
@@ -108,6 +108,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
         policy.updateAnalysisData(env.analysisResult[currentName],
           env.globalNames.get(target[name]), 'r');
       } else if (env.methodNames.has(target[name])) {
+        console.log(env.methodNames.get(target[name]))
         policy.updateAnalysisData(env.analysisResult[currentName],
             env.methodNames.get(target[name]), 'r');
       } else if (env.methodNames.has(target) &&
