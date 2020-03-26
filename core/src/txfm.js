@@ -65,6 +65,84 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     end: false,
   };
 
+  // One handler to rule them all
+  const moduleHandler = {
+    apply: function(target, thisArg, argumentsList) {
+      const currentName = env.objPath.get(target);
+      const birthplace = env.objName.get(target); // module-returns
+      const currentModule = env.moduleName[env.requireLevel];
+      if (target.name === 'require') {
+        const origReqModuleName = argumentsList[0];
+        exportObj('require', 'rx');
+        env.analysisResult[currentModule]['require(\'' +
+          origReqModuleName + '\')'] = 'i';
+      } else if (env.methodNames.has(target)) {
+        policy.updateAnalysisData(env.analysisResult[currentName],
+            env.methodNames.get(target).split('.')[0], 'r');
+        policy.updateAnalysisData(env.analysisResult[currentName],
+            env.methodNames.get(target), 'rx');
+      } else if (birthplace) {
+        if (currentModule === currentName) {
+          const truename = birthplace + '.' + target.name;
+          policy.updateAnalysisData(env.analysisResult[currentName], truename, 'x');
+        }
+      }
+      else {
+        policy.updateAnalysisData(env.analysisResult[currentName], target.name, 'r');
+        policy.updateAnalysisData(env.analysisResult[currentName], target.name, 'x');
+      }
+
+      return Reflect.apply(target, thisArg, argumentsList);
+    },
+    get: function(target, name) {
+      const currentName = env.objPath.get(target);
+      if (env.globalNames.has(name)) {
+        const moduleName = env.moduleName[env.requireLevel];
+        policy.updateAnalysisData(env.analysisResult[moduleName],
+          env.globalNames.get(name).split('.')[0], 'r');
+        policy.updateAnalysisData(env.analysisResult[moduleName],
+          env.globalNames.get(name), 'r');
+      } else if (env.globalNames.has(target[name])) {
+        policy.updateAnalysisData(env.analysisResult[currentName],
+          env.globalNames.get(target[name]).split('.')[0], 'r');
+        policy.updateAnalysisData(env.analysisResult[currentName],
+          env.globalNames.get(target[name]), 'r');
+      } else if (env.methodNames.has(target[name])) {
+        policy.updateAnalysisData(env.analysisResult[currentName],
+            env.methodNames.get(target[name]), 'r');
+      } else if (env.methodNames.has(target) &&
+          env.methodNames.get(target) !== 'global') {
+        policy.updateAnalysisData(env.analysisResult[currentName],
+            env.methodNames.get(target), 'r');
+      } else if (target.name) {
+        policy.updateAnalysisData(env.analysisResult[currentName], target.name, 'r');
+      }
+
+      return Reflect.get(target, name);
+    },
+    set: function(target, name, value) {
+      const currentName = env.objPath.get(target);
+      if (env.methodNames.has(target)) {
+        const nameToStore = env.methodNames.get(target) + '.' + name;
+        policy.updateAnalysisData(env.analysisResult[currentName],
+            env.methodNames.get(target), 'r');
+        policy.updateAnalysisData(env.analysisResult[currentName], nameToStore, 'w');
+        if (env.methodNames.get(target) === 'global') {
+          env.globalNames.set(name, nameToStore);
+        }
+      }
+      return Reflect.set(target, name, value);
+    },
+    construct: function(target, args) {
+      const currentName = env.moduleName[env.requireLevel];
+      if (target.name !== 'Proxy') {
+        policy.updateAnalysisData(env.analysisResult[currentName], target.name, 'r');
+        policy.updateAnalysisData(env.analysisResult[currentName], target.name, 'x');
+      }
+      return new target(...args);
+    }
+  };
+
   // Import the right policy depending on the choice of the user.
   const policy = require(lyaConfig.analysis)(env);
 
@@ -72,7 +150,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   // We wrap the global variable in a proxy
   methodNames.set(global, 'global');
   objPath.set(global, moduleName[env.requireLevel])
-  global = new Proxy(global, policy.moduleHandler);
+  global = new Proxy(global, moduleHandler);
 
   // TODO: this should come from generate
   const moduleInputNames = defaultNames.locals.node;
@@ -88,13 +166,13 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     }
     methodNames.set(localCopy, moduleInputNames[count]);
     objPath.set(localCopy, moduleName[env.requireLevel]);
-    return new Proxy(localCopy, policy.moduleHandler);
+    return new Proxy(localCopy, moduleHandler);
   };
 
   const setLocalGlobal = () => {
     let localGlobal = {};
     localGlobal = passJSONFile(createGlobal, defaultNames.globals);
-    localGlobal['proxyExportHandler'] = policy.moduleHandler;
+    localGlobal['proxyExportHandler'] = moduleHandler;
     const noProxyOrig = new Proxy(global['process']['env'], {});
     localGlobal['process.env'] = new Proxy(noProxyOrig, exportHandler);
     objName.set(noProxyOrig, 'process.env');
@@ -175,7 +253,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 
   const createGlobal = (name) => {
     if (global[name] !== undefined) {
-      const proxyObj = proxyWrap(policy.moduleHandler, global[name], name);
+      const proxyObj = proxyWrap(moduleHandler, global[name], name);
       objPath.set(proxyObj, moduleName[env.requireLevel]);
       return proxyObj;
     }
@@ -332,7 +410,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
           const birthplace = moduleName[env.requireLevel];
           if (!withProxy.has(target[name])) {
             Object.defineProperty(currFunction, 'name', {value: name});
-            target[name] = new Proxy(currFunction, policy.moduleHandler);
+            target[name] = new Proxy(currFunction, moduleHandler);
             storePureFunctions.set(target[name], currFunction);
             namePathSet(currFunction, fatherName, birthplace);
           } else {
@@ -370,7 +448,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
           JSON.stringify(analysisResult, null, 2), 'utf-8');
     }
   });
-  return new Proxy(callerRequire, policy.moduleHandler);
+  return new Proxy(callerRequire, moduleHandler);
 };
 
 module.exports = {

@@ -40,12 +40,7 @@ const exportObj = (name, action) => {
   updateAnalysisData(locEnv.analysisResult[currentName], name, action);
 };
 
-// The handler of the all the function that are called inside a module.
-// Every time we load a module with require it first execute all the code
-// and then prepare and exports all the export data. We use this handler
-// to catch all the code that is executed on the module.
-// handler of Prologue:
-// e.g., console.log, Array, Math, Object, ...
+// One handler to rule them all
 const moduleHandler = {
   apply: function(target, thisArg, argumentsList) {
     const currentName = locEnv.objPath.get(target);
@@ -90,7 +85,6 @@ const moduleHandler = {
     } else if (locEnv.methodNames.has(target[name])) {
       updateAnalysisData(locEnv.analysisResult[currentName],
           locEnv.methodNames.get(target[name]), 'r');
-          console.log(locEnv.methodNames.get(target[name]));
     } else if (locEnv.methodNames.has(target) &&
         locEnv.methodNames.get(target) !== 'global') {
       updateAnalysisData(locEnv.analysisResult[currentName],
@@ -147,5 +141,6 @@ module.exports = (env) => {
     readFunction: readFunction,
     updateRestData: updateRestData,
     exportObj: exportObj,
+    updateAnalysisData : updateAnalysisData,
   };
 };
