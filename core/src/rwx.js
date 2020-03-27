@@ -65,7 +65,9 @@ const onRead = (target, name, nameToStore, currentModule, typeClass) => {
     }
 }
 
-const onWrite = (target, name, value) => {
+const onWrite = (target, name, value, currentModule, parentName, nameToStore) => {
+  updateAnalysisData(locEnv.analysisResult[currentModule], parentName, 'r');
+  updateAnalysisData(locEnv.analysisResult[currentModule], nameToStore, 'w');
 }
 
 const onCallPre = (target, name, nameToStore, currentModule, declareModule,
@@ -90,7 +92,9 @@ const onCallPost = (target, name, nameToStore, currentModule, declareModule,
   typeClass, result) => {
 }
 
-const onConstruct = (target, thisArg, argumentsList) => {
+const onConstruct = (target, args, currentName, nameToStore) => {
+  updateAnalysisData(locEnv.analysisResult[currentName], nameToStore, 'r');//Analysis
+  updateAnalysisData(locEnv.analysisResult[currentName], nameToStore, 'x');//Analysis
 }
 module.exports = (env) => {
   locEnv = env;
@@ -98,9 +102,11 @@ module.exports = (env) => {
     readFunction: readFunction,
     updateRestData: updateRestData,
     exportObj: exportObj,
-    updateAnalysisData : updateAnalysisData,
-    onRead : onRead,
-    onCallPre : onCallPre,
-    onCallPost : onCallPost,
+    updateAnalysisData: updateAnalysisData,
+    onRead: onRead,
+    onCallPre: onCallPre,
+    onCallPost: onCallPost,
+    onWrite: onWrite,
+    onConstruct: onConstruct,
   };
 };

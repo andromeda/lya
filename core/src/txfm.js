@@ -116,14 +116,15 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
         return Reflect.get(target, name);
       },
       set: function(target, name, value) {
-        const currentName = env.objPath.get(target);
+        const currentModule = env.objPath.get(target);
+
         if (methodNames.has(target)) {
-          const nameToStore = methodNames.get(target) + '.' + name;
-          policy.updateAnalysisData(env.analysisResult[currentName],
-            methodNames.get(target), 'r');//Analysis
-          policy.updateAnalysisData(env.analysisResult[currentName], nameToStore, 'w');
-          if (env.methodNames.get(target) === 'global') {
-            globalNames.set(name, nameToStore);//Analysis
+          const parentName = methodNames.get(target);
+          const nameToStore = parentName + '.' + name;
+          policy.onWrite(target, name, value, currentModule,
+            parentName, nameToStore);
+          if (methodNames.get(target) === 'global') {
+            globalNames.set(name, nameToStore);
           }
         }
 
@@ -131,9 +132,9 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       },
       construct: function(target, args) {
         const currentName = env.moduleName[env.requireLevel];
+        const nameToStore = target.name;
         if (target.name !== 'Proxy') {
-          policy.updateAnalysisData(env.analysisResult[currentName], target.name, 'r');//Analysis
-          policy.updateAnalysisData(env.analysisResult[currentName], target.name, 'x');//Analysis
+          policy.onConstruct(target, args, currentName, nameToStore)
         }
 
         return new target(...args);
