@@ -87,29 +87,30 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
           : null;
 
         if (truename) {
-          policy.onRead(target, target.name, truename, currentModule, currentName,
+          policy.onCallPre(target, target.name, truename, currentModule, currentName,
             moduleClass);
         };
 
-        return Reflect.apply(target, thisArg, argumentsList);
+        const result = Reflect.apply(target, thisArg, argumentsList);
+
+        if (truename) {
+          policy.onCallPost(target, target.name, truename, currentModule, currentName,
+            moduleClass, result);
+        };
+
+        return result;
       },
       get: function(target, name) {
-        const currentName = env.objPath.get(target);
-        if (globalNames.has(name)) {
-          const moduleName = env.moduleName[env.requireLevel];
-          policy.updateAnalysisData(env.analysisResult[moduleName],
-            globalNames.get(name).split('.')[0], 'r');//Analysis
-          policy.updateAnalysisData(env.analysisResult[moduleName],
-            globalNames.get(name), 'r');//Analysis
-        } else if (globalNames.has(target[name])) {
-          policy.updateAnalysisData(env.analysisResult[currentName],
-            globalNames.get(target[name]).split('.')[0], 'r');//Analysis
-          policy.updateAnalysisData(env.analysisResult[currentName],
-            globalNames.get(target[name]), 'r');//Analysis
-        }  else if (env.methodNames.has(target) &&
-            methodNames.get(target) !== 'global') {
-          policy.updateAnalysisData(env.analysisResult[currentName],
-            methodNames.get(target), 'r');//Analysis
+        const currentModule = globalNames.has(name) ?  env.moduleName[env.requireLevel]
+          : env.objPath.get(target);
+
+        const storeName = globalNames.has(name) ? globalNames.get(name)
+          : globalNames.has(target[name]) ? globalNames.get(target[name])
+          : env.methodNames.has(target) ? methodNames.get(target)
+          : null;
+
+        if (storeName) {
+          policy.onRead(target, name, storeName, currentModule, moduleClass);
         }
 
         return Reflect.get(target, name);

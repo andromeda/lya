@@ -56,8 +56,20 @@ const readFunction = (name, type) => {
   }
 };
 
-const onRead = (target, name, nameToStore, currentModule, declareModule,
-    typeClass) => {
+const onRead = (target, name, nameToStore, currentModule, typeClass) => {
+    if (nameToStore != 'global') {
+      updateAnalysisData(locEnv.analysisResult[currentModule],
+        nameToStore.split('.')[0], 'r');
+      updateAnalysisData(locEnv.analysisResult[currentModule],
+        nameToStore, 'r');
+    }
+}
+
+const onWrite = (target, name, value) => {
+}
+
+const onCallPre = (target, name, nameToStore, currentModule, declareModule,
+  typeClass) => {
   if (typeClass === 'module-locals') {
     exportObj('require', 'rx');
     updateAnalysisData(locEnv.analysisResult[currentModule],
@@ -72,16 +84,10 @@ const onRead = (target, name, nameToStore, currentModule, declareModule,
     updateAnalysisData(locEnv.analysisResult[declareModule],
       nameToStore, 'x');
   }
+};
 
-}
-
-const onWrite = (target, name, value) => {
-}
-
-const onCallPre = (target, thisArg, argumentsList) => {
-}
-
-const onCallPost = (target, thisArg, argumentsList) => {
+const onCallPost = (target, name, nameToStore, currentModule, declareModule,
+  typeClass, result) => {
 }
 
 const onConstruct = (target, thisArg, argumentsList) => {
@@ -94,5 +100,7 @@ module.exports = (env) => {
     exportObj: exportObj,
     updateAnalysisData : updateAnalysisData,
     onRead : onRead,
+    onCallPre : onCallPre,
+    onCallPost : onCallPost,
   };
 };
