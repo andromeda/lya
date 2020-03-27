@@ -80,21 +80,21 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
         const currentModule = moduleName[env.requireLevel];
         const origReqModuleName = argumentsList[0];
 
-        const truename =
+        const nameToStore =
           (target.name === 'require') ? 'require(\'' + origReqModuleName + '\')'
           : methodNames.has(target) ? methodNames.get(target)
           : (birthplace && (currentModule === currentName)) ? birthName
           : null;
 
-        if (truename) {
-          policy.onCallPre(target, target.name, truename, currentModule, currentName,
+        if (nameToStore) {
+          policy.onCallPre(target, target.name, nameToStore, currentModule, currentName,
             moduleClass);
         };
 
         const result = Reflect.apply(target, thisArg, argumentsList);
 
-        if (truename) {
-          policy.onCallPost(target, target.name, truename, currentModule, currentName,
+        if (nameToStore) {
+          policy.onCallPost(target, target.name, nameToStore, currentModule, currentName,
             moduleClass, result);
         };
 
@@ -121,8 +121,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
         if (methodNames.has(target)) {
           const parentName = methodNames.get(target);
           const nameToStore = parentName + '.' + name;
-          policy.onWrite(target, name, value, currentModule,
-            parentName, nameToStore);
+          policy.onWrite(target, name, value, currentModule, parentName, nameToStore);
           if (methodNames.get(target) === 'global') {
             globalNames.set(name, nameToStore);
           }
@@ -376,7 +375,12 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 
   const exportHandler = {
     apply: function(target, thisArg, argumentsList) {
-      policy.readFunction(objName.get(target), 'function');
+      const nameToStore = objName.get(target);
+      const currModule = moduleName[env.requireLevel];
+      const declareModule = moduleName[env.requireLevel];
+      policy.onCallPre(target, target.name, nameToStore, argumentsList,
+        currModule, declareModule);
+
       return Reflect.apply(target, thisArg, argumentsList);
     },
     get: function(target, name, receiver) {
@@ -395,7 +399,6 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
               objPath.get(target);
             const childName = fatherName + '.' + name;
 
-            policy.readFunction(fatherName, exportType);
             target[name] = new Proxy(target[name], exportHandler);
             namePathSet(currObject, childName, birthplace);
 
@@ -405,36 +408,49 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
           }
         } else if (exportType === 'function') {
           const currFunction = target[name];
-          const fatherName = objName.get(target);
-          const birthplace = moduleName[env.requireLevel];
+          const parentName = objName.get(target);
+          const currModule = moduleName[env.requireLevel];
+          const nameToStore = parentName + '.' +name;
+
           if (!withProxy.has(target[name])) {
             Object.defineProperty(currFunction, 'name', {value: name});
             target[name] = new Proxy(currFunction, createHandler('module-returns'));
             storePureFunctions.set(target[name], currFunction);
-            namePathSet(currFunction, fatherName, birthplace);
+            namePathSet(currFunction, parentName, currModule);
           } else {
             const key = storePureFunctions.get(currFunction);
-            namePathSet(key, fatherName, birthplace);
+            namePathSet(key, parentName, currModule);
           }
 
-          policy.readFunction(fatherName);
-          policy.readFunction(fatherName + '.' + name);
+          //policy.onRead(target, name, nameToStore, currModule);
+          policy.readFunction(parentName);
+          policy.readFunction(parentName + '.' + name);
+
 
           const result = Reflect.get(target, name);
           withProxy.set(result, true);
           return result;
         } else if (exportType === 'number' || exportType === 'boolean' ||
             exportType === 'string') {
+
+          const parentName = objName.get(target);
+          const nameToStore = parentName + '.' +name;
+          const currModule = moduleName[env.requireLevel];
+          //policy.onRead(target, name, nameToStore, currModule);
           policy.readFunction(objName.get(target));
-          policy.updateRestData(target, name, exportType);
+          policy.readFunction(objName.get(target) + '.' +name);
         }
       }
 
       return Reflect.get(target, name);
     },
     set: function(target, name, value) {
-      // We catch the declaration of a value
-      policy.exportObj(objName.get(target) + '.' +name);
+      const parentName = objName.get(target);
+      const nameToStore = parentName + '.' +name;
+      const currModule = moduleName[env.requireLevel];
+      policy.onWrite(target, name, value, currModule, parentName,
+        nameToStore);
+
       return Reflect.set(target, name, value);
     },
   };

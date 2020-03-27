@@ -1,9 +1,5 @@
 let locEnv;
 
-const updateRestData = (target, name, type) => {
-  exportObj(locEnv.objName.get(target) + '.' +name, 'r');
-};
-
 // We add the R or W or E to the existing string
 const addEvent = (event, values, index) => {
   let permissions = values[index];
@@ -56,6 +52,8 @@ const readFunction = (name, type) => {
   }
 };
 
+// Analyses provided by LYA.
+// onRead <~ is called before every object is read
 const onRead = (target, name, nameToStore, currentModule, typeClass) => {
     if (nameToStore != 'global') {
       updateAnalysisData(locEnv.analysisResult[currentModule],
@@ -65,11 +63,13 @@ const onRead = (target, name, nameToStore, currentModule, typeClass) => {
     }
 }
 
+// onWrite <~ is called before every write of an object
 const onWrite = (target, name, value, currentModule, parentName, nameToStore) => {
   updateAnalysisData(locEnv.analysisResult[currentModule], parentName, 'r');
   updateAnalysisData(locEnv.analysisResult[currentModule], nameToStore, 'w');
 }
 
+// onCallPre <~ is called before the execution of a function
 const onCallPre = (target, name, nameToStore, currentModule, declareModule,
   typeClass) => {
   if (typeClass === 'module-locals') {
@@ -88,19 +88,21 @@ const onCallPre = (target, name, nameToStore, currentModule, declareModule,
   }
 };
 
+// onCallPost <~ Is call after every execution of a function
 const onCallPost = (target, name, nameToStore, currentModule, declareModule,
   typeClass, result) => {
 }
 
+// onConstruct <~ Is call before every construct
 const onConstruct = (target, args, currentName, nameToStore) => {
   updateAnalysisData(locEnv.analysisResult[currentName], nameToStore, 'r');//Analysis
   updateAnalysisData(locEnv.analysisResult[currentName], nameToStore, 'x');//Analysis
 }
+
 module.exports = (env) => {
   locEnv = env;
   return {
     readFunction: readFunction,
-    updateRestData: updateRestData,
     exportObj: exportObj,
     updateAnalysisData: updateAnalysisData,
     onRead: onRead,
