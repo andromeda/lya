@@ -56,6 +56,20 @@ const readFunction = (name, type) => {
   }
 };
 
+const onRead = (target, name) => {
+}
+
+const onWrite = (target, name, value) => {
+}
+
+const onCallPre = (target, thisArg, argumentsList) => {
+}
+
+const onCallPost = (target, thisArg, argumentsList) => {
+}
+
+const onConstruct = (target, thisArg, argumentsList) => {
+}
 module.exports = (env) => {
   locEnv = env;
   return {
