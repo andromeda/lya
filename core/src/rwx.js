@@ -56,7 +56,23 @@ const readFunction = (name, type) => {
   }
 };
 
-const onRead = (target, name) => {
+const onRead = (target, name, nameToStore, currentModule, declareModule,
+    typeClass) => {
+  if (typeClass === 'module-locals') {
+    exportObj('require', 'rx');
+    updateAnalysisData(locEnv.analysisResult[currentModule],
+      nameToStore, 'i');
+  } else {
+    if (typeClass === 'node-globals') {
+      updateAnalysisData(locEnv.analysisResult[declareModule],
+        nameToStore.split('.')[0], 'r');
+    }
+    updateAnalysisData(locEnv.analysisResult[declareModule],
+      nameToStore, 'r');
+    updateAnalysisData(locEnv.analysisResult[declareModule],
+      nameToStore, 'x');
+  }
+
 }
 
 const onWrite = (target, name, value) => {
@@ -77,5 +93,6 @@ module.exports = (env) => {
     updateRestData: updateRestData,
     exportObj: exportObj,
     updateAnalysisData : updateAnalysisData,
+    onRead : onRead,
   };
 };
