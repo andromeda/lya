@@ -94,7 +94,6 @@ module.exports = (env) => {
   locEnv = env;
   return {
     readFunction: readFunction,
-    updateAnalysisData: updateAnalysisData,
     onRead: onRead,
     onCallPre: onCallPre,
     onCallPost: onCallPost,
