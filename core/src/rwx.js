@@ -48,8 +48,8 @@ const onWrite = (target, name, value, currentModule, parentName, nameToStore) =>
 }
 
 // onCallPre <~ is called before the execution of a function
-const onCallPre = (target, name, nameToStore, currentModule, declareModule,
-  typeClass) => {
+const onCallPre = (target, thisArg, argumentsList, name, nameToStore,
+  currentModule, declareModule, typeClass) => {
   if (typeClass === 'module-locals') {
     updateAnalysisData(locEnv.analysisResult[currentModule],
       'require', 'r');
@@ -70,8 +70,8 @@ const onCallPre = (target, name, nameToStore, currentModule, declareModule,
 };
 
 // onCallPost <~ Is call after every execution of a function
-const onCallPost = (target, name, nameToStore, currentModule, declareModule,
-  typeClass, result) => {
+const onCallPost = (target, thisArg, argumentsList, name, nameToStore,
+  currentModule, declareModule, typeClass, result) => {
 }
 
 // onConstruct <~ Is call before every construct

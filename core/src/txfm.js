@@ -99,15 +99,15 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
           : null;
 
         if (nameToStore) {
-          policy.onCallPre(target, target.name, nameToStore, currentModule, currentName,
-            moduleClass);
+          policy.onCallPre(target, thisArg, argumentsList, target.name, nameToStore,
+            currentModule, currentName, moduleClass);
         };
 
         const result = Reflect.apply(target, thisArg, argumentsList);
 
         if (nameToStore) {
-          policy.onCallPost(target, target.name, nameToStore, currentModule, currentName,
-            moduleClass, result);
+          policy.onCallPost(target, thisArg, argumentsList, target.name, nameToStore,
+            currentModule, currentName, moduleClass, result);
         };
 
         return result;
@@ -390,8 +390,8 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       const nameToStore = objectName.get(target);
       const currModule = moduleName[env.requireLevel];
       const declareModule = moduleName[env.requireLevel];
-      policy.onCallPre(target, target.name, nameToStore, argumentsList,
-        currModule, declareModule);
+      policy.onCallPre(target, thisArg, argumentsList, target.name,
+        nameToStore, currModule, declareModule);
 
       return Reflect.apply(target, thisArg, argumentsList);
     },
