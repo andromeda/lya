@@ -14,8 +14,6 @@ const addEvent = (event, values, index) => {
 // @truename the name of the current function, object etc that we want to add to
 // the table
 // @mode the mode of the current access (R,W or E)
-// Given those two inputs we can update the analysis data that are stored
-// in storedCalls.
 const updateAnalysisData = (storedCalls, truename, mode) => {
   if (Object.prototype.hasOwnProperty.
       call(storedCalls, truename) === false) {
@@ -23,17 +21,6 @@ const updateAnalysisData = (storedCalls, truename, mode) => {
   } else {
     addEvent(mode, storedCalls, truename);
   }
-};
-
-const exportObj = (name, action) => {
-  action = (action === undefined) ? 'w' : action;
-  const currentName = locEnv.moduleName[locEnv.requireLevel];
-
-  if (name.split('.').length === 3) {
-    updateAnalysisData(locEnv.analysisResult[currentName],
-        name.split('.')[0] + '.' + name.split('.')[1], 'r');
-  }
-  updateAnalysisData(locEnv.analysisResult[currentName], name, action);
 };
 
 // Read function so we print it in the export file
@@ -56,6 +43,7 @@ const readFunction = (name, type) => {
 // onRead <~ is called before every object is read
 const onRead = (target, name, nameToStore, currentModule, typeClass) => {
     if (nameToStore != 'global') {
+      // Add a regex to catch require('XXXX')
       updateAnalysisData(locEnv.analysisResult[currentModule],
         nameToStore.split('.')[0], 'r');
       updateAnalysisData(locEnv.analysisResult[currentModule],
@@ -73,7 +61,10 @@ const onWrite = (target, name, value, currentModule, parentName, nameToStore) =>
 const onCallPre = (target, name, nameToStore, currentModule, declareModule,
   typeClass) => {
   if (typeClass === 'module-locals') {
-    exportObj('require', 'rx');
+    updateAnalysisData(locEnv.analysisResult[currentModule],
+      'require', 'r');
+    updateAnalysisData(locEnv.analysisResult[currentModule],
+      'require', 'x');
     updateAnalysisData(locEnv.analysisResult[currentModule],
       nameToStore, 'i');
   } else {
@@ -103,7 +94,6 @@ module.exports = (env) => {
   locEnv = env;
   return {
     readFunction: readFunction,
-    exportObj: exportObj,
     updateAnalysisData: updateAnalysisData,
     onRead: onRead,
     onCallPre: onCallPre,
