@@ -434,10 +434,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
             namePathSet(key, parentName, currModule);
           }
 
-          //policy.onRead(target, name, nameToStore, currModule);
-          policy.readFunction(parentName);
-          policy.readFunction(parentName + '.' + name);
-
+          policy.onRead(target, name, nameToStore, currModule);
 
           const result = Reflect.get(target, name);
           withProxy.set(result, true);
@@ -448,9 +445,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
           const parentName = objectName.get(target);
           const nameToStore = parentName + '.' +name;
           const currModule = moduleName[env.requireLevel];
-          //policy.onRead(target, name, nameToStore, currModule);
-          policy.readFunction(objectName.get(target));
-          policy.readFunction(objectName.get(target) + '.' +name);
+          policy.onRead(target, name, nameToStore, currModule);
         }
       }
 

@@ -23,29 +23,19 @@ const updateAnalysisData = (storedCalls, truename, mode) => {
   }
 };
 
-// Read function so we print it in the export file
-// This is to catch the read of a called function
-// require("math.js").fft && require("math.js").fft.mult
-const readFunction = (name, type) => {
-  const currentPlace = locEnv.moduleName[locEnv.requireLevel];
-  const storedCalls = locEnv.analysisResult[currentPlace];
-  const action = type === 'function' ? 'rx' : 'r';
-
-  if (Object.prototype.hasOwnProperty.
-      call(storedCalls, name) === false) {
-    storedCalls[name] = action;
-  } else {
-    addEvent(action, storedCalls, name);
-  }
-};
-
 // Analyses provided by LYA.
 // onRead <~ is called before every object is read
 const onRead = (target, name, nameToStore, currentModule, typeClass) => {
     if (nameToStore != 'global') {
-      // Add a regex to catch require('XXXX')
-      updateAnalysisData(locEnv.analysisResult[currentModule],
-        nameToStore.split('.')[0], 'r');
+      // TODO: fix case for test 7
+      const pattern = /require[(](.*)[)]/;
+      if (pattern.test(nameToStore)) {
+        updateAnalysisData(locEnv.analysisResult[currentModule],
+          nameToStore.match(pattern)[0], 'r');
+      } else {
+        updateAnalysisData(locEnv.analysisResult[currentModule],
+          nameToStore.split('.')[0], 'r');
+      }
       updateAnalysisData(locEnv.analysisResult[currentModule],
         nameToStore, 'r');
     }
@@ -93,7 +83,6 @@ const onConstruct = (target, args, currentName, nameToStore) => {
 module.exports = (env) => {
   locEnv = env;
   return {
-    readFunction: readFunction,
     onRead: onRead,
     onCallPre: onCallPre,
     onCallPost: onCallPost,
