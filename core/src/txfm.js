@@ -199,6 +199,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
         argumentsList[count] = wrapModuleInputs(argumentsList, count);
       }
       argumentsList[5] = setLocalGlobal();
+      argumentsList[6] = createGlobalPr();
       return Reflect.apply( ...arguments);
     },
   };
@@ -299,6 +300,8 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     prologue += 'let global = localGlobal["proxyGlobal"]\n';
     prologue += 'process.env = localGlobal["process.env"];\n';
     prologue += 'Math = new Proxy(Math, localGlobal["proxyExportHandler"]);\n';
+    // TODO: Make 'with' optional ~> 304 line and 342 line
+    prologue = 'with (withGlobal) {\n' + prologue;
     return prologue;
   };
 
@@ -336,9 +339,9 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 
   // extend wrap to take additional argument
   Module.wrap = (script) => {
-    script = getPrologue() + script;
+    script = getPrologue() + script + '}';
     let wrappedScript = originalWrap(script);
-    wrappedScript = wrappedScript.replace('dirname)', 'dirname, localGlobal)');
+    wrappedScript = wrappedScript.replace('dirname)', 'dirname, localGlobal, withGlobal)');
     return wrappedScript;
   };
 
