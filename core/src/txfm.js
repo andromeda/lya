@@ -405,12 +405,14 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
               return Reflect.get(target, name);
             }
             const currObject = target[name];
+            const currModule = moduleName[env.requireLevel];
             const fatherName = objectName.get(receiver) ? objectName.get(receiver) :
               objectName.get(target);
             const birthplace = objectPath.get(receiver) ? objectPath.get(receiver) :
               objectPath.get(target);
             const childName = fatherName + '.' + name;
 
+            policy.onRead(target, name, childName, currModule);
             target[name] = new Proxy(target[name], exportHandler);
             namePathSet(currObject, childName, birthplace);
 
