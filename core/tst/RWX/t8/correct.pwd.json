@@ -5,7 +5,7 @@
   },
   "PWD_REPLACE/m1.js": {
     "require": "x",
-    "require('./m2.js')": "i",
+    "require('./m2.js')": "ir",
     "console": "r",
     "console.log": "x",
     "module": "r",

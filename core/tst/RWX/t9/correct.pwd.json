@@ -2,15 +2,15 @@
   "PWD_REPLACE/main.js": {
     "require": "x",
     "require('./math.js')": "ir",
-    "require('./math.js').add": "rx",
+    "require('./math.js').add": "x",
     "require('./math.js').constants": "r",
     "require('./math.js').constants.e": "r",
     "require('./math.js').constants.pi": "rw",
     "require('./math.js').fft": "r",
-    "require('./math.js').fft.add": "rx",
+    "require('./math.js').fft.add": "x",
     "require('./math.js').fft.e": "r",
-    "require('./math.js').fft.mul": "rwx",
-    "require('./math.js').sub": "rx",
+    "require('./math.js').fft.mul": "wx",
+    "require('./math.js').sub": "x",
     "require('./math.js').x": "rw"
   },
   "PWD_REPLACE/math.js": {
