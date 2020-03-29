@@ -1,26 +1,26 @@
 {
   "PWD_REPLACE/main.js": {
-    "require": "x",
+    "require": "rx",
     "require('./m1.js')": "ir",
     "require('./m2.js')": "ir",
     "require('./m1.js').fst": "r",
     "require('./m2.js').fst": "r"
   },
   "PWD_REPLACE/m1.js": {
-    "require": "x",
+    "require": "rx",
     "require('fs')": "ir",
     "module": "r",
     "module.exports": "w",
-    "require('fs').readFileSync": "x",
+    "require('fs').readFileSync": "rx",
     "require('./m2.js')": "i"
   },
   "PWD_REPLACE/m2.js": {
-    "require": "x",
+    "require": "rx",
     "require('fs')": "ir",
     "require('./m3.js')": "ir",
-    "require('fs').readFileSync": "x",
+    "require('fs').readFileSync": "rx",
     "console": "r",
-    "console.log": "x",
+    "console.log": "rx",
     "module": "r",
     "module.exports": "w",
     "require('fs').rmdirSync": "r",
@@ -28,11 +28,11 @@
     "require('./m3.js').fst": "r"
   },
   "PWD_REPLACE/m3.js": {
-    "require": "x",
+    "require": "rx",
     "require('fs')": "ir",
-    "require('fs').readFileSync": "x",
+    "require('fs').readFileSync": "rx",
     "console": "r",
-    "console.log": "x",
+    "console.log": "rx",
     "module": "r",
     "module.exports": "w"
   }

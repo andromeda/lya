@@ -1,13 +1,13 @@
 {
   "PWD_REPLACE/main.js": {
-    "require": "x",
+    "require": "rx",
     "require('fs')": "ir",
     "require('./m1.js')": "i",
-    "require('fs').createWriteStream": "x"
+    "require('fs').createWriteStream": "rx"
   },
   "PWD_REPLACE/m1.js": {
-    "Number": "x",
-    "require": "x",
+    "Number": "rx",
+    "require": "rx",
     "require('./m2.js')": "ir",
     "require('./m2.js').add": "rx"
   },
