@@ -300,6 +300,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     prologue += 'let global = localGlobal["proxyGlobal"]\n';
     prologue += 'process.env = localGlobal["process.env"];\n';
     prologue += 'Math = new Proxy(Math, localGlobal["proxyExportHandler"]);\n';
+    // TODO: Make 'with' optional ~> 304 line and 342 line
     prologue = 'with (withGlobal) {\n' + prologue;
     return prologue;
   };
