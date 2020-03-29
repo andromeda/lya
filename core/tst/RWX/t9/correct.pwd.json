@@ -1,6 +1,6 @@
 {
   "PWD_REPLACE/main.js": {
-    "require": "rx",
+    "require": "x",
     "require('./math.js')": "ir",
     "require('./math.js').add": "rx",
     "require('./math.js').constants": "r",
@@ -17,7 +17,7 @@
     "Math": "r",
     "Math.PI": "r",
     "console": "r",
-    "console.log": "rx",
+    "console.log": "x",
     "global": "r",
     "global.timesAddCalled": "rw",
     "module": "r",
