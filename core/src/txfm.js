@@ -113,8 +113,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
         return result;
       },
       get: function(target, name) {
-        const currentModule = globalNames.has(name) ?  env.moduleName[env.requireLevel]
-          : objectPath.get(target);
+        const currentModule = objectPath.get(target);
 
         const storeName = globalNames.has(name) ? globalNames.get(name)
           : globalNames.has(target[name]) ? globalNames.get(target[name])
@@ -156,11 +155,13 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   // Import the right policy depending on the choice of the user.
   const policy = require(lyaConfig.analysis)(env);
 
-  // TODO: Make this local to every module by passing it in prologue
   // We wrap the global variable in a proxy
-  methodNames.set(global, 'global');
-  objectPath.set(global, moduleName[env.requireLevel])
-  global = new Proxy(global, createHandler('user-globals'));
+  const createGlobalPr = () => {
+    const tempGlobal = new Proxy(global, {});
+    methodNames.set(tempGlobal, 'global');
+    objectPath.set(tempGlobal, moduleName[env.requireLevel]);
+    return new Proxy(tempGlobal, createHandler('user-globals'));
+  }
 
   // TODO: this should come from generate
   const moduleInputNames = defaultNames.locals.node;
@@ -185,6 +186,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     localGlobal['proxyExportHandler'] = createHandler('es-globals');
     const noProxyOrig = new Proxy(global['process']['env'], {});
     localGlobal['process.env'] = new Proxy(noProxyOrig, exportHandler);
+    localGlobal['proxyGlobal'] = createGlobalPr();
     objectName.set(noProxyOrig, 'process.env');
 
     return localGlobal;
@@ -294,6 +296,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   // This will run once and produce prologue string
   const setPrologue = () => {
     passJSONFile(setDeclaration, defaultNames.globals);
+    prologue += 'let global = localGlobal["proxyGlobal"]\n';
     prologue += 'process.env = localGlobal["process.env"];\n';
     prologue += 'Math = new Proxy(Math, localGlobal["proxyExportHandler"]);\n';
     return prologue;
