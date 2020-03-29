@@ -42,8 +42,8 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   let prologue = '';
 
   // WeakMaps to store the name and the path for every object value
-  const objName = new WeakMap();
-  const objPath = new WeakMap();
+  const objectName = new WeakMap();
+  const objectPath = new WeakMap();
   const methodNames = new WeakMap();
   const storePureFunctions = new WeakMap();
   const withProxy = new WeakMap();
@@ -52,24 +52,116 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   // We read and store the data of the json file
   const defaultNames = require('./default-names.json');
 
+  // Returns the objects name
+  const getObjectInfo = (obj) => {
+    const objName = objectName.has(obj) ? objectName.get(obj)
+      : methodNames.has(obj) ? methodNames.get(obj)
+      : globalNames.has(obj.name) ? globalName.get(obj.name)
+      : (obj.name) ? obj.name
+      : null;
+    const objPath = objectPath.has(obj) ? objectPath.get(obj)
+      : null;
+    // TODO: Add more info...?
+    return {
+      name : objName,
+      path : objPath
+    }
+  }
   // We make a test on fragment
   const env = {
     moduleName: moduleName,
     requireLevel: requireLevel,
     analysisResult: analysisResult,
-    objName: objName,
-    objPath: objPath,
-    methodNames: methodNames,
-    globalNames: globalNames,
+    getObjectInfo : getObjectInfo,
     // Signal if program has ended, necessary for enforcements
     end: false,
   };
+
+  // user-globals: e.g., global.x, x,                                   [global, x]
+  // es-globals: Math, Map, Array,                                      [Math, PI]
+  // node-globals: console, setImmediate,                               [console, log]
+  // module-locals: exports, require, module, __filename, __dirname     [require]
+  // module-returns: exports, module.exports                            [ID, math, pi]
+  // One create handler to rule them all
+  const createHandler = (moduleClass) => {
+    return {
+      apply: function(target, thisArg, argumentsList) {
+        const currentName = objectPath.get(target);
+        const birthplace = objectName.has(target) ? objectName.get(target) : null;
+        const birthName = birthplace + '.' + target.name;
+        const currentModule = moduleName[env.requireLevel];
+        const origReqModuleName = argumentsList[0];
+
+        const nameToStore =
+          (target.name === 'require') ? 'require(\'' + origReqModuleName + '\')'
+          : methodNames.has(target) ? methodNames.get(target)
+          : (birthplace && (currentModule === currentName)) ? birthName
+          : null;
+
+        if (nameToStore) {
+          policy.onCallPre(target, thisArg, argumentsList, target.name, nameToStore,
+            currentModule, currentName, moduleClass);
+        };
+
+        const result = Reflect.apply(target, thisArg, argumentsList);
+
+        if (nameToStore) {
+          policy.onCallPost(target, thisArg, argumentsList, target.name, nameToStore,
+            currentModule, currentName, moduleClass, result);
+        };
+
+        return result;
+      },
+      get: function(target, name) {
+        const currentModule = objectPath.get(target);
+
+        const storeName = globalNames.has(name) ? globalNames.get(name)
+          : globalNames.has(target[name]) ? globalNames.get(target[name])
+          : methodNames.has(target) ? methodNames.get(target)
+          : null;
+
+        if (storeName) {
+          policy.onRead(target, name, storeName, currentModule, moduleClass);
+        }
+
+        return Reflect.get(target, name);
+      },
+      set: function(target, name, value) {
+        const currentModule = objectPath.get(target);
+
+        if (methodNames.has(target)) {
+          const parentName = methodNames.get(target);
+          const nameToStore = parentName + '.' + name;
+          policy.onWrite(target, name, value, currentModule, parentName, nameToStore);
+          if (methodNames.get(target) === 'global') {
+            globalNames.set(name, nameToStore);
+          }
+        }
+
+        return Reflect.set(target, name, value);
+      },
+      construct: function(target, args) {
+        const currentName = env.moduleName[env.requireLevel];
+        const nameToStore = target.name;
+        if (target.name !== 'Proxy') {
+          policy.onConstruct(target, args, currentName, nameToStore)
+        }
+
+        return new target(...args);
+      }
+    }
+  }
 
   // Import the right policy depending on the choice of the user.
   const policy = require(lyaConfig.analysis)(env);
 
   // We wrap the global variable in a proxy
-  global = new Proxy(global, policy.globalHandler);
+  const createGlobalPr = () => {
+    const tempGlobal = new Proxy(global, {});
+    methodNames.set(tempGlobal, 'global');
+    objectPath.set(tempGlobal, moduleName[env.requireLevel]);
+    return new Proxy(tempGlobal, createHandler('user-globals'));
+  }
 
   // TODO: this should come from generate
   const moduleInputNames = defaultNames.locals.node;
@@ -84,17 +176,18 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       localCopy = obj[count];
     }
     methodNames.set(localCopy, moduleInputNames[count]);
-    objPath.set(localCopy, moduleName[env.requireLevel]);
-    return new Proxy(localCopy, policy.require);
+    objectPath.set(localCopy, moduleName[env.requireLevel]);
+    return new Proxy(localCopy, createHandler('module-locals'));
   };
 
   const setLocalGlobal = () => {
     let localGlobal = {};
     localGlobal = passJSONFile(createGlobal, defaultNames.globals);
-    localGlobal['proxyExportHandler'] = policy.globalConstHandler;
+    localGlobal['proxyExportHandler'] = createHandler('es-globals');
     const noProxyOrig = new Proxy(global['process']['env'], {});
     localGlobal['process.env'] = new Proxy(noProxyOrig, exportHandler);
-    objName.set(noProxyOrig, 'process.env');
+    localGlobal['proxyGlobal'] = createGlobalPr();
+    objectName.set(noProxyOrig, 'process.env');
 
     return localGlobal;
   }
@@ -110,8 +203,6 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     },
   };
 
-  const saveName = (obj, name, givenFunc) => methodNames.set(obj[name],
-      givenFunc + '.' + name);
   const getObjLength = (obj) => Object.keys(obj).length;
   const getObjValues = (obj) => Object.getOwnPropertyNames(obj);
 
@@ -124,10 +215,9 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       if (objType === 'object') {
         localGlobal[name] = proxyWrap(obj[name]);
       } else if (objType === 'function') {
-        nameSave ? saveName(obj, name, givenFunc) : null;
         const noProxyOrig = new Proxy(obj[name], {});
         methodNames.set(noProxyOrig, givenFunc + '.' + name);
-        objPath.set(noProxyOrig, moduleName[env.requireLevel]);
+        objectPath.set(noProxyOrig, moduleName[env.requireLevel]);
         localGlobal[name] = new Proxy(noProxyOrig, handler);
       } else if (objType === 'number') {
         globalNames.set(obj[name], givenFunc + '.' + name);
@@ -137,19 +227,19 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     return localGlobal[name];
   };
 
-  const proxyWrap = function(handler, origGlobal, objName) {
+  const proxyWrap = function(handler, origGlobal, saveName) {
     const objType = typeof origGlobal;
     let localGlobal = {};
     if (objType === 'function') {
       const noProxyOrig = new Proxy(origGlobal, {});
-      // methodNames.set(noProxyOrig, objName);
-      objPath.set(noProxyOrig, moduleName[env.requireLevel]);
+      methodNames.set(noProxyOrig, saveName);
+      objectPath.set(noProxyOrig, moduleName[env.requireLevel]);
       localGlobal = new Proxy(noProxyOrig, handler);
       // TODO: Add the if code !getObjLength(origGlobal)
       // under here if want to wrap the second level under
       // functions. lines (150...158);
       // etc to Catch : Array.of, Object.keys, constructor.getOwnPropertyNames
-      // maybe add this as an input from the user, to specify the depth of 
+      // maybe add this as an input from the user, to specify the depth of
       // the analysis.
     } else if (objType === 'object') {
       if (!getObjLength(origGlobal)) {
@@ -158,14 +248,14 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
           if (Object.prototype.hasOwnProperty.call(values, key)) {
             const name = values[key];
             localGlobal[name] = objTypeAction(origGlobal, name, handler,
-                objName, true);
+                saveName);
           }
         }
       } else {
         for (const key in origGlobal) {
           if (Object.prototype.hasOwnProperty.call(origGlobal, key)) {
             localGlobal[key] = objTypeAction(origGlobal, key, handler,
-                objName, false);
+                saveName);
           }
         }
       }
@@ -175,8 +265,8 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 
   const createGlobal = (name) => {
     if (global[name] !== undefined) {
-      const proxyObj = proxyWrap(policy.moduleHandler, global[name], name);
-      objPath.set(proxyObj, moduleName[env.requireLevel]);
+      const proxyObj = proxyWrap(createHandler('node-globals'), global[name], name);
+      objectPath.set(proxyObj, moduleName[env.requireLevel]);
       return proxyObj;
     }
     return 0;
@@ -206,6 +296,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   // This will run once and produce prologue string
   const setPrologue = () => {
     passJSONFile(setDeclaration, defaultNames.globals);
+    prologue += 'let global = localGlobal["proxyGlobal"]\n';
     prologue += 'process.env = localGlobal["process.env"];\n';
     prologue += 'Math = new Proxy(Math, localGlobal["proxyExportHandler"]);\n';
     return prologue;
@@ -271,9 +362,9 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 
     if (type !== 'boolean' && type !== 'symbol' &&
           type !== 'number' && type !== 'string') {
-      if (!objName.has(result)) {
-        objName.set(result, 'require(\'' + path + '\')');
-        objPath.set(result, moduleName[env.requireLevel]);
+      if (!objectName.has(result)) {
+        objectName.set(result, 'require(\'' + path + '\')');
+        objectPath.set(result, moduleName[env.requireLevel]);
         result = new Proxy(result, exportHandler);
         if (env.requireLevel !== 0 &&
           nativeModules.indexOf(path) === -1) {
@@ -281,8 +372,8 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
         }
       } else {
         result = new Proxy(result, exportHandler);
-        objName.set(result, 'require(\'' + path + '\')');
-        objPath.set(result, moduleName[env.requireLevel]);
+        objectName.set(result, 'require(\'' + path + '\')');
+        objectPath.set(result, moduleName[env.requireLevel]);
       }
     }
     return result;
@@ -292,14 +383,19 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   // and it has export data we wrap those data in this handler. So this is
   // the first So this is the first layer of the export data wraping.
   const namePathSet = (key, name, path) => {
-    objName.set(key, name);
-    objPath.set(key, path);
+    objectName.set(key, name);
+    objectPath.set(key, path);
   };
 
 
   const exportHandler = {
     apply: function(target, thisArg, argumentsList) {
-      policy.readFunction(objName.get(target), 'function');
+      const nameToStore = objectName.get(target);
+      const currModule = moduleName[env.requireLevel];
+      const declareModule = moduleName[env.requireLevel];
+      policy.onCallPre(target, thisArg, argumentsList, target.name,
+        nameToStore, currModule, declareModule);
+
       return Reflect.apply(target, thisArg, argumentsList);
     },
     get: function(target, name, receiver) {
@@ -312,13 +408,14 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
               return Reflect.get(target, name);
             }
             const currObject = target[name];
-            const fatherName = objName.get(receiver) ? objName.get(receiver) : 
-              objName.get(target);
-            const birthplace = objPath.get(receiver) ? objPath.get(receiver) :
-              objPath.get(target);
+            const currModule = moduleName[env.requireLevel];
+            const fatherName = objectName.get(receiver) ? objectName.get(receiver) :
+              objectName.get(target);
+            const birthplace = objectPath.get(receiver) ? objectPath.get(receiver) :
+              objectPath.get(target);
             const childName = fatherName + '.' + name;
 
-            policy.readFunction(fatherName, exportType);
+            policy.onRead(target, name, childName, currModule);
             target[name] = new Proxy(target[name], exportHandler);
             namePathSet(currObject, childName, birthplace);
 
@@ -328,36 +425,44 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
           }
         } else if (exportType === 'function') {
           const currFunction = target[name];
-          const fatherName = objName.get(target);
-          const birthplace = moduleName[env.requireLevel];
+          const parentName = objectName.get(target);
+          const currModule = moduleName[env.requireLevel];
+          const nameToStore = parentName + '.' +name;
+
           if (!withProxy.has(target[name])) {
             Object.defineProperty(currFunction, 'name', {value: name});
-            target[name] = new Proxy(currFunction, policy.exportsFuncHandler);
+            target[name] = new Proxy(currFunction, createHandler('module-returns'));
             storePureFunctions.set(target[name], currFunction);
-            namePathSet(currFunction, fatherName, birthplace);
+            namePathSet(currFunction, parentName, currModule);
           } else {
             const key = storePureFunctions.get(currFunction);
-            namePathSet(key, fatherName, birthplace);
+            namePathSet(key, parentName, currModule);
           }
 
-          policy.readFunction(fatherName);
-          policy.readFunction(fatherName + '.' + name);
+          policy.onRead(target, name, nameToStore, currModule);
 
           const result = Reflect.get(target, name);
           withProxy.set(result, true);
           return result;
         } else if (exportType === 'number' || exportType === 'boolean' ||
             exportType === 'string') {
-          policy.readFunction(objName.get(target));
-          policy.updateRestData(target, name, exportType);
+
+          const parentName = objectName.get(target);
+          const nameToStore = parentName + '.' +name;
+          const currModule = moduleName[env.requireLevel];
+          policy.onRead(target, name, nameToStore, currModule);
         }
       }
 
       return Reflect.get(target, name);
     },
     set: function(target, name, value) {
-      // We catch the declaration of a value
-      policy.exportObj(objName.get(target) + '.' +name);
+      const parentName = objectName.get(target);
+      const nameToStore = parentName + '.' +name;
+      const currModule = moduleName[env.requireLevel];
+      policy.onWrite(target, name, value, currModule, parentName,
+        nameToStore);
+
       return Reflect.set(target, name, value);
     },
   };
@@ -370,7 +475,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
           JSON.stringify(analysisResult, null, 2), 'utf-8');
     }
   });
-  return new Proxy(callerRequire, policy.require);
+  return new Proxy(callerRequire, createHandler('module-locals'));
 };
 
 module.exports = {

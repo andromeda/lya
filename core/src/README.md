@@ -12,10 +12,10 @@ Currently, the implementation comprises four files:
 We import the user choice. We import the right policy by importing the right module.
 The execution begins and we wrap the main require in a proxy.
 
-Every time we use the `require('xxx')` things happen on two levels: 
+Every time we use the `require('xxx')` things happen on two levels:
 
-* The modules xxx code: This code runs for one time, only on the first import. 
-We prepare all the global functions by wrapping them using `globalsDecl` function and 
+* The modules xxx code: This code runs for one time, only on the first import.
+We prepare all the global functions by wrapping them using `globalsDecl` function and
 then we pass them inside the module before runtime, using `vm.runInThisContext`.  
 * The modules xxx export code: We wrap the export obj in a proxy. The idea is that we wrap
 only the outside obj. Every time we access the object in order to call some of exported functions,
@@ -27,14 +27,14 @@ variables etc we wrap the specific thing to its own proxy.
 
 * [Policy 1](./policy1.js) - True/False: A simple access/ no access policy that checks if a obj has been used.
 * [Policy 2](./policy2.js) - Counter: We track how many times a object has been accessed.
-* [Policy 3](./policy3.js) - Time: A simple time counter 
+* [Policy 3](./policy3.js) - Time: A simple time counter
 * [Policy 4](./policy4.js) - Time2.0: A better timer counter that keeps the time counts on the module
 * [Policy 5](./policy5.js) - Enforcement: If a module try to accesss any object outside of the dynamic.json file we
 stop it from exec.
 * [Policy 6](./policy6.js) - RWE: A read/ write/ execute analysis
 * [Policy 7](./policy7.js) - Enforcement-RWE: If check if we try to access a module outside dynamic.json or if we try
 to access a value diff than before(R and try RE, E and we try RW etc)
-* [Policy 8](./policy8.js) - A simple true false analysis that tracks the access of the global object (console.log,Math etc). 
+* [Policy 8](./policy8.js) - A simple true false analysis that tracks the access of the global object (console.log,Math etc).
 * [Policy 9](./policy9.js) - TypeOf analysis, that check the type of input and output on every export function we use.
 
 ## TODO
@@ -50,3 +50,56 @@ to access a value diff than before(R and try RE, E and we try RW etc)
 * Clearup String from handlerObject
 
 * Handle module cache and circular dependencies
+
+## Interface
+
+### Analysis interface (analysis hooks)
+analysis.onRead = (target, name) => {...}
+
+analysis.onWrite = (target, name, value) => {}
+
+analysis.onCallPre = (target, thisArg, argumentsList) => {...}
+
+analysis.onCallPost = (target, thisArg, argumentsList) => {...}
+
++ ? id of module attempting accesss: (absolute file path)
++ ? path of target from "root": [process, env, HOME]
+- ? name of target: (no need, it **has to be** the last element of list)
+
+### Utility / helper functions
+
+```JavaScript
+lya.getObjectPath (target[name]) -> {
+  absolutePath: [process, env, HOME]
+}
+```
+
+```JavaScript
+lya.getModuleInfo (o) -> {
+  absoluteID: "/blah/foo/bar/lodash.js",
+  importString: "lodash.js",
+}
+```
+
+### Options
+```JavaScript
+lya.analysisDepth
+lya.roots = ["user-globals", "node-globals"]
+lya.granularity = ["prototype", "Object.keys", "ourFunctions"]
+```
+
+examples:
+```JavaScript
+let x = process.env.HOME // {process: r, env: r}
+let x = Math.PI          // {process: r, env: r}
+```
+
+root: to whom does the value belong? (full absolute name)
+- user-globals: e.g., global.x, x,                                   [global, x]
+- es-globals: Math, Map, Array,                                      [Math, PI]
+- node-globals: console, setImmediate,                               [console, log]
+- module-locals: exports, require, module, __filename, __dirname     [require]
+- module-returns: exports, module.exports                            [ID, math, pi]
+
+main:
+  require("math").add(1, 2)  // [blah/foo/bar/math.js, add] [/../../main.js]
