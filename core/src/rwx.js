@@ -14,12 +14,15 @@ const addEvent = (event, values, index) => {
 // @truename the name of the current function, object etc that we want to add to
 // the table
 // @mode the mode of the current access (R,W or E)
-const updateAnalysisData = (storedCalls, truename, mode) => {
-  if (Object.prototype.hasOwnProperty.
-      call(storedCalls, truename) === false) {
-    storedCalls[truename] = mode;
-  } else {
-    addEvent(mode, storedCalls, truename);
+const updateAnalysisData = (storedCalls, truename, modeGrid) => {
+  for (const key in modeGrid) {
+    const mode = modeGrid[key];
+    if (Object.prototype.hasOwnProperty.
+        call(storedCalls, truename) === false) {
+      storedCalls[truename] = mode;
+    } else {
+      addEvent(mode, storedCalls, truename);
+    }
   }
 };
 
@@ -27,24 +30,23 @@ const updateAnalysisData = (storedCalls, truename, mode) => {
 // onRead <~ is called before every object is read
 const onRead = (target, name, nameToStore, currentModule, typeClass) => {
     if (nameToStore != 'global') {
-      // TODO: fix case for test 7
       const pattern = /require[(](.*)[)]/;
       if (pattern.test(nameToStore)) {
         updateAnalysisData(locEnv.analysisResult[currentModule],
-          nameToStore.match(pattern)[0], 'r');
+          nameToStore.match(pattern)[0], ['r']);
       } else {
         updateAnalysisData(locEnv.analysisResult[currentModule],
-          nameToStore.split('.')[0], 'r');
+          nameToStore.split('.')[0], ['r']);
       }
       updateAnalysisData(locEnv.analysisResult[currentModule],
-        nameToStore, 'r');
+        nameToStore, ['r']);
     }
 }
 
 // onWrite <~ is called before every write of an object
 const onWrite = (target, name, value, currentModule, parentName, nameToStore) => {
-  updateAnalysisData(locEnv.analysisResult[currentModule], parentName, 'r');
-  updateAnalysisData(locEnv.analysisResult[currentModule], nameToStore, 'w');
+  updateAnalysisData(locEnv.analysisResult[currentModule], parentName, ['r']);
+  updateAnalysisData(locEnv.analysisResult[currentModule], nameToStore, ['w']);
 }
 
 // onCallPre <~ is called before the execution of a function
@@ -52,20 +54,16 @@ const onCallPre = (target, thisArg, argumentsList, name, nameToStore,
   currentModule, declareModule, typeClass) => {
   if (typeClass === 'module-locals') {
     updateAnalysisData(locEnv.analysisResult[currentModule],
-      'require', 'r');
+      'require', ['r', 'x']);
     updateAnalysisData(locEnv.analysisResult[currentModule],
-      'require', 'x');
-    updateAnalysisData(locEnv.analysisResult[currentModule],
-      nameToStore, 'i');
+      nameToStore, ['i']);
   } else {
     if (typeClass === 'node-globals') {
       updateAnalysisData(locEnv.analysisResult[declareModule],
-        nameToStore.split('.')[0], 'r');
+        nameToStore.split('.')[0], ['r']);
     }
     updateAnalysisData(locEnv.analysisResult[declareModule],
-      nameToStore, 'r');
-    updateAnalysisData(locEnv.analysisResult[declareModule],
-      nameToStore, 'x');
+      nameToStore, ['r', 'x']);
   }
 };
 
@@ -76,8 +74,7 @@ const onCallPost = (target, thisArg, argumentsList, name, nameToStore,
 
 // onConstruct <~ Is call before every construct
 const onConstruct = (target, args, currentName, nameToStore) => {
-  updateAnalysisData(locEnv.analysisResult[currentName], nameToStore, 'r');//Analysis
-  updateAnalysisData(locEnv.analysisResult[currentName], nameToStore, 'x');//Analysis
+  updateAnalysisData(locEnv.analysisResult[currentName], nameToStore, ['r', 'x']);
 }
 
 module.exports = (env) => {
