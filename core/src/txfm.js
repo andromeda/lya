@@ -140,6 +140,18 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 
         return Reflect.set(target, name, value);
       },
+      has: function(target, prop) {
+        const currentName = env.moduleName[env.requireLevel];
+        const parentObject = methodNames.get(target);
+        const result =  Reflect.has(target, prop);
+        const nameToStore = parentObject + '.' + prop;
+        if (parentObject === 'global' && !result &&
+          prop !== 'localGlobal') {
+          policy.onHas(target, prop, currentName, nameToStore);
+        }
+
+        return result;
+      },
       construct: function(target, args) {
         const currentName = env.moduleName[env.requireLevel];
         const nameToStore = target.name;
