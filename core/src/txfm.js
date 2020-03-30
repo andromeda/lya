@@ -21,6 +21,10 @@ const preset = {
   SUB_TYPES: './sub-types.js',
 };
 
+const systemPreset = {
+  WITH_ENABLE : 0,
+}
+
 const lyaStartUp = (callerRequire, lyaConfig) => {
   // All the necessary modules for swap
   const originalWrap = Module.wrap;
@@ -313,7 +317,8 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     prologue += 'process.env = localGlobal["process.env"];\n';
     prologue += 'Math = new Proxy(Math, localGlobal["proxyExportHandler"]);\n';
     // TODO: Make 'with' optional ~> 304 line and 342 line
-    prologue = 'with (withGlobal) {\n' + prologue;
+    prologue = lyaConfig.withEnable ? 'with (withGlobal) {\n' + prologue
+      : prologue;
     return prologue;
   };
 
@@ -351,7 +356,8 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 
   // extend wrap to take additional argument
   Module.wrap = (script) => {
-    script = getPrologue() + script + '}';
+    script = lyaConfig.withEnable ? getPrologue() + script + '}' :
+      getPrologue() + script;
     let wrappedScript = originalWrap(script);
     wrappedScript = wrappedScript.replace('dirname)', 'dirname, localGlobal, withGlobal)');
     return wrappedScript;
@@ -497,6 +503,7 @@ module.exports = {
   preset: preset,
   configRequire: (origRequire, conf) => {
     conf.analysis = conf.analysis || preset.ALLOW_DENY;
+    conf.withEnable = conf.withEnable || systemPreset.WITH_ENABLE;
     if (fs.existsSync(conf.analysis)) {
       console.error('Analysis file not found: ', conf.analysis);
     }
