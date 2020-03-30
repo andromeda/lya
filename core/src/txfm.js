@@ -22,7 +22,7 @@ const preset = {
 };
 
 const systemPreset = {
-  WITH_ENABLE : 0,
+  WITH_ENABLE : true,
 }
 
 const lyaStartUp = (callerRequire, lyaConfig) => {
@@ -316,7 +316,6 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     prologue += 'let global = localGlobal["proxyGlobal"]\n';
     prologue += 'process.env = localGlobal["process.env"];\n';
     prologue += 'Math = new Proxy(Math, localGlobal["proxyExportHandler"]);\n';
-    // TODO: Make 'with' optional ~> 304 line and 342 line
     prologue = lyaConfig.withEnable ? 'with (withGlobal) {\n' + prologue
       : prologue;
     return prologue;
