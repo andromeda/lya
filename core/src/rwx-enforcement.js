@@ -1,183 +1,100 @@
-// TODO: Find a more elegant solution than !locEnv.end
-// env is {
-//   trueName : trueName,
-//   requireLevel : requireLevel,
-//   accessMatrix: accessMatrix,
-// }
 let locEnv;
 
-// Holds the end of each name store of new assigned global variables
-// suffix for our own metadata
-const endName = '@name';
-
-// The nessasary modules
-const path = require('path');
-
 // We need to get the path of the main module in order to find dynamic json
-const createDynamicObj = () => {
+const getAnalysisData = () => {
   // We save all the json data inside an object
+  const path = require('path');
   const appDir = path.join(path.dirname(require.main.filename), 'dynamic.json');
   let dynamicData;
   try {
-    dynamicData = require(lyaConfig.POLICY || appDir);
+    dynamicData = require(appDir);
   } catch (e) {
     throw new Error('The dynamic.json file was not found!');
   }
   return dynamicData;
 };
 
-dynamicObj = createDynamicObj();
-
-// Check that the line of dynamic.json contains the right char
-// for the occasion ==> false / else true
-const problemCheck = (line, char) => {
-  try {
-    if (line.includes(char)) {
-      return false;
+// TODO: Make the path of the imported analysis result  not absolute
+// etc.. /greg/home/lya/tst/main.js ~> main.js
+const analysisData = getAnalysisData();
+const checkRWX = (storedCalls, truename, modeGrid) => {
+  for (const key in modeGrid) {
+    const mode = modeGrid[key];
+    if (Object.prototype.hasOwnProperty.
+        call(storedCalls, truename) === false) {
+      console.log('Invalid access in: ', truename, ' and mode ', mode);
     } else {
-      return true;
+      let permissions = storedCalls[truename];
+      if (!permissions.includes(mode)) {
+      console.log('Invalid access in: ', truename, ' and mode ', mode);
+      }
     }
-  } catch (e) {
-    new Error('Good problem!');
   }
 };
 
-const updateRestData = (target, name, type) => {
-};
-
-const exportObj = () => {
-};
-
-// The handler of require of Enforcement
-const EnforcementCheck = {
-  apply: function(target) {
-    const currentName = locEnv.trueName[locEnv.requireLevel];
-    const nameReq = target.name + '(\'' + arguments[2][0] +// In arguments[2][0]
-      '\')';// Is the name we use to import
-    // problemCheck(dynamicObj[currentName][nameReq])
-    if ((Object.prototype.hasOwnProperty.
-        call(dynamicObj, currentName, nameReq) === false ||
-          problemCheck(dynamicObj[currentName][nameReq], 'R')) && !locEnv.end) {
-      throw new Error('Something went badly wrong on the require!');
+// Analyses provided by LYA.
+// onRead <~ is called before every object is read
+const onRead = (target, name, nameToStore, currentModule, typeClass) => {
+    if (nameToStore != 'global') {
+      const pattern = /require[(](.*)[)]/;
+      if (pattern.test(nameToStore)) {
+        checkRWX(analysisData[currentModule],
+          nameToStore.match(pattern)[0], ['r']);
+      } else {
+        checkRWX(analysisData[currentModule],
+          nameToStore.split('.')[0], ['r']);
+      }
+      checkRWX(analysisData[currentModule],
+        nameToStore, ['r']);
     }
+}
 
-    return Reflect.apply( ...arguments);
-  },
-};
+// onWrite <~ is called before every write of an object
+const onWrite = (target, name, value, currentModule, parentName, nameToStore) => {
+  checkRWX(analysisData[currentModule], parentName, ['r']);
+  checkRWX(analysisData[currentModule], nameToStore, ['w']);
+}
 
-// @storedCalls it is a table that contains all the analysis data
-// @truename the name of the current function, object etc that we want to add to
-// the table
-// @mode the mode of the current access (R,W or E)
-// Given those two inputs we can update the analysis data that are stored in storedCalls
-const CheckAnalysisData = (storedCalls, truename, mode) => {
-  if ((Object.prototype.hasOwnProperty.call(storedCalls, truename) === false ||
-    problemCheck(storedCalls[truename], mode)) && !locEnv.end) {
-    throw new Error('Something went badly wrong in ' + truename);
+// onCallPre <~ is called before the execution of a function
+const onCallPre = (target, thisArg, argumentsList, name, nameToStore,
+  currentModule, declareModule, typeClass) => {
+  if (typeClass === 'module-locals') {
+    checkRWX(analysisData[currentModule],
+      'require', ['r', 'x']);
+    checkRWX(analysisData[currentModule],
+      nameToStore, ['i']);
+  } else {
+    if (typeClass === 'node-globals') {
+      checkRWX(analysisData[declareModule],
+        nameToStore.split('.')[0], ['r']);
+    }
+    checkRWX(analysisData[declareModule],
+      nameToStore, ['r', 'x']);
   }
 };
 
-// The handler of the global variable.Every time we access the global variabe in order to declare
-// or call a variable, then we can print it on the export file.
-const globalHandler = {
-  get: function(target, name) {
-    // XXX[target] != 'undefined'
-    if (typeof target[name+endName] != 'undefined') {
-      const currentName = locEnv.trueName[locEnv.requireLevel];
-      const nameToShow = target[name+endName];
-      CheckAnalysisData(dynamicObj[currentName], nameToShow, 'R');
-    }
+// onCallPost <~ Is call after every execution of a function
+const onCallPost = (target, thisArg, argumentsList, name, nameToStore,
+  currentModule, declareModule, typeClass, result) => {
+}
 
-    return Reflect.get(target, name);
-  },
-  set: function(target, name, value) {
-    if (typeof value === 'number') {
-      const currentName = locEnv.trueName[locEnv.requireLevel];
-      const nameToStore = 'global.' + name;
-      const result = Reflect.set(target, name, value);
-      // In order to exist a disticton between the values we declared ourselfs
-      // We declare one more field with key value that stores the name
-      Object.defineProperty(target, name+endName, {value: nameToStore});
-      CheckAnalysisData(dynamicObj[currentName], nameToStore, 'W');
+// onConstruct <~ Is call before every construct
+const onConstruct = (target, args, currentName, nameToStore) => {
+  checkRWX(analysisData[currentName], nameToStore, ['r', 'x']);
+}
 
-      return result;
-    }
-
-    return Reflect.set(target, name, value);
-  },
-};
-
-// The handler of the all the function that are called inside a module. Every time we
-// load a module with require it first execute all the code and then prepary and exports
-// all the export data. We use this handler to catch all the code that is executed on the
-// module.
-const moduleHandler = {
-  apply: function(target) {
-    const currentName = locEnv.trueName[locEnv.requireLevel];
-    CheckAnalysisData(dynamicObj[currentName], target.name, 'E');
-
-    return Reflect.apply(...arguments);
-  },
-  get: function(target, name) {
-    const currentName = locEnv.trueName[locEnv.requireLevel];
-    CheckAnalysisData(dynamicObj[currentName], target.name, 'R');
-
-    return Reflect.get(target, name);
-  },
-};
-
-// The handler of the functions on the export module. Every time we require a module
-// and we have exports, we wrap them in a handler. Each time we call a function from inside
-// exports this is the handler that we wrap the function.
-const exportsFuncHandler = {
-  apply: function(target, thisArg, argumentsList) {
-    let truename;
-
-    truename = locEnv.objName.get(target);
-    const currentName = locEnv.objPath.get(target);
-    truename = truename + '.' + target.name;
-    CheckAnalysisData(dynamicObj[currentName], truename, 'E');
-
-    return Reflect.apply(...arguments);
-  },
-};
-
-// Read function so we print it in the export file
-// This is to catch the read
-const readFunction = (myFunc, name) => {
-  name = name + '.' + myFunc.name;
-  const currentPlace = locEnv.trueName[locEnv.requireLevel];
-  const storedCalls = dynamicObj[currentPlace];
-
-  if ((Object.prototype.hasOwnProperty.
-      call(storedCalls, name) === false ||
-          problemCheck(storedCalls[name], 'R')) && !locEnv.end) {
-    throw new Error('Something went badly wrong in ' + name);
-  }
-};
-
-// This is the handler of the global constanst variables, like Math.PI etc. We store the name
-// in the same object but we use a different name, for example, for Math.PI we store the
-// name "Math.PI" in the object Math.PIPI. That way we can have accurate name analysis.
-const globalConstHandler = {
-  get: function(target, name) {
-    const currentName = locEnv.trueName[locEnv.requireLevel];
-    CheckAnalysisData(dynamicObj[currentName], target[name+name], 'R');
-
-    return Reflect.get(target, name);
-  },
-};
+const onHas = (target, prop, currentName, nameToStore) => {
+  //checkRWX(analysisData[currentName], nameToStore, ['r', 'w']);
+}
 
 module.exports = (env) => {
   locEnv = env;
   return {
-    require: EnforcementCheck,
-    moduleHandler: moduleHandler,
-    globalHandler: globalHandler,
-    readFunction: readFunction,
-    exportsFuncHandler: exportsFuncHandler,
-    globalConstHandler: globalConstHandler,
-    updateRestData: updateRestData,
-    exportObj: exportObj,
+    onRead: onRead,
+    onCallPre: onCallPre,
+    onCallPost: onCallPost,
+    onWrite: onWrite,
+    onConstruct: onConstruct,
+    onHas: onHas,
   };
 };
