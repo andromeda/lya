@@ -78,7 +78,7 @@ const onConstruct = (target, args, currentName, nameToStore) => {
 }
 
 const onHas = (target, prop, currentName, nameToStore) => {
-  updateAnalysisData(locEnv.analysisResult[currentName], nameToStore, ['r', 'w']);
+  //updateAnalysisData(locEnv.analysisResult[currentName], nameToStore, ['r', 'w']);
 }
 
 module.exports = (env) => {
