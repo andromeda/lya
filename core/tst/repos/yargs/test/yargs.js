@@ -1,17 +1,11 @@
 'use strict'
 /* global context, describe, it, beforeEach, afterEach */
-// THIS IS COMMIT ON 1 JAN 2018
-// FIXME: problem with global --> anyway to do this better
-if (parseInt(process.env.npm_config_key) != 0) {
-  global.lyaConfig = {
-  SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
-  analysisCh: parseInt(process.env.npm_config_key),
-  POLICY: '../tst/working/repos/debug/debug-master/dynamic.json'
-  };
-  let lya = require("../../../../src/txfm.js");
-  require = lya.configRequire(require, lyaConfig);
-}
-const time = process.hrtime();
+//let lya = require("../../../../src/txfm.js");
+//let lyaConfig = {
+//  SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
+//  analysis: lya.preset.RWX,
+//};
+//require = lya.configRequire(require, lyaConfig); 
 
 const expect = require('chai').expect
 const fs = require('fs')
@@ -2128,9 +2122,3 @@ describe('yargs dsl tests', () => {
   })
 })
 
-const diff = process.hrtime(time);
-const thisTime = (diff[0] * 1e9 + diff[1]) * 1e-6;
-var logger = fs.createWriteStream('timetest.txt', {
-  flags: 'a' // 'a' means appending (old data will be preserved)
-})
-logger.write('The time of ' + parseInt(process.env.npm_config_key) + ' is ' + thisTime + ' \n', 'utf-8');
