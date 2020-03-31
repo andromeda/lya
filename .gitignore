@@ -10,3 +10,4 @@ draft.out
 draft.pdf
 timetest.txt
 .DS_Store
+.nyc_output/
