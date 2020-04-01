@@ -3,9 +3,9 @@ let lyaConfig = {
   SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
   analysis: lya.preset.RWX,
   // TODO: check removejson
-  removejson: ['Array'],
+  removejson: ['unescape'],
+  withEnable: false,
 };
-lya.configRequire(require, lyaConfig);
 require = lya.configRequire(require, lyaConfig); 
 
 // We start to count time for the tests
