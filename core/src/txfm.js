@@ -185,12 +185,10 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   // require, __dirname, __filename
   const wrapModuleInputs = (obj, count) => {
     const type = typeof obj[count];
-    let localCopy;
     if (type === 'string') {
-      localCopy = new String(obj[count]);
-    } else {
-      localCopy = obj[count];
+      return obj[count];
     }
+    const localCopy = obj[count];
     methodNames.set(localCopy, moduleInputNames[count]);
     objectPath.set(localCopy, moduleName[env.requireLevel]);
     return new Proxy(localCopy, createHandler('module-locals'));
@@ -502,7 +500,8 @@ module.exports = {
   preset: preset,
   configRequire: (origRequire, conf) => {
     conf.analysis = conf.analysis || preset.ALLOW_DENY;
-    conf.withEnable = conf.withEnable || systemPreset.WITH_ENABLE;
+    conf.withEnable = conf.withEnable === false ? conf.withEnable :
+      systemPreset.WITH_ENABLE;
     if (fs.existsSync(conf.analysis)) {
       console.error('Analysis file not found: ', conf.analysis);
     }
