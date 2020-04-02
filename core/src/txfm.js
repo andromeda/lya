@@ -23,6 +23,7 @@ const preset = {
 
 const systemPreset = {
   WITH_ENABLE : true,
+  INPUT_STRING: true,
 }
 
 const lyaStartUp = (callerRequire, lyaConfig) => {
@@ -185,8 +186,16 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   // require, __dirname, __filename
   const wrapModuleInputs = (obj, count) => {
     const type = typeof obj[count];
-    const localCopy = type === 'string' ? new String(obj[count])
-      : obj[count];
+    let localCopy;
+    if (type === 'string') {
+      if (lyaConfig.inputString) {
+        localCopy = new String(obj[count]);
+      } else {
+        return obj[count];
+      }
+    } else {
+      localCopy = obj[count];
+    }
     methodNames.set(localCopy, moduleInputNames[count]);
     objectPath.set(localCopy, moduleName[env.requireLevel]);
     return new Proxy(localCopy, createHandler('module-locals'));
@@ -517,6 +526,8 @@ module.exports = {
     }
     // TODO: maybe exapand to a local
     conf.removejson = conf.removejson || [];
+    conf.inputString = conf.inputString === false ? conf.inputString:
+      systemPreset.INPUT_STRING;
     return lyaStartUp(origRequire, conf);
   },
 };
