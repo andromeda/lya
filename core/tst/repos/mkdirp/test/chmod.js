@@ -2,6 +2,7 @@ lya = require("../../../../src/txfm.js");
 let lyaConfig = {
   SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
   analysis: lya.preset.RWX,
+  removejson: ['Promise', 'Buffer']
 };
 require = lya.configRequire(require, lyaConfig);  
 // We start to count time for the tests
