@@ -196,10 +196,10 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     let localGlobal = {};
     localGlobal = passJSONFile(createGlobal, defaultNames.globals);
     localGlobal['proxyExportHandler'] = createHandler('es-globals');
-    const noProxyOrig = new Proxy(global['process']['env'], {});
-    localGlobal['process.env'] = new Proxy(noProxyOrig, exportHandler);
+    //const noProxyOrig = new Proxy(global['process']['env'], {});
+    //localGlobal['process.env'] = new Proxy(noProxyOrig, exportHandler);
     localGlobal['proxyGlobal'] = createGlobalPr();
-    objectName.set(noProxyOrig, 'process.env');
+    //objectName.set(noProxyOrig, 'process.env');
 
     return localGlobal;
   }
@@ -310,7 +310,8 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   const setPrologue = () => {
     passJSONFile(setDeclaration, defaultNames.globals);
     prologue += 'let global = localGlobal["proxyGlobal"]\n';
-    prologue += 'process.env = localGlobal["process.env"];\n';
+    // FIXME: need to find another way to wrap process
+    //prologue += 'process.env = localGlobal["process.env"];\n';
     prologue += 'Math = new Proxy(Math, localGlobal["proxyExportHandler"]);\n';
     prologue = lyaConfig.withEnable ? 'with (withGlobal) {\n' + prologue
       : prologue;
@@ -429,6 +430,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       if (exportType !== 'undefined' && target[name] != null &&
           typeof name === 'string' && (!(target[name] instanceof RegExp))) {
         if (exportType === 'object') {
+          // FIXME: Problem here stacking
           if (Object.entries(target[name]).length) {
             if (withProxy.has(target[name])) {
               return Reflect.get(target, name);
