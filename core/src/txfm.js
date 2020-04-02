@@ -185,10 +185,8 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   // require, __dirname, __filename
   const wrapModuleInputs = (obj, count) => {
     const type = typeof obj[count];
-    if (type === 'string') {
-      return obj[count];
-    }
-    const localCopy = obj[count];
+    const localCopy = type === 'string' ? new String(obj[count])
+      : obj[count];
     methodNames.set(localCopy, moduleInputNames[count]);
     objectPath.set(localCopy, moduleName[env.requireLevel]);
     return new Proxy(localCopy, createHandler('module-locals'));
