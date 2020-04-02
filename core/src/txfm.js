@@ -341,11 +341,21 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     });
   };
 
+  // TODO: Combine with flattenAndSkip
+  const skipMe = (group) => {
+    for (const v in group) {
+      group[v] = group[v].filter((e) =>
+        !lyaConfig.removejson.includes(e));
+    }
+    return group;
+  };
+
   // User can remove things from json file that create conf
   const generateGlobals = () => {
     // flatten globals under defaultNames.globals.*
     flattenAndSkip(["es", "node", "other"], "globals");
-    // flatten locals under defaultNames.globals.*
+    defaultNames.globals = skipMe(defaultNames.globals);
+    // flatten locals under defaultNames.locals.*
     flattenAndSkip(["node"], "locals");
   };
 
