@@ -1,3 +1,5 @@
+// TODO: This should not fail with 'with' enabled
+// replicate this error by "withEnable: true"
 var process = {env: {}}
 
 process.env.CHAN = 3
