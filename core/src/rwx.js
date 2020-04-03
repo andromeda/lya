@@ -16,12 +16,14 @@ const addEvent = (event, values, index) => {
 // @mode the mode of the current access (R,W or E)
 const updateAnalysisData = (storedCalls, truename, modeGrid) => {
   for (const key in modeGrid) {
-    const mode = modeGrid[key];
-    if (Object.prototype.hasOwnProperty.
-        call(storedCalls, truename) === false) {
-      storedCalls[truename] = mode;
-    } else {
-      addEvent(mode, storedCalls, truename);
+    if (Object.prototype.hasOwnProperty.call(modeGrid, key)) {
+      const mode = modeGrid[key];
+      if (Object.prototype.hasOwnProperty.
+          call(storedCalls, truename) === false) {
+        storedCalls[truename] = mode;
+      } else {
+        addEvent(mode, storedCalls, truename);
+      }
     }
   }
 };
@@ -29,57 +31,58 @@ const updateAnalysisData = (storedCalls, truename, modeGrid) => {
 // Analyses provided by LYA.
 // onRead <~ is called before every object is read
 const onRead = (target, name, nameToStore, currentModule, typeClass) => {
-    if (nameToStore != 'global') {
-      const pattern = /require[(](.*)[)]/;
-      if (pattern.test(nameToStore)) {
-        updateAnalysisData(locEnv.analysisResult[currentModule],
-          nameToStore.match(pattern)[0], ['r']);
-      } else {
-        updateAnalysisData(locEnv.analysisResult[currentModule],
-          nameToStore.split('.')[0], ['r']);
-      }
+  if (nameToStore !== 'global') {
+    const pattern = /require[(](.*)[)]/;
+    if (pattern.test(nameToStore)) {
       updateAnalysisData(locEnv.analysisResult[currentModule],
-        nameToStore, ['r']);
+          nameToStore.match(pattern)[0], ['r']);
+    } else {
+      updateAnalysisData(locEnv.analysisResult[currentModule],
+          nameToStore.split('.')[0], ['r']);
     }
-}
+    updateAnalysisData(locEnv.analysisResult[currentModule],
+        nameToStore, ['r']);
+  }
+};
 
 // onWrite <~ is called before every write of an object
-const onWrite = (target, name, value, currentModule, parentName, nameToStore) => {
+const onWrite = (target, name, value, currentModule, parentName, 
+    nameToStore) => {
   updateAnalysisData(locEnv.analysisResult[currentModule], parentName, ['r']);
   updateAnalysisData(locEnv.analysisResult[currentModule], nameToStore, ['w']);
-}
+};
 
 // onCallPre <~ is called before the execution of a function
 const onCallPre = (target, thisArg, argumentsList, name, nameToStore,
-  currentModule, declareModule, typeClass) => {
+    currentModule, declareModule, typeClass) => {
   if (typeClass === 'module-locals') {
     updateAnalysisData(locEnv.analysisResult[currentModule],
-      'require', ['r', 'x']);
+        'require', ['r', 'x']);
     updateAnalysisData(locEnv.analysisResult[currentModule],
-      nameToStore, ['i']);
+        nameToStore, ['i']);
   } else {
     if (typeClass === 'node-globals') {
       updateAnalysisData(locEnv.analysisResult[declareModule],
-        nameToStore.split('.')[0], ['r']);
+          nameToStore.split('.')[0], ['r']);
     }
     updateAnalysisData(locEnv.analysisResult[declareModule],
-      nameToStore, ['r', 'x']);
+        nameToStore, ['r', 'x']);
   }
 };
 
 // onCallPost <~ Is call after every execution of a function
 const onCallPost = (target, thisArg, argumentsList, name, nameToStore,
-  currentModule, declareModule, typeClass, result) => {
-}
+    currentModule, declareModule, typeClass, result) => {
+};
 
 // onConstruct <~ Is call before every construct
 const onConstruct = (target, args, currentName, nameToStore) => {
-  updateAnalysisData(locEnv.analysisResult[currentName], nameToStore, ['r', 'x']);
-}
+  updateAnalysisData(locEnv.analysisResult[currentName],
+      nameToStore, ['r', 'x']);
+};
 
 const onHas = (target, prop, currentName, nameToStore) => {
-  //updateAnalysisData(locEnv.analysisResult[currentName], nameToStore, ['r', 'w']);
-}
+};
 
 module.exports = (env) => {
   locEnv = env;
