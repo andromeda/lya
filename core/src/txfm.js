@@ -78,8 +78,6 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     requireLevel: requireLevel,
     analysisResult: analysisResult,
     getObjectInfo : getObjectInfo,
-    // Signal if program has ended, necessary for enforcements
-    end: false,
   };
 
   // user-globals: e.g., global.x, x,                                   [global, x]
@@ -451,7 +449,6 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
             const birthplace = objectPath.get(receiver) ? objectPath.get(receiver) :
               objectPath.get(target);
             const childName = fatherName + '.' + name;
-
             policy.onRead(target, name, childName, currModule);
             target[name] = new Proxy(target[name], exportHandler);
             namePathSet(currObject, childName, birthplace);
@@ -475,7 +472,6 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
             const key = storePureFunctions.get(currFunction);
             namePathSet(key, parentName, currModule);
           }
-
           policy.onRead(target, name, nameToStore, currModule);
 
           const result = Reflect.get(target, name);
@@ -485,7 +481,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
             exportType === 'string') {
 
           const parentName = objectName.get(target);
-          const nameToStore = parentName + '.' +name;
+          const nameToStore = parentName + '.' + name;
           const currModule = moduleName[env.requireLevel];
           policy.onRead(target, name, nameToStore, currModule);
         }
@@ -506,7 +502,6 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 
   // We print all the results at the end of the analysis
   process.on('exit', function() {
-    env.end = true;
     if (lyaConfig.SAVE_RESULTS && !/ENFORCEMENT$/.test(lyaConfig.analysis)) {
       fs.writeFileSync(lyaConfig.SAVE_RESULTS,
           JSON.stringify(analysisResult, null, 2), 'utf-8');
@@ -519,13 +514,13 @@ module.exports = {
   preset: preset,
   configRequire: (origRequire, conf) => {
     conf.analysis = conf.analysis || preset.ALLOW_DENY;
-    conf.withEnable = conf.withEnable === false ? conf.withEnable :
-      systemPreset.WITH_ENABLE;
     if (fs.existsSync(conf.analysis)) {
       console.error('Analysis file not found: ', conf.analysis);
     }
     // TODO: maybe exapand to a local
     conf.removejson = conf.removejson || [];
+    conf.withEnable = conf.withEnable === false ? conf.withEnable :
+      systemPreset.WITH_ENABLE;
     conf.inputString = conf.inputString === false ? conf.inputString:
       systemPreset.INPUT_STRING;
     return lyaStartUp(origRequire, conf);
