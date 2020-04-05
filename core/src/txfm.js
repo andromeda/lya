@@ -82,6 +82,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   // module-locals: exports, require, module, __filename, __dirname     [require]
   // module-returns: exports, module.exports                            [ID, math, pi]
   // One create handler to rule them all
+  // TODO: Add option to return specific handlers, only get,set or only apply etc..
   const createHandler = (moduleClass) => {
     return {
       apply: function(target, thisArg, argumentsList) {
@@ -170,7 +171,12 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     const tempGlobal = new Proxy(global, {});
     methodNames.set(tempGlobal, 'global');
     objectPath.set(tempGlobal, moduleName[env.requireLevel]);
-    return new Proxy(tempGlobal, createHandler('user-globals'));
+    const handler = createHandler('user-globals');
+    return new Proxy(tempGlobal, {
+      get: handler.get,
+      set: handler.set,
+      has: handler.has,
+    });
   }
 
   // TODO: this should come from generate
@@ -191,7 +197,12 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     }
     methodNames.set(localCopy, moduleInputNames[count]);
     objectPath.set(localCopy, moduleName[env.requireLevel]);
-    return new Proxy(localCopy, createHandler('module-locals'));
+    const handler = createHandler('module-locals');
+    return new Proxy(localCopy, {
+      apply: handler.apply,
+      get: handler.get,
+      set: handler.set,
+    });
   };
 
   const setLocalGlobal = () => {
@@ -460,8 +471,9 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 
           if (!withProxy.has(target[name])) {
             Object.defineProperty(currFunction, 'name', {value: name});
-            target[name] = new Proxy(currFunction,
-                createHandler('module-returns'));
+            target[name] = new Proxy(currFunction,{
+              apply: createHandler('module-returns').apply
+            });
             storePureFunctions.set(target[name], currFunction);
             namePathSet(currFunction, parentName, currModule);
           } else {
