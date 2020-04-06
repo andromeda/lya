@@ -24,6 +24,7 @@ const preset = {
 const systemPreset = {
   WITH_ENABLE : true,
   INPUT_STRING: true,
+  DEBUG_FLAG: false,
 }
 
 const lyaStartUp = (callerRequire, lyaConfig) => {
@@ -378,8 +379,11 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   Module.wrap = (script) => {
     script = lyaConfig.withEnable ? getPrologue() + script + '}' :
       getPrologue() + script;
-    let wrappedScript = originalWrap(script);
-    wrappedScript = wrappedScript.replace('dirname)', 'dirname, localGlobal, withGlobal)');
+    const wrappedScript = originalWrap(script).replace('dirname)',
+      'dirname, localGlobal, withGlobal)');
+    if (lyaConfig.debugFlag) {
+      console.log(wrappedScript);
+    }
     return wrappedScript;
   };
 
@@ -447,7 +451,6 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
           if (withProxy.has(target[name])) {
             return Reflect.get(target, name);
           }
-          // FIXME: Problem here stacking
           if (Object.entries(target[name]).length) {
             const currObject = target[name];
             const currModule = moduleName[env.requireLevel];
@@ -502,6 +505,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 
       return Reflect.get(target, name);
     },
+    // TODO: here is stacking
     set: function(target, name, value) {
       const parentName = objectName.get(target);
       const nameToStore = parentName + '.' + name;
@@ -535,6 +539,8 @@ module.exports = {
       systemPreset.WITH_ENABLE;
     conf.inputString = conf.inputString === false ? conf.inputString:
       systemPreset.INPUT_STRING;
+    conf.debugFlag = conf.debugFlag ? conf.debugFlag :
+      systemPreset.DEBUG_FLAG;
     return lyaStartUp(origRequire, conf);
   },
 };
