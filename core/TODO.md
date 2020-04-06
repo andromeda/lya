@@ -14,6 +14,14 @@ R: module.parent
 R: module.exports 
 X: Array.of
 X: n.toString()
+RW:Number.prototype.toExponential   Number.prototype.toFixed         Number.prototype.toPrecision
+
+except: ["/onetwo/"]
+```
+
+Static analysis:
+```
+t11 reverse stuff
 ```
 
 ### New `lya` Interface
