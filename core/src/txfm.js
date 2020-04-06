@@ -25,6 +25,13 @@ const systemPreset = {
   WITH_ENABLE : true,
   INPUT_STRING: true,
   DEBUG_FLAG: false,
+  TRACKING: [
+    'user-globals',
+    'es-globals',
+    'node-globals',
+    'module-locals',
+    'module-returns'
+  ]
 }
 
 const lyaStartUp = (callerRequire, lyaConfig) => {
@@ -170,6 +177,10 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 
   // We wrap the global variable in a proxy
   const createGlobalPr = () => {
+    if (!lyaConfig.track.includes('user-globals')) {
+      return global;
+    }
+
     const tempGlobal = new Proxy(global, {});
     methodNames.set(tempGlobal, 'global');
     objectPath.set(tempGlobal, moduleName[env.requireLevel]);
@@ -199,6 +210,9 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     }
     methodNames.set(localCopy, moduleInputNames[count]);
     objectPath.set(localCopy, moduleName[env.requireLevel]);
+    if (!lyaConfig.track.includes('module-locals')) {
+      return localCopy;
+    }
     const handler = createHandler('module-locals');
     return new Proxy(localCopy, {
       apply: handler.apply,
@@ -210,7 +224,9 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   const setLocalGlobal = () => {
     let localGlobal = {};
     localGlobal = passJSONFile(createGlobal, defaultNames.globals);
-    localGlobal['proxyExportHandler'] = createHandler('es-globals');
+    if (lyaConfig.track.includes('es-globals')) {
+      localGlobal['proxyExportHandler'] = createHandler('es-globals');
+    }
     //const noProxyOrig = new Proxy(global['process']['env'], {});
     //localGlobal['process.env'] = new Proxy(noProxyOrig, exportHandler);
     localGlobal['proxyGlobal'] = createGlobalPr();
@@ -293,6 +309,9 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 
   const createGlobal = (name) => {
     if (global[name] !== undefined) {
+      if (!lyaConfig.track.includes('node-globals')) {
+        return global[name];
+      }
       const proxyObj = proxyWrap(createHandler('node-globals'), global[name], name);
       objectPath.set(proxyObj, moduleName[env.requireLevel]);
       return proxyObj;
@@ -327,7 +346,9 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     prologue += 'let global = localGlobal["proxyGlobal"]\n';
     // FIXME: need to find another way to wrap process
     //prologue += 'process.env = localGlobal["process.env"];\n';
-    prologue += 'Math = new Proxy(Math, localGlobal["proxyExportHandler"]);\n';
+    if (lyaConfig.track.includes('es-globals')) {
+      prologue += 'Math = new Proxy(Math, localGlobal["proxyExportHandler"]);\n';
+    }
     prologue = lyaConfig.withEnable ? 'with (withGlobal) {\n' + prologue
       : prologue;
     return prologue;
@@ -410,7 +431,9 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       if (!objectName.has(result)) {
         objectName.set(result, 'require(\'' + path + '\')');
         objectPath.set(result, moduleName[env.requireLevel]);
-        result = new Proxy(result, exportHandler);
+        if (lyaConfig.track.includes('module-returns')) {
+          result = new Proxy(result, exportHandler);
+        };
         if (env.requireLevel !== 0 &&
           nativeModules.indexOf(path) === -1) {
           env.requireLevel--;
@@ -541,6 +564,8 @@ module.exports = {
       systemPreset.INPUT_STRING;
     conf.debugFlag = conf.debugFlag ? conf.debugFlag :
       systemPreset.DEBUG_FLAG;
+    conf.track = conf.dontTrack ? systemPreset.TRACKING.filter((e) =>
+      !conf.dontTrack.includes(e)) : systemPreset.TRACKING;
     return lyaStartUp(origRequire, conf);
   },
 };
