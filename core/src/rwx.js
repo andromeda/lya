@@ -1,4 +1,5 @@
 let locEnv;
+const pattern = /require[(](.*)[)]/;
 
 // We add the R or W or E to the existing string
 const addEvent = (event, values, index) => {
@@ -32,7 +33,6 @@ const updateAnalysisData = (storedCalls, truename, modeGrid) => {
 // onRead <~ is called before every object is read
 const onRead = (target, name, nameToStore, currentModule, typeClass) => {
   if (nameToStore !== 'global') {
-    const pattern = /require[(](.*)[)]/;
     if (pattern.test(nameToStore)) {
       updateAnalysisData(locEnv.analysisResult[currentModule],
           nameToStore.match(pattern)[0], ['r']);
@@ -46,7 +46,7 @@ const onRead = (target, name, nameToStore, currentModule, typeClass) => {
 };
 
 // onWrite <~ is called before every write of an object
-const onWrite = (target, name, value, currentModule, parentName, 
+const onWrite = (target, name, value, currentModule, parentName,
     nameToStore) => {
   updateAnalysisData(locEnv.analysisResult[currentModule], parentName, ['r']);
   updateAnalysisData(locEnv.analysisResult[currentModule], nameToStore, ['w']);
@@ -67,6 +67,10 @@ const onCallPre = (target, thisArg, argumentsList, name, nameToStore,
     }
     updateAnalysisData(locEnv.analysisResult[declareModule],
         nameToStore, ['r', 'x']);
+    if (pattern.test(nameToStore)) {
+      updateAnalysisData(locEnv.analysisResult[currentModule],
+        nameToStore.match(pattern)[0], ['r']);
+    }
   }
 };
 

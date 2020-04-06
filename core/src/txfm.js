@@ -47,8 +47,9 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   const objectPath = new WeakMap();
   const methodNames = new WeakMap();
   const storePureFunctions = new WeakMap();
-  const withProxy = new WeakMap();
   const globalNames = new Map();
+  const withProxy = new WeakMap();
+  const passedOver = new Map();
 
   // We read and store the data of the json file
   const defaultNames = require('./default-names.json');
@@ -476,11 +477,11 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
             });
             storePureFunctions.set(target[name], currFunction);
             namePathSet(currFunction, parentName, currModule);
+            policy.onRead(target, name, nameToStore, currModule);
           } else {
             const key = storePureFunctions.get(currFunction);
             namePathSet(key, parentName, currModule);
           }
-          policy.onRead(target, name, nameToStore, currModule);
 
           const result = Reflect.get(target, name);
           withProxy.set(result, true);
@@ -491,7 +492,11 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
           const parentName = objectName.get(target);
           const nameToStore = parentName + '.' + name;
           const currModule = moduleName[env.requireLevel];
-          policy.onRead(target, name, nameToStore, currModule);
+          // Stacking fix
+          if (!passedOver.has(nameToStore + currModule)) {
+            policy.onRead(target, name, nameToStore, currModule);
+            passedOver.set(nameToStore + currModule, true);
+          }
         }
       }
 
