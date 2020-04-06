@@ -111,7 +111,6 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
           policy.onCallPre(target, thisArg, argumentsList, target.name, nameToStore,
             currentModule, currentName, moduleClass);
         };
-
         const result = Reflect.apply(target, thisArg, argumentsList);
 
         if (nameToStore) {
@@ -467,7 +466,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       return Reflect.apply(target, thisArg, argumentsList);
     },
     get: function(target, name, receiver) {
-      const exportType = typeof(target[name]);
+      const exportType = typeof target[name];
       if (exportType !== 'undefined' && target[name] != null &&
           typeof name === 'string' && (!(target[name] instanceof RegExp))) {
         if (exportType === 'object') {
@@ -518,7 +517,6 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
           const parentName = objectName.get(target);
           const nameToStore = parentName + '.' + name;
           const currModule = moduleName[env.requireLevel];
-          // Stacking fix
           if (!passedOver.has(nameToStore + currModule)) {
             policy.onRead(target, name, nameToStore, currModule);
             passedOver.set(nameToStore + currModule, true);
@@ -528,13 +526,12 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 
       return Reflect.get(target, name);
     },
-    // TODO: here is stacking
+    // TODO: here is stacking -- remove set for fix
     set: function(target, name, value) {
       const parentName = objectName.get(target);
       const nameToStore = parentName + '.' + name;
       const currModule = moduleName[env.requireLevel];
       policy.onWrite(target, name, value, currModule, parentName, nameToStore);
-
       return Reflect.set(target, name, value);
     },
   };
