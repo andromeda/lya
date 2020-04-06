@@ -21,6 +21,19 @@ const preset = {
   SUB_TYPES: './sub-types.js',
 };
 
+const systemPreset = {
+  WITH_ENABLE : true,
+  INPUT_STRING: true,
+  DEBUG_FLAG: false,
+  TRACKING: [
+    'user-globals',
+    'es-globals',
+    'node-globals',
+    'module-locals',
+    'module-returns'
+  ]
+}
+
 const lyaStartUp = (callerRequire, lyaConfig) => {
   // All the necessary modules for swap
   const originalWrap = Module.wrap;
@@ -34,10 +47,6 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   moduleName[0] = process.cwd() + '/' + 'main.js';
   analysisResult[moduleName[0]] = {};
 
-  // Holds the end of each name store of new assigned global variables
-  // suffix for our own metadata
-  const endName = '@name';
-
   // This holds the string of the transformations inside modules
   let prologue = '';
 
@@ -46,8 +55,9 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   const objectPath = new WeakMap();
   const methodNames = new WeakMap();
   const storePureFunctions = new WeakMap();
-  const withProxy = new WeakMap();
   const globalNames = new Map();
+  const withProxy = new WeakMap();
+  const passedOver = new Map();
 
   // We read and store the data of the json file
   const defaultNames = require('./default-names.json');
@@ -73,8 +83,6 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     requireLevel: requireLevel,
     analysisResult: analysisResult,
     getObjectInfo : getObjectInfo,
-    // Signal if program has ended, necessary for enforcements
-    end: false,
   };
 
   // user-globals: e.g., global.x, x,                                   [global, x]
@@ -83,6 +91,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   // module-locals: exports, require, module, __filename, __dirname     [require]
   // module-returns: exports, module.exports                            [ID, math, pi]
   // One create handler to rule them all
+  // TODO: Add option to return specific handlers, only get,set or only apply etc..
   const createHandler = (moduleClass) => {
     return {
       apply: function(target, thisArg, argumentsList) {
@@ -102,7 +111,6 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
           policy.onCallPre(target, thisArg, argumentsList, target.name, nameToStore,
             currentModule, currentName, moduleClass);
         };
-
         const result = Reflect.apply(target, thisArg, argumentsList);
 
         if (nameToStore) {
@@ -114,13 +122,12 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       },
       get: function(target, name) {
         const currentModule = objectPath.get(target);
-
         const storeName = globalNames.has(name) ? globalNames.get(name)
           : globalNames.has(target[name]) ? globalNames.get(target[name])
           : methodNames.has(target) ? methodNames.get(target)
           : null;
 
-        if (storeName) {
+        if (storeName && name) {
           policy.onRead(target, name, storeName, currentModule, moduleClass);
         }
 
@@ -140,6 +147,18 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 
         return Reflect.set(target, name, value);
       },
+      has: function(target, prop) {
+        const currentName = env.moduleName[env.requireLevel];
+        const parentObject = methodNames.get(target);
+        const result =  Reflect.has(target, prop);
+        const nameToStore = parentObject + '.' + prop;
+        if (parentObject === 'global' && !result &&
+          prop !== 'localGlobal') {
+          policy.onHas(target, prop, currentName, nameToStore);
+        }
+
+        return result;
+      },
       construct: function(target, args) {
         const currentName = env.moduleName[env.requireLevel];
         const nameToStore = target.name;
@@ -157,10 +176,19 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 
   // We wrap the global variable in a proxy
   const createGlobalPr = () => {
+    if (!lyaConfig.track.includes('user-globals')) {
+      return global;
+    }
+
     const tempGlobal = new Proxy(global, {});
     methodNames.set(tempGlobal, 'global');
     objectPath.set(tempGlobal, moduleName[env.requireLevel]);
-    return new Proxy(tempGlobal, createHandler('user-globals'));
+    const handler = createHandler('user-globals');
+    return new Proxy(tempGlobal, {
+      get: handler.get,
+      set: handler.set,
+      has: handler.has,
+    });
   }
 
   // TODO: this should come from generate
@@ -171,23 +199,37 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     const type = typeof obj[count];
     let localCopy;
     if (type === 'string') {
-      localCopy = new String(obj[count]);
+      if (lyaConfig.inputString) {
+        localCopy = new String(obj[count]);
+      } else {
+        return obj[count];
+      }
     } else {
       localCopy = obj[count];
     }
     methodNames.set(localCopy, moduleInputNames[count]);
     objectPath.set(localCopy, moduleName[env.requireLevel]);
-    return new Proxy(localCopy, createHandler('module-locals'));
+    if (!lyaConfig.track.includes('module-locals')) {
+      return localCopy;
+    }
+    const handler = createHandler('module-locals');
+    return new Proxy(localCopy, {
+      apply: handler.apply,
+      get: handler.get,
+      set: handler.set,
+    });
   };
 
   const setLocalGlobal = () => {
     let localGlobal = {};
     localGlobal = passJSONFile(createGlobal, defaultNames.globals);
-    localGlobal['proxyExportHandler'] = createHandler('es-globals');
-    const noProxyOrig = new Proxy(global['process']['env'], {});
-    localGlobal['process.env'] = new Proxy(noProxyOrig, exportHandler);
+    if (lyaConfig.track.includes('es-globals')) {
+      localGlobal['proxyExportHandler'] = createHandler('es-globals');
+    }
+    //const noProxyOrig = new Proxy(global['process']['env'], {});
+    //localGlobal['process.env'] = new Proxy(noProxyOrig, exportHandler);
     localGlobal['proxyGlobal'] = createGlobalPr();
-    objectName.set(noProxyOrig, 'process.env');
+    //objectName.set(noProxyOrig, 'process.env');
 
     return localGlobal;
   }
@@ -266,6 +308,9 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 
   const createGlobal = (name) => {
     if (global[name] !== undefined) {
+      if (!lyaConfig.track.includes('node-globals')) {
+        return global[name];
+      }
       const proxyObj = proxyWrap(createHandler('node-globals'), global[name], name);
       objectPath.set(proxyObj, moduleName[env.requireLevel]);
       return proxyObj;
@@ -298,10 +343,13 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   const setPrologue = () => {
     passJSONFile(setDeclaration, defaultNames.globals);
     prologue += 'let global = localGlobal["proxyGlobal"]\n';
-    prologue += 'process.env = localGlobal["process.env"];\n';
-    prologue += 'Math = new Proxy(Math, localGlobal["proxyExportHandler"]);\n';
-    // TODO: Make 'with' optional ~> 304 line and 342 line
-    prologue = 'with (withGlobal) {\n' + prologue;
+    // FIXME: need to find another way to wrap process
+    //prologue += 'process.env = localGlobal["process.env"];\n';
+    if (lyaConfig.track.includes('es-globals')) {
+      prologue += 'Math = new Proxy(Math, localGlobal["proxyExportHandler"]);\n';
+    }
+    prologue = lyaConfig.withEnable ? 'with (withGlobal) {\n' + prologue
+      : prologue;
     return prologue;
   };
 
@@ -329,19 +377,33 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     });
   };
 
+  // TODO: Combine with flattenAndSkip
+  const skipMe = (group) => {
+    for (const v in group) {
+      group[v] = group[v].filter((e) =>
+        !lyaConfig.removejson.includes(e));
+    }
+    return group;
+  };
+
   // User can remove things from json file that create conf
   const generateGlobals = () => {
     // flatten globals under defaultNames.globals.*
     flattenAndSkip(["es", "node", "other"], "globals");
-    // flatten locals under defaultNames.globals.*
+    defaultNames.globals = skipMe(defaultNames.globals);
+    // flatten locals under defaultNames.locals.*
     flattenAndSkip(["node"], "locals");
   };
 
   // extend wrap to take additional argument
   Module.wrap = (script) => {
-    script = getPrologue() + script + '}';
-    let wrappedScript = originalWrap(script);
-    wrappedScript = wrappedScript.replace('dirname)', 'dirname, localGlobal, withGlobal)');
+    script = lyaConfig.withEnable ? getPrologue() + script + '}' :
+      getPrologue() + script;
+    const wrappedScript = originalWrap(script).replace('dirname)',
+      'dirname, localGlobal, withGlobal)');
+    if (lyaConfig.debugFlag) {
+      console.log(wrappedScript);
+    }
     return wrappedScript;
   };
 
@@ -368,7 +430,9 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       if (!objectName.has(result)) {
         objectName.set(result, 'require(\'' + path + '\')');
         objectPath.set(result, moduleName[env.requireLevel]);
-        result = new Proxy(result, exportHandler);
+        if (lyaConfig.track.includes('module-returns')) {
+          result = new Proxy(result, exportHandler);
+        };
         if (env.requireLevel !== 0 &&
           nativeModules.indexOf(path) === -1) {
           env.requireLevel--;
@@ -397,27 +461,26 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       const currModule = moduleName[env.requireLevel];
       const declareModule = moduleName[env.requireLevel];
       policy.onCallPre(target, thisArg, argumentsList, target.name,
-        nameToStore, currModule, declareModule);
+          nameToStore, currModule, declareModule);
 
       return Reflect.apply(target, thisArg, argumentsList);
     },
     get: function(target, name, receiver) {
-      const exportType = typeof(target[name]);
+      const exportType = typeof target[name];
       if (exportType !== 'undefined' && target[name] != null &&
           typeof name === 'string' && (!(target[name] instanceof RegExp))) {
         if (exportType === 'object') {
+          if (withProxy.has(target[name])) {
+            return Reflect.get(target, name);
+          }
           if (Object.entries(target[name]).length) {
-            if (withProxy.has(target[name])) {
-              return Reflect.get(target, name);
-            }
             const currObject = target[name];
             const currModule = moduleName[env.requireLevel];
-            const fatherName = objectName.get(receiver) ? objectName.get(receiver) :
-              objectName.get(target);
-            const birthplace = objectPath.get(receiver) ? objectPath.get(receiver) :
-              objectPath.get(target);
+            const fatherName = objectName.get(receiver) ?
+                objectName.get(receiver) : objectName.get(target);
+            const birthplace = objectPath.get(receiver) ?
+                objectPath.get(receiver) : objectPath.get(target);
             const childName = fatherName + '.' + name;
-
             policy.onRead(target, name, childName, currModule);
             target[name] = new Proxy(target[name], exportHandler);
             namePathSet(currObject, childName, birthplace);
@@ -434,15 +497,16 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 
           if (!withProxy.has(target[name])) {
             Object.defineProperty(currFunction, 'name', {value: name});
-            target[name] = new Proxy(currFunction, createHandler('module-returns'));
+            target[name] = new Proxy(currFunction,{
+              apply: createHandler('module-returns').apply
+            });
             storePureFunctions.set(target[name], currFunction);
             namePathSet(currFunction, parentName, currModule);
+            policy.onRead(target, name, nameToStore, currModule);
           } else {
             const key = storePureFunctions.get(currFunction);
             namePathSet(key, parentName, currModule);
           }
-
-          policy.onRead(target, name, nameToStore, currModule);
 
           const result = Reflect.get(target, name);
           withProxy.set(result, true);
@@ -451,28 +515,29 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
             exportType === 'string') {
 
           const parentName = objectName.get(target);
-          const nameToStore = parentName + '.' +name;
+          const nameToStore = parentName + '.' + name;
           const currModule = moduleName[env.requireLevel];
-          policy.onRead(target, name, nameToStore, currModule);
+          if (!passedOver.has(nameToStore + currModule)) {
+            policy.onRead(target, name, nameToStore, currModule);
+            passedOver.set(nameToStore + currModule, true);
+          }
         }
       }
 
       return Reflect.get(target, name);
     },
+    // TODO: here is stacking -- remove set for fix
     set: function(target, name, value) {
       const parentName = objectName.get(target);
-      const nameToStore = parentName + '.' +name;
+      const nameToStore = parentName + '.' + name;
       const currModule = moduleName[env.requireLevel];
-      policy.onWrite(target, name, value, currModule, parentName,
-        nameToStore);
-
+      policy.onWrite(target, name, value, currModule, parentName, nameToStore);
       return Reflect.set(target, name, value);
     },
   };
 
   // We print all the results at the end of the analysis
   process.on('exit', function() {
-    env.end = true;
     if (lyaConfig.SAVE_RESULTS && !/ENFORCEMENT$/.test(lyaConfig.analysis)) {
       fs.writeFileSync(lyaConfig.SAVE_RESULTS,
           JSON.stringify(analysisResult, null, 2), 'utf-8');
@@ -490,6 +555,14 @@ module.exports = {
     }
     // TODO: maybe exapand to a local
     conf.removejson = conf.removejson || [];
+    conf.withEnable = conf.withEnable === false ? conf.withEnable :
+      systemPreset.WITH_ENABLE;
+    conf.inputString = conf.inputString === false ? conf.inputString:
+      systemPreset.INPUT_STRING;
+    conf.debugFlag = conf.debugFlag ? conf.debugFlag :
+      systemPreset.DEBUG_FLAG;
+    conf.track = conf.dontTrack ? systemPreset.TRACKING.filter((e) =>
+      !conf.dontTrack.includes(e)) : systemPreset.TRACKING;
     return lyaStartUp(origRequire, conf);
   },
 };
