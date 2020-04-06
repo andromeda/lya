@@ -4,6 +4,13 @@ let lyaConfig = {
   analysis: lya.preset.RWX,
   removejson: ['unescape'],
   withEnable: false,
+  dontTrack: [
+    'user-globals',
+    'es-globals',
+    'node-globals',
+    'module-locals',
+    'module-returns',
+  ]
 };
 require = lya.configRequire(require, lyaConfig);
 require("./main.js");
