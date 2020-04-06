@@ -31,7 +31,7 @@ const systemPreset = {
     'node-globals',
     'module-locals',
     'module-returns'
-  ]
+  ],
 }
 
 const lyaStartUp = (callerRequire, lyaConfig) => {
@@ -111,7 +111,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
           policy.onCallPre(target, thisArg, argumentsList, target.name, nameToStore,
             currentModule, currentName, moduleClass);
         };
-        const result = Reflect.apply(target, thisArg, argumentsList);
+        const result = Reflect.apply(...arguments);
 
         if (nameToStore) {
           policy.onCallPost(target, thisArg, argumentsList, target.name, nameToStore,
@@ -131,7 +131,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
           policy.onRead(target, name, storeName, currentModule, moduleClass);
         }
 
-        return Reflect.get(target, name);
+        return Reflect.get(...arguments);
       },
       set: function(target, name, value) {
         const currentModule = objectPath.get(target);
@@ -145,16 +145,16 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
           }
         }
 
-        return Reflect.set(target, name, value);
+        return Reflect.set(...arguments);
       },
       has: function(target, prop) {
         const currentName = env.moduleName[env.requireLevel];
         const parentObject = methodNames.get(target);
-        const result =  Reflect.has(target, prop);
+        const result =  Reflect.has(...arguments);
         const nameToStore = parentObject + '.' + prop;
         if (parentObject === 'global' && !result &&
           prop !== 'localGlobal') {
-          policy.onHas(target, prop, currentName, nameToStore);
+          policy.onHas(...arguments);
         }
 
         return result;
@@ -242,7 +242,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       }
       argumentsList[5] = setLocalGlobal();
       argumentsList[6] = createGlobalPr();
-      return Reflect.apply( ...arguments);
+      return Reflect.apply(...arguments);
     },
   };
 
@@ -463,7 +463,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       policy.onCallPre(target, thisArg, argumentsList, target.name,
           nameToStore, currModule, declareModule);
 
-      return Reflect.apply(target, thisArg, argumentsList);
+      return Reflect.apply(...arguments);
     },
     get: function(target, name, receiver) {
       const exportType = typeof target[name];
@@ -471,7 +471,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
           typeof name === 'string' && (!(target[name] instanceof RegExp))) {
         if (exportType === 'object') {
           if (withProxy.has(target[name])) {
-            return Reflect.get(target, name);
+            return Reflect.get(...arguments);
           }
           if (Object.entries(target[name]).length) {
             const currObject = target[name];
@@ -485,7 +485,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
             target[name] = new Proxy(target[name], exportHandler);
             namePathSet(currObject, childName, birthplace);
 
-            const result = Reflect.get(target, name);
+            const result = Reflect.get(...arguments);
             withProxy.set(result, true);
             return result;
           }
@@ -508,7 +508,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
             namePathSet(key, parentName, currModule);
           }
 
-          const result = Reflect.get(target, name);
+          const result = Reflect.get(...arguments);
           withProxy.set(result, true);
           return result;
         } else if (exportType === 'number' || exportType === 'boolean' ||
@@ -524,15 +524,14 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
         }
       }
 
-      return Reflect.get(target, name);
+      return Reflect.get(...arguments);
     },
-    // TODO: here is stacking -- remove set for fix
     set: function(target, name, value) {
       const parentName = objectName.get(target);
       const nameToStore = parentName + '.' + name;
       const currModule = moduleName[env.requireLevel];
       policy.onWrite(target, name, value, currModule, parentName, nameToStore);
-      return Reflect.set(target, name, value);
+      return Reflect.set(...arguments);
     },
   };
 
