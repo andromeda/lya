@@ -1,3 +1,10 @@
+let lya = require("../../../src/txfm.js");
+let lyaConfig = {
+  SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
+  analysis: lya.preset.RWX,
+};
+require = lya.configRequire(require, lyaConfig);
+
 const fs = require('fs');
 const moment = require('moment');
 moment.suppressDeprecationWarnings = true;	

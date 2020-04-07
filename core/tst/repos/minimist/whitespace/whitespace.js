@@ -3,6 +3,7 @@ let lyaConfig = {
   SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
   analysis: lya.preset.RWX,
   removejson: ['undefined','hasOwnProperty'],
+  inputString: false,
 };
 lya.configRequire(require, lyaConfig);
 

@@ -1,3 +1,12 @@
+let lya = require("../../../../src/txfm.js");
+let lyaConfig = {
+  SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
+  analysis: lya.preset.RWX,
+  removejson: ['undefined', 'hasOwnProperty'],
+  inputString: false,
+};
+require = lya.configRequire(require, lyaConfig);
+
 var test = require('tape');
 var parse = require('minimist');
 
