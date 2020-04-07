@@ -39,6 +39,7 @@
       "parseFloat",
       "parseInt",
       "Promise",
+      "process",
       "propertyIsEnumerable",
       "Proxy",
       "RangeError",
