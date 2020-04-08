@@ -1,0 +1,7 @@
+let lya = require("../../../src/txfm.js");
+let lyaConfig = {
+  SAVE_RESULTS: false,
+  analysis: lya.preset.CHECKING,
+};
+lya.configRequire(require, lyaConfig);
+require("./main.js");
