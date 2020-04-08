@@ -19,6 +19,7 @@ const preset = {
   COARSE_TYPES: './coarse-types.js',
   SIMPLE_TYPES: './simple-types.js',
   SUB_TYPES: './sub-types.js',
+  CHECKING: './checking.js',
 };
 
 const systemPreset = {
@@ -154,7 +155,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
         const nameToStore = parentObject + '.' + prop;
         if (parentObject === 'global' && !result &&
           prop !== 'localGlobal') {
-          policy.onHas(...arguments);
+          policy.onHas(target, prop, currentName, nameToStore);
         }
 
         return result;
