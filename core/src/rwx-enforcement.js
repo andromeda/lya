@@ -16,17 +16,17 @@ const getAnalysisData = () => {
 
 // TODO: Make the path of the imported analysis result  not absolute
 // etc.. /greg/home/lya/tst/main.js ~> main.js
-const analysisData = getAnalysisData();
+const groundTruth = getAnalysisData();
 const checkRWX = (storedCalls, truename, modeGrid) => {
   for (const key in modeGrid) {
     const mode = modeGrid[key];
     if (Object.prototype.hasOwnProperty.
         call(storedCalls, truename) === false) {
-      console.log('Invalid access in: ', truename, ' and mode ', mode);
+      throw new Error('Invalid access in: ' + truename + ' and mode ' + mode);
     } else {
       let permissions = storedCalls[truename];
       if (!permissions.includes(mode)) {
-      console.log('Invalid access in: ', truename, ' and mode ', mode);
+      throw new Error('Invalid access in: ' + truename + ' and mode ' + mode);
       }
     }
   }
@@ -38,37 +38,37 @@ const onRead = (target, name, nameToStore, currentModule, typeClass) => {
     if (nameToStore != 'global') {
       const pattern = /require[(](.*)[)]/;
       if (pattern.test(nameToStore)) {
-        checkRWX(analysisData[currentModule],
+        checkRWX(groundTruth[currentModule],
           nameToStore.match(pattern)[0], ['r']);
       } else {
-        checkRWX(analysisData[currentModule],
+        checkRWX(groundTruth[currentModule],
           nameToStore.split('.')[0], ['r']);
       }
-      checkRWX(analysisData[currentModule],
+      checkRWX(groundTruth[currentModule],
         nameToStore, ['r']);
     }
 }
 
 // onWrite <~ is called before every write of an object
 const onWrite = (target, name, value, currentModule, parentName, nameToStore) => {
-  checkRWX(analysisData[currentModule], parentName, ['r']);
-  checkRWX(analysisData[currentModule], nameToStore, ['w']);
+  checkRWX(groundTruth[currentModule], parentName, ['r']);
+  checkRWX(groundTruth[currentModule], nameToStore, ['w']);
 }
 
 // onCallPre <~ is called before the execution of a function
 const onCallPre = (target, thisArg, argumentsList, name, nameToStore,
   currentModule, declareModule, typeClass) => {
   if (typeClass === 'module-locals') {
-    checkRWX(analysisData[currentModule],
+    checkRWX(groundTruth[currentModule],
       'require', ['r', 'x']);
-    checkRWX(analysisData[currentModule],
+    checkRWX(groundTruth[currentModule],
       nameToStore, ['i']);
   } else {
     if (typeClass === 'node-globals') {
-      checkRWX(analysisData[declareModule],
+      checkRWX(groundTruth[declareModule],
         nameToStore.split('.')[0], ['r']);
     }
-    checkRWX(analysisData[declareModule],
+    checkRWX(groundTruth[declareModule],
       nameToStore, ['r', 'x']);
   }
 };
@@ -80,11 +80,15 @@ const onCallPost = (target, thisArg, argumentsList, name, nameToStore,
 
 // onConstruct <~ Is call before every construct
 const onConstruct = (target, args, currentName, nameToStore) => {
-  checkRWX(analysisData[currentName], nameToStore, ['r', 'x']);
+  checkRWX(groundTruth[currentName], nameToStore, ['r', 'x']);
 }
 
 const onHas = (target, prop, currentName, nameToStore) => {
-  //checkRWX(analysisData[currentName], nameToStore, ['r', 'w']);
+  //checkRWX(groundTruth[currentName], nameToStore, ['r', 'w']);
+}
+
+// onExit (toSave == place to save the result) --maybe make it module-local?
+const onExit = (toSave) => {
 }
 
 module.exports = (env) => {
@@ -96,5 +100,6 @@ module.exports = (env) => {
     onWrite: onWrite,
     onConstruct: onConstruct,
     onHas: onHas,
+    onExit: onExit,
   };
 };

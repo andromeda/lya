@@ -1,5 +1,6 @@
 let locEnv;
 const pattern = /require[(](.*)[)]/;
+const fs = require('fs');
 
 // We add the R or W or E to the existing string
 const addEvent = (event, values, index) => {
@@ -88,6 +89,13 @@ const onConstruct = (target, args, currentName, nameToStore) => {
 const onHas = (target, prop, currentName, nameToStore) => {
 };
 
+// onExit (toSave == place to save the result) --maybe make it module-local?
+const onExit = (toSave) => {
+  if (toSave) {
+    fs.writeFileSync(toSave,
+        JSON.stringify(locEnv.analysisResult, null, 2), 'utf-8');
+  }
+}
 module.exports = (env) => {
   locEnv = env;
   return {
@@ -97,5 +105,6 @@ module.exports = (env) => {
     onWrite: onWrite,
     onConstruct: onConstruct,
     onHas: onHas,
+    onExit: onExit,
   };
 };

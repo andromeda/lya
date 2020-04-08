@@ -537,10 +537,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 
   // We print all the results at the end of the analysis
   process.on('exit', function() {
-    if (lyaConfig.SAVE_RESULTS && !/ENFORCEMENT$/.test(lyaConfig.analysis)) {
-      fs.writeFileSync(lyaConfig.SAVE_RESULTS,
-          JSON.stringify(analysisResult, null, 2), 'utf-8');
-    }
+    policy.onExit(lyaConfig.SAVE_RESULTS);
   });
   return new Proxy(callerRequire, createHandler('module-locals'));
 };
