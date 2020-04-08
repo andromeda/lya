@@ -141,7 +141,8 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
           const parentName = methodNames.get(target);
           const nameToStore = parentName + '.' + name;
           policy.onWrite(target, name, value, currentModule, parentName, nameToStore);
-          if (methodNames.get(target) === 'global') {
+          if (methodNames.get(target) === 'global' ||
+            methodNames.get(target) === 'process.env') {
             globalNames.set(name, nameToStore);
           }
         }
@@ -228,7 +229,9 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       localGlobal['proxyExportHandler'] = createHandler('es-globals');
     }
     //const noProxyOrig = new Proxy(global['process']['env'], {});
-    //localGlobal['process.env'] = new Proxy(noProxyOrig, exportHandler);
+    //methodNames.set(noProxyOrig, 'process.env');
+    //objectPath.set(noProxyOrig, moduleName[env.requireLevel]);
+    //localGlobal['process.env'] = new Proxy(noProxyOrig, createHandler('es-globals'));
     localGlobal['proxyGlobal'] = createGlobalPr();
     //objectName.set(noProxyOrig, 'process.env');
 
