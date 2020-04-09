@@ -108,8 +108,8 @@ const onExit = (toSave) => {
   console.log(chalk.yellow.bold('Objects: '), locEnv.counters.object);
   console.log(chalk.yellow.bold('Functions: '), locEnv.counters.function);
   console.log('-------------------------------------------------');
-  console.log('They where ', chalk.green.bold(countValid, 'valid accesses in total'));
-  console.log('They where ', chalk.red.bold(countInvalid, 'invalid accesses in total'));
+  console.log(chalk.green.bold('Valid accesses: ',countValid));
+  console.log(chalk.red.bold('Invalid accesses: ',countInvalid));
 }
 
 module.exports = (env) => {
