@@ -1,0 +1,2 @@
+ArrayBuffer();
+ArrayBuffer.isView();
