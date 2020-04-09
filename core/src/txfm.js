@@ -23,6 +23,7 @@ const preset = {
 };
 
 const systemPreset = {
+  // TODO: Rewrite flags structure
   WITH_ENABLE : true,
   INPUT_STRING: true,
   DEBUG_FLAG: false,
@@ -33,6 +34,7 @@ const systemPreset = {
     'module-locals',
     'module-returns'
   ],
+  DEPTH: 0,
 }
 
 const lyaStartUp = (callerRequire, lyaConfig) => {
@@ -60,6 +62,13 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   const withProxy = new WeakMap();
   const passedOver = new Map();
 
+  // The counter for the wrapped objects and functions
+  const counters = {
+    total: 0,
+    object: 0,
+    function: 0,
+  };
+
   // We read and store the data of the json file
   const defaultNames = require('./default-names.json');
 
@@ -84,6 +93,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     requireLevel: requireLevel,
     analysisResult: analysisResult,
     getObjectInfo : getObjectInfo,
+    counters: counters,
   };
 
   // user-globals: e.g., global.x, x,                                   [global, x]
@@ -176,21 +186,26 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   // Import the right policy depending on the choice of the user.
   const policy = require(lyaConfig.analysis)(env);
 
+  const setProxy = (obj, handler, type) => {
+    counters.total++;
+    counters[type]++;
+    return new Proxy(obj, handler);
+  }
   // We wrap the global variable in a proxy
   const createGlobalPr = () => {
     if (!lyaConfig.track.includes('user-globals')) {
       return global;
     }
 
-    const tempGlobal = new Proxy(global, {});
+    const tempGlobal = setProxy(global, {}, 'object');
     methodNames.set(tempGlobal, 'global');
     objectPath.set(tempGlobal, moduleName[env.requireLevel]);
     const handler = createHandler('user-globals');
-    return new Proxy(tempGlobal, {
+    return setProxy(tempGlobal, {
       get: handler.get,
       set: handler.set,
       has: handler.has,
-    });
+    }, 'object');
   }
 
   // TODO: this should come from generate
@@ -215,11 +230,11 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       return localCopy;
     }
     const handler = createHandler('module-locals');
-    return new Proxy(localCopy, {
+    return setProxy(localCopy, {
       apply: handler.apply,
       get: handler.get,
       set: handler.set,
-    });
+    }, 'object');
   };
 
   const setLocalGlobal = () => {
@@ -228,12 +243,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     if (lyaConfig.track.includes('es-globals')) {
       localGlobal['proxyExportHandler'] = createHandler('es-globals');
     }
-    //const noProxyOrig = new Proxy(global['process']['env'], {});
-    //methodNames.set(noProxyOrig, 'process.env');
-    //objectPath.set(noProxyOrig, moduleName[env.requireLevel]);
-    //localGlobal['process.env'] = new Proxy(noProxyOrig, createHandler('es-globals'));
     localGlobal['proxyGlobal'] = createGlobalPr();
-    //objectName.set(noProxyOrig, 'process.env');
 
     return localGlobal;
   }
@@ -250,8 +260,29 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     },
   };
 
-  const getObjLength = (obj) => Object.keys(obj).length;
-  const getObjValues = (obj) => Object.getOwnPropertyNames(obj);
+  const uniqueWrap = (obj, handler, name, type) => {
+    const noProxyOrig = new Proxy(obj, {});
+    methodNames.set(noProxyOrig, name);
+    objectPath.set(noProxyOrig, moduleName[env.requireLevel]);
+    return setProxy(noProxyOrig, handler, type)
+  };
+
+  // When depth is !== 0 it wraps the objects in a proxy
+  const levelWrapping = (obj, name, handler) => {
+    if (lyaConfig.depth && obj !== null) {
+      return uniqueWrap(obj, handler, name, 'object');
+    } else {
+      return obj;
+    }
+  }
+
+  const getValues = (obj) => {
+    if (Object.keys(obj).length) {
+      return Object.keys(obj);
+    } else {
+      return Object.getOwnPropertyNames(obj);
+    }
+  };
 
   // We wrap every function on global obj that exists in default-names.json
   // Returns the proxy obj we want
@@ -260,12 +291,12 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     if (Object.prototype.hasOwnProperty.call(obj, name)) {
       const objType = typeof obj[name];
       if (objType === 'object') {
-        localGlobal[name] = proxyWrap(obj[name]);
+        const wrappedObj = levelWrapping(obj[name],
+          givenFunc + '.' + name, handler);
+        localGlobal[name] = proxyWrap(wrappedObj);
       } else if (objType === 'function') {
-        const noProxyOrig = new Proxy(obj[name], {});
-        methodNames.set(noProxyOrig, givenFunc + '.' + name);
-        objectPath.set(noProxyOrig, moduleName[env.requireLevel]);
-        localGlobal[name] = new Proxy(noProxyOrig, handler);
+        localGlobal[name] = uniqueWrap(obj[name], handler,
+          givenFunc + '.' + name, objType)
       } else if (objType === 'number') {
         globalNames.set(obj[name], givenFunc + '.' + name);
         localGlobal[name] = obj[name];
@@ -278,33 +309,14 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     const objType = typeof origGlobal;
     let localGlobal = {};
     if (objType === 'function') {
-      const noProxyOrig = new Proxy(origGlobal, {});
-      methodNames.set(noProxyOrig, saveName);
-      objectPath.set(noProxyOrig, moduleName[env.requireLevel]);
-      localGlobal = new Proxy(noProxyOrig, handler);
-      // TODO: Add the if code !getObjLength(origGlobal)
-      // under here if want to wrap the second level under
-      // functions. lines (150...158);
-      // etc to Catch : Array.of, Object.keys, constructor.getOwnPropertyNames
-      // maybe add this as an input from the user, to specify the depth of
-      // the analysis.
+      localGlobal = uniqueWrap(origGlobal, handler, saveName, objType)
     } else if (objType === 'object') {
-      if (!getObjLength(origGlobal)) {
-        const values = getObjValues(origGlobal);
-        for (const key in values) {
-          if (Object.prototype.hasOwnProperty.call(values, key)) {
-            const name = values[key];
-            localGlobal[name] = objTypeAction(origGlobal, name, handler,
-                saveName);
-          }
-        }
-      } else {
-        for (const key in origGlobal) {
-          if (Object.prototype.hasOwnProperty.call(origGlobal, key)) {
-            localGlobal[key] = objTypeAction(origGlobal, key, handler,
-                saveName);
-          }
-        }
+      const processedObj = levelWrapping(origGlobal, saveName, handler);
+      const values = getValues(processedObj);
+      for (var key = 0; key <= values.length; key++) {
+        const name = values[key];
+        localGlobal[name] = objTypeAction(processedObj, name, handler,
+          saveName);
       }
     }
     return localGlobal;
@@ -420,7 +432,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
         call(analysisResult, moduleName[env.requireLevel])) {
       analysisResult[moduleName[env.requireLevel]] = {};
     }
-    return new Proxy(codeToRun, handlerAddArg);
+    return setProxy(codeToRun, handlerAddArg, 'object');
   };
 
   // We wrap the result in the wrapper function
@@ -435,14 +447,14 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
         objectName.set(result, 'require(\'' + path + '\')');
         objectPath.set(result, moduleName[env.requireLevel]);
         if (lyaConfig.track.includes('module-returns')) {
-          result = new Proxy(result, exportHandler);
+          result = setProxy(result, exportHandler, type);
         };
         if (env.requireLevel !== 0 &&
           nativeModules.indexOf(path) === -1) {
           env.requireLevel--;
         }
       } else {
-        result = new Proxy(result, exportHandler);
+        result = setProxy(result, exportHandler, type);
         objectName.set(result, 'require(\'' + path + '\')');
         objectPath.set(result, moduleName[env.requireLevel]);
       }
@@ -486,7 +498,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
                 objectPath.get(receiver) : objectPath.get(target);
             const childName = fatherName + '.' + name;
             policy.onRead(target, name, childName, currModule);
-            target[name] = new Proxy(target[name], exportHandler);
+            target[name] = setProxy(target[name], exportHandler, exportType);
             namePathSet(currObject, childName, birthplace);
 
             const result = Reflect.get(...arguments);
@@ -501,9 +513,9 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 
           if (!withProxy.has(target[name])) {
             Object.defineProperty(currFunction, 'name', {value: name});
-            target[name] = new Proxy(currFunction,{
+            target[name] = setProxy(currFunction,{
               apply: createHandler('module-returns').apply
-            });
+            }, exportType);
             storePureFunctions.set(target[name], currFunction);
             namePathSet(currFunction, parentName, currModule);
             policy.onRead(target, name, nameToStore, currModule);
@@ -543,7 +555,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   process.on('exit', function() {
     policy.onExit(lyaConfig.SAVE_RESULTS);
   });
-  return new Proxy(callerRequire, createHandler('module-locals'));
+  return setProxy(callerRequire, createHandler('module-locals'), 'function');
 };
 
 module.exports = {
@@ -563,6 +575,7 @@ module.exports = {
       systemPreset.DEBUG_FLAG;
     conf.track = conf.dontTrack ? systemPreset.TRACKING.filter((e) =>
       !conf.dontTrack.includes(e)) : systemPreset.TRACKING;
+    conf.depth = conf.depth ? conf.depth : systemPreset.DEPTH;
     return lyaStartUp(origRequire, conf);
   },
 };
