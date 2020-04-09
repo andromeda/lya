@@ -1,0 +1,14 @@
+NaN
+undefined
+Atomics
+BigInt
+BigInt64Array
+BigUint64Array
+SharedArrayBuffer
+URL
+URLSearchParams
+exports
+require
+module
+__filename
+__dirname
