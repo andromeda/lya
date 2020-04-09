@@ -260,14 +260,17 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     },
   };
 
+  const uniqueWrap = (obj, handler, name, type) => {
+    const noProxyOrig = new Proxy(obj, {});
+    methodNames.set(noProxyOrig, name);
+    objectPath.set(noProxyOrig, moduleName[env.requireLevel]);
+    return setProxy(noProxyOrig, handler, type)
+  };
+
   // When depth is !== 0 it wraps the objects in a proxy
-  const levelWrapping = (obj, saveName, handler) => {
+  const levelWrapping = (obj, name, handler) => {
     if (lyaConfig.depth && obj !== null) {
-      console.log(lyaConfig.depth, obj, 'lalala')
-      const noProxyOrig = setProxy(obj, {}, 'object');
-      methodNames.set(noProxyOrig, saveName);
-      objectPath.set(noProxyOrig, moduleName[env.requireLevel]);
-      return setProxy(noProxyOrig, handler, 'object');
+      return uniqueWrap(obj, handler, name, 'object');
     } else {
       return obj;
     }
@@ -292,10 +295,8 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
           givenFunc + '.' + name, handler);
         localGlobal[name] = proxyWrap(wrappedObj);
       } else if (objType === 'function') {
-        const noProxyOrig = setProxy(obj[name], {}, objType);
-        methodNames.set(noProxyOrig, givenFunc + '.' + name);
-        objectPath.set(noProxyOrig, moduleName[env.requireLevel]);
-        localGlobal[name] = setProxy(noProxyOrig, handler, objType);
+        localGlobal[name] = uniqueWrap(obj[name], handler,
+          givenFunc + '.' + name, objType)
       } else if (objType === 'number') {
         globalNames.set(obj[name], givenFunc + '.' + name);
         localGlobal[name] = obj[name];
@@ -308,24 +309,15 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     const objType = typeof origGlobal;
     let localGlobal = {};
     if (objType === 'function') {
-      const noProxyOrig = setProxy(origGlobal, {}, objType);
-      methodNames.set(noProxyOrig, saveName);
-      objectPath.set(noProxyOrig, moduleName[env.requireLevel]);
-      localGlobal = setProxy(noProxyOrig, handler, objType);
-      // TODO: Add the if code !getObjLength(origGlobal)
-      // under here if want to wrap the second level under
-      // functions. lines (150...158);
-      // etc to Catch : Array.of, Object.keys, constructor.getOwnPropertyNames
-      // maybe add this as an input from the user, to specify the depth of
-      // the analysis.
+      localGlobal = uniqueWrap(origGlobal, handler, saveName, objType)
     } else if (objType === 'object') {
       const processedObj = levelWrapping(origGlobal, saveName, handler);
       const values = getValues(processedObj);
-      for (const key in values) {
+      for (var key = 0; key <= values.length; key++) {
         const name = values[key];
         localGlobal[name] = objTypeAction(processedObj, name, handler,
           saveName);
-        }
+      }
     }
     return localGlobal;
   };
