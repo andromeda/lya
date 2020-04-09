@@ -272,8 +272,14 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       return obj;
     }
   }
-  const getObjLength = (obj) => Object.keys(obj).length;
-  const getObjValues = (obj) => Object.getOwnPropertyNames(obj);
+
+  const getValues = (obj) => {
+    if (Object.keys(obj).length) {
+      return Object.keys(obj);
+    } else {
+      return Object.getOwnPropertyNames(obj);
+    }
+  };
 
   // We wrap every function on global obj that exists in default-names.json
   // Returns the proxy obj we want
@@ -314,23 +320,12 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       // the analysis.
     } else if (objType === 'object') {
       const processedObj = levelWrapping(origGlobal, saveName, handler);
-      if (!getObjLength(processedObj)) {
-        const values = getObjValues(processedObj);
-        for (const key in values) {
-          if (Object.prototype.hasOwnProperty.call(values, key)) {
-            const name = values[key];
-            localGlobal[name] = objTypeAction(processedObj, name, handler,
-                saveName);
-          }
+      const values = getValues(processedObj);
+      for (const key in values) {
+        const name = values[key];
+        localGlobal[name] = objTypeAction(processedObj, name, handler,
+          saveName);
         }
-      } else {
-        for (const key in processedObj) {
-          if (Object.prototype.hasOwnProperty.call(processedObj, key)) {
-            localGlobal[key] = objTypeAction(processedObj, key, handler,
-                saveName);
-          }
-        }
-      }
     }
     return localGlobal;
   };
