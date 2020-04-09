@@ -23,6 +23,7 @@ const preset = {
 };
 
 const systemPreset = {
+  // TODO: Rewrite flags structure
   WITH_ENABLE : true,
   INPUT_STRING: true,
   DEBUG_FLAG: false,
@@ -33,6 +34,7 @@ const systemPreset = {
     'module-locals',
     'module-returns'
   ],
+  DEPTH: 0,
 }
 
 const lyaStartUp = (callerRequire, lyaConfig) => {
@@ -241,12 +243,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     if (lyaConfig.track.includes('es-globals')) {
       localGlobal['proxyExportHandler'] = createHandler('es-globals');
     }
-    //const noProxyOrig = new Proxy(global['process']['env'], {});
-    //methodNames.set(noProxyOrig, 'process.env');
-    //objectPath.set(noProxyOrig, moduleName[env.requireLevel]);
-    //localGlobal['process.env'] = new Proxy(noProxyOrig, createHandler('es-globals'));
     localGlobal['proxyGlobal'] = createGlobalPr();
-    //objectName.set(noProxyOrig, 'process.env');
 
     return localGlobal;
   }
@@ -263,6 +260,18 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     },
   };
 
+  // When depth is !== 0 it wraps the objects in a proxy
+  const levelWrapping = (obj, saveName, handler) => {
+    if (lyaConfig.depth && obj !== null) {
+      console.log(lyaConfig.depth, obj, 'lalala')
+      const noProxyOrig = setProxy(obj, {}, 'object');
+      methodNames.set(noProxyOrig, saveName);
+      objectPath.set(noProxyOrig, moduleName[env.requireLevel]);
+      return setProxy(noProxyOrig, handler, 'object');
+    } else {
+      return obj;
+    }
+  }
   const getObjLength = (obj) => Object.keys(obj).length;
   const getObjValues = (obj) => Object.getOwnPropertyNames(obj);
 
@@ -273,7 +282,9 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     if (Object.prototype.hasOwnProperty.call(obj, name)) {
       const objType = typeof obj[name];
       if (objType === 'object') {
-        localGlobal[name] = proxyWrap(obj[name]);
+        const wrappedObj = levelWrapping(obj[name],
+          givenFunc + '.' + name, handler);
+        localGlobal[name] = proxyWrap(wrappedObj);
       } else if (objType === 'function') {
         const noProxyOrig = setProxy(obj[name], {}, objType);
         methodNames.set(noProxyOrig, givenFunc + '.' + name);
@@ -302,19 +313,20 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       // maybe add this as an input from the user, to specify the depth of
       // the analysis.
     } else if (objType === 'object') {
-      if (!getObjLength(origGlobal)) {
-        const values = getObjValues(origGlobal);
+      const processedObj = levelWrapping(origGlobal, saveName, handler);
+      if (!getObjLength(processedObj)) {
+        const values = getObjValues(processedObj);
         for (const key in values) {
           if (Object.prototype.hasOwnProperty.call(values, key)) {
             const name = values[key];
-            localGlobal[name] = objTypeAction(origGlobal, name, handler,
+            localGlobal[name] = objTypeAction(processedObj, name, handler,
                 saveName);
           }
         }
       } else {
-        for (const key in origGlobal) {
-          if (Object.prototype.hasOwnProperty.call(origGlobal, key)) {
-            localGlobal[key] = objTypeAction(origGlobal, key, handler,
+        for (const key in processedObj) {
+          if (Object.prototype.hasOwnProperty.call(processedObj, key)) {
+            localGlobal[key] = objTypeAction(processedObj, key, handler,
                 saveName);
           }
         }
@@ -576,6 +588,7 @@ module.exports = {
       systemPreset.DEBUG_FLAG;
     conf.track = conf.dontTrack ? systemPreset.TRACKING.filter((e) =>
       !conf.dontTrack.includes(e)) : systemPreset.TRACKING;
+    conf.depth = conf.depth ? conf.depth : systemPreset.DEPTH;
     return lyaStartUp(origRequire, conf);
   },
 };
