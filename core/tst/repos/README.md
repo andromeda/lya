@@ -1,28 +1,13 @@
 # All the working test examples from repos
 
 ## mkdirp
-        - t1 => simple test case
-        - mkdirp-master => test cases from mkdirp repo
+  - There was a problem with bluebird repo. The error message was
+   *not ok TypeError: the promise constructor cannot be invoked directly*
+  In order to fix it we need to go to *node_modules/bluebird/js/release/promise.js:167*
+  and remove the according line that checks for the promise constructor. Line 85
 
+  
 ## yards
-        - t1 => simple test case -- pass
-	- from repo => downloaded a test case from the official repo almost 
-	everything works with some fixes	
+  - In order for this test to work i removed unscape, undefined from declarations and
+  disabled with functionallity.
 
-## minimist
-        - t1 => simple test case
-        - t2repo => official test case from minimist repo all of them work --
-        we can add more if we want
-
-## moment 
-        - t1 => simple test case to demonstate that the import works with lya
-        - t2 => more elegant test case from moment repo
-
-## debug
-	- repo => the test from repo pass
-
-## classnames
-	- repo => all the test from the repo pass
-
-## yargs
-	- repo => all the tests from the repo
