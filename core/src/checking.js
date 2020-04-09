@@ -103,8 +103,13 @@ const onHas = (target, prop, currentName, nameToStore) => {
 // onExit (toSave == place to save the result) --maybe make it module-local?
 const onExit = (toSave) => {
   console.log('-------------------------------------------------');
-  console.log('They where ', countValid, 'valid accesses in total');
-  console.log('They where ', countInvalid, 'invalid accesses in total');
+  console.log(chalk.yellow.bold('Total number of wrapped objects and functions: '),
+    locEnv.counters.total);
+  console.log(chalk.yellow.bold('Objects: '), locEnv.counters.object);
+  console.log(chalk.yellow.bold('Functions: '), locEnv.counters.function);
+  console.log('-------------------------------------------------');
+  console.log('They where ', chalk.green.bold(countValid, 'valid accesses in total'));
+  console.log('They where ', chalk.red.bold(countInvalid, 'invalid accesses in total'));
 }
 
 module.exports = (env) => {
