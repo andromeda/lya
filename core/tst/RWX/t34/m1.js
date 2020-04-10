@@ -7,5 +7,5 @@ _ = Array.from;
 _ = Array.of;
 Array();
 Array.isArray();
-Array.from();
+Array.from('foo');
 Array.of();

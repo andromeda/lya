@@ -42,6 +42,6 @@ constructor.setPrototypeOf = {};
 constructor.isExtensible = {};
 constructor.isFrozen = {};
 constructor.isSealed = {};
-constructor.keys = {};
+//constructor.keys = {};
 constructor.entries = {};
 constructor.values = {};

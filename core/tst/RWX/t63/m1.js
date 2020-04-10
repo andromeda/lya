@@ -1,4 +1,4 @@
 DataView.length = {};
 DataView.name = {};
 DataView.prototype = {};
-DataView();
+new DataView(new ArrayBuffer('hello'));

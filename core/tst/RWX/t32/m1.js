@@ -1,4 +1,4 @@
 Array();
 Array.isArray();
-Array.from();
+Array.from('foo');
 Array.of();

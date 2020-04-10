@@ -3,5 +3,5 @@ _ = ArrayBuffer.length;
 _ = ArrayBuffer.name;
 _ = ArrayBuffer.prototype;
 _ = ArrayBuffer.isView;
-ArrayBuffer();
+new ArrayBuffer();
 ArrayBuffer.isView();

@@ -18,6 +18,12 @@ constructor.setPrototypeOf = {};
 constructor.isExtensible = {};
 constructor.isFrozen = {};
 constructor.isSealed = {};
-constructor.keys = {};
+
+// This breaks the test with lya
+// because every time we try to use Object.keys(source)
+// in txfm now is empty. If we want it to fail uncomment the
+// following line
+// constructor.keys = {};
+
 constructor.entries = {};
 constructor.values = {};

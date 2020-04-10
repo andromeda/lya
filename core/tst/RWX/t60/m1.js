@@ -1,1 +1,1 @@
-DataView();
+new DataView(new ArrayBuffer('hello'));
