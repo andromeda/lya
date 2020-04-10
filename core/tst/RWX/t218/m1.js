@@ -5,4 +5,4 @@ _ = Map.prototype;
 Map.length = {};
 Map.name = {};
 Map.prototype = {};
-Map();
+new Map();

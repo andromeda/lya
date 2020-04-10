@@ -18,6 +18,6 @@ Object.setPrototypeOf = {};
 Object.isExtensible = {};
 Object.isFrozen = {};
 Object.isSealed = {};
-Object.keys = {};
+//Object.keys = {};
 Object.entries = {};
 Object.values = {};

@@ -1,4 +1,4 @@
-Promise();
+new Promise();
 Promise.all();
 Promise.race();
 Promise.resolve();
