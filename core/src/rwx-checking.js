@@ -116,7 +116,8 @@ const onExit = () => {
 
 module.exports = (e) => {
   env = e;
-  groundTruth = env.conf.rules? env.conf.rules : getAnalysisData();
+  // TODO: env.conf.rules? env.conf.rules : passes a string
+  groundTruth = getAnalysisData();
   return {
     onRead: onRead,
     onCallPre: onCallPre,
