@@ -61,7 +61,6 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   const globalNames = new Map();
   const withProxy = new WeakMap();
   const passedOver = new Map();
-  const globals = new Map();
 
   // The counter for the wrapped objects and functions
   const counters = {
@@ -91,7 +90,6 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   // We make a test on fragment
   const env = {
     conf: lyaConfig,
-    globals: globals,
     moduleName: moduleName,
     requireLevel: requireLevel,
     analysisResult: analysisResult,
@@ -227,8 +225,6 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     } else {
       localCopy = obj[count];
     }
-    
-    globals.set(moduleInputNames[count], true);
     methodNames.set(localCopy, moduleInputNames[count]);
     objectPath.set(localCopy, moduleName[env.requireLevel]);
     if (!lyaConfig.track.includes('module-locals')) {
@@ -268,7 +264,6 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   const uniqueWrap = (obj, handler, name, type) => {
     const noProxyOrig = new Proxy(obj, {});
     methodNames.set(noProxyOrig, name);
-    globals.set(name, true);
     objectPath.set(noProxyOrig, moduleName[env.requireLevel]);
     return setProxy(noProxyOrig, handler, type)
   };

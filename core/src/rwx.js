@@ -1,8 +1,9 @@
 let env;
 const pattern = /require[(](.*)[)]/;
 const fs = require('fs');
-const localGlobal = global;
-const hasMap = new Map();
+
+const candidateGlobs = new Set();
+const candidateModule = new Map();
 
 // We add the R or W or E to the existing string
 const addEvent = (event, values, index) => {
@@ -98,15 +99,30 @@ const onHas = (target, prop, currentName, nameToStore) => {
   // W = (candidateGlobs ⋂ globals) U globalWrites
   // R = globalReads                       (otherwise a read would have crushed)
   // RW = W ⋂ globalReads
-  // Uncomment this line for the result
-  //if (!env.globals.has(prop)) {
-    //updateAnalysisData(env.analysisResult[currentName],
-      //  nameToStore, ['r', 'w']);
-  //}
+  candidateGlobs.add(prop);
+  if (!candidateModule.has(prop)) {
+    candidateModule.set(prop, currentName);
+  }
 };
+
+const intersection = (setA, setB) => {
+    let _intersection = new Set()
+    for (let elem of setB) {
+        if (setA.has(elem)) {
+            _intersection.add(elem)
+        }
+    }
+    return _intersection
+}
 
 // onExit (toSave == place to save the result) --maybe make it module-local?
 const onExit = () => {
+  const globalSet = new Set(Object.keys(global));
+  for (const name of intersection(globalSet, candidateGlobs)) {
+    const currentName = candidateModule.get(name);
+    updateAnalysisData(env.analysisResult[currentName],
+        name, ['w']);
+  }
   if (env.conf.SAVE_RESULTS) {
     fs.writeFileSync(env.conf.SAVE_RESULTS,
       JSON.stringify(env.analysisResult, null, 2), 'utf-8');
