@@ -313,9 +313,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       localGlobal = uniqueWrap(origGlobal, handler, saveName, objType)
     } else if (objType === 'object') {
       const processedObj = levelWrapping(origGlobal, saveName, handler);
-      const values = getValues(processedObj);
-      for (var key = 0; key <= values.length; key++) {
-        const name = values[key];
+      for (const name of getValues(processedObj)) {
         localGlobal[name] = objTypeAction(processedObj, name, handler,
           saveName);
       }
@@ -343,12 +341,8 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     let returnValue = {};
     for (const funcClass in json) {
       if (Object.prototype.hasOwnProperty.call(json, funcClass)) {
-        const builtInObj = json[funcClass];
-        for (const counter in builtInObj) {
-          if (Object.prototype.hasOwnProperty.call(builtInObj, counter)) {
-            const functionName = builtInObj[counter];
-            returnValue[functionName] = func(functionName);
-          }
+        for (const name of json[funcClass]) {
+          returnValue[name] = func(name);
         }
       }
     }
