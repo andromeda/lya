@@ -14,12 +14,12 @@ const preset = {
   ALLOW_DENY_ENFORCEMENT: './allow-deny-enforcement.js',
   RWX: './rwx.js',
   RWX_ENFORCEMENT: './rwx-enforcement.js',
+  RWX_CHECKING: './rwx-checking.js',
   GLOBAL_ONLY: './global-only.js',
   EXPORT_TYPE: './export-type.js',
   COARSE_TYPES: './coarse-types.js',
   SIMPLE_TYPES: './simple-types.js',
   SUB_TYPES: './sub-types.js',
-  CHECKING: './checking.js',
 };
 
 const systemPreset = {
@@ -89,6 +89,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   }
   // We make a test on fragment
   const env = {
+    conf: lyaConfig,
     moduleName: moduleName,
     requireLevel: requireLevel,
     analysisResult: analysisResult,
@@ -551,10 +552,21 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     },
   };
 
-  // We print all the results at the end of the analysis
   process.on('exit', function() {
-    policy.onExit(lyaConfig.SAVE_RESULTS);
+    // First, check if the current analysis has set an exit handler;
+    // if yes, invoke it, without any parameters: the current analysis has
+    // access to the lya config and can decide what to do
+    if (policy.onExit) {
+      policy.onExit();
+    } else {
+      // if not, our default handler should print or write the results to a file
+      if (lyaConfig.SAVE_RESULTS) {
+        // TODO implement saving results
+      }
+    }
+    // optionally, we can do some other cleanup too
   });
+
   return setProxy(callerRequire, createHandler('module-locals'), 'function');
 };
 
@@ -566,7 +578,10 @@ module.exports = {
       console.error('Analysis file not found: ', conf.analysis);
     }
     // TODO: maybe exapand to a local
+    // we can change the name 'removejson' to 'excludes', 'excluded' or 'except'
     conf.removejson = conf.removejson || [];
+    // TODO: create a function that assigns default values to the config (which
+    // should be first parameterized by individual analysis)
     conf.withEnable = conf.withEnable === false ? conf.withEnable :
       systemPreset.WITH_ENABLE;
     conf.inputString = conf.inputString === false ? conf.inputString:

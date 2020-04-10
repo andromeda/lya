@@ -1,8 +1,9 @@
-let locEnv;
+let env;
 
 const chalk = require('chalk');
 let countValid = 0;
 let countInvalid = 0;
+let groundTruth;
 
 // We need to get the path of the main module in order to find dynamic json
 const getAnalysisData = () => {
@@ -20,7 +21,6 @@ const getAnalysisData = () => {
 
 // TODO: Make the path of the imported analysis result  not absolute
 // etc.. /greg/home/lya/tst/main.js ~> main.js
-const groundTruth = getAnalysisData();
 const checkRWX = (storedCalls, truename, modeGrid) => {
   for (const key in modeGrid) {
     const mode = modeGrid[key];
@@ -101,19 +101,22 @@ const onHas = (target, prop, currentName, nameToStore) => {
 }
 
 // onExit (toSave == place to save the result) --maybe make it module-local?
-const onExit = (toSave) => {
-  console.log('-------------------------------------------------');
-  console.log(chalk.yellow.bold('Total number of wrapped objects and functions: '),
-    locEnv.counters.total);
-  console.log(chalk.yellow.bold('Objects: '), locEnv.counters.object);
-  console.log(chalk.yellow.bold('Functions: '), locEnv.counters.function);
-  console.log('-------------------------------------------------');
-  console.log(chalk.green.bold('Valid accesses: ',countValid));
-  console.log(chalk.red.bold('Invalid accesses: ',countInvalid));
+const onExit = () => {
+  if (env.conf.SAVE_RESULTS) {
+    console.log('-------------------------------------------------');
+    console.log(chalk.yellow.bold('Total number of wrapped objects and functions: '),
+      env.counters.total);
+    console.log(chalk.yellow.bold('Objects: '), env.counters.object);
+    console.log(chalk.yellow.bold('Functions: '), env.counters.function);
+    console.log('-------------------------------------------------');
+    console.log(chalk.green.bold('Valid accesses: ',countValid));
+    console.log(chalk.red.bold('Invalid accesses: ',countInvalid));
+  }
 }
 
-module.exports = (env) => {
-  locEnv = env;
+module.exports = (e) => {
+  env = e;
+  groundTruth = env.conf.rules? env.conf.rules : getAnalysisData();
   return {
     onRead: onRead,
     onCallPre: onCallPre,

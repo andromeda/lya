@@ -1,4 +1,4 @@
-let locEnv;
+let env;
 const pattern = /require[(](.*)[)]/;
 const fs = require('fs');
 
@@ -35,13 +35,13 @@ const updateAnalysisData = (storedCalls, truename, modeGrid) => {
 const onRead = (target, name, nameToStore, currentModule, typeClass) => {
   if (nameToStore !== 'global') {
     if (pattern.test(nameToStore)) {
-      updateAnalysisData(locEnv.analysisResult[currentModule],
+      updateAnalysisData(env.analysisResult[currentModule],
           nameToStore.match(pattern)[0], ['r']);
     } else {
-      updateAnalysisData(locEnv.analysisResult[currentModule],
+      updateAnalysisData(env.analysisResult[currentModule],
           nameToStore.split('.')[0], ['r']);
     }
-    updateAnalysisData(locEnv.analysisResult[currentModule],
+    updateAnalysisData(env.analysisResult[currentModule],
         nameToStore, ['r']);
   }
 };
@@ -49,27 +49,27 @@ const onRead = (target, name, nameToStore, currentModule, typeClass) => {
 // onWrite <~ is called before every write of an object
 const onWrite = (target, name, value, currentModule, parentName,
     nameToStore) => {
-  updateAnalysisData(locEnv.analysisResult[currentModule], parentName, ['r']);
-  updateAnalysisData(locEnv.analysisResult[currentModule], nameToStore, ['w']);
+  updateAnalysisData(env.analysisResult[currentModule], parentName, ['r']);
+  updateAnalysisData(env.analysisResult[currentModule], nameToStore, ['w']);
 };
 
 // onCallPre <~ is called before the execution of a function
 const onCallPre = (target, thisArg, argumentsList, name, nameToStore,
     currentModule, declareModule, typeClass) => {
   if (typeClass === 'module-locals') {
-    updateAnalysisData(locEnv.analysisResult[currentModule],
+    updateAnalysisData(env.analysisResult[currentModule],
         'require', ['r', 'x']);
-    updateAnalysisData(locEnv.analysisResult[currentModule],
+    updateAnalysisData(env.analysisResult[currentModule],
         nameToStore, ['i']);
   } else {
     if (typeClass === 'node-globals') {
-      updateAnalysisData(locEnv.analysisResult[declareModule],
+      updateAnalysisData(env.analysisResult[declareModule],
           nameToStore.split('.')[0], ['r']);
     }
-    updateAnalysisData(locEnv.analysisResult[declareModule],
+    updateAnalysisData(env.analysisResult[declareModule],
         nameToStore, ['r', 'x']);
     if (pattern.test(nameToStore)) {
-      updateAnalysisData(locEnv.analysisResult[currentModule],
+      updateAnalysisData(env.analysisResult[currentModule],
         nameToStore.match(pattern)[0], ['r']);
     }
   }
@@ -82,22 +82,32 @@ const onCallPost = (target, thisArg, argumentsList, name, nameToStore,
 
 // onConstruct <~ Is call before every construct
 const onConstruct = (target, args, currentName, nameToStore) => {
-  updateAnalysisData(locEnv.analysisResult[currentName],
+  updateAnalysisData(env.analysisResult[currentName],
       nameToStore, ['r', 'x']);
 };
 
 const onHas = (target, prop, currentName, nameToStore) => {
+  // Idea: Put  all variable  names to  a Set called  "candidateGlobs" a  set is
+  // great because (i) vars  with the same name will get added  once and (ii) it
+  // allows efficient  union/intersection queries Then,  upon exit, we  take the
+  // intersection of  candidateGlobs and Object.keys(globals) Then  we intersect
+  // the two,  and assign "rw"  to the remaining;  (a refinement could  be about
+  // read and write also updating a set and then taking the following formulas):
+  // W = (candidateGlobs ⋂ globals) U globalWrites
+  // R = globalReads                       (otherwise a read would have crushed)
+  // RW = W ⋂ globalReads
 };
 
 // onExit (toSave == place to save the result) --maybe make it module-local?
-const onExit = (toSave) => {
-  if (toSave) {
-    fs.writeFileSync(toSave,
-        JSON.stringify(locEnv.analysisResult, null, 2), 'utf-8');
+const onExit = () => {
+  if (env.conf.SAVE_RESULTS) {
+    fs.writeFileSync(env.conf.SAVE_RESULTS, 
+      JSON.stringify(env.analysisResult, null, 2), 'utf-8');
   }
 }
-module.exports = (env) => {
-  locEnv = env;
+
+module.exports = (e) => {
+  env = e;
   return {
     onRead: onRead,
     onCallPre: onCallPre,

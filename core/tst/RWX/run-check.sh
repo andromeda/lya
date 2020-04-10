@@ -7,7 +7,7 @@ analysis() {
   # Dynamic analysis comes from a different segment so that
   # static analysis does not get confused
   cat correct.pwd.json | sed "s;PWD_REPLACE;$(pwd);" > correct.json
-  cat ../prologue-rwx.lya ../epilogue.lya > generated.test
+  cat ../prologue-check.lya ../epilogue.lya > generated.test
   # Replace node with cat to see the generated script
   node generated.test > /dev/null
   # run main and compare results with static
@@ -26,4 +26,5 @@ else
     cd ..
   done
 fi
+
 

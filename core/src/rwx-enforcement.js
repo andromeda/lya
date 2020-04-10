@@ -1,9 +1,11 @@
-let locEnv;
+let env;
+let groundTruth;
 
 // We need to get the path of the main module in order to find dynamic json
 const getAnalysisData = () => {
   // We save all the json data inside an object
   const path = require('path');
+  // TODO: Take this from env---relative to the file calling require('lya')!
   const appDir = path.join(path.dirname(require.main.filename), 'dynamic.json');
   let dynamicData;
   try {
@@ -16,7 +18,6 @@ const getAnalysisData = () => {
 
 // TODO: Make the path of the imported analysis result  not absolute
 // etc.. /greg/home/lya/tst/main.js ~> main.js
-const groundTruth = getAnalysisData();
 const checkRWX = (storedCalls, truename, modeGrid) => {
   for (const key in modeGrid) {
     const mode = modeGrid[key];
@@ -87,19 +88,15 @@ const onHas = (target, prop, currentName, nameToStore) => {
   //checkRWX(groundTruth[currentName], nameToStore, ['r', 'w']);
 }
 
-// onExit (toSave == place to save the result) --maybe make it module-local?
-const onExit = (toSave) => {
-}
-
-module.exports = (env) => {
-  locEnv = env;
+module.exports = (e) => {
+  env = e;
+  groundTruth = env.conf.rules? env.conf.rules : getAnalysisData();
   return {
     onRead: onRead,
     onCallPre: onCallPre,
     onCallPost: onCallPost,
     onWrite: onWrite,
     onConstruct: onConstruct,
-    onHas: onHas,
-    onExit: onExit,
+    onHas: onHas
   };
 };
