@@ -61,6 +61,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   const globalNames = new Map();
   const withProxy = new WeakMap();
   const passedOver = new Map();
+  const globals = new Map();
 
   // The counter for the wrapped objects and functions
   const counters = {
@@ -90,6 +91,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   // We make a test on fragment
   const env = {
     conf: lyaConfig,
+    globals: globals,
     moduleName: moduleName,
     requireLevel: requireLevel,
     analysisResult: analysisResult,
@@ -225,6 +227,8 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     } else {
       localCopy = obj[count];
     }
+    
+    globals.set(moduleInputNames[count], true);
     methodNames.set(localCopy, moduleInputNames[count]);
     objectPath.set(localCopy, moduleName[env.requireLevel]);
     if (!lyaConfig.track.includes('module-locals')) {
@@ -264,6 +268,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   const uniqueWrap = (obj, handler, name, type) => {
     const noProxyOrig = new Proxy(obj, {});
     methodNames.set(noProxyOrig, name);
+    globals.set(name, true);
     objectPath.set(noProxyOrig, moduleName[env.requireLevel]);
     return setProxy(noProxyOrig, handler, type)
   };
@@ -291,15 +296,14 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     const localGlobal = {};
     if (Object.prototype.hasOwnProperty.call(obj, name)) {
       const objType = typeof obj[name];
+      const saveName = givenFunc + '.' + name;
       if (objType === 'object') {
-        const wrappedObj = levelWrapping(obj[name],
-          givenFunc + '.' + name, handler);
+        const wrappedObj = levelWrapping(obj[name], saveName, handler);
         localGlobal[name] = proxyWrap(wrappedObj);
       } else if (objType === 'function') {
-        localGlobal[name] = uniqueWrap(obj[name], handler,
-          givenFunc + '.' + name, objType)
+        localGlobal[name] = uniqueWrap(obj[name], handler, saveName, objType)
       } else if (objType === 'number') {
-        globalNames.set(obj[name], givenFunc + '.' + name);
+        globalNames.set(obj[name], saveName);
         localGlobal[name] = obj[name];
       }
     }
@@ -310,7 +314,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     const objType = typeof origGlobal;
     let localGlobal = {};
     if (objType === 'function') {
-      localGlobal = uniqueWrap(origGlobal, handler, saveName, objType)
+      localGlobal = uniqueWrap(origGlobal, handler, saveName, objType);
     } else if (objType === 'object') {
       const processedObj = levelWrapping(origGlobal, saveName, handler);
       for (const name of getValues(processedObj)) {
@@ -354,8 +358,6 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   const setPrologue = () => {
     passJSONFile(setDeclaration, defaultNames.globals);
     prologue += 'let global = localGlobal["proxyGlobal"]\n';
-    // FIXME: need to find another way to wrap process
-    //prologue += 'process.env = localGlobal["process.env"];\n';
     if (lyaConfig.track.includes('es-globals')) {
       prologue += 'Math = new Proxy(Math, localGlobal["proxyExportHandler"]);\n';
     }
@@ -433,28 +435,28 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   // We wrap the result in the wrapper function
   Module.prototype.require = function(...args) {
     const path = args[0];
-    let result = originalRequire.apply(this, args);
-    const type = typeof result;
+    let moduleExports = originalRequire.apply(this, args);
+    const type = typeof moduleExports;
 
     if (type !== 'boolean' && type !== 'symbol' &&
           type !== 'number' && type !== 'string') {
-      if (!objectName.has(result)) {
-        objectName.set(result, 'require(\'' + path + '\')');
-        objectPath.set(result, moduleName[env.requireLevel]);
+      if (!objectName.has(moduleExports)) {
+        objectName.set(moduleExports, 'require(\'' + path + '\')');
+        objectPath.set(moduleExports, moduleName[env.requireLevel]);
         if (lyaConfig.track.includes('module-returns')) {
-          result = setProxy(result, exportHandler, type);
+          moduleExports = setProxy(moduleExports, exportHandler, type);
         };
         if (env.requireLevel !== 0 &&
           nativeModules.indexOf(path) === -1) {
           env.requireLevel--;
         }
       } else {
-        result = setProxy(result, exportHandler, type);
-        objectName.set(result, 'require(\'' + path + '\')');
-        objectPath.set(result, moduleName[env.requireLevel]);
+        moduleExports = setProxy(moduleExports, exportHandler, type);
+        objectName.set(moduleExports, 'require(\'' + path + '\')');
+        objectPath.set(moduleExports, moduleName[env.requireLevel]);
       }
     }
-    return result;
+    return moduleExports;
   };
 
   // This is the handler of the export object. Every time we require a module,
@@ -555,7 +557,8 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     } else {
       // if not, our default handler should print or write the results to a file
       if (lyaConfig.SAVE_RESULTS) {
-        // TODO implement saving results
+        fs.writeFileSync(env.conf.SAVE_RESULTS,
+          JSON.stringify(env.analysisResult, null, 2), 'utf-8');
       }
     }
     // optionally, we can do some other cleanup too

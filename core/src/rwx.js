@@ -1,6 +1,8 @@
 let env;
 const pattern = /require[(](.*)[)]/;
 const fs = require('fs');
+const localGlobal = global;
+const hasMap = new Map();
 
 // We add the R or W or E to the existing string
 const addEvent = (event, values, index) => {
@@ -96,12 +98,17 @@ const onHas = (target, prop, currentName, nameToStore) => {
   // W = (candidateGlobs ⋂ globals) U globalWrites
   // R = globalReads                       (otherwise a read would have crushed)
   // RW = W ⋂ globalReads
+  // Uncomment this line for the result
+  //if (!env.globals.has(prop)) {
+    //updateAnalysisData(env.analysisResult[currentName],
+      //  nameToStore, ['r', 'w']);
+  //}
 };
 
 // onExit (toSave == place to save the result) --maybe make it module-local?
 const onExit = () => {
   if (env.conf.SAVE_RESULTS) {
-    fs.writeFileSync(env.conf.SAVE_RESULTS, 
+    fs.writeFileSync(env.conf.SAVE_RESULTS,
       JSON.stringify(env.analysisResult, null, 2), 'utf-8');
   }
 }
