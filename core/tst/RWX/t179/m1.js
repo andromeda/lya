@@ -1,1 +1,1 @@
-Int8Array();
+new Int8Array();

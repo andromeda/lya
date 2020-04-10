@@ -1,3 +1,4 @@
+var foo = {};
 hasOwnProperty.length = {};
 hasOwnProperty.name = {};
-hasOwnProperty();
+foo.hasOwnProperty('foo');

@@ -1,1 +1,1 @@
-Int16Array();
+new Int16Array();

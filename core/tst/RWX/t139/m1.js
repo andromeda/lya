@@ -3,4 +3,4 @@ _ = Float64Array.length;
 _ = Float64Array.name;
 _ = Float64Array.prototype;
 _ = Float64Array.BYTES_PER_ELEMENT;
-Float64Array();
+new Float64Array();

@@ -1,1 +1,2 @@
-hasOwnProperty();
+var foo = {};
+foo.hasOwnProperty('foo');

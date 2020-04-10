@@ -3,4 +3,4 @@ _ = Int16Array.length;
 _ = Int16Array.name;
 _ = Int16Array.prototype;
 _ = Int16Array.BYTES_PER_ELEMENT;
-Int16Array();
+new Int16Array();

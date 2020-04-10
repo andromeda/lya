@@ -3,4 +3,4 @@ _ = hasOwnProperty.length;
 _ = hasOwnProperty.name;
 hasOwnProperty.length = {};
 hasOwnProperty.name = {};
-hasOwnProperty();
+_.hasOwnProperty('foo');

@@ -1,2 +1,4 @@
+var foo = {};
+
 Error();
-Error.captureStackTrace();
+Error.captureStackTrace(foo);

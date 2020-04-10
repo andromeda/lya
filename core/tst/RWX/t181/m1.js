@@ -3,4 +3,4 @@ _ = Int8Array.length;
 _ = Int8Array.name;
 _ = Int8Array.prototype;
 _ = Int8Array.BYTES_PER_ELEMENT;
-Int8Array();
+new Int8Array();

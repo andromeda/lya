@@ -1,1 +1,1 @@
-Int32Array();
+new Int32Array();

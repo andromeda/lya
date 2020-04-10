@@ -4,4 +4,4 @@ Error.prototype = {};
 Error.captureStackTrace = {};
 Error.stackTraceLimit = {};
 Error();
-Error.captureStackTrace();
+Error.captureStackTrace;
