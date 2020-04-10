@@ -99,17 +99,19 @@ const onHas = (target, prop, currentName, nameToStore) => {
   // W = (candidateGlobs ⋂ globals) U globalWrites
   // R = globalReads                       (otherwise a read would have crushed)
   // RW = W ⋂ globalReads
+  // TODO: Return to txfm
   candidateGlobs.add(prop);
   if (!candidateModule.has(prop)) {
     candidateModule.set(prop, currentName);
+    env.globalNames.set(prop, nameToStore);
   }
 };
 
 const intersection = (setA, setB) => {
-    let _intersection = new Set()
+    let _intersection = new Set();
     for (let elem of setB) {
         if (setA.has(elem)) {
-            _intersection.add(elem)
+            _intersection.add(elem);
         }
     }
     return _intersection
@@ -117,11 +119,11 @@ const intersection = (setA, setB) => {
 
 // onExit (toSave == place to save the result) --maybe make it module-local?
 const onExit = () => {
-  const globalSet = new Set(Object.keys(global));
-  for (const name of intersection(globalSet, candidateGlobs)) {
+  const globalSet = new Set(Object.keys(global)); // this back to txfm
+  for (const name of intersection(globalSet, candidateGlobs)) { // this back to txfm
     const currentName = candidateModule.get(name);
     updateAnalysisData(env.analysisResult[currentName],
-        name, ['w']);
+        'global.'+name, ['w']);
   }
   if (env.conf.SAVE_RESULTS) {
     fs.writeFileSync(env.conf.SAVE_RESULTS,

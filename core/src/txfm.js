@@ -90,6 +90,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   // We make a test on fragment
   const env = {
     conf: lyaConfig,
+    globalNames: globalNames,
     moduleName: moduleName,
     requireLevel: requireLevel,
     analysisResult: analysisResult,
