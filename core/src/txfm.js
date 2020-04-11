@@ -167,9 +167,12 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
           const parentName = methodNames.get(target);
           const nameToStore = globalNames.has(name) ? globalNames.get(name) :
             parentName + '.' + name;
+          if (globalNames.has(name)) {
+            policy.onWrite(target, name, value, currentModule, null, nameToStore);
+            return Reflect.set(...arguments);
+          }
           policy.onWrite(target, name, value, currentModule, parentName, nameToStore);
-          if (methodNames.get(target) === 'global' &&
-             !globalNames.has(name)) {
+          if (methodNames.get(target) === 'global') {
             globalNames.set(name, nameToStore);
           }
         }
