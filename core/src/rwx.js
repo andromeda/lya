@@ -49,7 +49,9 @@ const onRead = (target, name, nameToStore, currentModule, typeClass) => {
 // onWrite <~ is called before every write of an object
 const onWrite = (target, name, value, currentModule, parentName,
     nameToStore) => {
-  updateAnalysisData(env.analysisResult[currentModule], parentName, ['r']);
+  if (parentName) {
+    updateAnalysisData(env.analysisResult[currentModule], parentName, ['r']);
+  }
   updateAnalysisData(env.analysisResult[currentModule], nameToStore, ['w']);
 };
 
