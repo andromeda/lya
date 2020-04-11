@@ -4,5 +4,5 @@ let p = require("./m2.js");
 
 module.exports = {
   fst: pwd,
-  snd: p
+  snd: p.mk
 }

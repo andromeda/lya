@@ -4,6 +4,13 @@ const chalk = require('chalk');
 let countValid = 0;
 let countInvalid = 0;
 let groundTruth;
+let debug = false;
+
+let log = (str, color) => {
+  if (!debug)
+    return
+  console.log(color? chalk[color].bold(str) : str)
+}
 
 // We need to get the path of the main module in order to find dynamic json
 const getAnalysisData = () => {
@@ -26,19 +33,16 @@ const checkRWX = (storedCalls, truename, modeGrid) => {
     const mode = modeGrid[key];
     if (Object.prototype.hasOwnProperty.
         call(storedCalls, truename) === false) {
-      console.log(chalk.red.bold('Invalid access in: ') +
-        truename + ' and mode ' + mode);
+      log("Invalid access in: " + truename + " and mode " + mode, "red");
       countInvalid++;
     } else {
 
       let permissions = storedCalls[truename];
       if (!permissions.includes(mode)) {
-        console.log(chalk.red.bold('Invalid access in: ') +
-          truename + ' and mode ' + mode);
+        log("Invalid access in: " + truename + " and mode " + mode, "red");
         countInvalid++;
       } else {
-        console.log(chalk.green.bold('Valid access in: ') +
-          truename + ' and mode ' + mode);
+        log("Valid access in: " + truename + " and mode " + mode, "green");
         countValid++;
       }
     }
@@ -100,17 +104,23 @@ const onHas = (target, prop, currentName, nameToStore) => {
   //checkRWX(groundTruth[currentName], nameToStore, ['r', 'w']);
 }
 
+// There is also another number missing: how many of the total accesses were 
+let printExtended = () => {
+  log('-------------------------------------------------');
+  log('Total number of wrappers: ' + env.counters.total, "yellow");
+  log("objects: ", env.counters.object, "yellow");
+  log("functions: ", env.counters.function, "yellow");
+  log('-------------------------------------------------');
+  log('Valid accesses: ' + countValid, "green");
+  log('Invalid accesses: ' + countInvalid, "red");
+}
+
 // onExit (toSave == place to save the result) --maybe make it module-local?
 const onExit = () => {
-  if (env.conf.SAVE_RESULTS) {
-    console.log('-------------------------------------------------');
-    console.log(chalk.yellow.bold('Total number of wrapped objects and functions: '),
-      env.counters.total);
-    console.log(chalk.yellow.bold('Objects: '), env.counters.object);
-    console.log(chalk.yellow.bold('Functions: '), env.counters.function);
-    console.log('-------------------------------------------------');
-    console.log(chalk.green.bold('Valid accesses: ',countValid));
-    console.log(chalk.red.bold('Invalid accesses: ',countInvalid));
+  if (env.conf.printResults) {
+    let total = env.counters.total;
+    console.log(total, countValid, countInvalid, (countInvalid / total));
+    printExtended();
   }
 }
 
@@ -118,6 +128,7 @@ module.exports = (e) => {
   env = e;
   // TODO: env.conf.rules? env.conf.rules : passes a string
   groundTruth = getAnalysisData();
+  debug = env.conf.debug;
   return {
     onRead: onRead,
     onCallPre: onCallPre,
