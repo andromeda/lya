@@ -61,6 +61,9 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   const globalNames = new Map();
   const withProxy = new WeakMap();
   const passedOver = new Map();
+  // This is for write in global
+  const candidateGlobs = new Set();
+  const candidateModule = new Map();
 
   // The counter for the wrapped objects and functions
   const counters = {
@@ -90,7 +93,6 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   // We make a test on fragment
   const env = {
     conf: lyaConfig,
-    globalNames: globalNames,
     moduleName: moduleName,
     requireLevel: requireLevel,
     analysisResult: analysisResult,
@@ -151,10 +153,11 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 
         if (methodNames.has(target)) {
           const parentName = methodNames.get(target);
-          const nameToStore = parentName + '.' + name;
+          const nameToStore = globalNames.has(name) ? globalNames.get(name) :
+            parentName + '.' + name;
           policy.onWrite(target, name, value, currentModule, parentName, nameToStore);
-          if (methodNames.get(target) === 'global' ||
-            methodNames.get(target) === 'process.env') {
+          if (methodNames.get(target) === 'global' &&
+             !globalNames.has(name)) {
             globalNames.set(name, nameToStore);
           }
         }
@@ -168,6 +171,11 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
         const nameToStore = parentObject + '.' + prop;
         if (parentObject === 'global' && !result &&
           prop !== 'localGlobal') {
+          candidateGlobs.add(prop);
+          if (!candidateModule.has(prop)) {
+              candidateModule.set(prop, currentName);
+              globalNames.set(prop, prop);
+          }
           policy.onHas(target, prop, currentName, nameToStore);
         }
 
@@ -544,12 +552,23 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     },
   };
 
+  const intersection = (setA, setB) => {
+      let _intersection = new Set();
+      for (let elem of setB) {
+          if (setA.has(elem)) {
+              _intersection.add(elem);
+          }
+      }
+      return _intersection
+  }
+
   process.on('exit', function() {
     // First, check if the current analysis has set an exit handler;
     // if yes, invoke it, without any parameters: the current analysis has
     // access to the lya config and can decide what to do
     if (policy.onExit) {
-      policy.onExit();
+      const globalSet = new Set(Object.keys(global));
+      policy.onExit(intersection(globalSet, candidateGlobs), candidateModule);
     } else {
       // if not, our default handler should print or write the results to a file
       if (lyaConfig.SAVE_RESULTS) {

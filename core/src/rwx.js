@@ -2,9 +2,6 @@ let env;
 const pattern = /require[(](.*)[)]/;
 const fs = require('fs');
 
-const candidateGlobs = new Set();
-const candidateModule = new Map();
-
 // We add the R or W or E to the existing string
 const addEvent = (event, values, index) => {
   let permissions = values[index];
@@ -100,30 +97,14 @@ const onHas = (target, prop, currentName, nameToStore) => {
   // R = globalReads                       (otherwise a read would have crushed)
   // RW = W ⋂ globalReads
   // TODO: Return to txfm
-  candidateGlobs.add(prop);
-  if (!candidateModule.has(prop)) {
-    candidateModule.set(prop, currentName);
-    env.globalNames.set(prop, nameToStore);
-  }
 };
 
-const intersection = (setA, setB) => {
-    let _intersection = new Set();
-    for (let elem of setB) {
-        if (setA.has(elem)) {
-            _intersection.add(elem);
-        }
-    }
-    return _intersection
-}
-
 // onExit (toSave == place to save the result) --maybe make it module-local?
-const onExit = () => {
-  const globalSet = new Set(Object.keys(global)); // this back to txfm
-  for (const name of intersection(globalSet, candidateGlobs)) { // this back to txfm
+const onExit = (intersection, candidateModule) => {
+  for (const name of intersection) {
     const currentName = candidateModule.get(name);
     updateAnalysisData(env.analysisResult[currentName],
-        'global.'+name, ['w']);
+        name, ['w']);
   }
   if (env.conf.SAVE_RESULTS) {
     fs.writeFileSync(env.conf.SAVE_RESULTS,
