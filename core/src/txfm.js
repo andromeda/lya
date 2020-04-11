@@ -35,6 +35,7 @@ const systemPreset = {
     'module-returns'
   ],
   DEPTH: 0,
+  EXCLUDES: ['toString', 'valueOf'],
 }
 
 const lyaStartUp = (callerRequire, lyaConfig) => {
@@ -61,9 +62,20 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   const globalNames = new Map();
   const withProxy = new WeakMap();
   const passedOver = new Map();
-  // This is for write in global
+
+  // This is for write in global, y = 1 etc..
   const candidateGlobs = new Set();
   const candidateModule = new Map();
+
+  // This is for excludes, valueof, toString etc..
+  const makeExcludes = (list) => {
+    const _excludes = new Map();
+    for (const name of list) {
+      _excludes.set(name, true);
+    };
+    return _excludes;
+  };
+  const excludes = makeExcludes(lyaConfig.excludes);
 
   // The counter for the wrapped objects and functions
   const counters = {
@@ -197,6 +209,9 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   const policy = require(lyaConfig.analysis)(env);
 
   const setProxy = (obj, handler, type) => {
+    if (excludes.has(methodNames.get(obj))) {
+      return obj;
+    }
     counters.total++;
     counters[type]++;
     return new Proxy(obj, handler);
@@ -518,6 +533,10 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
               apply: createHandler('module-returns').apply
             }, exportType);
             storePureFunctions.set(target[name], currFunction);
+            if (excludes.has(name)) {
+              policy.onRead(target, name, parentName, currModule);
+              return Reflect.get(...arguments);
+            };
             namePathSet(currFunction, parentName, currModule);
             policy.onRead(target, name, nameToStore, currModule);
           } else {
@@ -603,6 +622,8 @@ module.exports = {
     conf.track = conf.dontTrack ? systemPreset.TRACKING.filter((e) =>
       !conf.dontTrack.includes(e)) : systemPreset.TRACKING;
     conf.depth = conf.depth ? conf.depth : systemPreset.DEPTH;
+    conf.excludes = conf.excludes ? conf.excludes :
+      systemPreset.EXCLUDES;
     return lyaStartUp(origRequire, conf);
   },
 };
