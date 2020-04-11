@@ -119,7 +119,7 @@ let printExtended = () => {
 const onExit = () => {
   if (env.conf.printResults) {
     let total = env.counters.total;
-    console.log(total, countValid, countInvalid, (countInvalid / total));
+    console.error(total, countValid, countInvalid, (countInvalid / total).toFixed(2));
     printExtended();
   }
 }
