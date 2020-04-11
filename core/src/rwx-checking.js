@@ -9,7 +9,7 @@ let groundTruth;
 const getAnalysisData = () => {
   // We save all the json data inside an object
   const path = require('path');
-  const appDir = path.join(path.dirname(require.main.filename), 'correct.json');
+  const appDir = env.conf.rules? env.conf.rules : path.join(path.dirname(require.main.filename), 'correct.json');
   let dynamicData;
   try {
     dynamicData = require(appDir);
