@@ -34,7 +34,7 @@ const systemPreset = {
     'module-locals',
     'module-returns'
   ],
-  DEPTH: 0,
+  DEPTH: 1,
   EXCLUDES: ['toString', 'valueOf'],
 }
 
@@ -172,7 +172,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
             return Reflect.set(...arguments);
           }
           policy.onWrite(target, name, value, currentModule, parentName, nameToStore);
-          if (methodNames.get(target) === 'global') {
+          if (methodNames.get(target) === 'global' || typeof value === 'number') {
             globalNames.set(name, nameToStore);
           }
         }
