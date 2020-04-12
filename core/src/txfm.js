@@ -80,8 +80,8 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   // The counter for the wrapped objects and functions
   const counters = {
     total: 0,
-    object: 0,
-    function: 0,
+    objects: 0,
+    functions: 0,
   };
 
   // We read and store the data of the json file

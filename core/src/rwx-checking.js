@@ -109,8 +109,8 @@ let printExtended = () => {
   const totalAccess = countValid + countInvalid;
   log('-------------------------------------------------');
   log('Total number of wrappers: ' + env.counters.total, "yellow");
-  log("objects: " + env.counters.object, "yellow");
-  log("functions: " + env.counters.function, "yellow");
+  log("objects: " + env.counters.objects, "yellow");
+  log("functions: " + env.counters.functions, "yellow");
   log('-------------------------------------------------');
   log('Valid accesses: ' + countValid, "green");
   log('Invalid accesses: ' + countInvalid, "red");
