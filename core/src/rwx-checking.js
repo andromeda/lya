@@ -104,15 +104,17 @@ const onHas = (target, prop, currentName, nameToStore) => {
   //checkRWX(groundTruth[currentName], nameToStore, ['r', 'w']);
 }
 
-// There is also another number missing: how many of the total accesses were 
+// There is also another number missing: how many of the total accesses were
 let printExtended = () => {
+  const totalAccess = countValid + countInvalid;
   log('-------------------------------------------------');
   log('Total number of wrappers: ' + env.counters.total, "yellow");
-  log("objects: ", env.counters.object, "yellow");
-  log("functions: ", env.counters.function, "yellow");
+  log("objects: " + env.counters.object, "yellow");
+  log("functions: " + env.counters.function, "yellow");
   log('-------------------------------------------------');
   log('Valid accesses: ' + countValid, "green");
   log('Invalid accesses: ' + countInvalid, "red");
+  log('Total accesses: ' + totalAccess, "red");
 }
 
 // onExit (toSave == place to save the result) --maybe make it module-local?
