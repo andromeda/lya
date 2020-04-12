@@ -11,3 +11,4 @@ draft.pdf
 timetest.txt
 .DS_Store
 .nyc_output/
+core/tst/repos/debug/coverage/
