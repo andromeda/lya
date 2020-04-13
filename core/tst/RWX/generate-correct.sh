@@ -3,6 +3,7 @@
 set -o pipefail
 set -e
 
+RUN_FUN=runStatic
 CORRECT="./correct.pwd.json" 
 MIR_SA=${MIR_PATH:-~/wrk/andromeda/mir/static-analysis/mir-sa.jar}
 
@@ -15,14 +16,22 @@ generatePwdCorrect() {
     fi
 }
 
+generateCorrect() {
+  cat correct.pwd.json | sed "s;PWD_REPLACE;$(pwd);" > correct.json
+}
+
+runStatic(){
+  java -jar $MIR_SA . | grep "^{" | jq . > static.json
+}
+
 if [ "$#" -eq 1 ]; then
   cd $1
-  generatePwdCorrect
+  $RUN_FUN
   cd ..
 else
-  for d in t???/; do
+  for d in t[3456789]?/ t???/; do
     cd $d;
-    generatePwdCorrect
+    $RUN_FUN
     cd ..
   done
 fi
