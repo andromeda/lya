@@ -1,6 +1,6 @@
 let lya = require("../../../src/txfm.js");
 let conf = {
-  rules: require("path").join(__dirname, "static.json"),
+  rules: require("path").join(__dirname, "REPLACE_ME.json"),
   printResults: true,
   analysis: lya.preset.RWX_CHECKING,
 };

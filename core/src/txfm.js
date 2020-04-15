@@ -34,8 +34,8 @@ const systemPreset = {
     'module-locals',
     'module-returns'
   ],
-  DEPTH: 1,
-  EXCLUDES: ['toString', 'valueOf'],
+  DEPTH: 3,
+  EXCLUDES: ['toString', 'valueOf', 'prototype', 'keys'],
 }
 
 const lyaStartUp = (callerRequire, lyaConfig) => {
@@ -295,15 +295,6 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     return setProxy(noProxyOrig, handler, type)
   };
 
-  // When depth is !== 0 it wraps the objects in a proxy
-  const levelWrapping = (obj, name, handler) => {
-    if (lyaConfig.depth && obj !== null) {
-      return uniqueWrap(obj, handler, name, 'object');
-    } else {
-      return obj;
-    }
-  }
-
   const getValues = (obj) => {
     if (Object.keys(obj).length) {
       return Object.keys(obj);
@@ -314,44 +305,31 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 
   // We wrap every function on global obj that exists in default-names.json
   // Returns the proxy obj we want
-  // TODO: Combine objTypeAction and proxyWrap // cleanup
-  const objTypeAction = (obj, field, handler, objName, depth) => {
-    let localGlobal = {};
-    if (Object.prototype.hasOwnProperty.call(obj, field)) {
-      const objType = typeof obj[field];
-      const saveName = objName + '.' + field;
-      if (objType === 'object') {
-        if (depth && obj[field] !== null) {
-          depth--;
-          localGlobal[field] = proxyWrap(handler, obj[field], saveName, depth);
-        } else {
-          localGlobal[field] = obj[field];
-        }
-          localGlobal[field] = levelWrapping(localGlobal[field], saveName, handler);
-      } else if (objType === 'function') {
-        localGlobal[field] = uniqueWrap(obj[field], handler, saveName, objType)
-      } else if (objType === 'number' || objType === 'string') {
-        globalNames.set(obj[field], saveName);
-        localGlobal[field] = obj[field];
-      }
-    }
-    return localGlobal[field];
-  };
+  const proxyWrap = function(obj, handler, name, depth) {
+    if (depth === 0 || obj === null) {
+      return obj;
+    };
+    depth--;
+    const type = typeof obj;
+    let localObj = {};
+    if (type === 'function') {
+      localObj = uniqueWrap(obj, handler, name, type);
+    } else if (type === 'object') {
+      for (const field of getValues(obj)) {
+        if (!excludes.has(field)) {
+          const saveName = name + '.' + field;
+          localObj[field] = proxyWrap(obj[field], handler,
+            saveName, depth);
+        };
+      };
+      localObj = uniqueWrap(localObj, handler, name, type);
+    } else if (type === 'number' || type === 'string') {
+      localObj = obj;
+      globalNames.set(obj, name);
+    };
 
-  const proxyWrap = function(handler, origGlobal, saveName, depth) {
-    const objType = typeof origGlobal;
-    let localGlobal = {};
-    if (objType === 'function') {
-      localGlobal = uniqueWrap(origGlobal, handler, saveName, objType);
-    } else if (objType === 'object') {
-      for (const name of getValues(origGlobal)) {
-        localGlobal[name] = objTypeAction(origGlobal, name, handler,
-          saveName, depth);
-      }
-      localGlobal = uniqueWrap(localGlobal, handler, saveName, objType);
-    }
-    return localGlobal;
-  };
+    return localObj;
+  }
 
   const createGlobal = (name) => {
     if (global[name] !== undefined) {
@@ -359,8 +337,11 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
         return global[name];
       }
       const depth = lyaConfig.depth;
-      const proxyObj = proxyWrap(createHandler('node-globals'), global[name], name, depth);
-      objectPath.set(proxyObj, moduleName[env.requireLevel]);
+      const proxyObj = proxyWrap(global[name], createHandler('node-globals'),
+        name, depth);
+      if (name !== 'Infinity' && name!== 'NaN') {
+        objectPath.set(proxyObj, moduleName[env.requireLevel]);
+      }
       return proxyObj;
     }
     return 0;
