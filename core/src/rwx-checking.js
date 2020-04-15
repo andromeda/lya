@@ -21,7 +21,7 @@ const getAnalysisData = () => {
   try {
     dynamicData = require(appDir);
   } catch (e) {
-    throw new Error('The dynamic.json file was not found!');
+    throw new Error(appDir + ' file was not found!');
   }
   return dynamicData;
 };
