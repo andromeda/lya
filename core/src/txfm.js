@@ -26,7 +26,7 @@ const systemPreset = {
   // TODO: Rewrite flags structure
   WITH_ENABLE : true,
   INPUT_STRING: true,
-  DEBUG_FLAG: false,
+  DEBUG: false,
   TRACKING: [
     'user-globals',
     'es-globals',
@@ -421,7 +421,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       getPrologue() + script;
     const wrappedScript = originalWrap(script).replace('dirname)',
       'dirname, localGlobal, withGlobal)');
-    if (lyaConfig.debugFlag) {
+    if (lyaConfig.debug) {
       console.log(wrappedScript);
     }
     return wrappedScript;
@@ -605,8 +605,8 @@ module.exports = {
       systemPreset.WITH_ENABLE;
     conf.inputString = conf.inputString === false ? conf.inputString:
       systemPreset.INPUT_STRING;
-    conf.debugFlag = conf.debugFlag ? conf.debugFlag :
-      systemPreset.DEBUG_FLAG;
+    conf.debug = conf.debug ? conf.debug :
+      systemPreset.DEBUG;
     conf.track = conf.dontTrack ? systemPreset.TRACKING.filter((e) =>
       !conf.dontTrack.includes(e)) : systemPreset.TRACKING;
     conf.depth = conf.depth ? conf.depth : systemPreset.DEPTH;
