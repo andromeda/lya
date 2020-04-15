@@ -1,8 +1,0 @@
-{
-  "main": {
-    "require('./m1.js').valueOf": "input: no-input => output: object",
-    "require('./m1.js').toString": "input: no-input => output: string",
-    "require('fs').createWriteStream": "input: 0.string 1.object  => output: object"
-  },
-  "m1.js": {}
-}
