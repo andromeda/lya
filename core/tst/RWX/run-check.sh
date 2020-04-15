@@ -1,13 +1,13 @@
 #!/bin/bash
 
-GT="static" # ground truth can be: static, dynamic, correct
+GROUND_TRUTH="${GROUND_TRUTH:-static}" # ground truth can be: static, dynamic, correct
 
 analysis() {
   # Dynamic analysis comes from a different segment so that
   # static analysis does not get confused
-  t="$(echo $1 | sed 's;/;:;')"
+  t="$(echo $1 | sed 's;/;;' | sed 's;$;:;')"
   cat correct.pwd.json | sed "s;PWD_REPLACE;$(pwd);" > correct.json
-  cat ../prologue-check.lya ../epilogue.lya | sed "s/GROUND_TRUTH/$GT/" > generated.test
+  cat ../prologue-check.lya ../epilogue.lya | sed "s/GROUND_TRUTH/$GROUND_TRUTH/" > generated.test
   # Replace node with cat to see the generated script
   node generated.test 2>&1 > /dev/null | sed "s;^;$t  ;"
   # run main and compare results with static
