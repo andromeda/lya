@@ -34,8 +34,9 @@ const systemPreset = {
     'module-locals',
     'module-returns'
   ],
+  REMOVE_JSON: [],
   DEPTH: 3,
-  EXCLUDES: ['toString', 'valueOf', 'prototype', 'keys'],
+  EXCLUDES: ['toString', 'valueOf', 'prototype'],
 }
 
 const lyaStartUp = (callerRequire, lyaConfig) => {
@@ -313,6 +314,14 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     const type = typeof obj;
     let localObj = {};
     if (type === 'function') {
+      //let tempObj = {};
+      //for (const field of getValues(obj)) {
+      //  if (!excludes.has(field)) {
+        //  const saveName = name + '.' + field;
+        //  tempObj[field] = proxyWrap(obj[field], handler,
+          //  saveName, depth);
+        //};
+      //};
       localObj = uniqueWrap(obj, handler, name, type);
     } else if (type === 'object') {
       for (const field of getValues(obj)) {
@@ -598,7 +607,8 @@ module.exports = {
     }
     // TODO: maybe exapand to a local
     // we can change the name 'removejson' to 'excludes', 'excluded' or 'except'
-    conf.removejson = conf.removejson || [];
+    conf.removejson = conf.removejson ? conf.removejson :
+      systemPreset.REMOVE_JSON;
     // TODO: create a function that assigns default values to the config (which
     // should be first parameterized by individual analysis)
     conf.withEnable = conf.withEnable === false ? conf.withEnable :
