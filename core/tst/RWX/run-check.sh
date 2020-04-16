@@ -9,7 +9,7 @@ analysis() {
   cat correct.pwd.json | sed "s;PWD_REPLACE;$(pwd);" > correct.json
   cat ../prologue-check.lya ../epilogue.lya | sed "s/GROUND_TRUTH/$GROUND_TRUTH/" > generated.test
   # Replace node with cat to see the generated script
-  node generated.test 2>&1 > /dev/null | sed "s;^;$t  ;"
+  node generated.test 2>&1 > /dev/null | sed "s;^;$t  ;" | grep correct
   # run main and compare results with static
   # node -e 'require("assert").deepStrictEqual(require("./dynamic.json"), require("./correct.json"));'
   # node -e 'var eq = require("lodash.isequal"); var c = require("./correct.json"); var d = require("./dynamic.json"); if (!eq(c, d)) { console.log(require("json-diff").diffString(c, d)); process.exit(-1); }' | nl
