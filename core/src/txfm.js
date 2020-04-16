@@ -37,6 +37,7 @@ const systemPreset = {
   REMOVE_JSON: [],
   DEPTH: 3,
   EXCLUDES: ['toString', 'valueOf', 'prototype'],
+  INCLUDE: null,
 }
 
 const lyaStartUp = (callerRequire, lyaConfig) => {
@@ -425,7 +426,12 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   };
 
   // extend wrap to take additional argument
+  let originalScript;
   Module.wrap = (script) => {
+    if (lyaConfig.include) {
+      originalScript = originalWrap(script);
+    };
+
     script = lyaConfig.withEnable ? getPrologue() + script + '}' :
       getPrologue() + script;
     const wrappedScript = originalWrap(script).replace('dirname)',
@@ -438,6 +444,11 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 
   // We export the name of the curr module and pass proxy to the final function
   vm.runInThisContext = function(code, options) {
+    if (lyaConfig.include &&
+      !lyaConfig.include.includes(options['filename'])) {
+      return originalRun(originalScript, options);
+    }
+
     const codeToRun = originalRun(code, options);
     env.requireLevel++;
     moduleName[env.requireLevel] = options['filename'];
@@ -450,25 +461,29 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 
   // We wrap the result in the wrapper function
   Module.prototype.require = function(...args) {
-    const path = args[0];
+    if (lyaConfig.include &&
+      !lyaConfig.include.includes(moduleName[env.requireLevel])) {
+      return originalRequire.apply(this, args);
+    }
+    const importName = args[0];
     let moduleExports = originalRequire.apply(this, args);
     const type = typeof moduleExports;
 
     if (type !== 'boolean' && type !== 'symbol' &&
           type !== 'number' && type !== 'string') {
       if (!objectName.has(moduleExports)) {
-        objectName.set(moduleExports, 'require(\'' + path + '\')');
+        objectName.set(moduleExports, 'require(\'' + importName + '\')');
         objectPath.set(moduleExports, moduleName[env.requireLevel]);
         if (lyaConfig.track.includes('module-returns')) {
           moduleExports = setProxy(moduleExports, exportHandler, type);
         };
         if (env.requireLevel !== 0 &&
-          nativeModules.indexOf(path) === -1) {
+          nativeModules.indexOf(importName) === -1) {
           env.requireLevel--;
         }
       } else {
         moduleExports = setProxy(moduleExports, exportHandler, type);
-        objectName.set(moduleExports, 'require(\'' + path + '\')');
+        objectName.set(moduleExports, 'require(\'' + importName + '\')');
         objectPath.set(moduleExports, moduleName[env.requireLevel]);
       }
     }
@@ -622,6 +637,10 @@ module.exports = {
     conf.depth = conf.depth ? conf.depth : systemPreset.DEPTH;
     conf.excludes = conf.excludes ? conf.excludes :
       systemPreset.EXCLUDES;
+    // NOTE: Just pass the absolute path of the module you
+    // want to include in analysis.
+    conf.include = conf.include ? conf.include :
+      systemPreset.INCLUDE;
     return lyaStartUp(origRequire, conf);
   },
 };
