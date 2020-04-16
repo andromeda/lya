@@ -26,7 +26,7 @@ const systemPreset = {
   // TODO: Rewrite flags structure
   WITH_ENABLE : true,
   INPUT_STRING: true,
-  DEBUG_FLAG: false,
+  DEBUG: false,
   TRACKING: [
     'user-globals',
     'es-globals',
@@ -34,8 +34,9 @@ const systemPreset = {
     'module-locals',
     'module-returns'
   ],
+  REMOVE_JSON: [],
   DEPTH: 3,
-  EXCLUDES: ['toString', 'valueOf', 'prototype', 'keys'],
+  EXCLUDES: ['toString', 'valueOf', 'prototype'],
 }
 
 const lyaStartUp = (callerRequire, lyaConfig) => {
@@ -313,6 +314,14 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     const type = typeof obj;
     let localObj = {};
     if (type === 'function') {
+      //let tempObj = {};
+      //for (const field of getValues(obj)) {
+      //  if (!excludes.has(field)) {
+        //  const saveName = name + '.' + field;
+        //  tempObj[field] = proxyWrap(obj[field], handler,
+          //  saveName, depth);
+        //};
+      //};
       localObj = uniqueWrap(obj, handler, name, type);
     } else if (type === 'object') {
       for (const field of getValues(obj)) {
@@ -421,7 +430,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       getPrologue() + script;
     const wrappedScript = originalWrap(script).replace('dirname)',
       'dirname, localGlobal, withGlobal)');
-    if (lyaConfig.debugFlag) {
+    if (lyaConfig.debug) {
       console.log(wrappedScript);
     }
     return wrappedScript;
@@ -598,15 +607,16 @@ module.exports = {
     }
     // TODO: maybe exapand to a local
     // we can change the name 'removejson' to 'excludes', 'excluded' or 'except'
-    conf.removejson = conf.removejson || [];
+    conf.removejson = conf.removejson ? conf.removejson :
+      systemPreset.REMOVE_JSON;
     // TODO: create a function that assigns default values to the config (which
     // should be first parameterized by individual analysis)
     conf.withEnable = conf.withEnable === false ? conf.withEnable :
       systemPreset.WITH_ENABLE;
     conf.inputString = conf.inputString === false ? conf.inputString:
       systemPreset.INPUT_STRING;
-    conf.debugFlag = conf.debugFlag ? conf.debugFlag :
-      systemPreset.DEBUG_FLAG;
+    conf.debug = conf.debug ? conf.debug :
+      systemPreset.DEBUG;
     conf.track = conf.dontTrack ? systemPreset.TRACKING.filter((e) =>
       !conf.dontTrack.includes(e)) : systemPreset.TRACKING;
     conf.depth = conf.depth ? conf.depth : systemPreset.DEPTH;
