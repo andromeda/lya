@@ -71,6 +71,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   const globalNames = new Map();
   const withProxy = new WeakMap();
   const passedOver = new Map();
+  const clonedFunctions = new Map();
 
   // This is for write in global, y = 1 etc..
   const candidateGlobs = new Set();
@@ -160,6 +161,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
         const currentModule = objectPath.get(target);
         const storeName = globalNames.has(name) ? globalNames.get(name)
           : globalNames.has(target[name]) ? globalNames.get(target[name])
+          : methodNames.has(target[name]) ? methodNames.get(target[name])
           : methodNames.has(target) ? methodNames.get(target)
           : null;
 
@@ -322,17 +324,18 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     const type = typeof obj;
     let localObj = {};
     if (type === 'function') {
-      //let tempObj = {};
-      //for (const field of getValues(obj)) {
-        //if (!excludes.has(field)) {
-          //const saveName = name + '.' + field;
-          //const fieldType = typeof field;
-          //if (fieldType === 'number' || fieldType === 'string') {
-            //proxyWrap(obj[field], handler, saveName, depth);
-          //}
-        //};
-      //};
-      localObj = uniqueWrap(obj, handler, name, type);
+        if (clonedFunctions.has(name)) {
+          localObj = clonedFunctions.get(name);
+          for (const field of getValues(obj)) {
+          if (!lyaConfig.fields.excludes.has(field)) {
+            const saveName = name + '.' + field;
+            localObj[field] = proxyWrap(obj[field], handler, saveName, depth);
+          };
+        };
+        localObj = uniqueWrap(localObj, handler, name, type);
+      } else {
+        localObj = uniqueWrap(obj, handler, name, type);
+      }
     } else if (type === 'object') {
       for (const field of getValues(obj)) {
         if (!lyaConfig.fields.excludes.has(field)) {
@@ -398,6 +401,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       return prologue;
     }
     generateGlobals();
+    cloneFunctions();
     return setPrologue();
   };
 
@@ -425,6 +429,52 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     return group;
   };
 
+  const needNew = [
+    'ArrayBuffer',
+    'Float32Array',
+    'Float64Array',
+    'Int16Array',
+    'Int32Array',
+    'Int8Array',
+    'Map',
+    'Set',
+    'Uint8Array',
+    'Uint16Array',
+    'Uint32Array',
+    'Uint8ClampedArray',
+    'Proxy',
+    'WeakMap',
+    'WeakSet'
+  ];
+
+  const getClone = (obj, name) => {
+    let _obj;
+    if (needNew.includes(name)) {
+      _obj = function (...args) {
+       return new obj(...args);
+     };
+   } else {
+     _obj = function (...args) {
+       return obj.call(this, ...args);
+     };
+   }
+
+    Object.defineProperty(_obj, 'name', {value: name});
+    return _obj;
+  };
+
+  const cloneFunctions = () => {
+    for (topClass in defaultNames.globals) {
+      defaultNames.globals[topClass].filter((e) => {
+        if (typeof global[e] === 'function' && e !== 'Promise') {
+          return e;
+        };}).forEach((e) => {
+          clonedFunctions.set(e, getClone(global[e], e));
+      });
+
+    }
+
+  }
   // User can remove things from json file that create conf
   const generateGlobals = () => {
     // flatten globals under defaultNames.globals.*
