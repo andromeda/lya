@@ -24,20 +24,27 @@ const preset = {
 
 const systemPreset = {
   // TODO: Rewrite flags structure
-  WITH_ENABLE : true,
   INPUT_STRING: true,
-  DEBUG: false,
-  TRACKING: [
-    'user-globals',
-    'es-globals',
-    'node-globals',
-    'module-locals',
-    'module-returns'
-  ],
-  REMOVE_JSON: [],
+  PRINT_CODE: false,
   DEPTH: 3,
-  EXCLUDES: ['toString', 'valueOf', 'prototype'],
-  INCLUDE: null,
+  CONTEXT: {
+    enableWith: true,
+    include: [
+      'user-globals',
+      'es-globals',
+      'node-globals',
+      'module-locals',
+      'module-returns'],
+    excludes: [],
+  },
+  MODULES: {
+    include: null,
+    excludes: null,
+  },
+  FIELDS: {
+    include: true,
+    excludes: ['toString', 'valueOf', 'prototype'],
+  },
 }
 
 const lyaStartUp = (callerRequire, lyaConfig) => {
@@ -77,7 +84,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     };
     return _excludes;
   };
-  const excludes = makeExcludes(lyaConfig.excludes);
+  lyaConfig.fields.excludes = makeExcludes(lyaConfig.fields.excludes);
 
   // The counter for the wrapped objects and functions
   const counters = {
@@ -214,7 +221,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   const policy = require(lyaConfig.analysis)(env);
 
   const setProxy = (obj, handler, type) => {
-    if (excludes.has(methodNames.get(obj))) {
+    if (lyaConfig.fields.excludes.has(methodNames.get(obj))) {
       return obj;
     }
     counters.total++;
@@ -223,7 +230,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   }
   // We wrap the global variable in a proxy
   const createGlobalPr = () => {
-    if (!lyaConfig.track.includes('user-globals')) {
+    if (!lyaConfig.context.include.includes('user-globals')) {
       return global;
     }
 
@@ -256,7 +263,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     }
     methodNames.set(localCopy, moduleInputNames[count]);
     objectPath.set(localCopy, moduleName[env.requireLevel]);
-    if (!lyaConfig.track.includes('module-locals')) {
+    if (!lyaConfig.context.include.includes('module-locals')) {
       return localCopy;
     }
     const handler = createHandler('module-locals');
@@ -270,7 +277,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   const setLocalGlobal = () => {
     let localGlobal = {};
     localGlobal = passJSONFile(createGlobal, defaultNames.globals);
-    if (lyaConfig.track.includes('es-globals')) {
+    if (lyaConfig.context.include.includes('es-globals')) {
       localGlobal['proxyExportHandler'] = createHandler('es-globals');
     }
     localGlobal['proxyGlobal'] = createGlobalPr();
@@ -317,16 +324,18 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     if (type === 'function') {
       //let tempObj = {};
       //for (const field of getValues(obj)) {
-      //  if (!excludes.has(field)) {
-        //  const saveName = name + '.' + field;
-        //  tempObj[field] = proxyWrap(obj[field], handler,
-          //  saveName, depth);
+        //if (!excludes.has(field)) {
+          //const saveName = name + '.' + field;
+          //const fieldType = typeof field;
+          //if (fieldType === 'number' || fieldType === 'string') {
+            //proxyWrap(obj[field], handler, saveName, depth);
+          //}
         //};
       //};
       localObj = uniqueWrap(obj, handler, name, type);
     } else if (type === 'object') {
       for (const field of getValues(obj)) {
-        if (!excludes.has(field)) {
+        if (!lyaConfig.fields.excludes.has(field)) {
           const saveName = name + '.' + field;
           localObj[field] = proxyWrap(obj[field], handler,
             saveName, depth);
@@ -343,7 +352,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 
   const createGlobal = (name) => {
     if (global[name] !== undefined) {
-      if (!lyaConfig.track.includes('node-globals')) {
+      if (!lyaConfig.context.include.includes('node-globals')) {
         return global[name];
       }
       const depth = lyaConfig.depth;
@@ -378,7 +387,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   const setPrologue = () => {
     passJSONFile(setDeclaration, defaultNames.globals);
     prologue = 'let global = localGlobal["proxyGlobal"]\n' + prologue;
-    prologue = lyaConfig.withEnable ? 'with (withGlobal) {\n' + prologue
+    prologue = lyaConfig.context.enableWith ? 'with (withGlobal) {\n' + prologue
       : prologue;
     return prologue;
   };
@@ -395,10 +404,10 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   // User can remove things from json file that create conf
   const flattenAndSkip = (groups, under) => {
     groups.filter((e) => {
-      lyaConfig.removejson.indexOf(e)
+      lyaConfig.context.excludes.indexOf(e)
     }).forEach((e) => {
       for (const v in defaultNames[under][e]) {
-        if (!lyaConfig.removejson.indexOf(v)) {
+        if (!lyaConfig.context.excludes.indexOf(v)) {
           defaultNames[under][v] = true;
         }
       }
@@ -411,7 +420,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   const skipMe = (group) => {
     for (const v in group) {
       group[v] = group[v].filter((e) =>
-        !lyaConfig.removejson.includes(e));
+        !lyaConfig.context.excludes.includes(e));
     }
     return group;
   };
@@ -428,15 +437,15 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   // extend wrap to take additional argument
   let originalScript;
   Module.wrap = (script) => {
-    if (lyaConfig.include) {
+    if (lyaConfig.modules.include) {
       originalScript = originalWrap(script);
     };
 
-    script = lyaConfig.withEnable ? getPrologue() + script + '}' :
+    script = lyaConfig.context.enableWith ? getPrologue() + script + '}' :
       getPrologue() + script;
     const wrappedScript = originalWrap(script).replace('dirname)',
       'dirname, localGlobal, withGlobal)');
-    if (lyaConfig.debug) {
+    if (lyaConfig.printCode) {
       console.log(wrappedScript);
     }
     return wrappedScript;
@@ -444,8 +453,8 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 
   // We export the name of the curr module and pass proxy to the final function
   vm.runInThisContext = function(code, options) {
-    if (lyaConfig.include &&
-      !lyaConfig.include.includes(options['filename'])) {
+    if (lyaConfig.modules.include &&
+      !lyaConfig.modules.include.includes(options['filename'])) {
       return originalRun(originalScript, options);
     }
 
@@ -461,8 +470,8 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 
   // We wrap the result in the wrapper function
   Module.prototype.require = function(...args) {
-    if (lyaConfig.include &&
-      !lyaConfig.include.includes(moduleName[env.requireLevel])) {
+    if (lyaConfig.modules.include &&
+      !lyaConfig.modules.include.includes(moduleName[env.requireLevel])) {
       return originalRequire.apply(this, args);
     }
     const importName = args[0];
@@ -474,7 +483,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       if (!objectName.has(moduleExports)) {
         objectName.set(moduleExports, 'require(\'' + importName + '\')');
         objectPath.set(moduleExports, moduleName[env.requireLevel]);
-        if (lyaConfig.track.includes('module-returns')) {
+        if (lyaConfig.context.include.includes('module-returns')) {
           moduleExports = setProxy(moduleExports, exportHandler, type);
         };
         if (env.requireLevel !== 0 &&
@@ -545,7 +554,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
               apply: createHandler('module-returns').apply
             }, exportType);
             storePureFunctions.set(target[name], currFunction);
-            if (excludes.has(name)) {
+            if (lyaConfig.fields.excludes.has(name)) {
               policy.onRead(target, name, parentName, currModule);
               return Reflect.get(...arguments);
             };
@@ -621,26 +630,22 @@ module.exports = {
       console.error('Analysis file not found: ', conf.analysis);
     }
     // TODO: maybe exapand to a local
-    // we can change the name 'removejson' to 'excludes', 'excluded' or 'except'
-    conf.removejson = conf.removejson ? conf.removejson :
-      systemPreset.REMOVE_JSON;
     // TODO: create a function that assigns default values to the config (which
-    // should be first parameterized by individual analysis)
-    conf.withEnable = conf.withEnable === false ? conf.withEnable :
-      systemPreset.WITH_ENABLE;
+    conf.context = conf.context ? conf.context :
+      systemPreset.CONTEXT;
+    conf.context.enableWith = conf.context.enableWith ? conf.context.enableWith :
+      systemPreset.CONTEXT.enableWith;
+    conf.context.include = conf.context.excludes ? systemPreset.CONTEXT.include.filter((e) =>
+      !conf.context.excludes.includes(e)) : systemPreset.CONTEXT.include;
+    conf.fields = conf.fields ? conf.fields :
+      systemPreset.FIELDS;
+    conf.modules = conf.modules ? conf.modules :
+      systemPreset.MODULES;
     conf.inputString = conf.inputString === false ? conf.inputString:
       systemPreset.INPUT_STRING;
-    conf.debug = conf.debug ? conf.debug :
-      systemPreset.DEBUG;
-    conf.track = conf.dontTrack ? systemPreset.TRACKING.filter((e) =>
-      !conf.dontTrack.includes(e)) : systemPreset.TRACKING;
+    conf.printCode = conf.printCode ? conf.printCode :
+      systemPreset.PRINT_CODE;
     conf.depth = conf.depth ? conf.depth : systemPreset.DEPTH;
-    conf.excludes = conf.excludes ? conf.excludes :
-      systemPreset.EXCLUDES;
-    // NOTE: Just pass the absolute path of the module you
-    // want to include in analysis.
-    conf.include = conf.include ? conf.include :
-      systemPreset.INCLUDE;
     return lyaStartUp(origRequire, conf);
   },
 };
