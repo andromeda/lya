@@ -1,1 +1,2 @@
-setImmediate();
+var foo = () => 'foo';
+setImmediate(foo);
