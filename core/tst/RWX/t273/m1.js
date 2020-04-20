@@ -1,3 +1,4 @@
+var foo = {};
 propertyIsEnumerable.length = {};
 propertyIsEnumerable.name = {};
-propertyIsEnumerable();
+foo.propertyIsEnumerable();

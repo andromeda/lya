@@ -3,4 +3,4 @@ _ = propertyIsEnumerable.length;
 _ = propertyIsEnumerable.name;
 propertyIsEnumerable.length = {};
 propertyIsEnumerable.name = {};
-propertyIsEnumerable();
+_.propertyIsEnumerable();

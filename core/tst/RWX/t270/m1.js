@@ -1,1 +1,2 @@
-propertyIsEnumerable();
+var foo = {}
+foo.propertyIsEnumerable();
