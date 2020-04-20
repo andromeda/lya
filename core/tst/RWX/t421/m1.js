@@ -5,4 +5,4 @@ _ = WeakSet.prototype;
 WeakSet.length = {};
 WeakSet.name = {};
 WeakSet.prototype = {};
-WeakSet();
+new WeakSet();

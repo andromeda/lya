@@ -16,5 +16,5 @@ _ = Symbol.toPrimitive;
 _ = Symbol.toStringTag;
 _ = Symbol.unscopables;
 Symbol();
-Symbol.for();
-Symbol.keyFor();
+Symbol.for('foo');
+Symbol.keyFor(Symbol.iterator);

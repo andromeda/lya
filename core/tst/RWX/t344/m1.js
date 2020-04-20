@@ -3,4 +3,5 @@ _ = toLocaleString.length;
 _ = toLocaleString.name;
 toLocaleString.length = {};
 toLocaleString.name = {};
-toLocaleString();
+var foo = {};
+foo.toLocaleString();

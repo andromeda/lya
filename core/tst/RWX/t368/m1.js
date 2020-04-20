@@ -1,1 +1,1 @@
-Uint32Array();
+new Uint32Array();
