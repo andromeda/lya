@@ -1,5 +1,7 @@
 let env;
 
+const uniqueValid = new Set();
+const uniqueInvalid = new Set();
 const chalk = require('chalk');
 let countValid = 0;
 let countInvalid = 0;
@@ -34,15 +36,18 @@ const checkRWX = (storedCalls, truename, modeGrid) => {
     if (Object.prototype.hasOwnProperty.
         call(storedCalls, truename) === false) {
       log("Invalid access in: " + truename + " and mode " + mode, "red");
+      uniqueInvalid.add(truename+mode);
       countInvalid++;
     } else {
 
       let permissions = storedCalls[truename];
       if (!permissions.includes(mode)) {
         log("Invalid access in: " + truename + " and mode " + mode, "red");
+        uniqueInvalid.add(truename+mode);
         countInvalid++;
       } else {
         log("Valid access in: " + truename + " and mode " + mode, "green");
+        uniqueValid.add(truename+mode);
         countValid++;
       }
     }
@@ -121,7 +126,9 @@ let printExtended = () => {
 const onExit = () => {
   if (env.conf.printResults) {
     let total = env.counters.total;
-    console.error(total, countValid, countInvalid, +(countInvalid / total).toFixed(5), countValid > 0? 'correct' : '');
+    console.error(total, uniqueValid.size, uniqueInvalid.size,
+      countValid, countInvalid, +(countInvalid / total).toFixed(5),
+        countValid > 0? 'correct' : '');
     printExtended();
   }
 }
