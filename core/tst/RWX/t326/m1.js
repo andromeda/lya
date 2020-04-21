@@ -1,3 +1,3 @@
 Symbol();
-Symbol.for();
-Symbol.keyFor();
+Symbol.for('foo');
+Symbol.keyFor(Symbol.iterator);

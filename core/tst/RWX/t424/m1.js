@@ -1,9 +1,9 @@
-Buffer();
-Buffer.from();
-Buffer.alloc();
-Buffer.allocUnsafe();
-Buffer.allocUnsafeSlow();
-Buffer.isBuffer();
+Buffer('foo');
+Buffer.from('foo');
+Buffer.alloc(1);
+Buffer.allocUnsafe(1);
+Buffer.allocUnsafeSlow(1);
+Buffer.isBuffer('foo');
 Buffer.compare();
 Buffer.isEncoding();
 Buffer.concat();

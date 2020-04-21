@@ -2,7 +2,9 @@ let lya = require("../../../../../src/txfm.js");
 let lyaConfig = {
   SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
   analysis: lya.preset.RWX,
-  removejson: ['toString'],
+  modules: { 
+    include: ['/home/grigorisntousakis/lya/core/node_modules/array-first/index.js']
+  }
 };
 require = lya.configRequire(require, lyaConfig);
 

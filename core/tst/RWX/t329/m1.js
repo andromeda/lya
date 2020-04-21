@@ -1,3 +1,6 @@
+Symbol();
+Symbol.for('foo');
+Symbol.keyFor(Symbol.iterator);
 Symbol.length = {};
 Symbol.name = {};
 Symbol.prototype = {};
@@ -14,6 +17,3 @@ Symbol.split = {};
 Symbol.toPrimitive = {};
 Symbol.toStringTag = {};
 Symbol.unscopables = {};
-Symbol();
-Symbol.for();
-Symbol.keyFor();

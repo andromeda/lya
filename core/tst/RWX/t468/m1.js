@@ -2,4 +2,5 @@ var _;
 _ = setImmediate.length;
 _ = setImmediate.name;
 _ = setImmediate.prototype;
-setImmediate();
+var foo = () => 'foo';
+setImmediate(foo);

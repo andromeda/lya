@@ -1,9 +1,10 @@
-Reflect.defineProperty();
-Reflect.deleteProperty();
-Reflect.apply();
+var foo = () => 'foo';
+//Reflect.defineProperty(foo);
+Reflect.deleteProperty(foo);
+Reflect.apply(foo);
 Reflect.construct();
-Reflect.get();
-Reflect.getOwnPropertyDescriptor();
+//Reflect.get();
+//Reflect.getOwnPropertyDescriptor(foo);
 Reflect.getPrototypeOf();
 Reflect.has();
 Reflect.isExtensible();

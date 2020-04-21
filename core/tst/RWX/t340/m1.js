@@ -1,1 +1,2 @@
-toLocaleString();
+var foo = {};
+foo.toLocaleString();

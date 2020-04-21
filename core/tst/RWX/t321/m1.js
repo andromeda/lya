@@ -8,4 +8,4 @@ _ = String.raw;
 String();
 String.fromCharCode();
 String.fromCodePoint();
-String.raw();
+String.raw`Hi\u000A!`;

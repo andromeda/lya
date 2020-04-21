@@ -1,4 +1,4 @@
 Set.length = {};
 Set.name = {};
 Set.prototype = {};
-Set();
+new Set();

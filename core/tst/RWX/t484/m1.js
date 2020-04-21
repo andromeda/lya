@@ -5,4 +5,5 @@ _ = setTimeout.prototype;
 setTimeout.length = {};
 setTimeout.name = {};
 setTimeout.prototype = {};
-setTimeout();
+var foo = () => 'foo';
+setTimeout(foo);

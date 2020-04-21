@@ -3,4 +3,4 @@ _ = Uint8Array.length;
 _ = Uint8Array.name;
 _ = Uint8Array.prototype;
 _ = Uint8Array.BYTES_PER_ELEMENT;
-Uint8Array();
+new Uint8Array();

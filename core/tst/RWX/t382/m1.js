@@ -1,1 +1,1 @@
-Uint8ClampedArray();
+new Uint8ClampedArray();

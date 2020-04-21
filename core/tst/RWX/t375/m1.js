@@ -1,1 +1,1 @@
-Uint8Array();
+new Uint8Array();

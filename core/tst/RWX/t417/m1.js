@@ -1,1 +1,1 @@
-WeakSet();
+new WeakSet();

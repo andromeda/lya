@@ -4,5 +4,5 @@ _ = Proxy.name;
 _ = Proxy.arguments;
 _ = Proxy.caller;
 _ = Proxy.revocable;
-Proxy();
-Proxy.revocable();
+new Proxy({}, {});
+Proxy.revocable({}, {});

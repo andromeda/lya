@@ -1,3 +1,4 @@
 toLocaleString.length = {};
 toLocaleString.name = {};
-toLocaleString();
+var foo = {};
+foo.toLocaleString();

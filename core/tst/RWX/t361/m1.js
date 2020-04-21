@@ -1,1 +1,1 @@
-Uint16Array();
+new Uint16Array();

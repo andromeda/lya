@@ -3,4 +3,5 @@ _ = valueOf.length;
 _ = valueOf.name;
 valueOf.length = {};
 valueOf.name = {};
-valueOf();
+var foo= {};
+foo.valueOf();

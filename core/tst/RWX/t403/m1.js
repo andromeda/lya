@@ -1,1 +1,2 @@
-valueOf();
+var foo= {};
+foo.valueOf();

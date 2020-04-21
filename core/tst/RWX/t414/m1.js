@@ -5,4 +5,4 @@ _ = WeakMap.prototype;
 WeakMap.length = {};
 WeakMap.name = {};
 WeakMap.prototype = {};
-WeakMap();
+new WeakMap();
