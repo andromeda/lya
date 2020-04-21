@@ -12,8 +12,8 @@ analysis() {
   t="$(echo $1 | sed 's;/;;' | sed 's;$;:;')"
   m=$(cat package.json | jq .main | tr -d '"')
   l=
-
-  java -jar $MIR_SA $m | grep "^{" | jq . > static.json
+  
+  java -jar $MIR_SA $PRE$m | grep "^{" | jq . > static.json
   # java -Dmaybe.reaching=true -jar $MIR_SA . | grep "^{" | jq .  > static.json
   # java -Dbase.stars=true -jar $MIR_SA . | grep "^{" | jq .  > static.json
   # java -Dprop.stars=true -jar $MIR_SA . | grep "^{" | jq .  > static.json
@@ -44,7 +44,7 @@ let conf = {
   analysis: lya.preset.RWX_CHECKING,
   rules: require("path").join(__dirname, "$GROUND_TRUTH.json"),
   modules: {
-    includes: [require.resolve("$nm")]
+    include: [require.resolve("$nm")]
   },
   printResults: true,
 };
