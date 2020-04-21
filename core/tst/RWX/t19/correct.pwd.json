@@ -18,14 +18,17 @@
     "console.log": "rx",
     "require": "rx",
     "require('./m3.js')": "i",
-    "require('./m4.js')": "i"
+    "require('./m4.js')": "i",
+    "Date": "rx"
   },
   "PWD_REPLACE/m3.js": {
     "console": "r",
-    "console.log": "rx"
+    "console.log": "rx",
+    "Date": "rx"
   },
   "PWD_REPLACE/m4.js": {
     "console": "r",
-    "console.log": "rx"
+    "console.log": "rx",
+    "Date": "rx"
   }
 }
