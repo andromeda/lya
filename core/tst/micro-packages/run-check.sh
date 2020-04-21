@@ -8,6 +8,7 @@ GROUND_TRUTH="static" # There is no correct here, and dynamic is of little use?
 PRE="_"
 
 analysis() {
+  cd $1
   t="$(echo $1 | sed 's;/;;' | sed 's;$;:;')"
   m=$(cat package.json | jq .main | tr -d '"')
   l=
@@ -58,20 +59,18 @@ PROLOGUE
 
   npm test 2>&1 > /dev/null | sed "s;^;$t  ;" | grep correct
 
+  cd ..
+
   # run main and compare results with static
   # node -e 'require("assert").deepStrictEqual(require("./dynamic.json"), require("./correct.json"));'
   # node -e 'var eq = require("lodash.isequal"); var c = require("./correct.json"); var d = require("./dynamic.json"); if (!eq(c, d)) { console.log(require("json-diff").diffString(c, d)); process.exit(-1); }' | nl
 }
 
 if [ "$#" -eq 1 ]; then
-  cd $1
   analysis $1
-  cd ..
 else
   for d in t?/ t??/ t???/; do
-    cd $d;
     analysis $d
-    cd ..
   done
 fi
 
