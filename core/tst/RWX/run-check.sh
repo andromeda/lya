@@ -1,6 +1,8 @@
 #!/bin/bash
 
-MIR_SA=${MIR_PATH:-~/wrk/andromeda/mir/static-analysis/mir-sa.jar}
+# Note that git rev-parse will not work _inside_ submodules
+MIR_SA=${MIR_PATH:-"$(git rev-parse --show-toplevel)/core/tst/tools/mir-sa.jar"}
+[ ! -f $MIR_SA ] && ../tools/fetch.sh
 GROUND_TRUTH="${GROUND_TRUTH:-static}" # ground truth can be: static, dynamic, correct
 
 analysis() {
@@ -28,7 +30,7 @@ if [ "$#" -eq 1 ]; then
   analysis $1
   cd ..
 else
-  for d in t*/; do
+  for d in t?/ t??/ t???/; do
     cd $d;
     analysis $d
     cd ..

@@ -3,8 +3,9 @@
 set -o pipefail
 set -e
 
-# Note that this is either absolute or relative to `t*/.` !
-MIR_SA=${MIR_PATH:-~/wrk/andromeda/mir/static-analysis/mir-sa.jar}
+# Note that git rev-parse will not work _inside_ submodules
+MIR_SA=${MIR_PATH:-"$(git rev-parse --show-toplevel)/core/tst/tools/mir-sa.jar"}
+[ ! -f $MIR_SA ] && ../tools/fetch.sh
 
 analysis() {
   cat correct.pwd.json | sed "s;PWD_REPLACE;$(pwd);" > correct.json
