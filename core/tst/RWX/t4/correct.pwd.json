@@ -15,6 +15,7 @@
     "Int16Array": "rx",
     "Int32Array": "rx",
     "Int8Array": "rx",
+    "Object.create": "rx",
     "isFinite": "rx",
     "isNaN": "rx",
     "JSON": "r",
