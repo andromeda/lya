@@ -350,6 +350,8 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     } else if (type === 'number' || type === 'string') {
       localObj = obj;
       globalNames.set(obj, name);
+    } else {
+      localObj = obj;
     };
 
     return localObj;
