@@ -330,6 +330,8 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
           if (!lyaConfig.fields.excludes.has(field)) {
             const saveName = name + '.' + field;
             localObj[field] = proxyWrap(obj[field], handler, saveName, depth);
+          } else {
+            localObj[field] = obj[field];
           };
         };
         localObj = uniqueWrap(localObj, handler, name, type);
@@ -474,14 +476,16 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       getPrologue() + script;
     const wrappedScript = originalWrap(script).replace('dirname)',
       'dirname, localGlobal, withGlobal)');
-    if (lyaConfig.printCode) {
-      console.log(wrappedScript);
-    }
+
     return wrappedScript;
   };
 
   // We export the name of the curr module and pass proxy to the final function
   vm.runInThisContext = function(code, options) {
+    if (lyaConfig.printCode) {
+      console.log('Module: ', options['filename']);
+      console.log(code);
+    }
     if (lyaConfig.modules.include &&
       !lyaConfig.modules.include.includes(options['filename'])) {
       return originalRun(originalScript, options);
@@ -662,8 +666,8 @@ module.exports = {
     // TODO: create a function that assigns default values to the config (which
     conf.context = conf.context ? conf.context :
       systemPreset.CONTEXT;
-    conf.context.enableWith = conf.context.enableWith ? conf.context.enableWith :
-      systemPreset.CONTEXT.enableWith;
+    conf.context.enableWith = conf.context.enableWith !== undefined ?
+      conf.context.enableWith : systemPreset.CONTEXT.enableWith;
     conf.context.include = conf.context.excludes ? systemPreset.CONTEXT.include.filter((e) =>
       !conf.context.excludes.includes(e)) : systemPreset.CONTEXT.include;
     conf.fields = conf.fields ? conf.fields :
