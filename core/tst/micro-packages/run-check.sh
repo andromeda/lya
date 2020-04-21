@@ -52,12 +52,10 @@ lya.configRequire(require, conf);
 module.exports = require("$nm");
 PROLOGUE
 
-  echo "$PLG"
+  echo "$PLG" | tee $m
 
-  cat <(echo "$PLG") $nm > $m
-
-
-  npm test 2>&1 > /dev/null | sed "s;^;$t  ;" | grep correct
+  # npm test 2>&1 > /dev/null | sed "s;^;$t  ;" | grep correct
+  npm test
 
   cd ..
 
@@ -69,7 +67,7 @@ PROLOGUE
 if [ "$#" -eq 1 ]; then
   analysis $1
 else
-  for d in t?/ t??/ t???/; do
+  for d in */; do
     analysis $d
   done
 fi
