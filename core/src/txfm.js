@@ -429,35 +429,15 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     return group;
   };
 
-  const needNew = [
-    'ArrayBuffer',
-    'Float32Array',
-    'Float64Array',
-    'Int16Array',
-    'Int32Array',
-    'Int8Array',
-    'Map',
-    'Set',
-    'Uint8Array',
-    'Uint16Array',
-    'Uint32Array',
-    'Uint8ClampedArray',
-    'Proxy',
-    'WeakMap',
-    'WeakSet'
-  ];
-
   const getClone = (obj, name) => {
     let _obj;
-    if (needNew.includes(name)) {
-      _obj = function (...args) {
-       return new obj(...args);
-     };
-   } else {
-     _obj = function (...args) {
-       return obj.call(this, ...args);
-     };
-   }
+    _obj = function (...args) {
+      if (new.target) {
+        return new obj(...args);
+      } else {
+        return obj.call(this, ...args);
+      }
+    };
 
     Object.defineProperty(_obj, 'name', {value: name});
     return _obj;
@@ -471,10 +451,9 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
         };}).forEach((e) => {
           clonedFunctions.set(e, getClone(global[e], e));
       });
+    };
+  };
 
-    }
-
-  }
   // User can remove things from json file that create conf
   const generateGlobals = () => {
     // flatten globals under defaultNames.globals.*
