@@ -183,7 +183,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
             return Reflect.set(...arguments);
           }
           policy.onWrite(target, name, value, currentModule, parentName, nameToStore);
-          if (methodNames.get(target) === 'global' || typeof value === 'number') {
+          if (parentName === 'global' || typeof value === 'number') {
             globalNames.set(name, nameToStore);
           }
         }
@@ -506,7 +506,8 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   // We wrap the result in the wrapper function
   Module.prototype.require = function(...args) {
     if (lyaConfig.modules.include &&
-      !lyaConfig.modules.include.includes(moduleName[env.requireLevel])) {
+      (!lyaConfig.modules.include.includes(moduleName[env.requireLevel]) ||
+      !lyaConfig.modules.include.includes(moduleName[env.requireLevel-1]))) {
       return originalRequire.apply(this, args);
     }
     const importName = args[0];
