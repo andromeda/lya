@@ -1,5 +1,13 @@
 #!/bin/bash
 
+
+update() {
+  cd $1
+  npm install
+  npm test
+  cd ..
+}
+
 git clone git@github.com:pluma/rtrn.git
 git clone git@github.com:substack/identity-function.git
 git clone git@github.com:LinusU/has-own-property.git     
@@ -26,3 +34,13 @@ cd onetime
 # revert to an earlier version
 git checkout 32bca382f5934c8fe7fd78bcef9ad16b3474948f
 cd ..
+
+if [ "$#" -eq 1 ]; then
+  update $1
+else
+  for d in */; do
+    update $d
+  done
+fi
+
+
