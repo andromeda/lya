@@ -5,11 +5,23 @@ MIR_SA=${MIR_PATH:-"$(git rev-parse --show-toplevel)/core/tst/tools/mir-sa.jar"}
 [ ! -f $MIR_SA ] && ../tools/fetch.sh
 GROUND_TRUTH="${GROUND_TRUTH:-static}" # ground truth can be: static, dynamic, correct
 
+tryGenCorrect() {
+    if [[ -f $CORRECT ]]; then
+      # echo $d
+    else
+      echo $d generating
+      java -jar $MIR_SA . | grep "^{" | jq . | sed "s;$PWD;PWD_REPLACE;" > correct.pwd.json
+    fi
+    cat correct.pwd.json | sed "s;PWD_REPLACE;$(pwd);" > correct.json
+}
+
 analysis() {
   # Dynamic analysis comes from a different segment so that
   # static analysis does not get confused
   t="$(echo $1 | sed 's;/;;' | sed 's;$;:;')"
-  cat correct.pwd.json | sed "s;PWD_REPLACE;$(pwd);" > correct.json
+  if [[ $GROUND_TRUTH == "correct" ]]; then
+    tryGenCorrect
+  fi
 
   # generate static
   java -jar $MIR_SA . | grep "^{" | jq .  > static.json
