@@ -3,6 +3,8 @@ let env;
 const uniqueValid = new Set();
 const uniqueInvalid = new Set();
 const chalk = require('chalk');
+const path = require('path');
+const fs = require('fs');
 let countValid = 0;
 let countInvalid = 0;
 let groundTruth;
@@ -17,7 +19,6 @@ let log = (str, color) => {
 // We need to get the path of the main module in order to find dynamic json
 const getAnalysisData = () => {
   // We save all the json data inside an object
-  const path = require('path');
   const appDir = env.conf.rules? env.conf.rules : path.join(path.dirname(require.main.filename), 'correct.json');
   let dynamicData;
   try {
@@ -124,12 +125,16 @@ let printExtended = () => {
 
 // onExit (toSave == place to save the result) --maybe make it module-local?
 const onExit = () => {
+  let total = env.counters.total;
+  let ratio = (+(countInvalid / total).toFixed(5));
+  let corr = countValid > 0? 'correct' : '';
+  let msg = `${total} ${uniqueValid.size} ${uniqueInvalid.size} ${countValid} ${countInvalid} ${ratio} ${corr}`;
   if (env.conf.printResults) {
-    let total = env.counters.total;
-    console.error(total, uniqueValid.size, uniqueInvalid.size,
-      countValid, countInvalid, +(countInvalid / total).toFixed(5),
-        countValid > 0? 'correct' : '');
+    console.error(msg);
     printExtended();
+  }
+  if (env.conf.appendStats) {
+    fs.appendFileSync(env.conf.appendStats, msg + '\n', 'utf-8');
   }
 }
 

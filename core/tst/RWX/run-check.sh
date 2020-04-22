@@ -6,9 +6,7 @@ MIR_SA=${MIR_PATH:-"$(git rev-parse --show-toplevel)/core/tst/tools/mir-sa.jar"}
 GROUND_TRUTH="${GROUND_TRUTH:-static}" # ground truth can be: static, dynamic, correct
 
 tryGenCorrect() {
-    if [[ -f $CORRECT ]]; then
-      # echo $d
-    else
+    if [[ ! -f $CORRECT ]]; then
       echo $d generating
       java -jar $MIR_SA . | grep "^{" | jq . | sed "s;$PWD;PWD_REPLACE;" > correct.pwd.json
     fi
@@ -31,7 +29,7 @@ analysis() {
 
   cat ../prologue-check.lya ../epilogue.lya | sed "s/GROUND_TRUTH/$GROUND_TRUTH/" > generated.test
   # Replace node with cat to see the generated script
-  node generated.test 2>&1 > /dev/null | sed "s;^;$t  ;" | grep correct
+  node generated.test 2>&1 > /dev/null | sed "s;^;$t  ;" # | grep correct
   # to correct output to CSV: cat results.txt | sed 's/correct//' | tr "'" ' ' | tr ':' ' ' | tr -s ' ' ',' | sed 's/,$//'
 
   # run main and compare results with static
