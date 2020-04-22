@@ -222,7 +222,6 @@ git clone git@github.com:nodeca/multimath
 
 git clone git@github.com:moment/luxon
 git clone git@github.com:date-fns/date-fns
-](http://momentjs.com
 git clone git@github.com:iamkun/dayjs
 git clone git@github.com:felixge/node-dateformat
 git clone git@github.com:samverschueren/tz-format
