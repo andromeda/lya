@@ -28,6 +28,9 @@ deep-bind
 get-value
 335 10 0 1022 0 0 correct
 
+group-array
+313 17 0 1890 0 0 correct
+
 has-key-deep
 312 2 0 2 0 0 correct
 
@@ -36,6 +39,9 @@ has-value
 
 he
 313 8 6 304 9 0.02875 correct
+
+identity-function // in order to play just install tape
+314 2 0 2 0 0 correct
 
 in-array
 312 2 0 2 0 0 correct
@@ -62,6 +68,9 @@ ndarray
 node-slug
 313 7 1 21 2 0.00639 correct
 
+node-stream-spigot // we get result even though test fails
+313 10 0 27 0 0 correct
+
 not-defined
 312 7 0 24 0 0 correct
 
@@ -83,11 +92,17 @@ periods
 property-validator
 312 10 0 20 0 0 correct
 
+rtrim
+312 2 0 2 0 0 correct
+
 schema-inspector
 312 5 0 5 0 0 correct
 
 set-value
 312 14 3 331 70 0.22436 correct
+
+syncthrough // just remove standard | snazzy from test
+337 10 2 22 2 0.00593 correct
 
 static-props
 312 5 2 22 2 0.00641 correct
@@ -103,5 +118,8 @@ time-stamp
 
 unordered-array-remove/
 312 2 0 2 0 0 correct
+
+zipmap
+314 9 3 43 6 0.01911 correct
 
 
