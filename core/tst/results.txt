@@ -68,4 +68,40 @@ not-defined
 once
 335 7 0 13 0 0 correct
 
+pad-left
+312 5 0 5 0 0 correct
+
+pad-left-simple
+312 4 0 8 0 0 correct
+
+parse-next-json-value
+335 5 0 5 0 0 correct
+
+periods
+312 1 14 14 14 0.04487 correct
+
+property-validator
+312 10 0 20 0 0 correct
+
+schema-inspector
+312 5 0 5 0 0 correct
+
+set-value
+312 14 3 331 70 0.22436 correct
+
+static-props
+312 5 2 22 2 0.00641 correct
+
+though2
+337 12 2 72 2 0.00593 correct
+
+though2-map
+312 6 0 14 0 0 correct
+
+time-stamp
+312 6 0 164 0 0 correct
+
+unordered-array-remove/
+312 2 0 2 0 0 correct
+
 
