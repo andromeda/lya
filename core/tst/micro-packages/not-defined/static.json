@@ -1,0 +1,9 @@
+{
+  "/home/grigoriosntousakis/lya/core/tst/micro-packages/not-defined/_not-defined.js": {
+    "Object": "r",
+    "Object.keys": "rx",
+    "isNaN": "rx",
+    "module": "r",
+    "module.exports": "w"
+  }
+}

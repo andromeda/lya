@@ -1,0 +1,4 @@
+--require should
+--reporter min
+--bail
+--recursive

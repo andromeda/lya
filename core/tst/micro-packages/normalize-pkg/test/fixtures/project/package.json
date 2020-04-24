@@ -1,0 +1,10 @@
+{
+  "name": "test-project",
+  "private": true,
+  "description": "",
+  "version": "0.0.0",
+  "repository": {
+    "url": "https://github.com/jonschlinkert/test-project.git"
+  },
+  "license": "MIT"
+}

@@ -1,0 +1,7 @@
+.*.swp
+node_modules/*
+v8.log
+profile.txt
+nyc_output/
+.nyc_output/
+coverage/

@@ -44,6 +44,10 @@ let conf = {
   analysis: lya.preset.RWX_CHECKING,
   rules: require("path").join(__dirname, "$GROUND_TRUTH.json"),
   appendStats: "$(pwd)/stats.txt",
+  debug: true,
+  context: {
+    excludes: ['Promise', 'toString', 'escape', 'setImmediate'],
+  },
   modules: {
     include: [require.resolve("$nm")]
   },
@@ -56,7 +60,7 @@ PROLOGUE
   echo "$PLG" | tee $m
 
   # npm test 2>&1 > /dev/null | sed "s;^;$t  ;" | grep correct
-  npm test > /dev/null
+  npm test 
 
   cd ..
 
