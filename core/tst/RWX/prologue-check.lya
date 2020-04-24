@@ -2,7 +2,7 @@ let lya = require("../../../src/txfm.js");
 let conf = {
   rules: require("path").join(__dirname, "GROUND_TRUTH.json"),
   printResults: true,
-  appendStats: "/Users/nv/wrk/andromeda/lya/core/tst/RWX/stats.txt",
+  appendStats: "../stats.txt",
   analysis: lya.preset.RWX_CHECKING,
 };
 lya.configRequire(require, conf);
