@@ -119,7 +119,7 @@ time-stamp
 unordered-array-remove/
 312 2 0 2 0 0 correct
 
-zipmap
+zipmap // remove line 7 and 'toString'
 314 9 3 43 6 0.01911 correct
 
 // From part 2 of micro-packages
