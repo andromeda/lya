@@ -662,7 +662,7 @@ module.exports = {
   preset: preset,
   configRequire: (origRequire, conf) => {
     conf.analysis = conf.analysis || preset.ALLOW_DENY;
-    if (fs.existsSync(conf.analysis)) {
+    if (!fs.existsSync(conf.analysis)) {
       console.error('Analysis file not found: ', conf.analysis);
     }
     // TODO: maybe exapand to a local
