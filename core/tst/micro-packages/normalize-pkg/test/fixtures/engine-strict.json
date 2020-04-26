@@ -1,0 +1,16 @@
+{
+  "name": "expand-pkg",
+  "private": true,
+  "engineStrict": true,
+  "keywords": [
+    "package-json",
+    "config",
+    "values",
+    "fix",
+    "json",
+    "pkg",
+    "normalize",
+    "package",
+    "properties"
+  ]
+}

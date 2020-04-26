@@ -7,3 +7,9 @@ Simple algorithm for automated runs:
 
 List of repos are in [clone.sh](./clone.sh).
 
+To run the tests without cloning the repos just run:
+```shell
+$ ./installNode.sh
+$ ./run-check.sh
+```
+The output log is going to be stored in res.txt

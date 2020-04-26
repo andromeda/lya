@@ -1,0 +1,11 @@
+{
+  "name": "foo",
+  "private": true,
+  "version": "0.4.11",
+  "description": "Create new Assemble projects.",
+  "homepage": "https://github.com/assemble/generator-assemble",
+  "main": "app/index.js",
+  "scripts": {
+    "test": "mocha --reporter spec"
+  }
+}

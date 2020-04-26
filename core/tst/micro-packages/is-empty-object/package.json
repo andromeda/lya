@@ -1,0 +1,33 @@
+{
+  "name": "is-empty-object",
+  "version": "1.1.1",
+  "description": "Check if an object is empty.",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gummesson/is-empty-object.git"
+  },
+  "keywords": [
+    "object",
+    "empty"
+  ],
+  "author": "Ellen Gummesson",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/gummesson/is-empty-object/issues"
+  },
+  "homepage": "https://github.com/gummesson/is-empty-object",
+  "dependencies": {},
+  "devDependencies": {
+    "browserify": "^9.0.3",
+    "covert": "^1.0.1",
+    "smokestack": "^3.2.1",
+    "tap-closer": "^1.0.0",
+    "tape": "^3.5.0"
+  },
+  "scripts": {
+    "test": "node test/",
+    "test:browser": "browserify test/ | tap-closer | smokestack",
+    "test:cover": "covert test/"
+  }
+}

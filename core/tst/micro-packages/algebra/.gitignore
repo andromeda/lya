@@ -1,0 +1,15 @@
+$RECYCLE.BIN
+*~
+.DS_Store
+.idea
+.Trashes
+.vscode
+docs/_site
+Gemfile*
+node_modules
+npm-debug.log
+Thumbs.db
+
+# Test coverage
+.coveralls.yml
+coverage

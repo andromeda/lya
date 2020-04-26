@@ -1,0 +1,24 @@
+{
+  "name": "expand-pkg",
+  "private": true,
+  "keywords": [
+    "package-json",
+    "config",
+    "values",
+    "fix",
+    "json",
+    "pkg",
+    "normalize",
+    "package",
+    "properties"
+  ],
+  "verb": {
+    "related": {
+      "list": [
+        "update"
+      ]
+    },
+    "plugins": "gulp-format-md",
+    "layout": "default"
+  }
+}

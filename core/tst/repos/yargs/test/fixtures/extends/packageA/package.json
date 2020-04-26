@@ -1,6 +1,0 @@
-{
-  "foo": {
-    "a": 80,
-    "extends": "../packageB/index.json"
-  }
-}

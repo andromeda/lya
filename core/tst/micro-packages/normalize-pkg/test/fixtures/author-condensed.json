@@ -1,0 +1,20 @@
+{
+  "name": "normalize-pkg",
+  "private": true,
+  "version": "0.1.0",
+  "homepage": "https://github.com/jonschlinkert/normalize-pkg",
+  "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
+  "repository": "jonschlinkert/normalize-pkg",
+  "license": "MIT",
+  "files": [
+    "index.js"
+  ],
+  "main": "index.js",
+  "engines": {
+    "node": ">= 0.10.0"
+  },
+  "keywords": [
+    "normalize",
+    "pkg"
+  ]
+}

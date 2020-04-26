@@ -1,0 +1,14 @@
+{
+  "name": "foo",
+  "version": "0.4.11",
+  "description": "Create new Assemble projects.",
+  "author": "Jon Schlinkert",
+  "license": "MIT",
+  "homepage": "https://github.com/assemble/generator-assemble",
+  "repository": "https://github.com/assemble/generator-assemble.git",
+  "bugs": "https://github.com/assemble/generator-assemble/issues",
+  "main": "app/index.js",
+  "scripts": {
+    "test": "mocha --reporter spec"
+  }
+}
