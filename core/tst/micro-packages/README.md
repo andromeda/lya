@@ -70,7 +70,7 @@ exports.version, process.env.npm_package_keywords_4, exports.escape, unscape.nam
 
 sees access to object exports
 
- node-slug
+### node-slug
 
 sees access to object exports
 
