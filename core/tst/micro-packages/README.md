@@ -33,11 +33,11 @@ function isGeneratorFunction (fn) {
   fn.constructor.name === 'GeneratorFunction'
 }
 ```
-**Finds the fm.contructor is function**
+Finds the fm.contructor is function
 
 ### is-number
 
-**Invalid accesses to isFinite.name**
+Invalid accesses to isFinite.name
 
 ### Periods
 
@@ -52,7 +52,7 @@ function getter(name, value) {
  
 ### concat-stream
 
-**Invalid accesses to isArray because is declared with var**
+Invalid accesses to isArray because is declared with var
 Probably problem with the use of *with*
 
 ### file-size
@@ -63,31 +63,31 @@ if (typeof module !== 'undefined' && module.exports) return module.exports = plu
 
 ### he
 
-**Problems on various accesses**
+Problems on various accesses
 exports.version, process.env.npm_package_keywords_4, exports.escape, unscape.name
 
 ### node-slug
 
-**sees access to object exports**
+sees access to object exports
 
  node-slug
 
- **sees access to object exports**
+sees access to object exports
 
 ### normalize-pkg
 
-**static analysis doesnt sees any object access?**
+static analysis doesnt sees any object access?
 
 ### set-value
 
-**lya sees access on process.env.npm_package_keywords_15**
+lya sees access on process.env.npm_package_keywords_15
 
 ### static-prop
 
-**lya sees access to exports object**
+lya sees access to exports object
 
 ### syncthrough
 
-**access to Function object probably through prototype or instance check**
+access to Function object probably through prototype or instance check
 
 
