@@ -1,0 +1,225 @@
+357 26 0 53 0 0
+/home/grigorisntousakis/lya/core/tst/micro-packages/algebra/test/api.js:99
+    const Rational = algebra.Scalar({
+                             ^
+
+ReferenceError: BigInt is not defined
+    at Suite.describe (/home/grigorisntousakis/lya/core/tst/micro-packages/algebra/test/api.js:99:30)
+    at Object.create (/home/grigorisntousakis/lya/core/tst/micro-packages/algebra/node_modules/mocha/lib/interfaces/common.js:112:19)
+    at context.describe.context.context (/home/grigorisntousakis/lya/core/tst/micro-packages/algebra/node_modules/mocha/lib/interfaces/bdd.js:40:27)
+    at Suite.describe (/home/grigorisntousakis/lya/core/tst/micro-packages/algebra/test/api.js:80:3)
+    at Object.create (/home/grigorisntousakis/lya/core/tst/micro-packages/algebra/node_modules/mocha/lib/interfaces/common.js:112:19)
+    at context.describe.context.context (/home/grigorisntousakis/lya/core/tst/micro-packages/algebra/node_modules/mocha/lib/interfaces/bdd.js:40:27)
+    at Object.<anonymous> (/home/grigorisntousakis/lya/core/tst/micro-packages/algebra/test/api.js:6:1)
+    at Module._compile (module.js:643:30)
+    at Object.Module._extensions..js (module.js:654:10)
+    at Module.load (module.js:556:32)
+    at tryModuleLoad (module.js:499:12)
+    at Function.Module._load (module.js:491:3)
+    at Module.require (module.js:587:17)
+    at Module.require (/home/grigorisntousakis/lya/core/src/txfm.js:511:30)
+    at require (internal/module.js:11:18)
+    at /home/grigorisntousakis/lya/core/tst/micro-packages/algebra/node_modules/mocha/lib/mocha.js:250:27
+    at Array.forEach (<anonymous>)
+    at Mocha.loadFiles (/home/grigorisntousakis/lya/core/tst/micro-packages/algebra/node_modules/mocha/lib/mocha.js:247:14)
+    at Mocha.run (/home/grigorisntousakis/lya/core/tst/micro-packages/algebra/node_modules/mocha/lib/mocha.js:576:10)
+    at Object.<anonymous> (/home/grigorisntousakis/lya/core/tst/micro-packages/algebra/node_modules/mocha/bin/_mocha:637:18)
+    at Module._compile (module.js:643:30)
+    at Object.Module._extensions..js (module.js:654:10)
+    at Module.load (module.js:556:32)
+    at tryModuleLoad (module.js:499:12)
+    at Function.Module._load (module.js:491:3)
+    at Function.Module.runMain (module.js:684:10)
+    at startup (bootstrap_node.js:187:16)
+    at bootstrap_node.js:608:3
+npm ERR! Test failed.  See above for more details.
+ 
+ ⠋ 
+[2K[1A[2K[1A[2K[0G 
+ ⠙ 
+[2K[1A[2K[1A[2K[0G 
+ ⠹ 
+[2K[1A[2K[1A[2K[0G(node:12923) DeprecationWarning: loudRejection/api is deprecated. Use the currently-unhandled module instead.
+ 
+ ⠹ 
+[2K[1A[2K[1A[2K[0G 
+ ⠹ size smaller than array length
+
+   1 passed
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[0G 
+ ⠹ size larger than array length
+
+   2 passed
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[0G 
+ ⠹ work with TypedArray
+
+   3 passed
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[0G 
+ ⠹ throw error when passed in non-array variable
+
+   4 passed
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[0G431 5 0 14 0 0
+ 
+ ⠹ throw error when passed in non-array variable
+
+   4 passed
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[0G
+   4 passed
+
+367 0 0 0 0 0
+npm ERR! Test failed.  See above for more details.
+352 11 0 53 0 0
+337 6 0 18 0 0
+352 5 0 67 0 0
+352 5 0 967 0 0
+357 19 2 474 26 0.07283
+npm ERR! Test failed.  See above for more details.
+367 7 0 7 0 0
+(node:13485) [DEP0006] DeprecationWarning: child_process: options.customFds option is deprecated. Use options.stdio instead.
+357 7 1 287 2 0.0056
+357 8 135 446 168 0.47059
+380 10 0 1022 0 0
+372 17 0 1890 0 0
+npm ERR! Test failed.  See above for more details.
+352 2 0 2 0 0
+352 9 0 143 0 0
+348 8 6 306 7 0.02011
+357 2 0 2 0 0
+352 2 0 2 0 0
+342 8 0 23 0 0
+=============================================================================
+Writing coverage object [/home/grigorisntousakis/lya/core/tst/micro-packages/is-generator/coverage/coverage.json]
+Writing coverage reports at [/home/grigorisntousakis/lya/core/tst/micro-packages/is-generator/coverage]
+=============================================================================
+354 2 2 4 3 0.00847
+352 5 0 177 0 0
+(node:14320) [DEP0006] DeprecationWarning: child_process: options.customFds option is deprecated. Use options.stdio instead.
+347 2 0 2 0 0
+357 7 0 69 0 0
+337 2 0 2 0 0
+367 6 0 8 0 0
+=============================================================================
+Writing coverage object [/home/grigorisntousakis/lya/core/tst/micro-packages/missing-deep-keys/coverage/coverage.json]
+Writing coverage reports at [/home/grigorisntousakis/lya/core/tst/micro-packages/missing-deep-keys/coverage]
+=============================================================================
+339 6 2 8 3 0.00885
+342 13 0 110 0 0
+npm ERR! Test failed.  See above for more details.
+342 7 0 11 0 0
+Windows, or TEST_REGEN unset.  Using cached fixtures.
+375 17 0 41 0 0
+375 19 0 45 0 0
+375 26 0 121 0 0
+375 26 0 499 0 0
+418 26 0 186 0 0
+375 21 0 55 0 0
+375 19 0 49 0 0
+375 19 0 43 0 0
+375 26 0 465 0 0
+glob error Error: mock fs.readdir error
+    at /home/grigorisntousakis/lya/core/tst/micro-packages/node-glob/test/error-callback.js:16:10
+    at _combinedTickCallback (internal/process/next_tick.js:131:7)
+    at process._tickDomainCallback (internal/process/next_tick.js:218:9)
+    at Function.Module.runMain (module.js:686:11)
+    at runMain (/home/grigorisntousakis/.node-spawn-wrap-14754-083f851eaf3c/node:68:10)
+    at Function.<anonymous> (/home/grigorisntousakis/.node-spawn-wrap-14754-083f851eaf3c/node:171:5)
+    at Object.<anonymous> (/home/grigorisntousakis/lya/core/tst/micro-packages/node-glob/node_modules/nyc/bin/wrap.js:23:4)
+    at Module._compile (module.js:643:30)
+    at Object.Module._extensions..js (module.js:654:10)
+    at Module.load (module.js:556:32)
+    at tryModuleLoad (module.js:499:12)
+    at Function.Module._load (module.js:491:3)
+    at Function.Module.runMain (module.js:684:10)
+    at /home/grigorisntousakis/.node-spawn-wrap-14754-083f851eaf3c/node:178:8
+    at Object.<anonymous> (/home/grigorisntousakis/.node-spawn-wrap-14754-083f851eaf3c/node:181:3)
+    at Module._compile (module.js:643:30)
+375 26 0 2456 0 0
+375 19 0 43 0 0
+375 22 0 69 0 0
+375 26 0 276 0 0
+375 26 0 201 0 0
+418 24 0 255 0 0
+/home/grigorisntousakis/lya/core/tst/micro-packages/node-glob/node_modules/tap/lib/test.js:657
+      er.test = this.name
+              ^
+
+TypeError: Cannot create property 'test' on string 'SILENCE, INSECT!'
+    at TAP.threw (/home/grigorisntousakis/lya/core/tst/micro-packages/node-glob/node_modules/tap/lib/test.js:657:15)
+    at emitOne (events.js:116:13)
+    at process.emit (events.js:211:7)
+    at processEmit (/home/grigorisntousakis/lya/core/tst/micro-packages/node-glob/node_modules/nyc/node_modules/signal-exit/index.js:155:32)
+    at process.emit (/home/grigorisntousakis/lya/core/tst/micro-packages/node-glob/node_modules/source-map-support/source-map-support.js:461:21)
+    at processEmit [as emit] (/home/grigorisntousakis/lya/core/tst/micro-packages/node-glob/node_modules/signal-exit/index.js:155:32)
+    at process._fatalException (bootstrap_node.js:374:26)
+375 19 0 43 0 0
+375 24 0 109 0 0
+375 26 0 325 0 0
+375 19 0 49 0 0
+375 26 0 319 0 0
+375 19 0 43 0 0
+375 28 0 2793 0 0
+375 26 0 189 0 0
+375 26 0 408 0 0
+375 21 0 48 0 0
+375 19 0 43 0 0
+375 19 0 45 0 0
+375 17 0 41 0 0
+npm ERR! Test failed.  See above for more details.
+(node:15147) [DEP0006] DeprecationWarning: child_process: options.customFds option is deprecated. Use options.stdio instead.
+363 7 1 21 2 0.00551
+347 10 0 27 0 0
+npm ERR! Test failed.  See above for more details.
+367 0 11 0 19 0.05177
+npm ERR! Test failed.  See above for more details.
+337 7 0 24 0 0
+393 7 0 13 0 0
+352 5 0 5 0 0
+352 4 0 8 0 0
+npm ERR! Test failed.  See above for more details.
+386 5 0 5 0 0
+npm ERR! Test failed.  See above for more details.
+337 1 14 14 14 0.04154
+Error: something unrelated
+    at /home/grigorisntousakis/lya/core/tst/micro-packages/property-validator/test/middleware_test.js:25:11
+    at Layer.handle [as handle_request] (/home/grigorisntousakis/lya/core/tst/micro-packages/property-validator/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/grigorisntousakis/lya/core/tst/micro-packages/property-validator/node_modules/express/lib/router/route.js:137:13)
+    at Route.dispatch (/home/grigorisntousakis/lya/core/tst/micro-packages/property-validator/node_modules/express/lib/router/route.js:112:3)
+    at Layer.handle [as handle_request] (/home/grigorisntousakis/lya/core/tst/micro-packages/property-validator/node_modules/express/lib/router/layer.js:95:5)
+    at /home/grigorisntousakis/lya/core/tst/micro-packages/property-validator/node_modules/express/lib/router/index.js:281:22
+    at Function.process_params (/home/grigorisntousakis/lya/core/tst/micro-packages/property-validator/node_modules/express/lib/router/index.js:335:12)
+    at next (/home/grigorisntousakis/lya/core/tst/micro-packages/property-validator/node_modules/express/lib/router/index.js:275:10)
+    at expressInit (/home/grigorisntousakis/lya/core/tst/micro-packages/property-validator/node_modules/express/lib/middleware/init.js:40:5)
+    at Layer.handle [as handle_request] (/home/grigorisntousakis/lya/core/tst/micro-packages/property-validator/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/grigorisntousakis/lya/core/tst/micro-packages/property-validator/node_modules/express/lib/router/index.js:317:13)
+    at /home/grigorisntousakis/lya/core/tst/micro-packages/property-validator/node_modules/express/lib/router/index.js:284:7
+    at Function.process_params (/home/grigorisntousakis/lya/core/tst/micro-packages/property-validator/node_modules/express/lib/router/index.js:335:12)
+    at next (/home/grigorisntousakis/lya/core/tst/micro-packages/property-validator/node_modules/express/lib/router/index.js:275:10)
+    at query (/home/grigorisntousakis/lya/core/tst/micro-packages/property-validator/node_modules/express/lib/middleware/query.js:45:5)
+    at Layer.handle [as handle_request] (/home/grigorisntousakis/lya/core/tst/micro-packages/property-validator/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/grigorisntousakis/lya/core/tst/micro-packages/property-validator/node_modules/express/lib/router/index.js:317:13)
+    at /home/grigorisntousakis/lya/core/tst/micro-packages/property-validator/node_modules/express/lib/router/index.js:284:7
+    at Function.process_params (/home/grigorisntousakis/lya/core/tst/micro-packages/property-validator/node_modules/express/lib/router/index.js:335:12)
+    at next (/home/grigorisntousakis/lya/core/tst/micro-packages/property-validator/node_modules/express/lib/router/index.js:275:10)
+    at Function.handle (/home/grigorisntousakis/lya/core/tst/micro-packages/property-validator/node_modules/express/lib/router/index.js:174:3)
+    at Function.handle (/home/grigorisntousakis/lya/core/tst/micro-packages/property-validator/node_modules/express/lib/application.js:174:10)
+    at Server.app (/home/grigorisntousakis/lya/core/tst/micro-packages/property-validator/node_modules/express/lib/express.js:39:9)
+    at emitTwo (events.js:126:13)
+    at Server.emit (events.js:214:7)
+    at parserOnIncoming (_http_server.js:602:12)
+    at HTTPParser.parserOnHeadersComplete (_http_common.js:116:23)
+352 10 0 20 0 0
+350 10 0 16 0 0
+383 10 0 16 0 0
+350 10 0 16 0 0
+352 2 0 2 0 0
+367 5 0 5 0 0
+352 14 3 331 70 0.19886
+352 5 2 22 2 0.00568
+(node:16253) Warning: process.on(SIGPROF) is reserved while debugging
+399 10 2 22 2 0.00501
+381 12 2 72 2 0.00525
+342 6 0 14 0 0
+352 6 0 164 0 0
+npm ERR! Test failed.  See above for more details.
+357 2 0 2 0 0
+352 9 3 43 6 0.01705
