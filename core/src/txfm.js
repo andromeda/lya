@@ -5,22 +5,23 @@ const nativeModules = Object.keys(process.binding('natives'));
 const Module = require('module');
 const vm = require('vm');
 const fs = require('fs');
+const pathJoin = require('path').join;
 
 const preset = {
-  ALLOW_DENY: './allow-deny.js',
-  CALL_NUMBERS: './call-numbers.js',
-  PROFILING: './profiling.js',
-  PROFILING_RELATIVE: './profiling-relative.js',
-  ALLOW_DENY_ENFORCEMENT: './allow-deny-enforcement.js',
-  RWX: './rwx.js',
-  RWX_ENFORCEMENT: './rwx-enforcement.js',
-  RWX_CHECKING: './rwx-checking.js',
-  GLOBAL_ONLY: './global-only.js',
-  EXPORT_TYPE: './export-type.js',
-  COARSE_TYPES: './coarse-types.js',
-  SIMPLE_TYPES: './simple-types.js',
-  SUB_TYPES: './sub-types.js',
-  STAR_CHECK: './star-check.js',
+  ALLOW_DENY: pathJoin(__dirname, 'allow-deny.js'),
+  CALL_NUMBERS: pathJoin(__dirname, 'call-numbers.js'),
+  PROFILING: pathJoin(__dirname, 'profiling.js'),
+  PROFILING_RELATIVE: pathJoin(__dirname, 'profiling-relative.js'),
+  ALLOW_DENY_ENFORCEMENT: pathJoin(__dirname, 'allow-deny-enforcement.js'),
+  RWX: pathJoin(__dirname, 'rwx.js'),
+  RWX_ENFORCEMENT: pathJoin(__dirname, 'rwx-enforcement.js'),
+  RWX_CHECKING: pathJoin(__dirname, 'rwx-checking.js'),
+  GLOBAL_ONLY: pathJoin(__dirname, 'global-only.js'),
+  EXPORT_TYPE: pathJoin(__dirname, 'export-type.js'),
+  COARSE_TYPES: pathJoin(__dirname, 'coarse-types.js'),
+  SIMPLE_TYPES: pathJoin(__dirname, 'simple-types.js'),
+  SUB_TYPES: pathJoin(__dirname, 'sub-types.js'),
+  STAR_CHECK: pathJoin(__dirname, 'star-check.js'),
 };
 
 const systemPreset = {
@@ -665,6 +666,8 @@ module.exports = {
     conf.analysis = conf.analysis || preset.ALLOW_DENY;
     if (!fs.existsSync(conf.analysis)) {
       console.error('Analysis file not found: ', conf.analysis);
+      console.error('Exiting..');
+      process.exit();
     }
     // TODO: maybe exapand to a local
     // TODO: create a function that assigns default values to the config (which
