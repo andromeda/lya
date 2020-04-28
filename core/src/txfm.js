@@ -20,13 +20,14 @@ const preset = {
   COARSE_TYPES: './coarse-types.js',
   SIMPLE_TYPES: './simple-types.js',
   SUB_TYPES: './sub-types.js',
+  STAR_CHECK: './star-check.js',
 };
 
 const systemPreset = {
   // TODO: Rewrite flags structure
   INPUT_STRING: true,
   PRINT_CODE: false,
-  DEPTH: 3,
+  DEPTH: 0,
   CONTEXT: {
     enableWith: true,
     include: [
