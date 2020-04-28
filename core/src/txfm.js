@@ -27,7 +27,7 @@ const systemPreset = {
   // TODO: Rewrite flags structure
   INPUT_STRING: true,
   PRINT_CODE: false,
-  DEPTH: 0,
+  DEPTH: 3,
   CONTEXT: {
     enableWith: true,
     include: [
