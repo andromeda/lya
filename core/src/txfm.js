@@ -20,6 +20,7 @@ const preset = {
   COARSE_TYPES: './coarse-types.js',
   SIMPLE_TYPES: './simple-types.js',
   SUB_TYPES: './sub-types.js',
+  STAR_CHECK: './star-check.js',
 };
 
 const systemPreset = {
