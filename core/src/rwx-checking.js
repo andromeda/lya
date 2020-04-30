@@ -125,10 +125,11 @@ let printExtended = () => {
 
 // onExit (toSave == place to save the result) --maybe make it module-local?
 const onExit = () => {
+  let debugName = env.conf.debugName;
   let total = env.counters.total;
   let ratio = (+(countInvalid / total).toFixed(5));
   let corr = countValid > 0? 'correct' : '';
-  let msg = `${total} ${uniqueValid.size} ${uniqueInvalid.size} ${countValid} ${countInvalid} ${ratio} ${corr}`;
+  let msg = `${debugName} ${total} ${uniqueValid.size} ${uniqueInvalid.size} ${countValid} ${countInvalid} ${ratio} ${corr}`;
   if (env.conf.printResults) {
     console.error(msg);
     printExtended();
