@@ -11,7 +11,6 @@ analysis() {
   cd $1
   t="$(echo $1 | sed 's;/;;' | sed 's;$;:;')"
   m=$(cat package.json | jq .main | tr -d '"')
-  l=
   
   java -jar $MIR_SA $PRE$m | grep "^{" | jq . > static.json
   # java -Dmaybe.reaching=true -jar $MIR_SA . | grep "^{" | jq .  > static.json
@@ -41,6 +40,7 @@ analysis() {
   read -r -d '' PLG <<PROLOGUE
 let lya = require("$LYA_BASE");
 let conf = {
+  debugName: '$t',
   analysis: lya.preset.RWX_CHECKING,
   rules: require("path").join(__dirname, "$GROUND_TRUTH.json"),
   appendStats: "$(pwd)/stats.txt",
@@ -60,7 +60,7 @@ PROLOGUE
   echo "$PLG" | tee $m
 
   # npm test 2>&1 > /dev/null | sed "s;^;$t  ;" | grep correct
-  npm test 
+  npm test > /dev/null 
 
   cd ..
 

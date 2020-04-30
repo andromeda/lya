@@ -5,6 +5,8 @@ const uniqueInvalid = new Set();
 const chalk = require('chalk');
 const path = require('path');
 const fs = require('fs');
+const starSet = new Set();
+
 let countValid = 0;
 let countInvalid = 0;
 let groundTruth;
@@ -14,6 +16,31 @@ let log = (str, color) => {
   if (!debug)
     return
   console.log(color? chalk[color].bold(str) : str)
+}
+
+// We create a set that contains all the names of *
+const setStar = (data) => {
+  Object.keys(data).forEach((name) => {
+    Object.keys(data[name]).forEach((item) => {
+      if (item.includes('.*')) {
+        const base = item.split('*')[0];
+        starSet.add(base);
+      } else if (item.includes('*.')) {
+        const base = item.split('*')[1];
+        starSet.add(base);
+      }
+    });
+  });
+  return data;
+};
+
+const hasStar = (name) => {
+  for (const key of starSet) {
+    if (name.includes(key)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 // We need to get the path of the main module in order to find dynamic json
@@ -26,6 +53,8 @@ const getAnalysisData = () => {
   } catch (e) {
     throw new Error(appDir + ' file was not found!');
   }
+
+  dynamicData = setStar(dynamicData);
   return dynamicData;
 };
 
@@ -36,6 +65,11 @@ const checkRWX = (storedCalls, truename, modeGrid) => {
     const mode = modeGrid[key];
     if (Object.prototype.hasOwnProperty.
         call(storedCalls, truename) === false) {
+      if (hasStar(truename)) {
+        log('Valid access because of * on ' + truename);
+        countValid++;
+        return;
+      }
       log("Invalid access in: " + truename + " and mode " + mode, "red");
       uniqueInvalid.add(truename+mode);
       countInvalid++;
@@ -125,11 +159,10 @@ let printExtended = () => {
 
 // onExit (toSave == place to save the result) --maybe make it module-local?
 const onExit = () => {
-  let debugName = env.conf.debugName;
   let total = env.counters.total;
   let ratio = (+(countInvalid / total).toFixed(5));
   let corr = countValid > 0? 'correct' : '';
-  let msg = `${debugName} ${total} ${uniqueValid.size} ${uniqueInvalid.size} ${countValid} ${countInvalid} ${ratio} ${corr}`;
+  let msg = `${total} ${uniqueValid.size} ${uniqueInvalid.size} ${countValid} ${countInvalid} ${ratio} ${corr}`;
   if (env.conf.printResults) {
     console.error(msg);
     printExtended();
