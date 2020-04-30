@@ -4,7 +4,7 @@ let lyaPath = process.env.LYA ?  process.env.LYA : "../../src/txfm.js";
 
 let lya = require(lyaPath);
 let conf = {
-  analysis: require("path").join(__dirname, "..", "..", "src", "custom.js"),
+  analysis: lya.preset.RWX, // require("path").join(__dirname, "..", "..", "src", "custom.js"),
   SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
 };
 
