@@ -1,6 +1,6 @@
 // Add this to your PATH:
 // export LYA="/home/<username>/lya/core/src/txfm.js"
-let lyaPath = process.env.LYA ?  process.env.LYA : "@andromda/lya"; 
+let lyaPath = process.env.LYA ?  process.env.LYA : "../../src/txfm.js"; 
 
 let lya = require(lyaPath);
 let conf = {
