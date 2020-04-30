@@ -40,7 +40,7 @@ analysis() {
   read -r -d '' PLG <<PROLOGUE
 let lya = require("$LYA_BASE");
 let conf = {
-  debugName: "$($t)",
+  debugName: '$t',
   analysis: lya.preset.RWX_CHECKING,
   rules: require("path").join(__dirname, "$GROUND_TRUTH.json"),
   appendStats: "$(pwd)/stats.txt",
