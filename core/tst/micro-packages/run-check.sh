@@ -60,7 +60,7 @@ PROLOGUE
   echo "$PLG" | tee $m
 
   # npm test 2>&1 > /dev/null | sed "s;^;$t  ;" | grep correct
-  npm test 
+  npm test > /dev/null 
 
   cd ..
 
