@@ -318,17 +318,20 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 
   // We wrap every function on global obj that exists in default-names.json
   // Returns the proxy obj we want
+  // TODO: more elegant fix on stopLoops
+  let stopLoops;
   const proxyWrap = function(obj, handler, name, depth) {
-    if (depth === 0 || obj === null) {
+    if (depth === 0 || obj === null || stopLoops.has(obj)) {
       return obj;
     };
     depth--;
     const type = typeof obj;
     let localObj = {};
     if (type === 'function') {
-        if (clonedFunctions.has(name)) {
-          localObj = clonedFunctions.get(name);
-          for (const field of getValues(obj)) {
+      if (clonedFunctions.has(name)) {
+        localObj = clonedFunctions.get(name);
+        stopLoops.set(localObj, true);
+        for (const field of getValues(obj)) {
           if (!lyaConfig.fields.excludes.has(field)) {
             const saveName = name + '.' + field;
             localObj[field] = proxyWrap(obj[field], handler, saveName, depth);
@@ -338,9 +341,11 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
         };
         localObj = uniqueWrap(localObj, handler, name, type);
       } else {
+        stopLoops.set(obj, true);
         localObj = uniqueWrap(obj, handler, name, type);
       }
     } else if (type === 'object') {
+      stopLoops.set(obj, true);
       for (const field of getValues(obj)) {
         if (!lyaConfig.fields.excludes.has(field)) {
           const saveName = name + '.' + field;
@@ -365,6 +370,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
         return global[name];
       }
       const depth = lyaConfig.depth;
+      stopLoops = new WeakMap();
       const proxyObj = proxyWrap(global[name], createHandler('node-globals'),
         name, depth);
       if (name !== 'Infinity' && name!== 'NaN') {
