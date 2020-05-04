@@ -3,8 +3,10 @@
 # set -e
 
 rm timeResultsPure.txt
-rm timeResultsLya.txt
+rm timeResultsLya.txti
+rm timeResultsLyaNOWITH.txt
 cd sunspider
+
 input="./LIST"
 echo "We are going to run the test for pure programs"
 while IFS= read -r line
@@ -39,3 +41,23 @@ do
 done < "$input"
 
 sed -i "s/${prevname}/replaceme.js/" main.js
+
+echo "******************************"
+echo "******************************"
+echo "We are going to run the test for programs with lya but noWith"
+
+prevname="replaceme.js"
+input="./sunspider/LIST"
+while IFS= read -r line
+do
+	name=$line.js
+	echo "******************************"
+  	echo "We are processing this: $name"
+  	sed -i "s/${prevname}/${name}/" noWith.js
+  	echo "The name of file $name" >> timeResultsLyaNOWITH.txt
+  	(time node noWith.js) >>  /dev/null 2>> "timeResultsLyaNOWITH.txt"
+  	prevname=$name
+
+done < "$input"
+
+sed -i "s/${prevname}/replaceme.js/" noWith.js
