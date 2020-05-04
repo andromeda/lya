@@ -676,17 +676,17 @@ module.exports = {
       process.exit();
     }
     // TODO: maybe exapand to a local
-    // TODO: create a function that assigns default values to the config (which
+    // TODO: create a function that assigns default values to the config
+    // TODO: Fix this part!!!!
     conf.context = conf.context ? conf.context :
       systemPreset.CONTEXT;
     conf.context.enableWith = conf.context.enableWith !== undefined ?
       conf.context.enableWith : systemPreset.CONTEXT.enableWith;
     conf.context.include = conf.context.excludes ? systemPreset.CONTEXT.include.filter((e) =>
       !conf.context.excludes.includes(e)) : systemPreset.CONTEXT.include;
-    conf.fields = conf.fields ? conf.fields :
-      systemPreset.FIELDS;
-    conf.modules = conf.modules ? conf.modules :
-      systemPreset.MODULES;
+    conf.context.excludes = conf.context.excludes ? conf.context.excludes : [];
+    conf.fields = conf.fields ? conf.fields : systemPreset.FIELDS;
+    conf.modules = conf.modules ? conf.modules : systemPreset.MODULES;
     conf.inputString = conf.inputString === false ? conf.inputString:
       systemPreset.INPUT_STRING;
     conf.printCode = conf.printCode ? conf.printCode :
