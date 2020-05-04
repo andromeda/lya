@@ -45,7 +45,7 @@ const systemPreset = {
   },
   FIELDS: {
     include: true,
-    excludes: ['toString', 'valueOf', 'prototype', 'name'],
+    excludes: ['toString', 'valueOf', 'prototype', 'name', 'children'],
   },
 }
 
