@@ -59,7 +59,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   const requireLevel = 0;
   const analysisResult = {};
 
-  moduleName[0] = process.cwd() + '/' + 'main.js';
+  moduleName[0] = process.cwd() + '/' + 'main.js'; // FIXME: What is this?
   analysisResult[moduleName[0]] = {};
 
   // This holds the string of the transformations inside modules

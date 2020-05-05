@@ -145,8 +145,9 @@
 %for single author (just remove % characters)
 \author{
 {\rm Anonymous Author(s)}\\
-\normalsize{Submission \#225, 11 + 3 pages}\\
-% \normalsize{Additional Anonymized Material: \href{https://git.io/JvfCf}{https://git.io/JvfCf}.}
+% \normalsize{Submission \#225, 11 + 3 pages}\\
+% \normalsize{Anonymous Author(s)}\\
+\normalsize{Additional Anonymized Material: \href{https://git.io/JvfCf}{https://git.io/JvfCf}.}
 % {\rm Grigoris Ntousakis}\\
 % Technical University of Crete
 % \and
@@ -217,8 +218,9 @@ Library-oriented analysis adds to the challenges of prior tools as
   (ii) coarse-grained, high-level language semantics misalign with fine-grained, low-level instrumentation.
 
 To address these challenges, we propose a novel approach to dynamic analysis, termed \emph{dialysis}\footnote{
-  A method of deconstruction into elements often for the purposes of removing waste products or altering piecewise components.
-  From ancient Greek {\scriptsize $\delta\iota\acute{\alpha}$} (di\'{a}, ``inter-, through'') and {\scriptsize $\lambda\acute{\tilde{\upsilon}}\epsilon\iota\nu$} (lúein, ``to loosen'').
+  A method of deconstruction into elements often for the purposes of altering piecewise components or removing waste products.
+  From % ancient Greek 
+  {\scriptsize $\delta\iota\acute{\alpha}$} (di\'{a}, ``inter-, through'') and {\scriptsize $\lambda\acute{\tilde{\upsilon}}\epsilon\iota\nu$} (lúein, ``to loosen'').
 } and implemented in \sys.
 Program dialysis is a general technique, applicable to any programming language, that enables dynamic fragmentation, analysis, and reassembly of applications at the level of individual libraries. 
 %                                                   !! sosto!!------.
@@ -230,14 +232,15 @@ By operating at the granularity of libraries, dialysis has several benefits over
   (iii) it features significantly low runtime performance overheads, enabling the potential for toggling its use in production environments.
 
 
-\heading{Is it Useful?}
-First question
+% \heading{Is it Useful?}
+% First question
+% 
+% \heading{Is it Usable?}
+% Example 
+% 
+% \heading{Is it Performant?}
+% Highlight results
 
-\heading{Is it Usable?}
-Example 
-
-\heading{Is it Performant?}
-Highlight results
 % (i) at a somewhat coarser granularity, but still offering insights---and in a semantics-aware way tailored to the programming language.
 % (ii) bolt on
 % Our approach is applicable to any language that supports some notion of modularity, runtime introspection, and .
