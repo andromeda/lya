@@ -1,134 +1,62 @@
-// This is the policy for true false analysis. Each time we access a variable
-// or a function we write it with true in a export file dynamic.json
-let locEnv;
-
-// Holds the end of each name store of new assigned global variables
-// suffix for our own metadata
-const endName = '@name';
+let env;
+const fs = require('fs');
 
 // @storedCalls it is a table that contains all the analysis data
-// @truename the name of the current function, object etc that we want to add to
+// @name the name of the current function, object etc that we want to add to
 // the table
-// Given those two inputs we can update the analysis data that are stored in storedCalls
-const updateAnalysisData = (storedCalls, truename) => {
-  if (Object.prototype.hasOwnProperty.
-      call(storedCalls, truename) === false) {
-    storedCalls[truename] = true;
+const updateAnalysisData = (analysisResult, name) => {
+  if (!Object.prototype.hasOwnProperty.call(analysisResult, name)) {
+    analysisResult[name] = true;
   }
 };
 
-const updateRestData = (target, name, type) => {
+// Analyses provided by LYA.
+// onRead <~ is called before every object is read
+const onRead = (target, name, nameToStore, currentModule, typeClass) => {
 };
 
-const exportObj = () => {
-  const currentName = locEnv.trueName[locEnv.requireLevel];
-  updateAnalysisData(locEnv.accessMatrix[currentName], 'module.export');
+// onWrite <~ is called before every write of an object
+const onWrite = (target, name, value, currentModule, parentName,
+    nameToStore) => {
+}
+
+// onCallPre <~ is called before the execution of a function
+const onCallPre = (target, thisArg, argumentsList, name, nameToStore,
+    currentModule, declareModule, typeClass) => {
+  if (typeClass === 'es-globals' || typeClass === 'node-globals' ) {
+    updateAnalysisData(env.analysisResult[currentModule], nameToStore);
+  }
 };
 
-// This the handler of the require function. Every time a "require" is used to load up a module
-// this handler is called. It updates the analysis data that are stored in the accessMatrix table.
-const requireHandler = {
-  apply: function(target, thisArg, argumentsList) {
-    const currentName = locEnv.trueName[locEnv.requireLevel];
-    const origReqModuleName = argumentsList[0];
-    locEnv.accessMatrix[currentName]['require(\'' + origReqModuleName + '\')'] = true;
-    return Reflect.apply(...arguments);
-  },
+// onCallPost <~ Is call after every execution of a function
+const onCallPost = (target, thisArg, argumentsList, name, nameToStore,
+    currentModule, declareModule, typeClass, result) => {
 };
 
-// The handler of the global variable.Every time we access the global variabe in order to declare
-// or call a variable, then we can print it on the export file.
-const globalHandler= {
-  get: function(target, name) {
-    // XXX[target] != 'undefined'
-    if (typeof name === 'string') {
-      if (typeof target[name+endName] != 'undefined') {
-        const currentName = locEnv.trueName[locEnv.requireLevel];
-        const nameToShow = target[name+endName];
-        updateAnalysisData(locEnv.accessMatrix[currentName], nameToShow);
-      }
-    }
-
-    return Reflect.get(target, name);
-  },
-  set: function(target, name, value) {
-    if (typeof value === 'number') {
-      const currentName = locEnv.trueName[locEnv.requireLevel];
-      const nameToStore = 'global.' + name;
-      const result = Reflect.set(target, name, value);
-      // In order to exist a disticton between the values we declared ourselfs
-      // We declare one more field with key value that stores the name
-      Object.defineProperty(target, name+endName, {value: nameToStore});
-      updateAnalysisData(locEnv.accessMatrix[currentName], nameToStore);
-
-      return result;
-    }
-
-    return Reflect.set(target, name, value);
-  },
+// onConstruct <~ Is call before every construct
+const onConstruct = (target, args, currentName, nameToStore) => {
+  updateAnalysisData(env.analysisResult[currentName],
+      nameToStore, ['r', 'x']);
 };
 
-// The handler of the all the function that are called inside a module. Every time we
-// load a module with require it first execute all the code and then prepary and exports
-// all the export data. We use this handler to catch all the code that is executed on the
-// module.
-const moduleHandler= {
-  apply: function(target) {
-    const currentName = locEnv.trueName[locEnv.requireLevel];
-    updateAnalysisData(locEnv.accessMatrix[currentName], target.name);
-
-    return Reflect.apply(...arguments);
-  },
-  get: function(target, name) {
-    const currentName = locEnv.trueName[locEnv.requireLevel];
-    updateAnalysisData(locEnv.accessMatrix[currentName], target.name);
-
-    return Reflect.get(target, name);
-  },
+const onHas = (target, prop, currentName, nameToStore) => {
 };
 
-// The handler of the functions on the export module. Every time we require a module
-// and we have exports, we wrap them in a handler. Each time we call a function from inside
-// exports this is the handler that we wrap the function.
-const exportsFuncHandler= {
-  apply: function(target, thisArg, argumentsList) {
-    let truename;
+// onExit (toSave == place to save the result) --maybe make it module-local?
+const onExit = (intersection, candidateModule) => {
+  fs.writeFileSync(env.conf.SAVE_RESULTS, JSON.stringify(env.analysisResult,
+    null, 2), 'utf-8');
+}
 
-    truename = locEnv.objName.get(target);
-    const currentName = locEnv.objPath.get(target);
-    truename = truename + '.' + target.name;
-
-    return Reflect.apply(...arguments);
-  },
-};
-
-// Read function so we print it in the export file
-// This is to catch the read
-const readFunction = (myFunc, name) => {
-};
-
-// This is the handler of the global constanst variables, like Math.PI etc. We store the name
-// in the same object but we use a different name, for example, for Math.PI we store the
-// name "Math.PI" in the object Math.PIPI. That way we can have accurate name analysis.
-const globalConstHandler= {
-  get: function(target, name) {
-    const currentName = locEnv.trueName[locEnv.requireLevel];
-    updateAnalysisData(locEnv.accessMatrix[currentName], target[name+name]);
-
-    return Reflect.get(target, name);
-  },
-};
-
-module.exports = (env) => {
-  locEnv = env;
+module.exports = (e) => {
+  env = e;
   return {
-    require: requireHandler,
-	  moduleHandler: moduleHandler,
-    globalHandler: globalHandler,
-    readFunction: readFunction,
-    exportsFuncHandler: exportsFuncHandler,
-    globalConstHandler: globalConstHandler,
-    updateRestData: updateRestData,
-    exportObj: exportObj,
+    onRead: onRead,
+    onCallPre: onCallPre,
+    onCallPost: onCallPost,
+    onWrite: onWrite,
+    onConstruct: onConstruct,
+    onHas: onHas,
+    onExit: onExit,
   };
 };
