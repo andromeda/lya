@@ -1,7 +1,7 @@
 let lya = require("../../../core/src/txfm.js");
 let conf = {
   SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
-  analysis: lya.preset.RWX,
+  analysis: lya.preset.GLOBAL_ONLY,
   context: {
     enableWith: false,
   }
