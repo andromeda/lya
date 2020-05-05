@@ -24,7 +24,7 @@ cd ../
 
 echo "******************************"
 echo "******************************"
-echo "We are going to run the test for programs with lya"
+echo "We are going to run the test for programs with lya but noWith"
 
 prevname="replaceme.js"
 input="./sunspider/LIST"
@@ -42,6 +42,10 @@ done < "$input"
 
 sed -i "s/${prevname}/replaceme.js/" noWith.js
 
+echo "******************************"
+echo "******************************"
+echo "We are going to run the test for programs with lya"
+
 prevname="replaceme.js"
 input="./sunspider/LIST"
 while IFS= read -r line
@@ -58,8 +62,6 @@ done < "$input"
 
 sed -i "s/${prevname}/replaceme.js/" main.js
 
-echo "******************************"
-echo "******************************"
-echo "We are going to run the test for programs with lya but noWith"
+
 
 
