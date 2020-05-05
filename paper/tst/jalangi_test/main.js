@@ -6,4 +6,4 @@ let conf = {
 lya.configRequire(require, conf);
 
 // Require all sunspider tests
-require("./sunspider/bitops-bitwise-and.js")
+require("./sunspider/replaceme.js")
