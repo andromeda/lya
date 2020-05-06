@@ -1,10 +1,7 @@
 let lya = require("/home/grigorisntousakis/lya/core/src/txfm.js");
 let conf = {
   debugName: 'he:',
-  analysis: lya.preset.RWX_CHECKING,
-  rules: require("path").join(__dirname, "static.json"),
-  appendStats: "/home/grigorisntousakis/lya/core/tst/micro-packages-perf/he/stats.txt",
-  debug: true,
+  analysis: lya.preset.CALL_NUMBERS,
   context: {
     excludes: ['Promise', 'toString', 'escape', 'setImmediate'],
   },

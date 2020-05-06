@@ -1,10 +1,7 @@
 let lya = require("/home/grigorisntousakis/lya/core/src/txfm.js");
 let conf = {
   debugName: 'is-promise:',
-  analysis: lya.preset.RWX_CHECKING,
-  rules: require("path").join(__dirname, "static.json"),
-  appendStats: "/home/grigorisntousakis/lya/core/tst/micro-packages-perf/is-promise/stats.txt",
-  debug: true,
+  analysis: lya.preset.CALL_NUMBERS,
   context: {
     excludes: ['Promise', 'toString', 'escape', 'setImmediate'],
   },

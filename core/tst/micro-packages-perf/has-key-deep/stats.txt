@@ -121,3 +121,4 @@ has-key-deep: 308 2 0 2 0 0 correct
 has-key-deep: 308 2 0 2 0 0 correct
 has-key-deep: 308 2 0 2 0 0 correct
 has-key-deep: 308 2 0 2 0 0 correct
+has-key-deep: 304 2 0 2 0 0 correct

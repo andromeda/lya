@@ -117,3 +117,4 @@ is-sorted: 308 7 0 7062 0 0 correct
 is-sorted: 308 7 0 7062 0 0 correct
 is-sorted: 308 7 0 67002 0 0 correct
 is-sorted: 308 7 0 67002 0 0 correct
+is-sorted: 304 7 0 67002 0 0 correct

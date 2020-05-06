@@ -125,3 +125,4 @@ has-value: 308 9 0 1350008 0 0 correct
 has-value: 308 9 0 1350008 0 0 correct
 has-value: 308 9 0 1350008 0 0 correct
 has-value: 308 9 0 1350008 0 0 correct
+has-value: 304 9 0 1350008 0 0 correct

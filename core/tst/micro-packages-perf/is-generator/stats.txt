@@ -122,3 +122,4 @@ is-generator: 308 2 2 4 3 0.00974 correct
 is-generator: 308 2 2 4 3 0.00974 correct
 is-generator: 308 2 2 4 3 0.00974 correct
 is-generator: 308 2 2 4 3 0.00974 correct
+is-generator: 304 2 2 4 3 0.00987 correct

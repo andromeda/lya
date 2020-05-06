@@ -113,3 +113,4 @@ is-promise: 325 2 0 2 0 0 correct
 is-promise: 308 2 0 2 0 0 correct
 is-promise: 308 2 0 2 0 0 correct
 is-promise: 308 2 0 2 0 0 correct
+is-promise: 304 2 0 2 0 0 correct

@@ -117,3 +117,4 @@ is-empty-object: 308 8 0 190004 0 0 correct
 is-empty-object: 308 8 0 190004 0 0 correct
 is-empty-object: 304 8 0 190004 0 0 correct
 is-empty-object: 304 8 0 190004 0 0 correct
+is-empty-object: 304 8 0 190004 0 0 correct

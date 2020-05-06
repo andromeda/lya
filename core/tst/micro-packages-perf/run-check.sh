@@ -1,36 +1,17 @@
 #!/bin/bash
 
 # Note that git rev-parse will not work _inside_ submodules
-MIR_SA=${MIR_PATH:-"$(git rev-parse --show-toplevel)/core/tst/tools/mir-sa.jar"}
-[ ! -f $MIR_SA ] && ../tools/fetch.sh
 LYA_BASE=${LYA_BASE:-"$(git rev-parse --show-toplevel)/core/src/txfm.js"}
-GROUND_TRUTH="static" # There is no correct here, and dynamic is of little use?
 PRE="_"
+
+rm time.txt
 
 analysis() {
   cd $1
   t="$(echo $1 | sed 's;/;;' | sed 's;$;:;')"
+  a=$2
   m=$(cat package.json | jq .main | tr -d '"')
-  
-  java -jar $MIR_SA $PRE$m | grep "^{" | jq . > static.json
-  # java -Dmaybe.reaching=true -jar $MIR_SA . | grep "^{" | jq .  > static.json
-  # java -Dbase.stars=true -jar $MIR_SA . | grep "^{" | jq .  > static.json
-  # java -Dprop.stars=true -jar $MIR_SA . | grep "^{" | jq .  > static.json
-
-  # TODO: Pattern for exclusive-wrapper command
-  # It identifies an input file and calls the Lya only for that input file
-  # read -r -d '' PLG <<PROLOGUE
-  # let lya = require($LYA_BASE);
-  # let conf = {
-  #   analysis: lya.preset.RWX_CHECKING,
-  #   rules: require("path").join(__dirname, "$GROUND_TRUTH.json"),
-  #   modules: {
-  #     includes: [require.resolve($m)]
-  #   },
-  #   printResults: true,
-  # };
-  # lya.configRequire(require, conf);
-  # module.exports = require($m);
+    
   # PROLOGUE
 
   # If entry file exists, rename it
@@ -41,10 +22,7 @@ analysis() {
 let lya = require("$LYA_BASE");
 let conf = {
   debugName: '$t',
-  analysis: lya.preset.RWX_CHECKING,
-  rules: require("path").join(__dirname, "$GROUND_TRUTH.json"),
-  appendStats: "$(pwd)/stats.txt",
-  debug: true,
+  analysis: lya.preset.$a,
   context: {
     excludes: ['Promise', 'toString', 'escape', 'setImmediate'],
   },
@@ -60,7 +38,7 @@ PROLOGUE
   echo "$PLG" | tee $m
 
   # npm test 2>&1 > /dev/null | sed "s;^;$t  ;" | grep correct
-   echo "The name of file $t: " >> ../time.txt
+   echo "The name of file $t and analysis $a: " >> ../time.txt
   (time npm test) > /dev/null 2>> ../time.txt 
 
   cd ..
@@ -73,8 +51,10 @@ PROLOGUE
 if [ "$#" -eq 1 ]; then
   analysis $1
 else
-  for d in */; do
-    analysis $d
+  for analysis in RWX PROFILING_RELATIVE CALL_NUMBERS; do
+    for d in */; do
+      analysis $d $analysis
+    done
   done
 fi
 

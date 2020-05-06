@@ -114,3 +114,4 @@ is-number: 325 5 0 177 0 0 correct
 is-number: 308 5 0 177 0 0 correct
 is-number: 308 5 0 133044 0 0 correct
 is-number: 308 5 0 175002 0 0 correct
+is-number: 304 5 0 175002 0 0 correct
