@@ -60,7 +60,8 @@ PROLOGUE
   echo "$PLG" | tee $m
 
   # npm test 2>&1 > /dev/null | sed "s;^;$t  ;" | grep correct
-  npm test > /dev/null 
+   echo "The name of file $t: " >> ../time.txt
+  (time npm test) > /dev/null 2>> ../time.txt 
 
   cd ..
 
