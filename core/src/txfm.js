@@ -9,7 +9,7 @@ const pathJoin = require('path').join;
 
 const preset = {
   ALLOW_DENY: pathJoin(__dirname, 'allow-deny.js'),
-  CALL_NUMBERS: pathJoin(__dirname, 'call-numbers.js'),
+  CALL_NUMBERS : pathJoin(__dirname, 'call-numbers.js'),
   PROFILING: pathJoin(__dirname, 'profiling.js'),
   PROFILING_RELATIVE: pathJoin(__dirname, 'profiling-relative.js'),
   ALLOW_DENY_ENFORCEMENT: pathJoin(__dirname, 'allow-deny-enforcement.js'),
@@ -281,9 +281,6 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   const setLocalGlobal = () => {
     let localGlobal = {};
     localGlobal = passJSONFile(createGlobal, defaultNames.globals);
-    if (lyaConfig.context.include.includes('es-globals')) {
-      localGlobal['proxyExportHandler'] = createHandler('es-globals');
-    }
     localGlobal['proxyGlobal'] = createGlobalPr();
 
     return localGlobal;
