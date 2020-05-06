@@ -1,1 +1,0 @@
-The name of file 3d-cube.js
