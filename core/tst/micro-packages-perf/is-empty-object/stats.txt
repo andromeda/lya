@@ -1,0 +1,116 @@
+312 8 0 23 0 0 correct
+312 8 0 23 0 0 correct
+312 8 0 23 0 0 correct
+312 8 0 23 0 0 correct
+312 8 0 23 0 0 correct
+311 8 0 23 0 0 correct
+309 8 0 23 0 0 correct
+309 8 0 23 0 0 correct
+309 8 0 23 0 0 correct
+309 8 0 23 0 0 correct
+311 8 0 23 0 0 correct
+309 8 0 23 0 0 correct
+311 8 0 23 0 0 correct
+311 8 0 23 0 0 correct
+311 8 0 23 0 0 correct
+311 8 0 23 0 0 correct
+311 8 0 23 0 0 correct
+309 8 0 23 0 0 correct
+309 8 0 23 0 0 correct
+309 8 0 23 0 0 correct
+309 8 0 23 0 0 correct
+306 8 0 23 0 0 correct
+306 8 0 23 0 0 correct
+309 8 0 23 0 0 correct
+306 8 0 23 0 0 correct
+306 8 0 23 0 0
+71 4 0 8 0 0
+285 8 0 23 0 0
+285 8 0 23 0 0
+306 8 0 23 0 0
+327 8 0 23 0 0
+342 8 0 23 0 0
+364 8 0 23 0 0
+401 8 0 23 0 0
+466 8 0 23 0 0
+584 8 0 23 0 0
+6 0 0 0 0 0
+2 0 0 0 0 0
+297 6 0 21 0 0
+7 2 0 2 0 0
+2 0 0 0 0 0
+11 2 0 2 0 0 correct
+11 2 0 2 0 0 correct
+11 2 0 2 0 0 correct
+311 8 0 23 0 0 correct
+311 8 0 23 0 0 correct
+309 8 0 23 0 0 correct
+309 8 0 23 0 0 correct
+308 8 0 23 0 0 correct
+309 8 0 23 0 0 correct
+309 8 0 23 0 0 correct
+308 8 0 23 0 0 correct
+2 0 0 0 0 0 
+308 8 0 23 0 0 correct
+11 2 0 2 0 0 correct
+309 8 0 23 0 0 correct
+is-empty-object: 309 8 0 23 0 0 correct
+is-empty-object: 11 2 0 2 0 0 correct
+is-empty-object: 71 4 0 8 0 0 correct
+is-empty-object: 285 8 0 23 0 0 correct
+is-empty-object: 306 8 0 23 0 0 correct
+is-empty-object: 327 8 0 23 0 0 correct
+is-empty-object: 342 8 0 23 0 0 correct
+is-empty-object: 364 8 0 23 0 0 correct
+is-empty-object: 401 8 0 23 0 0 correct
+is-empty-object: 466 8 0 23 0 0 correct
+is-empty-object: 584 8 0 23 0 0 correct
+is-empty-object: 6 0 0 0 0 0 
+is-empty-object: 2 0 0 0 0 0 
+is-empty-object: 297 6 0 21 0 0 correct
+is-empty-object: 7 2 0 2 0 0 correct
+is-empty-object: 2 0 0 0 0 0 
+is-empty-object: 2 0 0 0 0 0 
+is-empty-object: 6 0 0 0 0 0 correct
+is-empty-object: 2 0 0 0 0 0 correct
+is-empty-object: 297 6 0 21 0 0 correct
+is-empty-object: 7 2 0 2 0 0 correct
+is-empty-object: 2 0 0 0 0 0 correct
+is-empty-object: 306 8 0 23 0 0 correct
+is-empty-object: 2 0 0 0 0 0 correct
+306 8 0 23 0 0 correct
+is-empty-object: 306 8 0 23 0 0 correct
+is-empty-object: 306 8 0 23 0 0 correct
+is-empty-object: 309 8 0 23 0 0 correct
+is-empty-object: 306 8 0 23 0 0 correct
+is-empty-object: 11 2 0 2 0 0 correct
+is-empty-object: 71 4 0 8 0 0 correct
+is-empty-object: 285 8 0 23 0 0 correct
+is-empty-object: 305 8 0 23 0 0 correct
+is-empty-object: 325 8 0 23 0 0 correct
+is-empty-object: 334 8 0 23 0 0 correct
+is-empty-object: 341 8 0 23 0 0 correct
+is-empty-object: 362 8 0 23 0 0 correct
+is-empty-object: 367 8 0 23 0 0 correct
+is-empty-object: 388 8 0 23 0 0 correct
+is-empty-object: 394 8 0 23 0 0 correct
+is-empty-object: 410 8 0 23 0 0 correct
+is-empty-object: 414 6 2 21 2 0.00483 correct
+is-empty-object: 423 6 2 21 2 0.00473 correct
+is-empty-object: 471 6 2 21 2 0.00425 correct
+is-empty-object: 474 6 2 21 2 0.00422 correct
+is-empty-object: 414 6 2 21 2 0.00483 correct
+is-empty-object: 480 6 2 21 2 0.00417 correct
+is-empty-object: 11 2 0 2 0 0 correct
+is-empty-object: 71 4 0 8 0 0 correct
+is-empty-object: 285 8 0 23 0 0 correct
+is-empty-object: 304 8 0 23 0 0 correct
+is-empty-object: 322 8 0 23 0 0 correct
+is-empty-object: 325 8 0 23 0 0 correct
+is-empty-object: 325 8 0 23 0 0 correct
+is-empty-object: 325 8 0 23 0 0 correct
+is-empty-object: 325 8 0 23 0 0 correct
+is-empty-object: 325 8 0 23 0 0 correct
+is-empty-object: 308 8 0 23 0 0 correct
+is-empty-object: 308 8 0 19004 0 0 correct
+is-empty-object: 308 8 0 190004 0 0 correct

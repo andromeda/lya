@@ -1,0 +1,115 @@
+312 2 0 2 0 0 correct
+312 2 0 2 0 0 correct
+312 2 0 2 0 0 correct
+312 2 0 2 0 0 correct
+311 2 0 2 0 0 correct
+309 2 0 2 0 0 correct
+309 2 0 2 0 0 correct
+309 2 0 2 0 0 correct
+309 2 0 2 0 0 correct
+311 2 0 2 0 0 correct
+309 2 0 2 0 0 correct
+311 2 0 2 0 0 correct
+311 2 0 2 0 0 correct
+311 2 0 2 0 0 correct
+311 2 0 2 0 0 correct
+311 2 0 2 0 0 correct
+309 2 0 2 0 0 correct
+309 2 0 2 0 0 correct
+309 2 0 2 0 0 correct
+309 2 0 2 0 0 correct
+306 2 0 2 0 0 correct
+306 2 0 2 0 0 correct
+309 2 0 2 0 0 correct
+306 2 0 2 0 0 correct
+306 2 0 2 0 0
+71 2 0 2 0 0
+285 2 0 2 0 0
+285 2 0 2 0 0
+306 2 0 2 0 0
+328 2 0 2 0 0
+347 2 0 2 0 0
+378 2 0 2 0 0
+486 2 0 2 0 0
+658 2 0 2 0 0
+1023 2 0 2 0 0
+6 0 0 0 0 0
+2 0 0 0 0 0
+297 0 0 0 0 0
+7 2 0 2 0 0
+2 0 0 0 0 0
+11 2 0 2 0 0 correct
+11 2 0 2 0 0 correct
+11 2 0 2 0 0 correct
+311 2 0 2 0 0 correct
+311 2 0 2 0 0 correct
+309 2 0 2 0 0 correct
+309 2 0 2 0 0 correct
+308 2 0 2 0 0 correct
+309 2 0 2 0 0 correct
+309 2 0 2 0 0 correct
+308 2 0 2 0 0 correct
+2 0 0 0 0 0 
+308 2 0 2 0 0 correct
+11 2 0 2 0 0 correct
+309 2 0 2 0 0 correct
+is-promise: 309 2 0 2 0 0 correct
+is-promise: 11 2 0 2 0 0 correct
+is-promise: 71 2 0 2 0 0 correct
+is-promise: 285 2 0 2 0 0 correct
+is-promise: 306 2 0 2 0 0 correct
+is-promise: 328 2 0 2 0 0 correct
+is-promise: 347 2 0 2 0 0 correct
+is-promise: 378 2 0 2 0 0 correct
+is-promise: 486 2 0 2 0 0 correct
+is-promise: 658 2 0 2 0 0 correct
+is-promise: 1023 2 0 2 0 0 correct
+is-promise: 6 0 0 0 0 0 
+is-promise: 2 0 0 0 0 0 
+is-promise: 297 0 0 0 0 0 
+is-promise: 7 2 0 2 0 0 correct
+is-promise: 2 0 0 0 0 0 
+is-promise: 2 0 0 0 0 0 
+is-promise: 6 0 0 0 0 0 correct
+is-promise: 2 0 0 0 0 0 correct
+is-promise: 297 0 0 0 0 0 correct
+is-promise: 7 2 0 2 0 0 correct
+is-promise: 2 0 0 0 0 0 correct
+is-promise: 306 2 0 2 0 0 correct
+is-promise: 2 0 0 0 0 0 correct
+306 2 0 2 0 0 correct
+is-promise: 306 2 0 2 0 0 correct
+is-promise: 306 2 0 2 0 0 correct
+is-promise: 309 2 0 2 0 0 correct
+is-promise: 306 2 0 2 0 0 correct
+is-promise: 11 2 0 2 0 0 correct
+is-promise: 71 2 0 2 0 0 correct
+is-promise: 285 2 0 2 0 0 correct
+is-promise: 305 2 0 2 0 0 correct
+is-promise: 326 2 0 2 0 0 correct
+is-promise: 339 2 0 2 0 0 correct
+is-promise: 353 2 0 2 0 0 correct
+is-promise: 435 2 0 2 0 0 correct
+is-promise: 420 2 0 2 0 0 correct
+is-promise: 455 2 0 2 0 0 correct
+is-promise: 504 2 0 2 0 0 correct
+is-promise: 563 2 0 2 0 0 correct
+is-promise: 559 2 0 2 0 0 correct
+is-promise: 582 2 0 2 0 0 correct
+is-promise: 585 2 0 2 0 0 correct
+is-promise: 606 2 0 2 0 0 correct
+is-promise: 559 2 0 2 0 0 correct
+is-promise: 611 2 0 2 0 0 correct
+is-promise: 11 2 0 2 0 0 correct
+is-promise: 71 2 0 2 0 0 correct
+is-promise: 285 2 0 2 0 0 correct
+is-promise: 304 2 0 2 0 0 correct
+is-promise: 322 2 0 2 0 0 correct
+is-promise: 325 2 0 2 0 0 correct
+is-promise: 325 2 0 2 0 0 correct
+is-promise: 325 2 0 2 0 0 correct
+is-promise: 325 2 0 2 0 0 correct
+is-promise: 325 2 0 2 0 0 correct
+is-promise: 308 2 0 2 0 0 correct
+is-promise: 308 2 0 2 0 0 correct
+is-promise: 308 2 0 2 0 0 correct

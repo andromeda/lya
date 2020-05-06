@@ -1,0 +1,123 @@
+312 2 0 2 0 0 correct
+312 2 0 2 0 0 correct
+312 2 0 2 0 0 correct
+312 2 0 2 0 0 correct
+312 2 0 2 0 0 correct
+312 2 0 2 0 0 correct
+312 2 0 2 0 0 correct
+312 2 0 2 0 0 correct
+311 2 0 2 0 0 correct
+309 2 0 2 0 0 correct
+309 2 0 2 0 0 correct
+309 2 0 2 0 0 correct
+309 2 0 2 0 0 correct
+311 2 0 2 0 0 correct
+309 2 0 2 0 0 correct
+311 2 0 2 0 0 correct
+311 2 0 2 0 0 correct
+311 2 0 2 0 0 correct
+311 2 0 2 0 0 correct
+311 2 0 2 0 0 correct
+309 2 0 2 0 0 correct
+309 2 0 2 0 0 correct
+309 2 0 2 0 0 correct
+309 2 0 2 0 0 correct
+306 2 0 2 0 0 correct
+306 2 0 2 0 0 correct
+309 2 0 2 0 0 correct
+306 2 0 2 0 0 correct
+306 2 0 2 0 0
+71 2 0 2 0 0
+285 2 0 2 0 0
+285 2 0 2 0 0
+306 2 0 2 0 0
+330 2 0 2 0 0
+357 2 0 2 0 0
+397 2 0 2 0 0
+487 2 0 2 0 0
+695 2 0 2 0 0
+1104 2 0 2 0 0
+6 0 0 0 0 0
+2 0 0 0 0 0
+297 0 0 0 0 0
+7 2 0 2 0 0
+2 0 0 0 0 0
+11 2 0 2 0 0 correct
+11 2 0 2 0 0 correct
+11 2 0 2 0 0 correct
+311 2 0 2 0 0 correct
+311 2 0 2 0 0 correct
+309 2 0 2 0 0 correct
+309 2 0 2 0 0 correct
+309 2 0 2 0 0 correct
+308 2 0 2 0 0 correct
+309 2 0 2 0 0 correct
+309 2 0 2 0 0 correct
+308 2 0 2 0 0 correct
+2 0 0 0 0 0 
+308 2 0 2 0 0 correct
+11 2 0 2 0 0 correct
+309 2 0 2 0 0 correct
+identity-function: 309 2 0 2 0 0 correct
+identity-function: 11 2 0 2 0 0 correct
+identity-function: 71 2 0 2 0 0 correct
+identity-function: 285 2 0 2 0 0 correct
+identity-function: 306 2 0 2 0 0 correct
+identity-function: 330 2 0 2 0 0 correct
+identity-function: 357 2 0 2 0 0 correct
+identity-function: 397 2 0 2 0 0 correct
+identity-function: 487 2 0 2 0 0 correct
+identity-function: 695 2 0 2 0 0 correct
+identity-function: 1104 2 0 2 0 0 correct
+identity-function: 6 0 0 0 0 0 
+identity-function: 2 0 0 0 0 0 
+identity-function: 297 0 0 0 0 0 
+identity-function: 7 2 0 2 0 0 correct
+identity-function: 2 0 0 0 0 0 
+identity-function: 2 0 0 0 0 0 
+identity-function: 6 0 0 0 0 0 correct
+identity-function: 2 0 0 0 0 0 correct
+identity-function: 297 0 0 0 0 0 correct
+identity-function: 7 2 0 2 0 0 correct
+identity-function: 2 0 0 0 0 0 correct
+identity-function: 306 2 0 2 0 0 correct
+identity-function: 2 0 0 0 0 0 correct
+306 2 0 2 0 0 correct
+identity-function: 306 2 0 2 0 0 correct
+identity-function: 306 2 0 2 0 0 correct
+identity-function: 309 2 0 2 0 0 correct
+identity-function: 306 2 0 2 0 0 correct
+identity-function: 11 2 0 2 0 0 correct
+identity-function: 71 2 0 2 0 0 correct
+identity-function: 285 2 0 2 0 0 correct
+identity-function: 305 2 0 2 0 0 correct
+identity-function: 328 2 0 2 0 0 correct
+identity-function: 346 2 0 2 0 0 correct
+identity-function: 361 2 0 2 0 0 correct
+identity-function: 399 2 0 2 0 0 correct
+identity-function: 407 2 0 2 0 0 correct
+identity-function: 458 2 0 2 0 0 correct
+identity-function: 473 2 0 2 0 0 correct
+identity-function: 513 2 0 2 0 0 correct
+identity-function: 526 2 0 2 0 0 correct
+identity-function: 578 2 0 2 0 0 correct
+identity-function: 596 0 2 0 2 0.00336 
+identity-function: 644 0 2 0 2 0.00311 
+identity-function: 526 2 0 2 0 0 correct
+identity-function: 649 0 2 0 2 0.00308 
+identity-function: 11 2 0 2 0 0 correct
+identity-function: 71 2 0 2 0 0 correct
+identity-function: 285 2 0 2 0 0 correct
+identity-function: 304 2 0 2 0 0 correct
+identity-function: 322 2 0 2 0 0 correct
+identity-function: 325 2 0 2 0 0 correct
+identity-function: 325 2 0 2 0 0 correct
+identity-function: 325 2 0 2 0 0 correct
+identity-function: 325 2 0 2 0 0 correct
+identity-function: 325 2 0 2 0 0 correct
+identity-function: 308 2 0 2 0 0 correct
+identity-function: 308 2 0 2 0 0 correct
+identity-function: 308 2 0 2 0 0 correct
+identity-function: 308 2 0 2 0 0 correct
+identity-function: 308 2 0 2 0 0 correct
+identity-function: 308 2 0 2 0 0 correct

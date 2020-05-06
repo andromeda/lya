@@ -1,0 +1,116 @@
+312 6 1 127 50 0.16026 correct
+312 6 1 127 50 0.16026 correct
+312 6 1 127 50 0.16026 correct
+312 6 1 127 50 0.16026 correct
+312 6 1 127 50 0.16026 correct
+311 6 1 127 50 0.16077 correct
+309 6 1 127 50 0.16181 correct
+309 6 1 127 50 0.16181 correct
+309 6 1 127 50 0.16181 correct
+309 6 1 127 50 0.16181 correct
+311 6 1 127 50 0.16077 correct
+309 6 1 127 50 0.16181 correct
+311 5 0 177 0 0 correct
+311 5 0 177 0 0 correct
+311 5 0 177 0 0 correct
+311 5 0 177 0 0 correct
+311 5 0 177 0 0 correct
+309 5 0 177 0 0 correct
+309 5 0 177 0 0 correct
+309 5 0 177 0 0 correct
+309 5 0 177 0 0 correct
+306 5 0 177 0 0 correct
+306 5 0 177 0 0 correct
+309 5 0 177 0 0 correct
+306 5 0 177 0 0 correct
+306 5 0 177 0 0
+71 3 0 102 0 0
+285 5 0 177 0 0
+285 5 0 177 0 0
+306 5 0 177 0 0
+329 5 0 177 0 0
+352 5 0 177 0 0
+390 5 0 177 0 0
+581 5 0 177 0 0
+795 5 0 177 0 0
+1197 5 0 177 0 0
+6 0 0 0 0 0
+2 0 0 0 0 0
+297 3 0 175 0 0
+7 2 0 2 0 0
+2 0 0 0 0 0
+11 2 0 2 0 0 correct
+11 2 0 2 0 0 correct
+11 2 0 2 0 0 correct
+311 5 0 177 0 0 correct
+311 5 0 177 0 0 correct
+309 5 0 177 0 0 correct
+309 5 0 177 0 0 correct
+308 5 0 177 0 0 correct
+309 5 0 177 0 0 correct
+309 5 0 177 0 0 correct
+308 5 0 177 0 0 correct
+2 0 0 0 0 0 
+308 5 0 177 0 0 correct
+11 2 0 2 0 0 correct
+309 5 0 177 0 0 correct
+is-number: 309 5 0 177 0 0 correct
+is-number: 11 2 0 2 0 0 correct
+is-number: 71 3 0 102 0 0 correct
+is-number: 285 5 0 177 0 0 correct
+is-number: 306 5 0 177 0 0 correct
+is-number: 329 5 0 177 0 0 correct
+is-number: 352 5 0 177 0 0 correct
+is-number: 390 5 0 177 0 0 correct
+is-number: 581 5 0 177 0 0 correct
+is-number: 795 5 0 177 0 0 correct
+is-number: 1197 5 0 177 0 0 correct
+is-number: 6 0 0 0 0 0 
+is-number: 2 0 0 0 0 0 
+is-number: 297 3 0 175 0 0 correct
+is-number: 7 2 0 2 0 0 correct
+is-number: 2 0 0 0 0 0 
+is-number: 2 0 0 0 0 0 
+is-number: 6 0 0 0 0 0 correct
+is-number: 2 0 0 0 0 0 correct
+is-number: 297 3 0 175 0 0 correct
+is-number: 7 2 0 2 0 0 correct
+is-number: 2 0 0 0 0 0 correct
+is-number: 306 5 0 177 0 0 correct
+is-number: 2 0 0 0 0 0 correct
+306 5 0 177 0 0 correct
+is-number: 306 5 0 177 0 0 correct
+is-number: 306 5 0 177 0 0 correct
+is-number: 309 5 0 177 0 0 correct
+is-number: 306 5 0 177 0 0 correct
+is-number: 11 2 0 2 0 0 correct
+is-number: 71 3 0 102 0 0 correct
+is-number: 285 5 0 177 0 0 correct
+is-number: 305 5 0 177 0 0 correct
+is-number: 327 5 0 177 0 0 correct
+is-number: 343 5 0 177 0 0 correct
+is-number: 361 5 0 177 0 0 correct
+is-number: 505 5 0 177 0 0 correct
+is-number: 504 5 0 177 0 0 correct
+is-number: 530 5 0 177 0 0 correct
+is-number: 599 5 0 177 0 0 correct
+is-number: 664 5 0 177 0 0 correct
+is-number: 623 5 0 177 0 0 correct
+is-number: 669 5 0 177 0 0 correct
+is-number: 707 5 0 177 0 0 correct
+is-number: 777 5 0 177 0 0 correct
+is-number: 623 5 0 177 0 0 correct
+is-number: 782 5 0 177 0 0 correct
+is-number: 11 2 0 2 0 0 correct
+is-number: 71 3 0 102 0 0 correct
+is-number: 285 5 0 177 0 0 correct
+is-number: 304 5 0 177 0 0 correct
+is-number: 322 5 0 177 0 0 correct
+is-number: 325 5 0 177 0 0 correct
+is-number: 325 5 0 177 0 0 correct
+is-number: 325 5 0 177 0 0 correct
+is-number: 325 5 0 177 0 0 correct
+is-number: 325 5 0 177 0 0 correct
+is-number: 308 5 0 177 0 0 correct
+is-number: 308 5 0 133044 0 0 correct
+is-number: 308 5 0 175002 0 0 correct
