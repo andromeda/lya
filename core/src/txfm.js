@@ -16,6 +16,7 @@ const preset = {
   RWX: pathJoin(__dirname, 'rwx.js'),
   RWX_ENFORCEMENT: pathJoin(__dirname, 'rwx-enforcement.js'),
   RWX_CHECKING: pathJoin(__dirname, 'rwx-checking.js'),
+  RWX_PERFORMANCE: pathJoin(__dirname, 'rwx-performance.js'),
   GLOBAL_ONLY: pathJoin(__dirname, 'global-only.js'),
   EXPORT_TYPE: pathJoin(__dirname, 'export-type.js'),
   COARSE_TYPES: pathJoin(__dirname, 'coarse-types.js'),
