@@ -494,14 +494,19 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       console.log('Module: ', options['filename']);
       console.log(code);
     }
-    if (lyaConfig.modules.include &&
-      !lyaConfig.modules.include.includes(options['filename'])) {
+
+    if (lyaConfig.modules.include!== null &&
+      !lyaConfig.modules.include.includes(options['filename'])){
+      if (env.requireLevel !== 0) {
+        env.requireLevel++;
+        moduleName[env.requireLevel] = options['filename'];
+      }
       return originalRun(originalScript, options);
     }
 
-    const codeToRun = originalRun(code, options);
     env.requireLevel++;
     moduleName[env.requireLevel] = options['filename'];
+    const codeToRun = originalRun(code, options);
     if (!Object.prototype.hasOwnProperty.
         call(analysisResult, moduleName[env.requireLevel])) {
       analysisResult[moduleName[env.requireLevel]] = {};
@@ -509,13 +514,23 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     return setProxy(codeToRun, handlerAddArg, 'object');
   };
 
+  const reduceLevel = (name) => {
+    if (env.requireLevel !== 0 &&
+      nativeModules.indexOf(name) === -1) {
+      env.requireLevel--;
+    }
+  }
+
   // We wrap the result in the wrapper function
   Module.prototype.require = function(...args) {
-    if (lyaConfig.modules.include &&
-      !lyaConfig.modules.include.includes(moduleName[env.requireLevel-1])) {
-      return originalRequire.apply(this, args);
-    }
     const importName = args[0];
+    if (lyaConfig.modules.include !== null &&
+      !lyaConfig.modules.include.includes(moduleName[env.requireLevel])) {
+      let moduleExports = originalRequire.apply(this, args);
+      reduceLevel(importName);
+      return moduleExports;
+    };
+
     let moduleExports = originalRequire.apply(this, args);
     const type = typeof moduleExports;
 
@@ -527,10 +542,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
         if (lyaConfig.context.include.includes('module-returns')) {
           moduleExports = setProxy(moduleExports, exportHandler, type);
         };
-        if (env.requireLevel !== 0 &&
-          nativeModules.indexOf(importName) === -1) {
-          env.requireLevel--;
-        }
+        reduceLevel(importName);
       } else {
         moduleExports = setProxy(moduleExports, exportHandler, type);
         objectName.set(moduleExports, 'require(\'' + importName + '\')');

@@ -32,6 +32,11 @@ const getAnalysisData = () => {
 // TODO: Make the path of the imported analysis result  not absolute
 // etc.. /greg/home/lya/tst/main.js ~> main.js
 const checkRWX = (storedCalls, truename, modeGrid) => {
+  // This is a failback check
+  if (!storedCalls) {
+    return;
+  };
+
   for (const key in modeGrid) {
     const mode = modeGrid[key];
     if (Object.prototype.hasOwnProperty.
@@ -128,7 +133,7 @@ const onExit = () => {
   let debugName = env.conf.debugName ? env.conf.debugName : '';
   let total = env.counters.total;
   let ratio = (+(countInvalid / total).toFixed(5));
-  let corr = countValid > 0? 'correct' : '';
+  let corr = countValid > 0 ? 'correct' : '';
   let msg = `${debugName} ${total} ${uniqueValid.size} ${uniqueInvalid.size} ${countValid} ${countInvalid} ${ratio} ${corr}`;
   if (env.conf.printResults) {
     console.error(msg);
