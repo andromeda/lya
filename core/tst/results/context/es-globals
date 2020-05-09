@@ -17,7 +17,7 @@ ReferenceError: BigInt is not defined
     at tryModuleLoad (module.js:499:12)
     at Function.Module._load (module.js:491:3)
     at Module.require (module.js:587:17)
-    at Module.require (/home/grigorisntousakis/lya/core/src/txfm.js:511:30)
+    at Module.require (/home/grigorisntousakis/lya/core/src/txfm.js:526:43)
     at require (internal/module.js:11:18)
     at /home/grigorisntousakis/lya/core/tst/micro-packages/algebra/node_modules/mocha/lib/mocha.js:250:27
     at Array.forEach (<anonymous>)
@@ -37,7 +37,7 @@ npm ERR! Test failed.  See above for more details.
  ⠋ 
 [2K[1A[2K[1A[2K[0G 
  ⠙ 
-[2K[1A[2K[1A[2K[0G(node:5800) DeprecationWarning: loudRejection/api is deprecated. Use the currently-unhandled module instead.
+[2K[1A[2K[1A[2K[0G(node:16281) DeprecationWarning: loudRejection/api is deprecated. Use the currently-unhandled module instead.
  
  ⠙ 
 [2K[1A[2K[1A[2K[0G 
@@ -56,23 +56,19 @@ npm ERR! Test failed.  See above for more details.
  ⠙ throw error when passed in non-array variable
 
    4 passed
-[2K[1A[2K[1A[2K[1A[2K[1A[2K[0G 
- ⠹ throw error when passed in non-array variable
-
-   4 passed
 [2K[1A[2K[1A[2K[1A[2K[1A[2K[0Garray.chunk: 2 0 0 0 0 0 correct
  
- ⠹ throw error when passed in non-array variable
+ ⠙ throw error when passed in non-array variable
 
    4 passed
 [2K[1A[2K[1A[2K[1A[2K[1A[2K[0G-------------------------------------------------
  
- ⠹ throw error when passed in non-array variable
+ ⠙ throw error when passed in non-array variable
 
    4 passed
 [2K[1A[2K[1A[2K[1A[2K[1A[2K[0GTotal number of wrappers: 2
  
- ⠹ throw error when passed in non-array variable
+ ⠙ throw error when passed in non-array variable
 
    4 passed
 [2K[1A[2K[1A[2K[1A[2K[1A[2K[0Gobjects: 0
@@ -81,11 +77,15 @@ functions: 0
 Valid accesses: 0
 Invalid accesses: 0
  
- ⠹ throw error when passed in non-array variable
+ ⠙ throw error when passed in non-array variable
 
    4 passed
 [2K[1A[2K[1A[2K[1A[2K[1A[2K[0GTotal accesses: 0
  
+ ⠙ throw error when passed in non-array variable
+
+   4 passed
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[0G 
  ⠹ throw error when passed in non-array variable
 
    4 passed
@@ -101,7 +101,7 @@ arr-flatten: 2 0 0 0 0 0 correct
 concat-stream: 2 0 0 0 0 0 correct
 npm ERR! Test failed.  See above for more details.
 deep-bind: 2 0 0 0 0 0 correct
-(node:6336) [DEP0006] DeprecationWarning: child_process: options.customFds option is deprecated. Use options.stdio instead.
+(node:16853) [DEP0006] DeprecationWarning: child_process: options.customFds option is deprecated. Use options.stdio instead.
 file-size: 2 0 0 0 0 0 correct
 fs-promise: 2 0 0 0 0 0 correct
 get-value: 2 0 0 0 0 0 correct
@@ -119,7 +119,7 @@ Writing coverage reports at [/home/grigorisntousakis/lya/core/tst/micro-packages
 =============================================================================
 is-generator: 2 0 0 0 0 0 correct
 is-number: 2 0 0 0 0 0 correct
-(node:7107) [DEP0006] DeprecationWarning: child_process: options.customFds option is deprecated. Use options.stdio instead.
+(node:17689) [DEP0006] DeprecationWarning: child_process: options.customFds option is deprecated. Use options.stdio instead.
 is-promise: 2 0 0 0 0 0 correct
 is-sorted: 2 0 0 0 0 0 correct
 left-pad: 2 0 0 0 0 0 correct
@@ -133,21 +133,21 @@ ndarray: 2 0 0 0 0 0 correct
 npm ERR! Test failed.  See above for more details.
 node-du: 2 0 0 0 0 0 correct
 Windows, or TEST_REGEN unset.  Using cached fixtures.
+node-glob: 4 2 0 2 0 0 correct
+node-glob: 4 2 0 2 0 0 correct
+node-glob: 4 2 0 2 0 0 correct
+node-glob: 4 2 0 2 0 0 correct
 node-glob: 2 0 0 0 0 0 correct
-node-glob: 2 0 0 0 0 0 correct
-node-glob: 2 0 0 0 0 0 correct
-node-glob: 2 0 0 0 0 0 correct
-node-glob: 2 0 0 0 0 0 correct
-node-glob: 2 0 0 0 0 0 correct
-node-glob: 2 0 0 0 0 0 correct
-node-glob: 2 0 0 0 0 0 correct
-node-glob: 2 0 0 0 0 0 correct
-node-glob: 2 0 0 0 0 0 correct
-node-glob: 2 0 0 0 0 0 correct
-node-glob: 2 0 0 0 0 0 correct
-node-glob: 2 0 0 0 0 0 correct
-node-glob: 2 0 0 0 0 0 correct
-node-glob: 2 0 0 0 0 0 correct
+node-glob: 4 2 0 2 0 0 correct
+node-glob: 4 2 0 2 0 0 correct
+node-glob: 4 2 0 2 0 0 correct
+node-glob: 4 2 0 2 0 0 correct
+node-glob: 4 2 0 2 0 0 correct
+node-glob: 4 2 0 2 0 0 correct
+node-glob: 4 2 0 2 0 0 correct
+node-glob: 4 2 0 2 0 0 correct
+node-glob: 4 2 0 2 0 0 correct
+node-glob: 4 2 0 2 0 0 correct
 node-glob: 2 0 0 0 0 0 correct
 /home/grigorisntousakis/lya/core/tst/micro-packages/node-glob/node_modules/tap/lib/test.js:657
       er.test = this.name
@@ -161,21 +161,21 @@ TypeError: Cannot create property 'test' on string 'SILENCE, INSECT!'
     at process.emit (/home/grigorisntousakis/lya/core/tst/micro-packages/node-glob/node_modules/source-map-support/source-map-support.js:461:21)
     at processEmit [as emit] (/home/grigorisntousakis/lya/core/tst/micro-packages/node-glob/node_modules/signal-exit/index.js:155:32)
     at process._fatalException (bootstrap_node.js:374:26)
-node-glob: 2 0 0 0 0 0 correct
-node-glob: 2 0 0 0 0 0 correct
-node-glob: 2 0 0 0 0 0 correct
-node-glob: 2 0 0 0 0 0 correct
-node-glob: 2 0 0 0 0 0 correct
-node-glob: 2 0 0 0 0 0 correct
-node-glob: 2 0 0 0 0 0 correct
-node-glob: 2 0 0 0 0 0 correct
-node-glob: 2 0 0 0 0 0 correct
-node-glob: 2 0 0 0 0 0 correct
-node-glob: 2 0 0 0 0 0 correct
-node-glob: 2 0 0 0 0 0 correct
-node-glob: 2 0 0 0 0 0 correct
+node-glob: 4 2 0 2 0 0 correct
+node-glob: 4 2 0 2 0 0 correct
+node-glob: 4 2 0 2 0 0 correct
+node-glob: 4 2 0 2 0 0 correct
+node-glob: 4 2 0 2 0 0 correct
+node-glob: 4 2 0 2 0 0 correct
+node-glob: 4 2 0 2 0 0 correct
+node-glob: 4 2 0 2 0 0 correct
+node-glob: 4 2 0 2 0 0 correct
+node-glob: 4 2 0 2 0 0 correct
+node-glob: 4 2 0 2 0 0 correct
+node-glob: 4 2 0 2 0 0 correct
+node-glob: 4 2 0 2 0 0 correct
 npm ERR! Test failed.  See above for more details.
-(node:7859) [DEP0006] DeprecationWarning: child_process: options.customFds option is deprecated. Use options.stdio instead.
+(node:18504) [DEP0006] DeprecationWarning: child_process: options.customFds option is deprecated. Use options.stdio instead.
 node-slug: 2 0 0 0 0 0 correct
 node-stream-spigot: 2 0 0 0 0 0 correct
 npm ERR! Test failed.  See above for more details.
@@ -217,14 +217,14 @@ Error: something unrelated
     at parserOnIncoming (_http_server.js:602:12)
     at HTTPParser.parserOnHeadersComplete (_http_common.js:116:23)
 property-validator: 2 0 0 0 0 0 correct
+rimraf: 5 0 0 0 0 0 correct
 rimraf: 2 0 0 0 0 0 correct
-rimraf: 2 0 0 0 0 0 correct
-rimraf: 2 0 0 0 0 0 correct
+rimraf: 4 0 0 0 0 0 correct
 rtrim: 2 0 0 0 0 0 correct
 schema-inspector: 2 0 0 0 0 0 correct
 set-value: 2 0 0 0 0 0 correct
 static-props: 2 0 0 0 0 0 correct
-(node:8901) Warning: process.on(SIGPROF) is reserved while debugging
+(node:19599) Warning: process.on(SIGPROF) is reserved while debugging
 syncthrough: 2 0 0 0 0 0 correct
 through2: 2 0 0 0 0 0 correct
 through2-map: 2 0 0 0 0 0 correct

@@ -1,4 +1,4 @@
-algebra: 7 26 0 53 0 0 correct
+algebra: 7 22 0 41 0 0 correct
 /home/grigorisntousakis/lya/core/tst/micro-packages/algebra/test/api.js:99
     const Rational = algebra.Scalar({
                              ^
@@ -17,7 +17,7 @@ ReferenceError: BigInt is not defined
     at tryModuleLoad (module.js:499:12)
     at Function.Module._load (module.js:491:3)
     at Module.require (module.js:587:17)
-    at Module.require (/home/grigorisntousakis/lya/core/src/txfm.js:511:30)
+    at Module.require (/home/grigorisntousakis/lya/core/src/txfm.js:526:43)
     at require (internal/module.js:11:18)
     at /home/grigorisntousakis/lya/core/tst/micro-packages/algebra/node_modules/mocha/lib/mocha.js:250:27
     at Array.forEach (<anonymous>)
@@ -37,57 +37,51 @@ npm ERR! Test failed.  See above for more details.
  ⠋ 
 [2K[1A[2K[1A[2K[0G 
  ⠙ 
+[2K[1A[2K[1A[2K[0G 
+ ⠹ 
 [2K[1A[2K[1A[2K[0GValid access in: module and mode r
  
- ⠙ 
+ ⠹ 
 [2K[1A[2K[1A[2K[0GValid access in: module.exports and mode w
  
- ⠙ 
-[2K[1A[2K[1A[2K[0G(node:13184) DeprecationWarning: loudRejection/api is deprecated. Use the currently-unhandled module instead.
+ ⠹ 
+[2K[1A[2K[1A[2K[0G(node:23985) DeprecationWarning: loudRejection/api is deprecated. Use the currently-unhandled module instead.
  
- ⠙ 
+ ⠹ 
 [2K[1A[2K[1A[2K[0G 
- ⠙ size smaller than array length
+ ⠹ size smaller than array length
 
    1 passed
 [2K[1A[2K[1A[2K[1A[2K[1A[2K[0G 
- ⠙ size larger than array length
+ ⠹ size larger than array length
 
    2 passed
 [2K[1A[2K[1A[2K[1A[2K[1A[2K[0G 
- ⠙ work with TypedArray
+ ⠹ work with TypedArray
 
    3 passed
 [2K[1A[2K[1A[2K[1A[2K[1A[2K[0G 
- ⠙ throw error when passed in non-array variable
+ ⠹ throw error when passed in non-array variable
 
    4 passed
 [2K[1A[2K[1A[2K[1A[2K[1A[2K[0Garray.chunk: 7 2 0 2 0 0 correct
  
- ⠙ throw error when passed in non-array variable
+ ⠹ throw error when passed in non-array variable
 
    4 passed
 [2K[1A[2K[1A[2K[1A[2K[1A[2K[0G-------------------------------------------------
+Total number of wrappers: 7
+objects: 0
  
- ⠙ throw error when passed in non-array variable
+ ⠹ throw error when passed in non-array variable
 
    4 passed
-[2K[1A[2K[1A[2K[1A[2K[1A[2K[0GTotal number of wrappers: 7
-objects: 0
-functions: 0
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[0Gfunctions: 0
 -------------------------------------------------
 Valid accesses: 2
- 
- ⠙ throw error when passed in non-array variable
-
-   4 passed
-[2K[1A[2K[1A[2K[1A[2K[1A[2K[0GInvalid accesses: 0
+Invalid accesses: 0
 Total accesses: 2
  
- ⠙ throw error when passed in non-array variable
-
-   4 passed
-[2K[1A[2K[1A[2K[1A[2K[1A[2K[0G 
  ⠹ throw error when passed in non-array variable
 
    4 passed
@@ -100,14 +94,14 @@ array-last: 7 5 0 5 0 0 correct
 array-range: 7 2 0 2 0 0 correct
 arr-diff: 7 2 0 2 0 0 correct
 arr-flatten: 7 2 0 2 0 0 correct
-concat-stream: 7 7 0 11 0 0 correct
+concat-stream: 7 5 0 5 0 0 correct
 npm ERR! Test failed.  See above for more details.
 deep-bind: 7 5 0 5 0 0 correct
-(node:13719) [DEP0006] DeprecationWarning: child_process: options.customFds option is deprecated. Use options.stdio instead.
+(node:24543) [DEP0006] DeprecationWarning: child_process: options.customFds option is deprecated. Use options.stdio instead.
 file-size: 7 2 1 2 2 0.28571 correct
-fs-promise: 7 7 133 444 166 23.71429 correct
+fs-promise: 7 4 133 435 166 23.71429 correct
 get-value: 7 5 0 5 0 0 correct
-group-array: 7 10 0 20 0 0 correct
+group-array: 7 7 0 11 0 0 correct
 npm ERR! Test failed.  See above for more details.
 has-key-deep: 7 2 0 2 0 0 correct
 has-value: 7 6 0 8 0 0 correct
@@ -121,7 +115,7 @@ Writing coverage reports at [/home/grigorisntousakis/lya/core/tst/micro-packages
 =============================================================================
 is-generator: 7 2 0 4 0 0 correct
 is-number: 7 2 0 2 0 0 correct
-(node:14486) [DEP0006] DeprecationWarning: child_process: options.customFds option is deprecated. Use options.stdio instead.
+(node:25351) [DEP0006] DeprecationWarning: child_process: options.customFds option is deprecated. Use options.stdio instead.
 is-promise: 7 2 0 2 0 0 correct
 is-sorted: 7 2 0 2 0 0 correct
 left-pad: 7 2 0 2 0 0 correct
@@ -135,22 +129,22 @@ ndarray: 7 6 0 8 0 0 correct
 npm ERR! Test failed.  See above for more details.
 node-du: 7 7 0 11 0 0 correct
 Windows, or TEST_REGEN unset.  Using cached fixtures.
-node-glob: 7 17 0 41 0 0 correct
-node-glob: 7 17 0 41 0 0 correct
-node-glob: 7 17 0 41 0 0 correct
-node-glob: 7 17 0 41 0 0 correct
-node-glob: 7 17 0 41 0 0 correct
-node-glob: 7 17 0 41 0 0 correct
-node-glob: 7 17 0 41 0 0 correct
-node-glob: 7 17 0 41 0 0 correct
-node-glob: 7 17 0 41 0 0 correct
-node-glob: 7 17 0 41 0 0 correct
-node-glob: 7 17 0 41 0 0 correct
-node-glob: 7 17 0 41 0 0 correct
-node-glob: 7 17 0 41 0 0 correct
-node-glob: 7 17 0 41 0 0 correct
-node-glob: 7 17 0 41 0 0 correct
-node-glob: 7 17 0 41 0 0 correct
+node-glob: 9 15 0 31 0 0 correct
+node-glob: 9 15 0 31 0 0 correct
+node-glob: 9 15 0 31 0 0 correct
+node-glob: 9 15 0 31 0 0 correct
+node-glob: 7 6 0 8 0 0 correct
+node-glob: 9 15 0 31 0 0 correct
+node-glob: 9 15 0 31 0 0 correct
+node-glob: 9 15 0 31 0 0 correct
+node-glob: 9 15 0 31 0 0 correct
+node-glob: 9 15 0 31 0 0 correct
+node-glob: 9 15 0 31 0 0 correct
+node-glob: 9 15 0 31 0 0 correct
+node-glob: 9 15 0 31 0 0 correct
+node-glob: 9 15 0 31 0 0 correct
+node-glob: 9 15 0 31 0 0 correct
+node-glob: 7 6 0 8 0 0 correct
 /home/grigorisntousakis/lya/core/tst/micro-packages/node-glob/node_modules/tap/lib/test.js:657
       er.test = this.name
               ^
@@ -163,25 +157,25 @@ TypeError: Cannot create property 'test' on string 'SILENCE, INSECT!'
     at process.emit (/home/grigorisntousakis/lya/core/tst/micro-packages/node-glob/node_modules/source-map-support/source-map-support.js:461:21)
     at processEmit [as emit] (/home/grigorisntousakis/lya/core/tst/micro-packages/node-glob/node_modules/signal-exit/index.js:155:32)
     at process._fatalException (bootstrap_node.js:374:26)
-node-glob: 7 17 0 41 0 0 correct
-node-glob: 7 17 0 41 0 0 correct
-node-glob: 7 17 0 41 0 0 correct
-node-glob: 7 17 0 41 0 0 correct
-node-glob: 7 17 0 41 0 0 correct
-node-glob: 7 17 0 41 0 0 correct
-node-glob: 7 17 0 41 0 0 correct
-node-glob: 7 17 0 41 0 0 correct
-node-glob: 7 17 0 41 0 0 correct
-node-glob: 7 17 0 41 0 0 correct
-node-glob: 7 17 0 41 0 0 correct
-node-glob: 7 17 0 41 0 0 correct
-node-glob: 7 17 0 41 0 0 correct
+node-glob: 9 15 0 31 0 0 correct
+node-glob: 9 15 0 31 0 0 correct
+node-glob: 9 15 0 31 0 0 correct
+node-glob: 9 15 0 31 0 0 correct
+node-glob: 9 15 0 31 0 0 correct
+node-glob: 9 15 0 31 0 0 correct
+node-glob: 9 15 0 31 0 0 correct
+node-glob: 9 15 0 31 0 0 correct
+node-glob: 9 15 0 31 0 0 correct
+node-glob: 9 15 0 31 0 0 correct
+node-glob: 9 15 0 31 0 0 correct
+node-glob: 9 15 0 31 0 0 correct
+node-glob: 9 15 0 31 0 0 correct
 npm ERR! Test failed.  See above for more details.
-(node:15253) [DEP0006] DeprecationWarning: child_process: options.customFds option is deprecated. Use options.stdio instead.
+(node:26146) [DEP0006] DeprecationWarning: child_process: options.customFds option is deprecated. Use options.stdio instead.
 node-slug: 7 5 1 5 2 0.28571 correct
-node-stream-spigot: 7 7 0 17 0 0 correct
+node-stream-spigot: 7 5 0 11 0 0 correct
 npm ERR! Test failed.  See above for more details.
-normalize-pkg: 7 0 8 0 14 2 correct
+normalize-pkg: 7 0 7 0 11 1.57143 correct
 not-defined: 7 2 0 2 0 0 correct
 once: 7 5 0 7 0 0 correct
 pad-left: 7 5 0 5 0 0 correct
@@ -218,19 +212,19 @@ Error: something unrelated
     at Server.emit (events.js:214:7)
     at parserOnIncoming (_http_server.js:602:12)
     at HTTPParser.parserOnHeadersComplete (_http_common.js:116:23)
-property-validator: 7 10 0 20 0 0 correct
+property-validator: 7 5 0 5 0 0 correct
+rimraf: 10 8 0 14 0 0 correct
 rimraf: 7 8 0 14 0 0 correct
-rimraf: 7 8 0 14 0 0 correct
-rimraf: 7 8 0 14 0 0 correct
+rimraf: 9 8 0 14 0 0 correct
 npm ERR! Test failed.  See above for more details.
 rtrim: 7 2 0 2 0 0 correct
 schema-inspector: 7 5 0 5 0 0 correct
 set-value: 7 5 0 5 0 0 correct
 static-props: 7 4 0 4 0 0 correct
-(node:16304) Warning: process.on(SIGPROF) is reserved while debugging
-syncthrough: 7 8 0 14 0 0 correct
-through2: 7 6 0 12 0 0 correct
-through2-map: 7 6 0 14 0 0 correct
+(node:27251) Warning: process.on(SIGPROF) is reserved while debugging
+syncthrough: 7 5 0 5 0 0 correct
+through2: 7 5 0 9 0 0 correct
+through2-map: 7 5 0 11 0 0 correct
 time-stamp: 7 2 0 2 0 0 correct
 npm ERR! Test failed.  See above for more details.
 unordered-array-remove: 7 2 0 2 0 0 correct
