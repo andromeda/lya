@@ -482,6 +482,8 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 
     script = lyaConfig.context.enableWith ? getPrologue() + script + '\n}' :
       getPrologue() + script;
+    script = policy.sourceTransform ? policy.sourceTransform(source) :
+      script;
     const wrappedScript = originalWrap(script).replace('dirname)',
       'dirname, localGlobal, withGlobal)');
 
