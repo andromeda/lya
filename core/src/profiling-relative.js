@@ -5,6 +5,14 @@ const storeTime = new Map();
 // Array to store the time of the modules
 const timeCapsule = {};
 
+// Change the time parameters
+const convert = hrtime => {
+  const nanos = (hrtime[0] * 1e9) + hrtime[1];
+  const millis = nanos / 1e6;
+  const secs = nanos / 1e9;
+  return { secs: secs, millis: millis, nanos: nanos };
+};
+
 // Normalize all values (seconds and to microseconds)
 const toMillis = (a, b) => (a * 1e9 + b) * 1e-6;
 
@@ -55,6 +63,11 @@ const onHas = (target, prop, currentName, nameToStore) => {
 
 // onExit (toSave == place to save the result) --maybe make it module-local?
 const onExit = (intersection, candidateModule) => {
+  if (env.conf.reportTime) {
+    const timerEnd = process.hrtime(env.conf.timerStart);
+    const timeMillis = convert(timerEnd).millis
+    console.log(timeMillis, 'Time');
+  };
   if (env.conf.SAVE_RESULTS) {
     fs.writeFileSync(env.conf.SAVE_RESULTS,
       JSON.stringify(env.analysisResult, null, 2), 'utf-8');
