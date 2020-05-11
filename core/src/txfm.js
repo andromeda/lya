@@ -482,6 +482,8 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       originalScript = originalWrap(script);
     };
 
+    script = policy.sourceTransform ? policy.sourceTransform(source, moduleId) :
+      script;
     script = lyaConfig.context.enableWith ? getPrologue() + script + '\n}' :
       getPrologue() + script;
     const wrappedScript = originalWrap(script).replace('dirname)',
@@ -523,9 +525,13 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     }
   }
 
-  // We wrap the result in the wrapper function
+  // We wrap the result in the wrapper function and we use passName
+  // to pass the module id to Module.wrap
+  let moduleId;
   Module.prototype.require = function(...args) {
     const importName = args[0];
+    moduleId = importName;
+
     if (lyaConfig.modules.include !== null &&
       !lyaConfig.modules.include.includes(moduleName[env.requireLevel])) {
       let moduleExports = originalRequire.apply(this, args);
