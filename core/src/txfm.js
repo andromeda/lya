@@ -23,6 +23,8 @@ const preset = {
   SIMPLE_TYPES: pathJoin(__dirname, 'simple-types.js'),
   SUB_TYPES: pathJoin(__dirname, 'sub-types.js'),
   STAR_CHECK: pathJoin(__dirname, 'star-check.js'),
+  UCOMMENT: pathJoin(__dirname, 'uncomment.js'),
+  TERM_INDEX: pathJoin(__dirname, 'term-index.js'),
 };
 
 const systemPreset = {
@@ -687,8 +689,7 @@ module.exports = {
     // TODO: maybe exapand to a local
     // TODO: create a function that assigns default values to the config
     // TODO: Fix this part!!!!
-    conf.context = conf.context ? conf.context :
-      systemPreset.CONTEXT;
+    conf.context = conf.context ? conf.context : systemPreset.CONTEXT;
     conf.context.enableWith = conf.context.enableWith !== undefined ?
       conf.context.enableWith : systemPreset.CONTEXT.enableWith;
     conf.context.include = conf.context.excludes ? systemPreset.CONTEXT.include.filter((e) =>

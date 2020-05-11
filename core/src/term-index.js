@@ -23,31 +23,63 @@ let allTerms = {};
 let numDocs = 0;
 // map of terms to docs containing a term -- FIXME? explain
 let dted = {};
+// map from docs to tf
 let docs = {};
+let TF = {};  // t -> d -> tf
+let IDF = {}; // t -> d -> idf
+let Z = {};   // t -> z
 let env;
 
-let normalize = word => word.toLowerCase().replace(/[^\w]/g, "");
-let tokenize = doc => doc.match(/\w+/g);
-let noStop = e => !stopWords.includes(e);
-let freq = (acc, e, _, arr) => {
-  let len = arr.length;
+const normalize = word => word.toLowerCase().replace(/[^\w]/g, "");
+const tokenize = doc => doc.match(/\w+/g);
+const noStop = e => !stopWords.includes(e);
+const freq = (acc, e, _, arr) => {
+  const len = arr.length;
   return Object.assign(acc, {[e]: (e in acc)? acc[e] + (1 / len) : (1 / len)});
 };
-let tf = str => tokenize(str).map(normalize).filter(noStop).reduce(freq, {});
-let idf = (numDocs, dted) => Math.log(numDocs / (1 + dted)) / Math.log(10);
+const tf = str => tokenize(str).map(normalize).filter(noStop).reduce(freq, {});
+const idf = (numDocs, dted) => Math.log(numDocs / (1 + dted)) / Math.log(10);
 
-let sourceTransform = (src, id) => {
+const sourceTransform = (src, id) => {
 	numDocs++;
-	docs[id] = tf(src);
-	for (term in docs[id]) {
-		dted[term] = (term in dted)? dted[term] + 1 : 1;
-	}
- // TODO calculate IDF
+  let terms = tf(src);
+	docs[id] = terms;
+	for (let term in terms) {
+    // calculate TF
+    if (TF[term]) {
+      TF[term][id] = terms[term];
+    } else {
+      TF[term] = {[id]: terms[term]};
+    }
+
+    // calculate Z
+    Z[term] = Z[term]? Z[term] + 1 : 1;
+
+    // calculate IDF
+    if (IDF[term]) {
+      for (let doc in IDF[term]) {
+        IDF[term][doc] = idf(numDocs, Z[term]);
+        TFIDF[term][doc] = TF[term][id] * IDF[term][doc];
+      }
+    } else {
+      IDF[term] = {[id]: idf(numDocs, Z[term]};
+      TFIDF[term] = {[id]: TF[term][id] * IDF[term][doc]};
+    }
+  }
+
+  // return the original source
+  return src;
 }
+
+const onExit = (intersection, candidateModule) => {
+  // let obj = sortByIDF();
+  console.log(TFIDF);
+};
 
 module.exports = (e) => {
   env = e;
   return {
-    sourceTransform: sourceTransform
+    sourceTransform: sourceTransform,
+    onExit: onExit
   };
 };
