@@ -117,7 +117,7 @@ const onExit = (intersection, candidateModule) => {
         name, ['w']);
   }
   if (env.conf.reportTime) {
-    const timerEnd = process.hrtime(env.timerStart);
+    const timerEnd = process.hrtime(env.conf.timerStart);
     const timeMillis = convert(timerEnd).millis
     console.log(timeMillis, 'Time');
   };
