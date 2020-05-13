@@ -482,7 +482,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       originalScript = originalWrap(script);
     };
 
-    script = policy.sourceTransform ? policy.sourceTransform(source, moduleId) :
+    script = policy.sourceTransform ? policy.sourceTransform(script, moduleId) :
       script;
     script = lyaConfig.context.enableWith ? getPrologue() + script + '\n}' :
       getPrologue() + script;
