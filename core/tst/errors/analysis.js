@@ -6,8 +6,11 @@ let lya = require(lyaPath);
 let conf = {
   analysis: lya.preset.RWX, // require("path").join(__dirname, "..", "..", "src", "custom.js"),
   SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
+  context: {
+    excludes: ['Buffer'],
+  },
 };
 
 lya.configRequire(require, conf);
 
-require("./main.js");
+require("./main1.js");
