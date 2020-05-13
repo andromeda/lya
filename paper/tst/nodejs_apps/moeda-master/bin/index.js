@@ -4,7 +4,7 @@ let conf = {
   SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
   analysis: lya.preset.RWX,
   context: {
-    excludes: ["unescape","Buffer", 'indexOf'],
+    excludes: ["unescape","Buffer", 'indexOf', 'process'],
   },
 };
 lya.configRequire(require, conf);
