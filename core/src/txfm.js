@@ -698,8 +698,10 @@ module.exports = {
     conf.context = conf.context ? conf.context : systemPreset.CONTEXT;
     conf.context.enableWith = conf.context.enableWith !== undefined ?
       conf.context.enableWith : systemPreset.CONTEXT.enableWith;
-    conf.context.include = conf.context.excludes ? systemPreset.CONTEXT.include.filter((e) =>
-      !conf.context.excludes.includes(e)) : systemPreset.CONTEXT.include;
+    conf.context.include = conf.context.include ? conf.context.include :
+      systemPreset.CONTEXT.include;
+    conf.context.include = conf.context.excludes ? conf.context.include.filter((e) =>
+      !conf.context.excludes.includes(e)) : conf.context.include;
     conf.context.excludes = conf.context.excludes ? conf.context.excludes : [];
     conf.fields = conf.fields ? conf.fields : systemPreset.FIELDS;
     conf.modules = conf.modules ? conf.modules : systemPreset.MODULES;
