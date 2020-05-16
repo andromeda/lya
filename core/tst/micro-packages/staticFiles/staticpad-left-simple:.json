@@ -1,0 +1,9 @@
+{
+  "/home/gntousakis/lya/core/tst/micro-packages/pad-left-simple/_index.js": {
+    "Array": "rx",
+    "Array.fill": "rx",
+    "module": "r",
+    "module.exports": "w",
+    "undefined": "r"
+  }
+}

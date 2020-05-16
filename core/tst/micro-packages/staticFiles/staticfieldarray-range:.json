@@ -1,0 +1,9 @@
+{
+  "/home/gntousakis/lya/core/tst/micro-packages/array-range/_index.js": {
+    "Array": "rx",
+    "Array.*": "rw",
+    "Error": "rx",
+    "module": "r",
+    "module.exports": "w"
+  }
+}

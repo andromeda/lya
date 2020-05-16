@@ -1,0 +1,11 @@
+{
+  "/home/gntousakis/lya/core/tst/micro-packages/time-stamp/_index.js": {
+    "*.replace": "rx",
+    "*.slice": "rx",
+    "*.utc": "rw",
+    "Date": "rx",
+    "String": "rx",
+    "module": "r",
+    "module.exports": "w"
+  }
+}

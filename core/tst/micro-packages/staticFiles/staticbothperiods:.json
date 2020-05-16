@@ -1,0 +1,9 @@
+{
+  "/home/gntousakis/lya/core/tst/micro-packages/periods/_periods.js": {
+    "*.periods": "rw",
+    "*.replace": "rx",
+    "*.test": "rx",
+    "exports": "r",
+    "module": "r"
+  }
+}
