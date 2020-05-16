@@ -28,11 +28,11 @@ PROLOGUE
   echo "$PLG" | tee $m
   echo "Time $t $type" >> ../time
   
-#  loopNumber=100
-#  for ((i=0; i<=loopNumber; i=i+1))
-#  do
+  loopNumber=100
+  for ((i=0; i<=loopNumber; i=i+1))
+  do
     (npm test) &>> ../time
-#  done
+  done
   cd ..
 }
 
