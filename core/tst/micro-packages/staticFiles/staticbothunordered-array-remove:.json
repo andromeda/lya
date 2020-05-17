@@ -1,0 +1,8 @@
+{
+  "/home/gntousakis/lya/core/tst/micro-packages/unordered-array-remove/_index.js": {
+    "*.length": "r",
+    "*.pop": "rx",
+    "module": "r",
+    "module.exports": "w"
+  }
+}

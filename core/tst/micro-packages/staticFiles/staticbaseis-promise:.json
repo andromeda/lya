@@ -1,0 +1,7 @@
+{
+  "/home/gntousakis/lya/core/tst/micro-packages/is-promise/_index.js": {
+    "*.then": "r",
+    "module": "r",
+    "module.exports": "w"
+  }
+}

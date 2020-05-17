@@ -1,0 +1,10 @@
+{
+  "/home/gntousakis/lya/core/tst/micro-packages/has-key-deep/_index.js": {
+    "*.hasOwnProperty": "rx",
+    "*.length": "r",
+    "*.slice": "rx",
+    "*.split": "rx",
+    "module": "r",
+    "module.exports": "w"
+  }
+}

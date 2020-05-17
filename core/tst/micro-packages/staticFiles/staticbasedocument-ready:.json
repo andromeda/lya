@@ -1,0 +1,10 @@
+{
+  "/home/gntousakis/lya/core/tst/micro-packages/document-ready/_index.js": {
+    "*.addEventListener": "rx",
+    "*.readyState": "r",
+    "Error": "rx",
+    "module": "r",
+    "module.exports": "w",
+    "setTimeout": "rx"
+  }
+}

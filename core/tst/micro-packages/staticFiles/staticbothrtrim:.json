@@ -1,0 +1,12 @@
+{
+  "/home/gntousakis/lya/core/tst/micro-packages/rtrim/_index.js": {
+    "*.indexOf": "rx",
+    "*.length": "r",
+    "*.replace": "rx",
+    "*.split": "rx",
+    "*.substring": "rx",
+    "*.toString": "rx",
+    "module": "r",
+    "module.exports": "w"
+  }
+}

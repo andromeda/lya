@@ -1,0 +1,10 @@
+{
+  "/home/gntousakis/lya/core/tst/micro-packages/is-sorted/_index.js": {
+    "*.length": "r",
+    "Array": "r",
+    "Array.isArray": "rx",
+    "TypeError": "rx",
+    "module": "r",
+    "module.exports": "w"
+  }
+}

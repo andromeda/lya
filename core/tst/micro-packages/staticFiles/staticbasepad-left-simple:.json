@@ -1,0 +1,11 @@
+{
+  "/home/gntousakis/lya/core/tst/micro-packages/pad-left-simple/_index.js": {
+    "*.join": "rx",
+    "*.length": "r",
+    "Array": "rx",
+    "Array.fill": "rx",
+    "module": "r",
+    "module.exports": "w",
+    "undefined": "r"
+  }
+}
