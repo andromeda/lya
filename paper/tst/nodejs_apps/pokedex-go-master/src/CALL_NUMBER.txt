@@ -1,0 +1,5 @@
+(node:8125) [DEP0016] DeprecationWarning: 'root' is deprecated, use 'global'
+
+real	4m6.935s
+user	4m9.496s
+sys	0m0.608s
