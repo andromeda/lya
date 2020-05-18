@@ -611,9 +611,11 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 
           if (!withProxy.has(target[name])) {
             Object.defineProperty(currFunction, 'name', {value: name});
+            if (lyaConfig.context.include.includes('module-returns')) {
             target[name] = setProxy(currFunction,{
-              apply: createHandler('module-returns').apply
-            }, exportType);
+                apply: createHandler('module-returns').apply
+              }, exportType);
+            }
             storePureFunctions.set(target[name], currFunction);
             if (lyaConfig.fields.excludes.has(name)) {
               policy.onRead(target, name, parentName, currModule);
