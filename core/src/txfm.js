@@ -647,11 +647,14 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       return Reflect.get(...arguments);
     },
     set: function(target, name, value) {
-      const parentName = objectName.get(target);
-      const nameToStore = parentName + '.' + name;
-      const currModule = moduleName[env.requireLevel];
-      policy.onWrite(target, name, value, currModule, parentName, nameToStore);
-      return Reflect.set(...arguments);
+      if (typeof name !== 'symbol') {
+        const parentName = objectName.get(target);
+        const nameToStore = parentName + '.' + name;
+        const currModule = moduleName[env.requireLevel];
+        policy.onWrite(target, name, value, currModule, parentName, nameToStore);
+      }
+        return Reflect.set(...arguments);
+      
     },
   };
 
