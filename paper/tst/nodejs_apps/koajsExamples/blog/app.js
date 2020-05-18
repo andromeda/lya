@@ -1,10 +1,13 @@
-lyaConfig = {
-    SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
-    analysisCh: 2,
-    removejson: ["Promise","toString","unescape","Buffer"],
+let lya = require("/home/grigorisntousakis/lya/core/src/txfm.js");
+let conf = {
+  SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
+  inputString: false,
+  analysis: lya.preset.RWX,
+  context: {
+    excludes: ["Promise","toString","unescape","Buffer", "Process"],
+  },
 };
-let lya = require("../lya/txfm.js");
-require = lya.configRequire(require, lyaConfig);
+lya.configRequire(require, conf);
 
 const render = require('./lib/render');
 const logger = require('koa-logger');
