@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-let lya = require("/home/grigorisntousakis/lya/core/src/txfm.js");
+let lya = require("/home/gntousakis/lya/core/src/txfm.js");
 let conf = {
   SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
-  analysis: lya.preset.GLOBAL_ONLY,
+  analysis: lya.preset.CALL_NUMBERS,
   context: {
     withEnable: false,
     excludes: ['process', 'toString', 'hasOwnProperty', 'Buffer', 'escape', 'unescape', 'Symbol'],
