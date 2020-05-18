@@ -1,12 +1,4 @@
 'use strict';
-global.lyaConfig = {
-    SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
-    analysisCh: 1,
-    removejson: ["Buffer","hasOwnProperty","propertyIsEnumerable","Symbol","Uint8Array","DataView","Map","Promise","Set","WeakMap","toString"],	
-};
-let lya = require("../lya/txfm.js");
-require = lya.configRequire(require, lyaConfig);
-
 const assert = require('chai').assert;
 const _ = require('lodash');
 const databaseManager = require('../src/database-manager');

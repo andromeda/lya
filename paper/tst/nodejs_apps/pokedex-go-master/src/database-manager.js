@@ -1,5 +1,14 @@
 'use strict';
-
+let lya = require("/home/grigorisntousakis/lya/core/src/txfm.js");
+let conf = {
+  SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
+  inputString: false,
+  analysis: lya.preset.PROFILING_RELATIVE,
+  context: {
+    excludes: ['Buffer', 'hasOwnProperty', 'propertyIsEnumerable', 'toString' , 'Symbol', 'Uint8Array', 'DataView', 'Map', 'Promise', 'Set', 'WeakMap', 'module-returns'],
+  }
+};
+lya.configRequire(require, conf);
 const _ = require('lodash');
 const similar = require('string-similarity');
 
