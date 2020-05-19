@@ -13,12 +13,29 @@ getInfo() {
 
   # Store the package name
   echo "Package name: $name" >> ../info.txt
+  
   # Store the github url
   echo "$github" >> ../info.txt
+  
   # Store the number of lines
   wc -l $PRE$m >> ../info.txt
+
+  # Get the number of lines from the tests of the package
+  if test -f "test.js"; then
+    wc -l test.js >> ../info.txt
+  else 
+    if [ -d "test" ]; then
+      cd test
+        (find . -maxdepth 1 -name '*.js') | xargs wc -l | grep total >> ../../info.txt
+      cd ..
+    else 
+      echo "no test found" >> ../info.txt
+    fi
+  fi
+  
   # Store the name of the contributor
   npm view $name maintainers.name | { read maint; echo "Maintainer: $maint"; } >> ../info.txt
+  
   # Store the number of packages
   echo "$dep" | wc -l | { read number; echo "Dependencies: $(expr $number - 2)"; }  >> ../info.txt
   
