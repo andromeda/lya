@@ -159,15 +159,94 @@
 
 \begin{abstract}
 
-Applications today rely on hundreds of libraries, to the point where code written by their nominal developers is only a small fraction of their total line count.
-Despite its benefits, this over-reliance creates many challenges, precisely due to the lack of knowledge and visibility into library internals---for example, in the presence of deeply-nested third-party code, security auditing and performance profiling, already challenging in monolithic applications, become extremely difficult.
+% Applications today rely on hundreds of libraries, to the point where code written by their nominal developers is only a small fraction of their total line count.
+% Despite its benefits, this over-reliance creates many challenges, precisely due to the lack of knowledge and visibility into library internals---for example, in the presence of deeply-nested third-party code, security auditing and performance profiling, already challenging in monolithic applications, become extremely difficult.
+% 
+% To address these challenges, we present \emph{program dialysis}, a dynamic analysis technique specifically tailored to applications with many third-party libraries.
+% Combining name shadowing, context wrapping, and transformation of the underlying dependency graph, program dialysis automates dynamic fragmentation, analysis, and reassembly of programs at the level of individual libraries during program execution.
+% It bolts onto existing languages, enabling analysis expressions in the source language, with only a few lines of analysis-specific code.
+% Our dialysis prototype, \sys, targets the JavaScript ecosystem counting over 1M libraries for the web, server, and mobile.
+% We develop a series of case-studies that motivate \sys's design, and demonstrate how \sys allows the analysis of both individual libraries as well as multi-library programs with low developer effort and performance overhead:
+%   insightful analyses can be expressed in a few lines of code, add a minimal increase in the load latency of individual libraries, and scale to large programs with hundreds of libraries.
+% 
 
-To address these challenges, we present \emph{program dialysis}, a dynamic analysis technique specifically tailored to applications with many third-party libraries.
-Combining name shadowing, context wrapping, and transformation of the underlying dependency graph, program dialysis automates dynamic fragmentation, analysis, and reassembly of programs at the level of individual libraries during program execution.
-It bolts onto existing languages, enabling analysis expressions in the source language, with only a few lines of analysis-specific code.
-Our dialysis prototype, \sys, targets the JavaScript ecosystem counting over 1M libraries for the web, server, and mobile.
-We develop a series of case-studies that motivate \sys's design, and demonstrate how \sys allows the analysis of both individual libraries as well as multi-library programs with low developer effort and performance overhead:
-  insightful analyses can be expressed in a few lines of code, add a minimal increase in the load latency of individual libraries, and scale to large programs with hundreds of libraries.
+This paper introduces \emph{program dialysis}, a process for analyzing programs at the level of third-party libraries.
+Motivated by today's library ubiquity, dialysis exposes hooks for observing and modifying program behavior at the boundaries between libraries.
+These hooks are exposed through a series of program transformations that dismantle a program, wrap a subset of its libraries, and carefully reassemble the program to maintain its original execution while calling into developer-provided handlers.
+These handlers are called when certain interactions between a library and its environment occur, and are provided additional contextual information about each interaction.
+As dialysis operates at a coarse granularity and without modifying the runtime environment, it has a potential for low runtime overheads, increased compatibility, and succinct analyses.
+To evaluate this potential, we implement dialysis in \sys and apply it on targets drawn from the JavaScript ecosystem.
+Our results show $9.6\times$ performance improvements over state-of-the-art dynamic analysis, compatibility with over 50 libraries and applications,
+and analyses expressed in under 100LoC---all while offering insights in three realistic use-case analyses
+
+% ---\eg access to a specific global variable or invocation of a specific method.
+% library method calls 
+% property value .
+
+% An important advantage is increased performance and backwards compatibility executes on the unmodified runtime and performs at a coarse granularity.
+ % , and coordinate to get the full view of the workings of one or more libraries.
+% The level at which dialysis operates offer improved performance, backwards-compatibility 
+
+
+
+% Handlers are stateful 
+% 
+% compute over information associated with these events.
+% written in the same language as the program
+% 
+% During its execution, the modified program calls 
+% 
+% perform on the unmodified language runtime
+% thus offer performance and compatibility advantages over conventional, finer-grained analysis.
+% 
+% An important advantage is increased performance and backwards compatibility 
+% executes on the unmodified runtime and performs at a coarse granularity.
+% Despite its coarse granularity, dialysis still offers insightful information whose 
+% 
+% as demonstrated by three analysis use-cases whose needs are largely unmet by conventional analysis frameworks.
+% 
+% We implement program dialysis in \sys and evaluate it against libraries and programs drawn from the JavaScript ecosystem.
+% The results show significant performance improvements over state-of-the-art dynamic analysis framework, comparable analysis scripts,
+% 
+% when certain events occur.
+% Analysis scripts provide handlers for certain classes of events,
+% 
+% Developers provide handlers that are called when certain events occur,
+% by providing handlers to events.
+% 
+% These handlers are short, operate on the unmodified language runtime, thus offering performance benefits,
+% 
+% To expose these hooks, dialysis performs 
+% 
+% This is achieved by augmenting the library loader, but without necessarily modifying the language runtime 
+% 
+% Compared to dynamic analysis, dialysis
+% (i) operates at a coarser granularity (performance) and on the same runtime getting full support for the language (compatible with the semantics of the langauge)
+% but on the original runtime 
+% (ii) at the same level as the program, which means it can manipulate semantic information 
+% (iii)
+% 
+% Despite the fact that it operates at the same level as program
+% 
+% \sys 
+% 
+% can capture the library's full observable behavior.
+% 
+%   a dynamic analysis technique specifically tailored to applications with many third-party libraries.
+% Combining name shadowing, context wrapping, and transformation of the underlying dependency graph, program dialysis automates dynamic fragmentation, analysis, and reassembly of programs at the level of individual libraries during program execution.
+% It bolts onto existing languages, enabling analysis expressions in the source language, with only a few lines of analysis-specific code.
+% 
+% Our dialysis prototype, \sys, targets the JavaScript ecosystem.
+% demonstrates significant 
+% (i) performance benefits over conventional dynamic analysis, to the point that it can be toggled on/off online
+% Expressing analyses is comparable with 
+% succinct script in the same language and ecosystem as the dialysis target,
+% (iii) and its usefullness is 
+% 
+% 
+% A series of case-studies motivate \sys's design, and demonstrate how \sys allows the analysis of both individual libraries as well as multi-library programs with low developer effort and performance overhead:
+%   insightful analyses can be expressed in a few lines of code, add a minimal increase in the load latency of individual libraries, and scale to large programs with hundreds of libraries.
+% 
 
 % Module dialysis can be bolted on existing language runtime environments in a language-agnostic fashion 
 % % By leveraging the ubiquity of third-party modules in today's applications
