@@ -140,7 +140,7 @@
 \date{}
 
 % make title bold and 14 pt font (Latex default is non-bold, 16 pt)
-\title{\Large \bf Multi-library Program Dialysis with Lya}
+\title{\Large \bf \sys: Library-Oriented Program Analysis}
 
 %for single author (just remove % characters)
 \author{
@@ -159,26 +159,41 @@
 
 \begin{abstract}
 
-% Applications today rely on hundreds of libraries, to the point where code written by their nominal developers is only a small fraction of their total line count.
-% Despite its benefits, this over-reliance creates many challenges, precisely due to the lack of knowledge and visibility into library internals---for example, in the presence of deeply-nested third-party code, security auditing and performance profiling, already challenging in monolithic applications, become extremely difficult.
-% 
-% To address these challenges, we present \emph{program dialysis}, a dynamic analysis technique specifically tailored to applications with many third-party libraries.
-% Combining name shadowing, context wrapping, and transformation of the underlying dependency graph, program dialysis automates dynamic fragmentation, analysis, and reassembly of programs at the level of individual libraries during program execution.
-% It bolts onto existing languages, enabling analysis expressions in the source language, with only a few lines of analysis-specific code.
-% Our dialysis prototype, \sys, targets the JavaScript ecosystem counting over 1M libraries for the web, server, and mobile.
-% We develop a series of case-studies that motivate \sys's design, and demonstrate how \sys allows the analysis of both individual libraries as well as multi-library programs with low developer effort and performance overhead:
-%   insightful analyses can be expressed in a few lines of code, add a minimal increase in the load latency of individual libraries, and scale to large programs with hundreds of libraries.
-% 
+Dynamic program analysis is a long-standing technique for getting insights into the execution of a program.
+This paper presents a new form of dynamic analysis, termed \emph{dialysis}, enabled by the fact that modern dynamic languages feature an import mechanism that loads code at runtime as a string.
+Dialysis works by coupling light static transformations with more substantial dynamic ones, inserting hooks for capturing a library's full observable behavior.
+% transform and bind their context prior to their evaluation.
+% expose instrumentation opportunities to developers.
+% This mechanism enables a new lightweight instrumentation technique.
+Dialysis offers a new point in the dynamic-analysis trade-off space:
+  as it operates at a coarse granularity and does not modify the language runtime environment, it offers better performance and compatibility but foregoes expression-level visibility.
+To evaluate its potential, we implement dialysis in LYA and apply it on targets drawn from the JavaScript ecosystem.
+Our results show $9.6\times$ performance improvements over state-of-the-art dynamic analysis, compatibility with over 50 libraries and applications, and analyses expressed in under 100LoC---all while offering useful insights on three realistic use-case analyses.
 
-This paper introduces \emph{program dialysis}, a process for analyzing programs at the level of third-party libraries.
-Motivated by today's library ubiquity, dialysis exposes hooks for observing and modifying program behavior at the boundaries between libraries.
-These hooks are exposed through a series of program transformations that dismantle a program, wrap a subset of its libraries, and carefully reassemble the program to maintain its original execution while calling into developer-provided handlers.
-These handlers are called when certain interactions between a library and its environment occur, and are provided additional contextual information about each interaction.
-As dialysis operates at a coarse granularity and without modifying the runtime environment, it has a potential for low runtime overheads, increased compatibility, and succinct analyses.
-To evaluate this potential, we implement dialysis in \sys and apply it on targets drawn from the JavaScript ecosystem.
-Our results show $9.6\times$ performance improvements over state-of-the-art dynamic analysis, compatibility with over 50 libraries and applications,
-and analyses expressed in under 100LoC---all while offering insights in three realistic use-case analyses
 
+% 
+% 
+% 
+% different
+% dynamic interposition techniques
+% 
+% We show how to exploit the technique to deliver very efficient interposition schemes
+% 
+%   the new technique operates at a finer granularity, 
+%   coarse granularity
+% 
+% we can exploit our characteristics.
+% Allows us to do X. This in turn has the following benefits for the developer Y:
+% 
+% the results show a way faster
+% 
+% What are the benefits
+% we present a library-oriented dynamic analysis technique and system
+% technique the functionality for interposing at library boundaries
+% 
+% 
+% We do dynamic analys 10 times faster and has
+% 
 % ---\eg access to a specific global variable or invocation of a specific method.
 % library method calls 
 % property value .
