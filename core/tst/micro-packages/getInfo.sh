@@ -23,10 +23,16 @@ getInfo() {
   # Get the number of lines from the tests of the package
   if test -f "test.js"; then
     wc -l test.js >> ../info.txt
+  elif test -f "tests.js"; then
+    wc -l tests.js >> ../info.txt
   else 
     if [ -d "test" ]; then
       cd test
         (find . -maxdepth 1 -name '*.js') | xargs wc -l | grep total >> ../../info.txt
+      cd ..
+    elif [ -d "tests" ]; then
+      cd tests
+      (find . -maxdepth 1 -name '*.js') | xargs wc -l | grep total >> ../../info.txt
       cd ..
     else 
       echo "no test found" >> ../info.txt
