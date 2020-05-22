@@ -159,17 +159,21 @@
 
 \begin{abstract}
 
-Dynamic program analysis is a long-standing technique for getting insights into the execution of a program.
-This paper presents a new form of dynamic analysis, termed \emph{dialysis}, enabled by the fact that modern dynamic languages feature an import mechanism that loads code at runtime as a string.
-Dialysis works by coupling light static transformations with more substantial dynamic ones, inserting hooks for capturing a library's full observable behavior.
+Dynamic program analysis is a long-standing technique for obtaining information about program execution.
+We present a set of new dynamic analysis techniques that target modern dynamic languages such as Python, Lua, and JavaScript, enabled by the fact that modern dynamic languages feature a module-import mechanism that loads code at runtime as a string.
+These techniques use lightweight load-time code transformations that operate on the string representation of the module,
+as well as the context to which it is about to be bound, to insert developer-provided, analysis-specific code into the module before it is loaded.
+This code implements the dynamic analysis, enabling these techniques to capture all interactions around the library in unmodified production language runtime environments.
+We implement these techniques in \sys, a system targeting the JavaScript ecosystem. 
+Results show that \sys delivers up to an order of magnitude performance improvements over current state-of-the-art dynamic analysis systems, compatibility with over 50 libraries and applications, and support for a range of dynamic analyses, each implemented in under 100 lines of code.
+
+% operate at the library  interface level  
+% This approach occupies an new point in the design trade-off space, enabling lya to operates at the library interface level in unmodified production..
+
+
 % transform and bind their context prior to their evaluation.
 % expose instrumentation opportunities to developers.
 % This mechanism enables a new lightweight instrumentation technique.
-Dialysis offers a new point in the dynamic-analysis trade-off space:
-  as it operates at a coarse granularity and does not modify the language runtime environment, it offers better performance and compatibility but foregoes expression-level visibility.
-To evaluate its potential, we implement dialysis in LYA and apply it on targets drawn from the JavaScript ecosystem.
-Our results show $9.6\times$ performance improvements over state-of-the-art dynamic analysis, compatibility with over 50 libraries and applications, and analyses expressed in under 100LoC---all while offering useful insights on three realistic use-case analyses.
-
 
 % 
 % 
