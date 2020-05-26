@@ -1126,20 +1126,25 @@ We zoom into the sources of these overheads later~\sx{micro}.
 
 \heading{\sys vs. Jalangi}
 For the second experiment, we compare the performance of \sys to that of Jalangi.
-Jalangi is a popular dynamic analysis framework for JavaScript;
-  it provides fine-grained instrumentation by executing the program using a custom interpreter.
+Jalangi is a popular dynamic analysis framework for JavaScript, providing fine-grained instrumentation by executing on a custom interpreter.
 We note our use of Jalangi's v2.2.5 version:
   the v2 branch improves significantly over the performance of the original framework~\cite{jalangi}, as it eschews record/replay capabilities.
 
-In terms of programs, we use Jalangi's extensive test suite.
+In terms of programs, we use Jalangi's extensive test suite within a Jalangi-provided docker container~\cite{jaladocker}
+(For these experiments, \sys is also run in the same container.)
 This is not entirely by choice:
-  Jalangi's interaction with the bare-bones libraries was hitting important parsing issues, and was further complicated by \ttt{npm test} (which is an external program outside Node, but tightly coupled with it).
-It is important
+  Jalangi's interaction with the bare-bones libraries was hitting EcmaScript 6 parsing challenges, further complicated by \ttt{npm test} (which is an external program outside Node, but tightly coupled with it).
+Contrary to Jalangi, \sys executes all programs, demonstrating the compatibility benefits of operating on an unmodified runtime.
 
+% FIXME OSDI
+% This is an important practical difference with \sys approach:
+%   if \sys does not understand, it will simply not wrap it---deferring silently to the default semantics implemented by the runtime rather than
 
-(Fig.~\ref{fig:meso}).
-We compare with and compare \sys's performance to that of Jalangi2.
-To be fair in our performance comparison, we design a simple analysis from scratch that both frameworks can express---namely, one for tracking counts of global variable accesses~\sx{impl2}.
+In terms of analysis, both systems are configured to perform dynamic frequency analysis of accesses to global variables.
+The analysis is a common denominator between \sys and Jalangi, designed and implemented from scratch to ensure a fair and meaningful comparison between the two frameworks.
+Such analyses are useful for understanding how programs with third-party libraries interact with global state---\eg for generating remote-procedure stubs or scaling out functional components~\cite{ignis}.
+
+Fig.~\ref{fig:meso} presents the comparison between \sys and Jalangi.
 The core of the analysis requires a few lines, but expressing it in \sys requires 4$\times$ fewer lines of code;
   the effort of employing \sys as a library was also significantly lower than that of Jalangi2, for which we relied on a Docker container to simplify the framework's setup.
 The performance results show that \sys performs better than Jalangi2, at times by a significant margin (\ie more than 10$\times$ for 13 benchmarks).
@@ -1159,7 +1164,7 @@ Jalangi2 is more powerful than \sys, capable of expressing analyses that are mor
 \end{figure*}
 
 
-\subsection{End-to-End Benchmarks}
+\subsection{Application Benchmarks}
 \label{macro}
 
 \begin{table}[b]
@@ -1195,7 +1200,7 @@ Performance                          &                   &                      
 \end{table}
 
 
-Finally, we perform end-to-end program dialysis on three large applications:
+We perform end-to-end program dialysis on three large applications:
   KoaBlog~\cite{koa}, a minimal blogging platform built on the Koa framework;
   Moeda~\cite{moeda}, a command-line currency converter that, among other features, uses online currency exchange rates; and
   Terminalizer~\cite{terminalizer}, an application for recording terminal sessions to generate animated gif images and shareable web-player links.
@@ -1219,20 +1224,30 @@ Confirming that \sys performs correctly under these scenarios is one part of the
 \subsection{Micro-benchmarks}
 \label{micro}
 
-\todo{Two types: zooming into prior benchmarks, and targeted micro packages}
-\sys's micro-benchmarks were designed to test key properties of each analysis and confirm it outputs the expected results.
-For example, to better understand PD and confirm it works correctly, we crafted a micro-benchmark with four dependencies of known static bottlenecks.
+
+\sys's micro-benchmarks zoom into \sys's sources of overheads.
+%  from \sys and confirm it does not affect the correctness of the program with respect to its sequential execution.
+The key results are that
+  (i) the majority of the overhead comes from the JavaScript's \ttt{with} expression, which \sys uses to wrap the context of libraries;
+  (ii) interposition overhead is negligible in practice;
+  (iii) while wrapped and accessed fields increase exponentially as a function of depth (as objects have many fields), object explosion quickly plateaus around level four with under 400 fields; and
+  (iv) the majority of wrapped and accessed fields come from Node and EcmaScript names rather than imports or global values.
+% We use two broad classes of micro-benchmarks.
+% In the first class, we use the same 50 libraries that were the focus of a previous section~\sx{meso} to understand the characteristics of access patterns and \sys-internal overheads in a controlled environment.
+% In the second class, we use synthetic micro-benchmarks to test key properties of each analysis and confirm it outputs the expected results.
+% For example, to better understand PD and confirm it works correctly, we crafted a micro-benchmark with four dependencies of known static bottlenecks.
+
 % Each dependency can perform one of three operations, depending on its current state:
 %   (i) invoke a call to a module it imports,
 %   (ii) busy-wait for a specific amount of time, or
 %   (iii) respond to calls by returning a value.
-A second goal was to understand \sys's internal overheads in a controlled environment.
 % Both of these goals would have been difficult to achieve outside a controlled environment. % , as we do not fully understand applications we haven't written ourselves.
 
-\heading{Sources of Overbred}
+\heading{Sources of Overhead}
 To understand the sources of these overheads, we perform a series of micro-benchmarks with tight loops calling several ES-internal libraries without any I/O.
-The primary source of overhead seems to be the use of JavaScript's \ttt{with} construct~\sx{}, 
-The \ttt{with} construct dominates overheads, as it (i) interposes on too many accesses, only a fraction of which are relevant, and (ii) remains significantly unoptimized, since its use is strongly discouraged by the JavaScript standards~\cite{}.
+By enabling different parts of \sys, we discover that the primary source of overhead comes from JavaScript's \ttt{with} construct:
+  disabling \ttt{with} makes 95\% of the overheads disappear.
+The reason \ttt{with} dominates overheads is twofold: it (i) interposes on too many accesses, only a fraction of which are relevant, and (ii) remains significantly unoptimized, since its use is strongly discouraged by the JavaScript standards.
 % Proxy objects exhibit a much lower cost.
 % \TODO{Add some numbers from \ttt{t19} for different configs}.
 
@@ -1269,50 +1284,16 @@ cycles           &   4.32    &  8.32   &  8.19   &  7.73   \\
 \end{table}
 
 
-\begin{figure}
-  \centering
-  \includegraphics[width=0.05\textwidth]{./figs/lya_donut_index}
-  \includegraphics[width=0.20\textwidth]{./figs/lya_ctx_obj}
-  \includegraphics[width=0.20\textwidth]{./figs/lya_ctx_unique_valid}
-  \includegraphics[width=0.20\textwidth]{./figs/lya_ctx_total_valid}
-
-  % \includegraphics[width=0.18\textwidth]{./figs/lya_ctx_unique_invalid}
-  % \includegraphics[width=0.18\textwidth]{./figs/lya_ctx_total_invalid}
-  \caption{
-    \textbf{Access characteristics.}
-    \todo{Explain}
-  }
-  \label{fig:objects}
-\end{figure}
-
-\begin{figure}[b!]
-  \centering
-  \includegraphics[width=\columnwidth]{./figs/lya_n_obj}
-  \includegraphics[width=\columnwidth]{./figs/lya_unique_valid}
-  % \includegraphics[width=\columnwidth]{./figs/lya_unique_invalid}
-  \includegraphics[width=\columnwidth]{./figs/lya_total_valid}
-  % \includegraphics[width=\columnwidth]{./figs/lya_total_invalid}
-  \caption{
-    \textbf{Depth vs. permissiveness.}
-    From the top:
-    (a) number of \sys wrappers,
-    (b) unique valid accesses,
-    (c) unique invalid accesses,
-    (d) total valid accesses, and
-    (e) total invalid accesses---all as a function of \todo{enforcement} depth.
-  }
-  \label{fig:objects}
-\end{figure}
-
-
-Table~\ref{tab:synthetic} depicts the results of the three analyses applied to a subset of our benchmarks.
-The first column indicates the focus of the benchmark; not all analysis--benchmark combinations are useful.
+\heading{Interposition Overheads}
+Table~\ref{tab:synthetic} depicts the results of the three analyses applied to a subset of the aforementioned synthetic benchmarks.
+%  (tight loops with no I/O).
+The first column indicates the focus of the benchmark; not all analysis--benchmark combinations are useful:
 % Currently, these benchmarks return the results we expect, but they did help with the identification of \sys's bugs.
-For example, the ``custom-delay'' benchmark, described earlier, features static bottlenecks across its dependency tree but does not involve interesting access patterns.
-The use of \sys adds an overhead that is under 2$\times$, except for the first two cases that feature \emph{only} accesses.
-Close inspection confirms that overheads are proportional to the number of wrapped objects and the frequency of accesses:
-  most of these benchmarks feature artificially tight loops with high-frequency accesses.
-Transformation overheads themselves (not shown in Tab.~\ref{tab:synthetic}) remain under $1ms$.
+  for example, the ``custom-delay'' benchmark features static bottlenecks across its dependency tree but does not involve interesting access patterns.
+\sys-induced slowdown is under 2$\times$, except for the first two cases that feature \emph{only} accesses.
+Close inspection confirms a correlation to the number of wrapped objects and the frequency of accesses.
+  these benchmarks feature artificially tight loops with high-frequency accesses.
+Transformation overheads themselves (not in Tab.~\ref{tab:synthetic}) remain under $1ms$.
 % is not affected significantly % by transformations altering a library's context 
 
 To understand the costs of proxy interposition, we measure the time to access deeply-nested properties of two versions of an object:
@@ -1327,8 +1308,65 @@ We emphasize that this is an artificially constructed benchmark stressing worst-
 The takeaway is that \sys-inherent overheads due to interposition are unlikely to be the bottleneck of an analysis;
   what is likely to be is the analysis itself---\eg updating a global aggregator or invoking system-calls to extract timing.
 
+\heading{Analysis Depth}
+To understand the effect of depth in practice, Fig.~\ref{fig:objects} presents the number of wrapped object, unique accesses, and total accesses as a function of depth for all 50 libraries~\sx{meso}.
+Depth is explained in the previous paragraph:
+   it is about how deep \sys traverses references starting starting from the names in scope---\eg the access \ttt{global.obj.x} is two levels deep and \ttt{fs.readFile} is one level deep.
 
+There are a few highlights worth noting.
+While the number of objects wrapped by\sys starts growing exponentially, it quickly reaches an average upper bound of 400 (depending on the exact benchmark).
+Accesses grow quickly for the first couple of levels---objects for some of these libraries are hit several thousand times---but then remain stable.
+This is usually because most interfaces follow a mostly-flat format where all methods are defined at the top level or right under.
 
+\begin{figure}
+  \centering
+  \includegraphics[width=0.05\textwidth]{./figs/lya_donut_index}
+  \includegraphics[width=0.20\textwidth]{./figs/lya_ctx_obj}
+  \includegraphics[width=0.20\textwidth]{./figs/lya_ctx_unique_valid}
+  \includegraphics[width=0.20\textwidth]{./figs/lya_ctx_total_valid}
+
+  % \includegraphics[width=0.18\textwidth]{./figs/lya_ctx_unique_invalid}
+  % \includegraphics[width=0.18\textwidth]{./figs/lya_ctx_total_invalid}
+  \caption{
+    \textbf{Access characteristics as a function of context.}
+    Clockwise from top-left:
+    (i) number of \sys wrappers,
+    (ii) unique valid accesses (\ie counting each access once),
+    (iii) total valid accesses~\cf{micro}.
+  }
+  \label{fig:objects}
+\end{figure}
+
+\heading{Context}
+Context refers to the broad source of names that are available in the current scope---ones
+  defined by the EcmaScript standard (es), 
+  through an explicit import (exports),
+  by the Node.js runtime (node), or
+  via global variables (globs).
+A few names seem globally available but are in fact module-locals (\ttt{require}).
+User-defined global variables are not prefixed with \ttt{global} thus requiring special interposition (\ttt{with}).
+
+Fig.~\ref{fig:objects} shows \sys's context characteristics on all 50 libraries~\sx{meso}. % as a function of context.
+In terms of the number of objects wrapped, the vast majority comes from Node which accounts for 91.1\% of all wrappers.
+In terms of unique number of accesses, for both invalid and invalid ones the majority comes from \ttt{require};
+  taking their number into account, the majority comes from ES and Node names, whereas the majority of invalid ones comes from \ttt{export}s.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{./figs/lya_n_obj}
+  \includegraphics[width=\columnwidth]{./figs/lya_unique_valid}
+  % \includegraphics[width=\columnwidth]{./figs/lya_unique_invalid}
+  \includegraphics[width=\columnwidth]{./figs/lya_total_valid}
+  % \includegraphics[width=\columnwidth]{./figs/lya_total_invalid}
+  \caption{
+    \textbf{Analysis characteristics as a function of the analysis depth.}
+    From the top:
+    (i) number of \sys wrappers applied,
+    (ii) number of unique accesses (\ie counting each access once),
+    (iii) total number of accesses~\cf{micro}.
+  }
+  \label{fig:objects}
+\end{figure}
 
 \section{Discussion}
 \label{diss}
