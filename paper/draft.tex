@@ -1,4 +1,3 @@
-% TODO: tempted to term this "Module-aware dynamic fragmentation, analysis, and reassembly" as Dialysis or refracture
 % CFP: https://www.usenix.org/conference/atc20/call-for-papers
 \documentclass[letterpaper,twocolumn,10pt]{article}
 \usepackage{usenix2019_v3}
@@ -106,10 +105,10 @@
 \newcommand{\toy}{{\tt lya.js}\xspace}
 
 
-\newcommand{\fra}{fragmentation\xspace} % fracture
+\newcommand{\fra}{fragmentation\xspace} % fracture?
 \newcommand{\ana}{analysis\xspace}      % 
 \newcommand{\ass}{reassembly\xspace}    % 
-\newcommand{\Fra}{Fragmentation\xspace} % fracture
+\newcommand{\Fra}{Fragmentation\xspace} % fracture?
 \newcommand{\Ana}{Analysis\xspace}      % 
 \newcommand{\Ass}{Reassembly\xspace}    % 
 \newcommand{\dia}{\fra, \ana, and \ass}
@@ -136,23 +135,13 @@
 \begin{document}
 %-------------------------------------------------------------------------------
 
-%don't want date printed
 \date{}
 
-% make title bold and 14 pt font (Latex default is non-bold, 16 pt)
 \title{\Large \bf \sys: Library-Oriented Program Analysis}
 
-%for single author (just remove % characters)
 \author{
 {\rm Anonymous Author(s)}\\
-% \normalsize{Submission \#225, 11 + 3 pages}\\
-% \normalsize{Anonymous Author(s)}\\
 \normalsize{Additional Anonymized Material: \href{https://git.io/JvfCf}{https://git.io/JvfCf}.}
-% {\rm Grigoris Ntousakis}\\
-% Technical University of Crete
-% \and
-% {\rm Nikos Vasilakis}\\
-% Massachusetts Institute of Technology
 }
 
 \maketitle
@@ -165,120 +154,6 @@ This approach uses lightweight load-time code transformations that operate on th
 This code implements the dynamic analysis, enabling this approach to capture all interactions around the library in unmodified production language runtime environments.
 We implement this approach in \sys, a system targeting the JavaScript ecosystem. 
 Results show that \sys delivers up to an order of magnitude performance improvements over current state-of-the-art dynamic analysis systems, compatibility with over 50 libraries and applications, and support for a range of dynamic analyses, each implemented in under 100 lines of code.
-
-% operate at the library  interface level  
-% This approach occupies an new point in the design trade-off space, enabling lya to operates at the library interface level in unmodified production..
-
-
-% transform and bind their context prior to their evaluation.
-% expose instrumentation opportunities to developers.
-% This mechanism enables a new lightweight instrumentation technique.
-
-% 
-% 
-% 
-% different
-% dynamic interposition techniques
-% 
-% We show how to exploit the technique to deliver very efficient interposition schemes
-% 
-%   the new technique operates at a finer granularity, 
-%   coarse granularity
-% 
-% we can exploit our characteristics.
-% Allows us to do X. This in turn has the following benefits for the developer Y:
-% 
-% the results show a way faster
-% 
-% What are the benefits
-% we present a library-oriented dynamic analysis technique and system
-% technique the functionality for interposing at library boundaries
-% 
-% 
-% We do dynamic analys 10 times faster and has
-% 
-% ---\eg access to a specific global variable or invocation of a specific method.
-% library method calls 
-% property value .
-
-% An important advantage is increased performance and backwards compatibility executes on the unmodified runtime and performs at a coarse granularity.
- % , and coordinate to get the full view of the workings of one or more libraries.
-% The level at which dialysis operates offer improved performance, backwards-compatibility 
-
-
-
-% Handlers are stateful 
-% 
-% compute over information associated with these events.
-% written in the same language as the program
-% 
-% During its execution, the modified program calls 
-% 
-% perform on the unmodified language runtime
-% thus offer performance and compatibility advantages over conventional, finer-grained analysis.
-% 
-% An important advantage is increased performance and backwards compatibility 
-% executes on the unmodified runtime and performs at a coarse granularity.
-% Despite its coarse granularity, dialysis still offers insightful information whose 
-% 
-% as demonstrated by three analysis use-cases whose needs are largely unmet by conventional analysis frameworks.
-% 
-% We implement program dialysis in \sys and evaluate it against libraries and programs drawn from the JavaScript ecosystem.
-% The results show significant performance improvements over state-of-the-art dynamic analysis framework, comparable analysis scripts,
-% 
-% when certain events occur.
-% Analysis scripts provide handlers for certain classes of events,
-% 
-% Developers provide handlers that are called when certain events occur,
-% by providing handlers to events.
-% 
-% These handlers are short, operate on the unmodified language runtime, thus offering performance benefits,
-% 
-% To expose these hooks, dialysis performs 
-% 
-% This is achieved by augmenting the library loader, but without necessarily modifying the language runtime 
-% 
-% Compared to dynamic analysis, dialysis
-% (i) operates at a coarser granularity (performance) and on the same runtime getting full support for the language (compatible with the semantics of the langauge)
-% but on the original runtime 
-% (ii) at the same level as the program, which means it can manipulate semantic information 
-% (iii)
-% 
-% Despite the fact that it operates at the same level as program
-% 
-% \sys 
-% 
-% can capture the library's full observable behavior.
-% 
-%   a dynamic analysis technique specifically tailored to applications with many third-party libraries.
-% Combining name shadowing, context wrapping, and transformation of the underlying dependency graph, program dialysis automates dynamic fragmentation, analysis, and reassembly of programs at the level of individual libraries during program execution.
-% It bolts onto existing languages, enabling analysis expressions in the source language, with only a few lines of analysis-specific code.
-% 
-% Our dialysis prototype, \sys, targets the JavaScript ecosystem.
-% demonstrates significant 
-% (i) performance benefits over conventional dynamic analysis, to the point that it can be toggled on/off online
-% Expressing analyses is comparable with 
-% succinct script in the same language and ecosystem as the dialysis target,
-% (iii) and its usefullness is 
-% 
-% 
-% A series of case-studies motivate \sys's design, and demonstrate how \sys allows the analysis of both individual libraries as well as multi-library programs with low developer effort and performance overhead:
-%   insightful analyses can be expressed in a few lines of code, add a minimal increase in the load latency of individual libraries, and scale to large programs with hundreds of libraries.
-% 
-
-% Module dialysis can be bolted on existing language runtime environments in a language-agnostic fashion 
-% % By leveraging the ubiquity of third-party modules in today's applications
-% Such modules can be part of third-party packages or of the language's standard library;
-%   the latter is important for resources that are part of the broader environment where the application is executing, such as the operating system and the network.
-
-% Operating at this level of granularity has several benefits:
-%   (i) it allows bolting library dialysis itself as a library onto existing runtime environments that do not feature dynamic analysis,
-%   (ii) it supports analysis expressions directly in the same language, tools, and abstractions as the host application language---eschewing low-level instrumentation, and %developers can use their tools 
-%   (iii) it features low performance overheads, to the point that has the potential to be used online.
-% % FIXME: It depends on the analysis
-% % Due to the in the host language and at a coarser granularity than full-fledged dynamic analysis, module dialysis 
-% % Operating at the granularity of library has several benefits: (i) ease (ii) performance (iii) while still getting 
-% %In a sense, modules are the right level of abstraction 
 \end{abstract}
 
 \section{Introduction}
@@ -292,39 +167,27 @@ Contrary to other types of analysis, its key benefits make it the primary (or on
   (iii) Turing-complete policies, where monitors themselves are programs~\cite{contracts1, contracts2, contracts3},
   (iv) dynamic or runtime-reflection features, such as the ones present in Python and JavaScript~\cite{jsanalysis1, jsanalysis2}.
 
-% Where dynamic analysis shines is
-% Dynamic analysis occupies a clear spot in the space of analysis has clear strengths and weaknesses.
-% Examples of information not analyzable statically include runtime code evaluation, runtime introspection and reflection, as well as multi-lingual support.
-% Dynamic analysis is a particularly good fit for the analysis of dynamic languages.
-
 Unfortunately, reaping these benefits comes with significant costs in terms of developer effort or runtime performance.
-Manually instrumenting a program requires a good understanding of its internals. % instruction sets?
-External tools such as instrumentation frameworks~\cite{pin, valgrind} and performance tracing tools~\cite{perf, dtrace} only add to the curve, as they feature their own language for specifying analyses. % usually different from the application's language.
+Manually instrumenting a program requires a good understanding of its internals. 
+External tools such as instrumentation frameworks~\cite{pin, valgrind} and performance tracing tools~\cite{perf, dtrace} only add to the curve, as they feature their own language for specifying analyses. 
 Modifying the application's runtime environment such as the interpreter is cumbersome, error-prone, and requires development in a language that is different than that of the program.
 Tools that virtualize execution~\cite{pin, valgrind, jalangi, roadrunner} have high performance costs---for example, Jalangi~\cite{jalangi} and RoadRunner~\cite{roadrunner} report No-Op analysis on the order of 26--32$\times$ and 52$\times$, respectively.
 % Problem-specific solutions require significant investment outside the language's mental model---for example,  each ---as a case in point, Jalangi reports XX overhed (exact overheads always depend on the specific analysis).
 
 Effort and performance costs are severely compounded by the use of third-party libraries, usually glued together without a full understanding of their internals.
 This is a recent phenomenon enabled by zero-cost code sharing~\cite{libs}:
-% Libraries are used pervasively today to lower development costs and improve software quality, 
-% This over-reliance to third-party libraries is a recent phenomenon, 
   language-specific package repositories eliminate the cost of publishing and using a library.
 As a result, applications frequently count hundreds of libraries~\cite{npmstudy:19}, with each one often only a few lines long~\cite{leftpad, npmstudy:19}. % how to say thousands of them depend on a 11-line lib?
 Library-oriented analysis adds to the challenges of prior tools as
   (i) library boundaries disappear at runtime, and
   (ii) coarse-grained, high-level language semantics misalign with fine-grained, low-level instrumentation.
 
-To address these challenges, we propose a novel approach to dynamic analysis, termed \emph{dialysis}\footnote{
-  A method of deconstruction into elements often for the purposes of altering piecewise components or removing waste products.
-  From % ancient Greek 
-  {\scriptsize $\delta\iota\acute{\alpha}$} (di\'{a}, ``inter-, through'') and {\scriptsize $\lambda\acute{\tilde{\upsilon}}\epsilon\iota\nu$} (lúein, ``to loosen'').
-} and implemented in \sys.
+To address these challenges, we propose a novel approach to dynamic analysis,
+\todo{implemented in} \sys.
 Program dialysis is a general technique, applicable to any programming language, that enables dynamic fragmentation, analysis, and reassembly of applications at the level of individual libraries. 
-%                                                   !! sosto!!------.
-%                                                                   \/
 It operates during program execution, automating the wrapping and transformation of a program's dependency graph, and allows developers to extract meaningful insights with only a few lines of analysis-specific code.
-By operating at the granularity of libraries, dialysis has several benefits over prior work: %full-fledged dynamic analysis:
-  (i) it allows bolting analysis, itself as a library, onto unmodified runtime environments, % with no dynamic analysis,
+By operating at the granularity of libraries, dialysis has several benefits over prior work:
+  (i) it allows bolting analysis, itself as a library, onto unmodified runtime environments,
   (ii) it supports analysis expressions using the same language, tools, and abstractions as the host program language,
   (iii) it features significantly low runtime performance overheads, enabling the potential for toggling its use in production environments.
 
@@ -338,33 +201,10 @@ By operating at the granularity of libraries, dialysis has several benefits over
 % \heading{Is it Performant?}
 % Highlight results
 
-% (i) at a somewhat coarser granularity, but still offering insights---and in a semantics-aware way tailored to the programming language.
-% (ii) bolt on
-% Our approach is applicable to any language that supports some notion of modularity, runtime introspection, and .
-% It plugs into the module-loading capability of the runtime system to insert key hooks for inserting 
-% After the parsing and interpretation phases of module loading complete, 
-%  which are then parsed and interpreted and 
-% Surprisingly, as we show in this paper, this architecture requires \emph{no} modifications to the language runtime---that is, it is backward-compatible with vanilla unmodified language runtime environments.
-% 
-% Its key strategy is to fracture applications at the boundaries of modules, instrument their interfaces (including direct accesses) using meta-programming capabilities, and recombine them 
-% By combining visiiblity into both built-in and third-party modules, \sys can get gather important information for 
-% at a much lower cost---both in terms of runtime performance and developer effort.
-% 
-% % to enable module-aware dynamic analysis are general
-% To achieve this, module-aware dynamic analysis leverages several techniques.
-% It plugs into the module manager;
-% wraps interfaces
-% (i) bolt on, meaning
-% (ii) high-performance, and 
-% (iii) low effort 
-% 
-% As shown later, these capabilities are generally available in all dynamic programming languages---\eg 
-
-To demonstrate its effectiveness, we evaluate \sys on the JavaScript ecosystem (>1.2M libraries~\cite{modulecounts}). % and unusually high code-reuse~\cite{npmstudy:19}. %, and a pressing need for usable dynamic analysis~\cite{}.
+To demonstrate its effectiveness, we evaluate \sys on the JavaScript ecosystem (>1.2M libraries~\cite{modulecounts}). 
 We develop a diverse set of analyses that target practical information about a program:
   a read-write-execute security analysis,
   a profiling analysis showing bottlenecked modules,
-% a synthesis-oriented analysis on input-output data,
   and an analysis extracting union-based type invariants.
 These analyses drive the design requirements for \sys, and highlight dialysis as a middle ground between coarse- and fine-grained analysis.
 We evaluate \sys at three different levels:
@@ -393,9 +233,6 @@ These examples illustrate key requirements for the design of a framework for ana
 Before describing these examples, however, we offer a brief refresher on the %abstractions and corresponding
   internals of a module system~\sx{bg1}.
 
-% The emerging development process should (and to a certain extent, does) simplify the development and testing process;
-%   unfortunately, good abstractions are sealed (\ie they do not leak between abstraction layers), which makes the inspection of a library difficult.
-
 \subsection{Background on Module Systems}
 \label{bg1}
 
@@ -422,22 +259,18 @@ This functionality falls into two categories:
 Fig.~\ref{fig:ex1} shows a \ttt{simple-math} library (right) imported by a program (left).
 
 From a developer's perspective, \ttt{import}ing a library makes its functionality available to the calling code by means of binding its functionality to a name in the caller's scope.
-% What this means is that some of the library's functionality is bound to a variable name that becomes available in the scope of the caller.
 This is achieved by some form of \ttt{export}ing, where the library developer expresses which values should become available to the \ttt{import}ing code.
-The definition of a value depends on the semantics of the language. % for now we can assume it's either a primitive value, a list of values, a function, or an object mapping string keys to values.
+The definition of a value depends on the semantics of the language. 
 Internally, the library may \ttt{import} other libraries, cause side-effects to the file-system or the network, or even be implemented in multiple languages.
-% , as shown on line \fixme{XX},
-% closely coupled with the runtime
-% and in some cases features its own mini-language, as is the case in Scheme and Standard ML.
 
 From the programming language's perspective, the process of \ttt{import}ing a library is achieved in several steps. 
 Compiled languages support separate compilation, where source files are compiled individually, followed by a runtime-linking phase that loads and links the resulting object files.
 Interpreted languages involve a somewhat convoluted process that combines runtime loading, interpretation, and linking.
-This process starts by locating the library in the file system, % or across the network,\footnote{
+This process starts by locating the library in the file system,
+% or across the network,\footnote{
 %   Examples of run-time environments featuring network loading include V8 and deno, for executing JavaScript and TypeScript respectively.
 % }
 by resolving code-relative module identifiers.
-% The library is assigned a unique identifier.
 The content of the library is then read and wrapped in a way that resolves library-local names, such as \ttt{\_\_name\_\_} in Python and \ttt{\_\_filename} in JavaScript, to meaningful values.
 The wrapper is then interpreted and evaluated using the language's interpreter, which might result to side-effects---for example, a \ttt{process.exit()} in the library's top-level scope will exit the entire program.
 Finally, the value bound to the \ttt{export}ed interface or returned from this interpretation (depending on the language) is made available to the scope of the  \ttt{import}ing code.
@@ -453,21 +286,19 @@ The dual of this is also possible: two different library names may resolve to th
 These features complicate library-level analysis, especially in interpreted programming languages.
 
 
-% Several details:
+\subsection{Motivating Examples}
+\label{examples}
+
+% Could add several details:
 %   same module at multiple levels, and the module cache
 %   sometime it's the same, some times it;s not
 %   module resolution algorithm
 
-\subsection{Motivating Examples}
-\label{examples}
-
 Having reviewed the building blocks and underlying techniques that power modularity, we now turn to examples of dynamic analysis that today are difficult or require specialized solutions:
   (i) a read-write-execute security analysis,
   (ii) a performance-profiling analysis showing bottlenecked libraries, and
-% (iii) a synthesis-oriented analysis on input-output data, and
   (iii) an analysis extracting runtime type invariants.
 These examples illuminate key design requirements for dialysis in general and \sys in particular.
-% \sys's implementation of module-level dynamic analysis.
 
 \heading{Security Analysis}
 The pervasive reliance on third-party libraries has led to an explosion of supply-chain attacks~\cite{long2015owasp, maass2016theory, snyk, lauinger2017thou}.
@@ -489,20 +320,11 @@ Both \ttt{fs} and \ttt{http} are part of the standard library, built into the ru
 Examples of interfaces outside the \ttt{http} and \ttt{fs} libraries include the ability to use global variables, import other libraries, and access the cache of the loaded modules---all of which are unfortunately available to any third-party that is part of an application.
 % The key issue underlying the \ttt{event-stream} attack is that any third-party fragment of an application has unrestricted access to the functionality available to the rest of application.
 
- %% To address such problems, several recent proposals suggest analyzing third-party modules dynamically to identify malicious behavior~\cite{}.
- %% % FIXME more about the policy, tracking arguments too
- %%  indicating the resources touched by that library 
- %% it seems critical to be able to toggle analysis on/off on production.
-% \emph{
-% This case highlights the need to \fixme{analyze} all the observable behavior \emph{around} a library, without necessarily caring about fine-grained library-internal analysis.
-% }
-
 \heading{Performance Diagnosis}
 Diagnosing performance problems is a difficult task, exacerbated by the heavy use of third-party libraries.
 Libraries are written by authors with different education, backgrounds, quality standards, and, most importantly, needs:
   it is not unusual for a weekend project solving a local need to end up as a critical dependency among several open-source projects~\cite{cheapcomplexity}.
 Maintenance and rewriting can also cause performance regressions between two versions of a library;
-% FIXME: Garbage collection
   worse even, the fact that a library changes one of its dependencies can cause severe performance pathologies to upstream projects---that is, while an interface remains the same due to an intermediate layer of abstraction, its performance can change dramatically~\cite{jest}.
 
 As a concrete example, consider the \ttt{minimatch} library, a regular-expression-based file-matching utility susceptible to long delays due to regular expressions that involve backtracking~\cite{minimatch}.
@@ -511,40 +333,26 @@ Developers use various techniques to understand such problems---\eg collecting a
 These techniques, however, require significant \emph{manual} effort:
   capturing traces, setting up test-beds, replaying traces, analyzing statistics, and debugging performance are all tedious and time-consuming tasks, compounded by the difficulties of mapping the results to the right third-party libraries.
 
-Switching-on a library-level profiling analysis % that operates at library boundaries
+Switching-on a library-level profiling analysis 
   would quickly detect a slowdown and attribute it to the bottlenecked \ttt{minimatch}.
 Wrapping library interfaces with profiling logic would collectively construct a model of the current workload.
 Such profiling could operate at a high resolution in time and space---at every function call entering a library and on hundreds of libraries across an application---but does not need to track detailed operations such as direct variable accesses.
-% An analysis could treat library invocation boundaries as message queues~\cite{scheme:98, duality:79} growing when a library gets overwhelmed.
-% At some point, the waiting time of newly-arrived messages becomes longer than sending messages to a library replica.
 Each library wrapper can collect profiling statistics at its own boundary, aggregating summaries into a global structure ordering libraries by resource consumption.
-
-
-% \emph{
-% This case highlights the need to \fixme{analyze} all the observable behavior \emph{around} a library, without necessarily caring about fine-grained library-internal analysis.
-% }
 
 \heading{Type Invariant Discovery}
 Extracting type information in a program is helpful in a variety of different ways. %, as type safety is an important property helpful in variety of scenarios. 
-%and types are lightweight annotations that can be quickly and efficiently checked.
 For example, types can be used to (i) identify program invariants to be preserved during code modifications, (ii) generate (machine-checkable) program documentation, or (iii) guide program synthesis and regeneration~\cite{daikon}.
 This is especially important in dynamic programming languages:
   in the absence of static type signatures, there is not much one can say about an object without executing it and inspecting its properties.
 
 As a case in point, consider the \ttt{gRPC} library for serializing and de-serializing objects~\cite{grpc}.
 To use it, developers have to provide a protocol-buffer specification describing the types of values that will be serialized.
-Given a library---say, bignum or crypto---a developer has to first call it manually, take note of the result's type, and then fill in the protobuf spec. %, common in distributed systems
+Given a library---say, bignum or crypto---a developer has to first call it manually, take note of the result's type, and then fill in the protobuf spec.
 This process has to be repeated with every change, often due to library updates or changes in the consuming program's structure.
 
 Library-level dynamic analysis can be used to discover such type assertions or invariants.
 The analysis would consult the (static) definition of a type \emph{system}, capturing the type of values at the boundaries of libraries by observing their arguments during the execution of the program.
 %% TODO: such as the simply-typed lambda calculus augmented with objects and union types.
-
-% would need to be able 
-% to capture structural subtitling---that is the piecewise 
-
-
-% \heading{Learning, Synthesis, and Regeneration}
 
 \subsection{Design Goals}
 \label{goals}
@@ -592,7 +400,7 @@ During this phase, \sys has to determine the granularity of the analysis (\eg to
 It then sets up the provided analysis, by transforming each library interface, its surrounding environment, and possibly the values passing through the library boundary.
 Programmatic transformations walk and wrap each one of these values based on their type.
 % the library interface is usually a complex (but singular) object;
-% the surrounding environment provides names to multiple ``implicitely'' imported libraries, functionality provided by the language.
+% the surrounding environment provides names to multiple ``implicitly'' imported libraries, functionality provided by the language.
 This phase requires solving several challenges, including enumerating all points of entry into and exit out of a library, 
 and swapping all original values externally-available to a library with ones that are wrapped with interposition mechanisms.
 
@@ -604,8 +412,6 @@ The cache needs to be augmented to support multiple wrappers per library, each c
 % ensure every fragment finds its place during dependency reassembly, 
 
 \end{itemize}
-
-% Program runtime transformations such as the ones applied in the second phase are used pervasively throughout \sys.
 
 \begin{figure}[t]
 \raggedleft 
@@ -619,13 +425,6 @@ The cache needs to be augmented to support multiple wrappers per library, each c
 }
 \label{fig:base}
 \end{figure}
-
-% To transform a module, \sys augments several steps of the module loading process (Fig.~\ref{fig:pipeline}) using a base transformation that wraps an object with a security monitor~\sx{bt}.
-% It starts by intercepting calls to the \ttt{require} function~\sx{import}, which locates the module's source code and \pc.
-% It then constructs a custom context based on the \pc's implicit segment~\sx{context}.
-% It then encloses the module in a closure to leverage local variable resolution in order to link the custom context with the module~\sx{enclosure}.
-% After source interpretation, \sys transforms the resulting value by consulting the \pc's explicit segment~\sx{final}, updates the \sys-augmented module cache~\sx{cache}, and returns the value to the consumer.
-% The following subsections detail these steps.
 
 \subsection{Fragmentation}
 \label{one}
@@ -644,12 +443,10 @@ For every invocation of \ttt{import} \sys checks the cache~\sx{three} to determi
   (ii) whether it has been loaded with the same analysis hooks.
 If both are determined true, \sys retrieves the cached version of the library and returns the transformed \ttt{export}ed value.
 If the library was loaded with a different analysis---say because there are different analyses applied to different parts of a dependency tree---\sys constructs the appropriate analysis and applies a transformation pass on a cached copy of the unmodified library~\sx{three}.
-% \omit{---the common case---}
 Otherwise, \sys first invokes the built-in library loader to locate the library.
 
 The process of loading new libraries includes (i) a phase of reading the necessary source files and (ii) a phase of interpreting them, interspersed by applications of transformations~\sx{two}.
 Reading files returns a string representation of the code; interpretation uses the language's runtime evaluation primitives to convert the code into an in-memory object.
-% A series of transformations is applied before and after interpretation~\sx{two}.
 
 %FIXME: Need to start with both problems
 Some analyses may themselves make use of global variables, libraries, and other analyzable constructs.
@@ -686,7 +483,6 @@ This is achieved in three logical steps:
 Before discussing \emph{where} each transformation is applied, however, we show \emph{how} they are applied.
 
 \heading{Transformations}
-% , such as an object returned from a module or an exception about to be sent across the network.
 \sys's transformations boil down to a base transform \ttt{wrap} that traverses and augments values with runtime analysis monitors.
 At a high level, \ttt{wrap} takes a value $v$ and analysis fragments $(\alpha_1, \alpha_2)$ and returns a new value $v'$ that has every one of its fields $f$ wrapped:
    every $f$ is replaced with a method $f'$ that calls fragment $\alpha_1$, calls $f$, calls fragments $\alpha_2$, and returns the result of the call to $f$.
@@ -699,30 +495,6 @@ Transformations walk compound values from their root, processing component value
   (ii) \emph{object} and \emph{list} values are recursively transformed, with their getter and setter methods replaced similar to function values; % and at times combining return results; and
   (iii) \emph{primitive} values are either transformed directly or copied unmodified and wrapped with an access interposition mechanism.
 To avoid cycles during the walk, values are added to a map that is consulted at the beginning of each recursive call.
-% Usually transformations do not mutate original values, but first copy them, apply transformations to the copies, and return copies to the caller.
-
-
-% \sys's transformations boil down to a base form \ttt{BT} that augments \emph{objects} with runtime security monitors.
-% At a high level, \ttt{BT} takes an object $O$ and a \pc $\sigma$ and returns a new object $O'$.
-% Every field $f$ of $O$ is wrapped with a method $f'$ defined to enclose $f$.
-% At runtime, $f'$ checks $\sigma$:
-%  if the access is allowed, it forwards the call to $f$;
-%  otherwise, it raises an exception.
-% % Appendix: An example result is shown in the appendix.~\ref{fig:bt2}.
-% 
-% To achieve this transformation, \sys walks the object graph from the root and processes component values based on their types (Fig.~\ref{fig:base}).
-% Rather than mutating original values, it copies them, applies transformations on the copies, and returns copies to the caller:
-% 
-% % Listing~\ref{core-tx} presents a simplified core of the language.
-% 
-% \begin{itemize}
-% \item
-%   \emph{function} values are wrapped by a closure that forwards arguments to the original function if allowed to do so.
-% \item
-%   \emph{object} values are recursively transformed, with their getter and setter methods replaced similar to function values.
-% \item
-%   \emph{primitive} values are copied unmodified and wrapped with an access interposition mechanism.
-% \end{itemize}
 
 Direct field accesses, such as assignments, require detection upon access.
 To achieve this, \sys wraps fields with an interposition mechanism;
@@ -775,7 +547,6 @@ The closure's body starts with a prologue of the form:
 These statements shadow global variable names by redefining them as function-local ones.
 The closure accepts an argument \ttt{ctx} that will hold the customized context (see above), assigning its entries to their respective variable names.
 The prologue executes before everything else in the library.
-% When the closure is applied to the customized context, the library's return value is recovered in a side-effectful manner (as in the unmodified library system) by reading the library's \ttt{exports} variable---that is, the closure does not end with an explicit \ttt{return}.
 This technique leverages lexical scoping to inject a non-bypassable step in the variable name resolution process:
   instead of resolving to variables in the context, resolution will first ``hit'' library-local values augmented with analysis monitors.
 
@@ -803,12 +574,10 @@ To support multiple wrappers for a single cached library, the cache is extended 
 The reason for adding the two levels is that libraries are usually governed by a single context analysis but multiple interface analyses, one for each of their consumers.
 A context transformation is applied at most a few times (usually only once), whereas a return-value transformation is applied on every \ttt{import}.
 Thus, the first level is indexed by library identifiers (as before); the second by context analysis; and the third by analysis of the \ttt{export}ed interfaces.
-% The first level is indexed by library identifiers as before, the second level is indexed by implicit segments, and the third level is indexed by explicit segments.
 For each library, the second level contains a collection of entries corresponding to mostly-transformed libraries, and the third level contains fully transformed libraries.
 Mostly-transformed libraries have gone through the entire transformation pipeline except for the last stage:
   they have been interpreted and have had their context transformed and linked, but their return value has not been processed to track analysis of its interface.
 
-% A single augmented object (such as \ttt{Object}) may need to be shared among multiple files in a library, or even multiple libraries within a package directory.
 A special entry is reserved for the original library value as a string~\sx{two}, so that subsequent transformations can skip loading the library from disk.
 When a new analysis is applied to a library, \sys indexes the cache by library identifier and applies the analysis-specific \ttt{wrap} to the library's context.
 It then adds that result to a slot in the next layer of the cache, indexed by the analysis identifier.
@@ -832,8 +601,6 @@ It then applies a transformation to the library's return value, and inserts the 
 \vspace{-4mm}
 \end{figure*}
 
-% Fixme switch from libraries to modules?
-
 This section details our implementation of \sys for server-side JavaScript (SSJ) in about 1.5K lines of code on top Node.js v8.9.4~\sx{impl1}, and 
 % We start with the internals of \sys's implementation, and then describe
 including the three analyses developed atop \sys~\sx{impl2}.
@@ -850,8 +617,6 @@ We went with the second approach, as looser coupling seems to have several benef
   and it simplifies \sys's comparison with vanilla Node (both in terms of performance and correctness).
 The primary drawback was missing a few opportunities for lowering runtime-performance and development-effort.
 
-% It sketches the Node runtime~\sx{a}, the use of the module system~\sx{b}, and the internals of how module loading works~\sx{c}.
-
 \subsection{System Implementation}
 \label{impl1}
 
@@ -861,7 +626,6 @@ Loading a fresh module % with \ttt{require("foo")}
   corresponds to the following five stages, all of which are augmented by \sys:
 (R) Resolution: identify the file to which the module specified corresponds, locate it in the file-system, and assign its absolute path as a module identifier.
 (L) Loading: depending on the file type, identify the corresponding loader---\eg V8 compiler for \ttt{js}, \ttt{JSON.parse} for \ttt{json} \etc
-% Identifiers are absolute paths.
 (W) Wrapping: wrap the module so that local names do not escape the module's scope and Node's module-local names get resolved.
 (E) Evaluation: evaluate the wrapped module in the current context, so that global names and top-level objects get resolved correctly.
 (C) Caching: add the module to a handful of module-related caches, for purposes of consistency and performance.
@@ -886,31 +650,11 @@ Node's global names are described at various parts of the documentation, but lib
 %   (ii) Node.js-specific globals (\eg \ttt{console}, \ttt{process}, \ttt{timer}).
 % These globals require further interposition.
 
-
-% TODO: Talk about recipe file, that could be kept along with the module identifier
-
-% \begin{lstlisting}
-% let lib = `
-%  function (exports, require, module,
-%            __filename, __dirname, CTX) {
-%    let Math = CTX.Math
-%    let console = CTX.console
-%    //...[more definitions]
-%    ${moduleSource}
-%  });`;
-% \end{lstlisting}
-
 We found it useful to add an option for white- and black-listing libraries.
 The configuration object accepts \ttt{only} and \ttt{not} expressions that indicate whether a module identifier will be part of the analysis.
 These expressions contain sets of regular expressions, pattern-matching against module identifiers, which in Node are represented as absolute file-system paths.
 Originally intended as an aid to \sys's development and debugging, this option proved useful enough for writing the three analyses that we decided to expose it to \sys's users.
 Examples of its use include blacklisting built-in libraries or white-listing only the library imported most recently.
-% This is useful, for example, when...
-
-% get second argument, no need to pass arguments around, tricky to 
-% carefull hardcoding of paths, because \sys's code itself is split into modules
-
-%% TODO: implementation
 
 Fig.~\ref{fig:ex2} exemplifies \sys's transformation techniques in the context of JavaScript.
 \sys traverses a \ttt{Math} object, replaces functions such as \ttt{div} with wrappers, creates a modified version of the surrounding context, and binds it to the library.
@@ -920,10 +664,6 @@ Fig.~\ref{fig:ex2} exemplifies \sys's transformation techniques in the context o
 \label{impl2}
 
 Individual analysis are implemented using a set of templates that provide initial constructs.
-%% Individual transformations described earlier~\sx{overview} are in \sys  abstracted by a set of parametrizable skeletons.
-%% These skeletons provide hooks for end-developers writing analyses.
-%% Specifically, they map types of values (\eg \ttt{Number}s, \ttt{Function}s) to generic hooks for each type. 
-%% These hooks are then extended or rewritten by developers to
 \sys offers a small utility library to reduce boilerplate code for pattern-matching on types.
 Individual analyses are about 60 lines of code, but a significant part of this code is common across them.
 
@@ -983,9 +723,6 @@ Fortunately, the aggregator understands the dependency structure and can approxi
 % Such a approximation is more complicated than a simple subtraction, as a module may invoke interfaces from multiple modules at the same time.
 % Having an analysis fragment per library consumer, however, alleviates much of the problem.
 
-% FIXME: Snapshot results
-% [serial , whatever, pizza, ...]
-
 \heading{Type Invariant Discovery}
 To infer type invariants for serialization specifications, we based our analysis on a simple type system modeled after the simply-typed lambda calculus augmented with:
   (i) unions (sum types), such as \ttt{string | number}, 
@@ -1001,8 +738,6 @@ For example, it unpacks a type \ttt{user} into two \ttt{string}s (first and last
 % leftpad: (string | number) -> number -> (string | null) -> string 
 
 % \subsection{Limitations}
-% 
-% % FIXME: Talk about the inability to 
 % A limitation of our implementation is that it cannot analyze the library importing \sys---usually, the top-level program entry-point equivalent to \ttt{main}.
 % This is because \sys cannot transform the context of that file
 % As a result, \sys as-is cannot be applied to, say, to analyze single-file programs---a common pattern in scripting languages often used for quick-and-dirty tasks.
@@ -1227,32 +962,17 @@ Confirming that \sys performs correctly under these scenarios is one part of the
 
 
 \sys's micro-benchmarks zoom into \sys's sources of overheads.
-%  from \sys and confirm it does not affect the correctness of the program with respect to its sequential execution.
 The key results are that
   (i) the majority of the overhead comes from the JavaScript's \ttt{with} expression, which \sys uses to wrap the context of libraries;
   (ii) interposition overhead is negligible in practice;
   (iii) while wrapped and accessed fields increase exponentially as a function of depth (as objects have many fields), object explosion quickly plateaus around level four with under 400 fields; and
   (iv) the majority of wrapped and accessed fields come from Node and EcmaScript names rather than imports or global values.
-% We use two broad classes of micro-benchmarks.
-% In the first class, we use the same 50 libraries that were the focus of a previous section~\sx{meso} to understand the characteristics of access patterns and \sys-internal overheads in a controlled environment.
-% In the second class, we use synthetic micro-benchmarks to test key properties of each analysis and confirm it outputs the expected results.
-% For example, to better understand PD and confirm it works correctly, we crafted a micro-benchmark with four dependencies of known static bottlenecks.
-
-% Each dependency can perform one of three operations, depending on its current state:
-%   (i) invoke a call to a module it imports,
-%   (ii) busy-wait for a specific amount of time, or
-%   (iii) respond to calls by returning a value.
-% Both of these goals would have been difficult to achieve outside a controlled environment. % , as we do not fully understand applications we haven't written ourselves.
 
 \heading{Sources of Overhead}
 To understand the sources of these overheads, we perform a series of micro-benchmarks with tight loops calling several ES-internal libraries without any I/O.
 By enabling different parts of \sys, we discover that the primary source of overhead comes from JavaScript's \ttt{with} construct:
   disabling \ttt{with} makes 95\% of the overheads disappear.
 The reason \ttt{with} dominates overheads is twofold: it (i) interposes on too many accesses, only a fraction of which are relevant, and (ii) remains significantly unoptimized, since its use is strongly discouraged by the JavaScript standards.
-% Proxy objects exhibit a much lower cost.
-% \TODO{Add some numbers from \ttt{t19} for different configs}.
-
-
 
 
 \begin{table}[t]
@@ -1287,15 +1007,12 @@ cycles           &   4.32    &  8.32   &  8.19   &  7.73   \\
 
 \heading{Interposition Overheads}
 Table~\ref{tab:synthetic} depicts the results of the three analyses applied to a subset of the aforementioned synthetic benchmarks.
-%  (tight loops with no I/O).
 The first column indicates the focus of the benchmark; not all analysis--benchmark combinations are useful:
-% Currently, these benchmarks return the results we expect, but they did help with the identification of \sys's bugs.
   for example, the ``custom-delay'' benchmark features static bottlenecks across its dependency tree but does not involve interesting access patterns.
 \sys-induced slowdown is under 2$\times$, except for the first two cases that feature \emph{only} accesses.
 Close inspection confirms a correlation to the number of wrapped objects and the frequency of accesses.
   these benchmarks feature artificially tight loops with high-frequency accesses.
 Transformation overheads themselves (not in Tab.~\ref{tab:synthetic}) remain under $1ms$.
-% is not affected significantly % by transformations altering a library's context 
 
 To understand the costs of proxy interposition, we measure the time to access deeply-nested properties of two versions of an object:
   unmodified and proxy-wrapped.
@@ -1325,9 +1042,6 @@ This is usually because most interfaces follow a mostly-flat format where all me
   \includegraphics[width=0.20\textwidth]{./figs/lya_ctx_obj}
   \includegraphics[width=0.20\textwidth]{./figs/lya_ctx_unique_valid}
   \includegraphics[width=0.20\textwidth]{./figs/lya_ctx_total_valid}
-
-  % \includegraphics[width=0.18\textwidth]{./figs/lya_ctx_unique_invalid}
-  % \includegraphics[width=0.18\textwidth]{./figs/lya_ctx_total_invalid}
   \caption{
     \textbf{Access characteristics as a function of context.}
     Clockwise from top-left:
@@ -1356,9 +1070,7 @@ In terms of unique number of accesses, for both invalid and invalid ones the maj
   \centering
   \includegraphics[width=\columnwidth]{./figs/lya_n_obj}
   \includegraphics[width=\columnwidth]{./figs/lya_unique_valid}
-  % \includegraphics[width=\columnwidth]{./figs/lya_unique_invalid}
   \includegraphics[width=\columnwidth]{./figs/lya_total_valid}
-  % \includegraphics[width=\columnwidth]{./figs/lya_total_invalid}
   \caption{
     \textbf{Analysis characteristics as a function of the analysis depth.}
     From the top:
@@ -1378,45 +1090,15 @@ In this section, we start by reflecting on the requirements of dialysis from the
 \subsection{Applying \sys to Other Environments}
 \label{reqs}
 
-% \begin{table*}[t]
-% \center
-% \footnotesize
-% \setlength\tabcolsep{3pt}
-% \caption{
-%   \footnotesize{
-%     \textbf{Language features used and their availability in other languages}.
-%     Broadly, the requirements of module dialysis can be broken down into to five elementary requirements.
-%   }
-% }
-% \begin{tabular*}{\textwidth}{l @{\extracolsep{\fill}} lll ll}
-% \toprule
-%              &  Instrument \ttiny{import}s  & Traverse objects      & Wrap values         & (Weak) Maps       & Shadow variables      \\
-% \midrule
-% Lua          &                              &                       &                     &                   &                       \\
-% JavaScript   &                              &                       &                     &                   &                       \\
-% Python       &                              &                       &                     &                   &                       \\
-% Ruby         &                              &                       &                     &                   &                       \\
-% Haskell      &                              &                       &                     &                   &                       \\
-% OCaml        &                              &                       &                     &                   &                       \\
-% Rust         &                              &                       &                     &                   &                       \\
-% Java         &                              &                       &                     &                   &                       \\
-% \bottomrule
-% \end{tabular*}
-% \label{tab:compat}
-% \vspace{-5mm}
-% \end{table*}
-
 The techniques presented in this paper are applicable to any programming language.
 We chose the JavaScript ecosystem % to evaluate the feasibility of our approach,
 primarily because
   (i) it boasts the largest collection of libraries~\cite{modulecounts} and
 	(ii) we had prior experience developing more sophisticated versions of SA and PD.
 We now expand on the requirements bolting dialysis on other runtime environments.
-% FIXME: All these features have to have been discussed earlier
 
 By operating on library boundaries, dialysis uses a few special language features, supported by all major programming languages.
 First, \sys needs to re-wire the \ttt{import} keyword:
-% This feature is important for compatibility reasons---otherwise developers would have to replace all import statements in their applications.
   if it is a function (\eg JavaScript, Scheme, Racket), re-wiring amounts to an overwrite;
   if it is a special non-functional keyword, re-wiring needs to be prefixed by a rewriting pass replacing \ttt{import} with a function (during module loading).
 % This is simplified by the fact that the import syntax is trivial.
@@ -1426,7 +1108,7 @@ It also needs the ability to interpose on values and transform their components.
 Dynamic programming languages offer runtime reflection and conveniently expose object accesses as (over-loadable) functions---\eg \ttt{Proxy} objects in JavaScript, metatables in Lua, metaclasses in Python, and direct-accessor meta-programming Ruby.
 Compiled languages would apply transformations with static metaprogramming facilities, traversing and transforming objects at compile time.
 Examples include templates and macro expansions such as Haskell's Template and Rust's macro system.
-% Other languages, such as Java and Julia, provide both static and dynamic reflection capabilities. %, allowing considerable freedom in the choice of implementation.
+% Other languages, such as Java and Julia, provide both static and dynamic reflection capabilities, allowing considerable freedom in the choice of implementation.
 % Fifth, \sys makes extensive use of interposition which is also available in different programming languages.
 % Static programming languages provide different types of support for 
 
@@ -1449,31 +1131,12 @@ Static languages have other benefits, such as avoiding the runtime overheads of 
 
 \subsection{When to Use Dialysis}
 \label{principles}
-% Dynamic analysis is a general technique for discovering facts about programs.
 While heavy-weight dynamic analysis provides full visibility into program execution, it may suffer from higher performance overheads, require significant developer effort, or offer results that are too low-level for the problem at hand.
-% Dialysis can be thought as a coarser version of analysis stemming from natural library boundaries---a level of granularity that seems just right for certain problems.
-% Which are these cases exactly?
 
-% pressing need, lightweight, 
-% multiplies lyas power
 Dialysis shines when there is a need for urgency, select online analysis, and a high level of abstraction.
 It can help identify (or narrow down) the source of a problem quickly, by swiftly isolating homegrown code from standard and third-party libraries, by requiring a few lines of analysis-specific code inlined, and by leveraging the developer's expertise in their language of choice.
 By operating at coarser granularity, using the vanilla optimized runtime, and by toggling parts of the analysis on and off, it provides the ability to perform the analysis online.
 Finally, it deconstructs programs only at library boundaries, a naturally coarser granularity that is just right for certain classes of problems.
-% a granularity that is well-suited for several tasks.
-% libraries are a convenient level of abstraction---or the point where abstractions 
-% monitors all around a library
-
-% The first class of problems where dialysis shines is quick-and-dirty insights;
-% Even if dialysis doesn't solve the problem, it can quickly narrow it down to a certain corner of the application, at which point the cost of a heavy-weight solution is lower.
-% % This is a particularly good match for dynamic programming languages that are already geared towards quick prototyping.
-% 
-% The second is when the goal is to understand the behavior of third-party code.
-% Dialysis plugs monitors all around a library, and in clearly delineated abstraction boundaries within that library where the signal-to-noise ratio is naturally expected to be high.
-% Dialysis deconstructs programs only at the library boundaries, at a granularity well-suited for several tasks.
-% Examples include the 
-% N-version programming ---all of which would require a custom tool.
-% By viewing the program's surrounding environment as libraries---which is the case in all high-level programming languages---dialysis can expand its coverage to the operating system, file system, network and other ``ambient'' services.
 
 Dialysis is \emph{not appropriate} for monolithic programs or ones written in low-level languages such as C.
 These limitations are due to several reasons.
@@ -1484,12 +1147,6 @@ A related problem is C's inability to traverse and wrap objects;
   due to lack of runtime information about size and structure, it is unclear how to traverse and transform them.\footnote{
   Recent efforts such as C-Strider~\cite{saur2016cstrider} and ptrSplit~\cite{ptrsplit:17} show promise.
 }
-% Finally, C is missing direct direct equivalents to \sys's requirements~\sx{reqs}
-
-% That said, it is possible to apply dialysis in C programs that have first gone through a process of decomposition or component sanboxing---as is the case in compartmentalization, program slicing, and related areas.
-% Additionally, many libraries in high-level programming languages today simply wrap C programs either directly or through a foreign-function interface.
-% Dialysis can be used with these libraries, as it plugs into the abstractions provided by the high-level, wrapper interface.
-
 
 \section{Related Work}
 \label{rw}
@@ -1535,7 +1192,6 @@ These wrap basic blocks of a program incrementally and right before execution, s
 %   \sys starts by wrapping a library during import, adding a small overhead on its loading time.
 However, they operate at a much lower level (binary) than \sys, are much more detailed and heavy-weight, and are not available to high-level runtime environments as a language-aware library.
 
-% Add our work
 Module dialysis builds on aspect-oriented programming (AOP), a programming model where program points map to actions taken at these points~\cite{aop}.
 Both approaches lower complexity by mapping multiple points across the program to the same actions, but dialysis does not alter the program's control flow.
 Moreover, AOP works on languages that were already designed to support it, whereas module dialysis is explicitly designed to bolt onto existing languages.
@@ -1552,16 +1208,9 @@ Contrary to PFR, dialysis operates on single programs, avoids breaking semantics
 \label{end}
 
 Recent trends in software engineering have led to unprecedented levels of third-party code (re-)use.
-% Applications today routinely pull together hundreds of libraries, making meaningful analysis difficult.
 We present \emph{program dialysis}, a novel library-aware analysis technique for dismantling, analyzing, and reassembling programs by combining name shadowing, context wrapping, and transformation of the underlying dependency graph.
-% is a general technique that
 Contrary to heavy-weight dynamic analysis, dialysis lowers developer effort in writing and deploying analysis, improves runtime performance, and operates at a high level of abstraction.
-% it may suffer from higher performance overheads, require significant developer effort, or offer results that are too low-level for the problem at hand, dialysis shines when there is a need for urgency, select online analysis, and a high level of abstraction.
 Our dialysis prototype for JavaScript, \sys, is available as an open-source library for experimentation with other applications and analyses.
-
-% \section*{Acknowledgments}
-% Martin
-% \section*{Availability}
 
 \bibliographystyle{plain}
 \bibliography{bib}
