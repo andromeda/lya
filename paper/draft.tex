@@ -163,7 +163,7 @@ Dynamic analysis is a type of analysis performed by (and while) executing a prog
 Such information may include the ability to infer execution invariants, check security constraints, and extract performance characteristics~\cite{analysis:10}.
 Contrary to other types of analysis, its key benefits make it the primary (or only) candidate in a variety of scenarios---namely, ones that require:
   (i) current runtime information, such as profiling data, in view of changing load patterns~\cite{staticdynamic},
-  (ii) accurate visibility into the execution, devoid of abstraction or approximation~\cite{staticdynamic},
+  (ii) accurate visibility into the execution, devoid of imprecision or approximation~\cite{staticdynamic},
   (iii) Turing-complete policies, where monitors themselves are programs~\cite{contracts1, contracts2, contracts3},
   (iv) dynamic or runtime-reflection features, such as the ones present in Python and JavaScript~\cite{jsanalysis1, jsanalysis2}.
 
@@ -764,7 +764,7 @@ At a high level, we are interested in three main questions:
 
   \item \textbf{Q2} Is it usable?
      We answer this question in \S\ref{impl}, by implementing these and other analyses.
-    \sys operates as a library around a unmodified runtime environments, does not require investment in a new language, and leads to analysis expressions that are comparable to conventional frameworks.
+    \sys operates as a library around unmodified runtime environments, does not require investment in a new language, and leads to analysis expressions that are comparable to conventional frameworks.
     % Analyses expressed in \sys are about 4$\times$ smaller than equivalent analyses written for a heavy-weight instrumentation framework.
 
   \item \textbf{Q3} How does it perform? We answer this question here.
@@ -773,7 +773,7 @@ At a high level, we are interested in three main questions:
   By executing on unmodified runtimes, \sys has significantly better compatibility:
     to execute, Jalangi requires significant library modifications~\sx{meso}.
   \sys scales to three large applications with hundreds of libraries while interposing on several thousands of objects~\sx{macro}.
-  Most of the overheads come from tracking global variables, but loading-time wrapping and runtime interposition overheads are negligible~\sx{micro}
+    Most of the overheads ($>95\%$)come from tracking global variables, but loading-time wrapping and runtime interposition overheads are negligible~\sx{micro}
   % The majority of the overheads come from the use of \ttt{with}, a 
 
 \end{itemize}
@@ -953,7 +953,7 @@ We apply \sys on three large applications:
   KoaBlog~\cite{koa}, a minimal blogging platform built on the Koa framework;
   Moeda~\cite{moeda}, a command-line currency converter that, among other features, uses online currency exchange rates; and
   Terminalizer~\cite{terminalizer}, an application for recording terminal sessions to generate animated gif images and shareable web-player links.
-These applications are highly popular, with Koa.js and Terminalizer having 28.3K and 8.7K GitHub stars respectively.
+These applications are highly popular, with Koa and Terminalizer having 28.3K and 8.7K GitHub stars respectively.
 Their structural and performance characteristics are shown in Tab.~\ref{tab:macro}.
 
 The differences between the number of sub-modules detected statically (by \ttt{npm ls}) and the ones observed by \sys are due to a few reasons.
@@ -1025,7 +1025,7 @@ The first column indicates the focus of the benchmark; not all analysis--benchma
 \sys-induced slowdown is under 2$\times$, except for the first two cases that feature \emph{only} accesses.
 Close inspection confirms a correlation to the number of wrapped objects and the frequency of accesses:
   these benchmarks feature artificially tight loops with high-frequency accesses.
-Transformation overheads themselves (not in Tab.~\ref{tab:synthetic}) remain under $1ms$.
+Transformation overheads themselves (not in Tab.~\ref{tab:synthetic}) remain under 1ms.
 
 To understand the costs of proxy interposition, we measure the time to access deeply-nested properties of two versions of an object:
   unmodified and proxy-wrapped.
@@ -1045,9 +1045,9 @@ Depth is explained in the previous paragraph:
    it is about how deep \sys traverses references starting starting from the names in scope---\eg the access \ttt{global.obj.x} is two levels deep and \ttt{fs.readFile} is one level deep.
 
 There are a few highlights worth noting.
-While the number of objects wrapped by\sys starts growing exponentially, it quickly reaches an average upper bound of 400 (depending on the exact benchmark).
-Accesses grow quickly for the first couple of levels---objects for some of these libraries are hit several thousand times---but then remain stable.
-This is usually because most interfaces follow a mostly-flat format where all methods are defined at the top level or right under.
+While the number of objects wrapped by \sys starts growing rapidly, it quickly reaches an average upper bound of 400 (depending on the exact benchmark).
+Accesses grow exponentially for the first couple of levels---as objects at levels have multiple fields, many of which are accessed several thousand times---but then stabilize around level 5.
+This is because most interfaces follow a mostly-flat format where all methods are defined at the top level or right under.
 
 \begin{figure}
   \centering
@@ -1109,7 +1109,7 @@ primarily because
 	(ii) we had prior experience developing more sophisticated versions of SA and PD.
 We now expand on the requirements for bolting our techniques on other runtime environments.
 
-By operating on library boundaries, \sys uses a few special language features, supported by all major programming languages.
+By operating on library boundaries, \sys uses a few special language features supported by all dynamic programming languages.
 First, \sys needs to re-wire the \ttt{import} keyword:
   if it is a function (\eg JavaScript, Scheme, Racket), re-wiring amounts to an overwrite;
   if it is a special non-functional keyword, re-wiring needs to be prefixed by a rewriting pass replacing \ttt{import} with a function (during module loading).
@@ -1119,7 +1119,7 @@ It also needs the ability to interpose on values and transform their components.
 % This is relatively easy in languages that provide meta-programming capabilities.
 Dynamic programming languages offer runtime reflection and conveniently expose object accesses as (over-loadable) functions---\eg \ttt{Proxy} objects in JavaScript, metatables in Lua, metaclasses in Python, and direct-accessor meta-programming Ruby.
 Compiled languages would apply transformations with static metaprogramming facilities, traversing and transforming objects at compile time.
-Examples include templates and macro expansions such as Haskell's Template and Rust's macro system.
+Examples include templates and macro expansions such as Template Haskell and Rust's macro system.
 % Other languages, such as Java and Julia, provide both static and dynamic reflection capabilities, allowing considerable freedom in the choice of implementation.
 % Fifth, \sys makes extensive use of interposition which is also available in different programming languages.
 % Static programming languages provide different types of support for 
