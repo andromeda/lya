@@ -153,7 +153,7 @@ We present a new dynamic analysis approach that targets modern dynamic languages
 This approach uses lightweight load-time code transformations that operate on the string representation of the module, as well as the context to which it is about to be bound, to insert developer-provided, analysis-specific code into the module before it is loaded.
 This code implements the dynamic analysis, enabling this approach to capture all interactions around the library in unmodified production language runtime environments.
 We implement this approach in \sys, a system targeting the JavaScript ecosystem. 
-Results show that \sys delivers up to an order of magnitude performance improvements over current state-of-the-art dynamic analysis systems, compatibility with over 50 libraries and applications, and support for a range of dynamic analyses, each implemented in under 100 lines of code.
+Results show that \sys delivers over an order of magnitude performance improvements over current state-of-the-art dynamic analysis systems, compatibility with over 50 libraries and applications, and support for a range of dynamic analyses, each implemented in under 100 lines of code.
 \end{abstract}
 
 \section{Introduction}
@@ -182,15 +182,14 @@ Library-oriented analysis adds to the challenges of prior tools as
   (i) library boundaries disappear at runtime, and
   (ii) coarse-grained, high-level language semantics misalign with fine-grained, low-level instrumentation.
 
-To address these challenges, we propose a novel approach to dynamic analysis,
-\todo{implemented in} \sys.
-Program dialysis is a general technique, applicable to any programming language, that enables dynamic fragmentation, analysis, and reassembly of applications at the level of individual libraries. 
-It operates during program execution, automating the wrapping and transformation of a program's dependency graph, and allows developers to extract meaningful insights with only a few lines of analysis-specific code.
-By operating at the granularity of libraries, dialysis has several benefits over prior work:
-  (i) it allows bolting analysis, itself as a library, onto unmodified runtime environments,
-  (ii) it supports analysis expressions using the same language, tools, and abstractions as the host program language,
-  (iii) it features significantly low runtime performance overheads, enabling the potential for toggling its use in production environments.
-
+To address these challenges, we propose a novel approach to dynamic analysis, targeting dynamic programming languages---and implemented in \sys for the server-side JavaScript ecosystem (>1.3M libraries~\cite{modulecounts}). 
+\sys leverages the ability of these languages to import code at runtime as a string in order to apply transformations that wrap the module about to be imported with developer-provided, analysis-specific code.
+More specifically, \sys inserts a series of steps in the module-loading process result in wrapping a library's full observable behavior---rather than just its interface---and exposing it to developers for runtime analysis.
+\sys effectively fragments, transforms, and reassembles the application at the level of individual libraries. 
+The overall approach has several practical benefits over prior work:
+  (i) it allows bolting the dynamic analysis as a library  onto unmodified runtime environments,
+  (ii) it supports analyses expressed using the same language, tools, and abstractions as the program language,
+  (iii) it features low runtime performance overheads, enabling the potential for toggling its use in production environments.
 
 % \heading{Is it Useful?}
 % First question
@@ -201,28 +200,28 @@ By operating at the granularity of libraries, dialysis has several benefits over
 % \heading{Is it Performant?}
 % Highlight results
 
-To demonstrate its effectiveness, we evaluate \sys on the JavaScript ecosystem (>1.2M libraries~\cite{modulecounts}). 
-We develop a diverse set of analyses that target practical information about a program:
+To demonstrate that \sys can be useful in practice, despite its coarse granularity, we develop a diverse set of analyses:
   a read-write-execute security analysis,
-  a profiling analysis showing bottlenecked modules,
+  a profiling analysis for identifying bottlenecked modules,
   and an analysis extracting union-based type invariants.
-These analyses drive the design requirements for \sys, and highlight dialysis as a middle ground between coarse- and fine-grained analysis.
-We evaluate \sys at three different levels:
-  (i) synthetic micro-benchmarks that test certain aspects and confirm the correctness of our analyses in a controlled environment;
-  (ii) single-module meso-benchmarks that allow comparison with dynamic analysis frameworks; and
-  (iii) end-to-end full-application macro-benchmarks that showcase \sys's behavior on realistic workloads. 
+% These analyses drive \sys's design requirements, and highlight the decisions behind its design.
+Each of these analyses takes about 100 LoC in JavaScript;
+  this integration between the code being analyzed and the one implementing the analysis has significant usability implications.
+Finally, \sys's performance is evaluated extensively, using
+  (i) over 50 popular libraries and scripts, highlighting compatibility and performance improvements over state-of-the-art frameworks;
+  (ii) three full applications, demonstrating that \sys scales to large and complex programs; and
+  (iii) a series of micro-benchmarks that zoom into a few specific characteristics of \sys.
 \S\ref{bg}--\ref{eval} present our key contributions:
 \begin{itemize}
-\item \S\ref{bg} characterizes the shared needs of three case-study multi-module analyses whose needs remain mostly unmet by general-purpose analysis frameworks.
-\item \S\ref{design} presents the design of dialysis, bolt-on library-oriented dynamic analysis~\sx{design}, which meets the requirements of the three case-study analyses.
+\item \S\ref{bg} characterizes the shared needs of three case-study multi-module analyses whose needs remain mostly by general-purpose analysis frameworks.
+\item \S\ref{design} presents the design of \sys, bolt-on library-oriented dynamic analysis~\sx{design}, which meets the requirements of the three case-study analyses.
 \item \S\ref{impl} discusses our implementation, \sys, as a pluggable library for the JavaScript ecosystem, as well as the implementation of the three analyses.
 \item \S\ref{eval} evaluates \sys, showing that it expresses insightful analyses succinctly, adds minimal overheads over the baseline runtime, and scales to hundred-library programs.
 \end{itemize}
 
-Aside from the aforementioned sections (\S\ref{bg}--\ref{impl}), the paper discusses \sys's limitations and its application to other languages~\sx{diss};
-  it compares with related prior work in the literature~\sx{rw};
+The paper then discusses \sys's limitations and its application to other languages~\sx{diss};
+  it compares with related prior work~\sx{rw};
   and draws appropriate conclusions~\sx{end}.
-
 
 \section{Background, Examples, and Goals}
 \label{bg}
@@ -296,9 +295,9 @@ These features complicate library-level analysis, especially in interpreted prog
 
 Having reviewed the building blocks and underlying techniques that power modularity, we now turn to examples of dynamic analysis that today are difficult or require specialized solutions:
   (i) a read-write-execute security analysis,
-  (ii) a performance-profiling analysis showing bottlenecked libraries, and
+  (ii) a performance-profiling analysis, and %  for identifying bottlenecked libraries, and
   (iii) an analysis extracting runtime type invariants.
-These examples illuminate key design requirements for dialysis in general and \sys in particular.
+These examples illustrate key design requirements for \sys.
 
 \heading{Security Analysis}
 The pervasive reliance on third-party libraries has led to an explosion of supply-chain attacks~\cite{long2015owasp, maass2016theory, snyk, lauinger2017thou}.
@@ -370,21 +369,21 @@ To summarize, these applications would appear to be served well by a system that
 % \item \textbf{(G4)} It does not incur prohibitive overheads, such that it can be switched on and off selectively during runtime execution.
 \end{itemize}
 
-The next section describes program dialysis, a new analysis technique that satisfies these goals, in a language-agnostic manner~\sx{design};
-  the section following that describes a concrete implementation for the server-side JavaScript ecosystem~\sx{impl}.
+The next section describes the design of \sys, a new dynamic analysis framework that satisfies these goals, in a language-agnostic manner~\sx{design};
+  the section following that describes \sys's concrete implementation for server-side JavaScript~\sx{impl}.
 
-\section{The Design of Program Dialysis}
+\section{The Design of \sys}
 \label{design}
 
-Dialysis starts by dynamically modifying the functionality of the module system that is responsible for importing and loading libraries:
+\sys starts by dynamically modifying the functionality of the module system that is responsible for importing and loading libraries:
   instead of simply locating and loading a library from the file-system, it yields control to \sys, which applies a series of transformations to libraries with the goal of interposing at their boundaries.
-We start with an overview of dialysis~\sx{overview}, highlighting several key challenges, followed by a detailed description of each step~(\S\ref{one}--\ref{three}).
+We start with an overview of \sys~\sx{overview}, highlighting several key challenges, followed by a detailed description of each step~(\S\ref{one}--\ref{three}).
 
 \subsection{Overview}
 \label{overview}
 
 % FIXME: add user data
-Program dialysis operates by
+\sys operates by
   dismantling the program at the boundaries of libraries,
   applying transformations that insert analysis-specific machinery, and then carefully 
   reassembling individual components to maintain the original semantics:
@@ -392,7 +391,7 @@ Program dialysis operates by
 \begin{itemize}
   
   \item \textbf{Fragmentation:}
-Dialysis starts by recursively dismantling a program into its dependencies. % ---pieces of software implement a computation or functionality.
+\sys starts by recursively dismantling a program into its dependencies. % ---pieces of software implement a computation or functionality.
 This is achieved by re-wiring the language's \ttt{import} function to go through \sys, resulting in \sys walking the program's recursive dependency structure at runtime.
 During this phase, \sys has to determine the granularity of the analysis (\eg top-level libraries, a specific library \etc) in order to apply transformations at the correct level and map the provided analysis hooks to the corresponding libraries.
 
@@ -405,7 +404,7 @@ This phase requires solving several challenges, including enumerating all points
 and swapping all original values externally-available to a library with ones that are wrapped with interposition mechanisms.
 
   \item \textbf{Reassembly}
-Finally, dialysis reassembles individual modified libraries back into the program's original structure.
+Finally, \sys reassembles individual modified libraries back into the program's original structure.
 The most important challenge during this phase is the treatment of the library cache~\sx{bg1}.
 The cache needs to be augmented to support multiple wrappers per library, each capturing a small fragment of the overall analysis.
 % without breaking the program's semantics.
@@ -429,7 +428,7 @@ The cache needs to be augmented to support multiple wrappers per library, each c
 \subsection{Fragmentation}
 \label{one}
 
-When a dialysis-augmented program starts, it first loads the analysis file provided by the developer. 
+When a \sys-augmented program starts, it first loads the analysis file provided by the developer. 
 The file may specify a subset of libraries whose boundaries are of interest or a subset of libraries that should \emph{not} be analyzed.
 Among other things, \sys needs to determine the library boundaries of interest and the granularity of analysis.
 To do this, it extracts a static approximation of the dependency graph by traversing library files.
@@ -452,7 +451,7 @@ Reading files returns a string representation of the code; interpretation uses t
 Some analyses may themselves make use of global variables, libraries, and other analyzable constructs.
 As these will be part of the same execution context, \sys must note to avoid transforming and wrapping these constructs as part of the analysis.
 % The analysis language is embedded in the source language, thus \sys makes use of the language's built-in evaluation primitives to interpret the \pc specification file.
-Dialysis frameworks may also want to add analysis-specific keywords not provided by the language.
+\sys frameworks may also want to add analysis-specific keywords not provided by the language.
 To achieve this, \sys wraps each analysis hook with a function whose body starts by defining the expected keywords.
 The precise techniques for achieving this will be made clear in the next section~\sx{two}, after covering transformations;
   the key point to remember is that analyses are initially represented as source strings, similar to libraries.
@@ -601,12 +600,12 @@ It then applies a transformation to the library's return value, and inserts the 
 \vspace{-4mm}
 \end{figure*}
 
-This section details our implementation of \sys for server-side JavaScript (SSJ) in about 1.5K lines of code on top Node.js v8.9.4~\sx{impl1}, and 
+This section details our implementation of \sys for server-side JavaScript in about 1.5K lines of code on top Node.js v8.9.4~\sx{impl1}, and 
 % We start with the internals of \sys's implementation, and then describe
 including the three analyses developed atop \sys~\sx{impl2}.
 Discussion of how other environments diverge from JavaScript is left for the next section~\sx{reqs}.
 
-The aforementioned dialysis design can be implemented in either of two ways.
+The aforementioned \sys design can be implemented in either of two ways.
 The first is to implement \sys as a modified version of the runtime, in which several stages of its library-loading facility have been augmented in-place. % with the techniques described earlier.
 The second approach is to implement \sys as a third-party library (\eg the \ttt{lya} package) available by the language's package manager.
 % 
@@ -777,7 +776,7 @@ At a high level, we are interested in three main questions:
 % In this section, we report on \sys's performance characteristics:
 % % At a high level, we are interested in three questions:
 %   (i) the overheads of its underlying building blocks;
-%   (ii) dialysis on real libraries, and how they compare to a production-grade dynamic analysis; and
+%   (ii) \sys on real libraries, and how they compare to a production-grade dynamic analysis; and
 %   (iii) \sys's behavior on realistic  multi-library applications.
 % % For the first question, we use  synthetic micro-benchmarks that built to stress key elements of the system and confirm it works correctly~\sx{micro}.
 % % For the second question, we use real libraries and compare them with an analysis written in Jalangi~\sx{meso}.
@@ -842,10 +841,10 @@ All times reported are in \textbf{ms}, averaged over 1K runs;
 To understand \sys's performance characteristics at the level of individual modules, we performed two experiments.
 
 \heading{\sys on Popular Libraries}
-For the first experiment, we perform a large-scale evaluation on 50 JavaScript packages from the npm ecosystem.
-These libraries are highly popular, averaging \todo{4842488} weekly downloads (total: \todo{227596957}) and are depended upon by about \todo{656} other packages or applications on average (total: \todo{30812}).
+For the first experiment, we evaluate \sys on 50 JavaScript packages from the npm ecosystem.
+These libraries are highly popular, averaging 4.8M weekly downloads (total: 227M) and are depended upon by about 656 other packages or applications on average (total: 30K).
 % More results about the javascript packages here: https://docs.google.com/spreadsheets/d/18xKjCgj1phODbNi6_IT-y3vP3oVaaY5oA-Wux2avvGY/edit#gid=2071117281
-These libraries are relatively small---adhering to known language trends~\cite{npmstudy:19}---simplifying compatibility inspection.
+These libraries are relatively small---adhering to known ecosystem trends~\cite{npmstudy:19}---simplifying compatibility inspection.
 
 Each library was run against the test suite provided by its nominal developers, via \ttt{npm test}.
 As these libraries are quite popular, they have received significant investment in their testing infrastructure, resulting into two main benefits for \sys's evaluation:
@@ -936,7 +935,7 @@ Performance                          &                   &                      
 \end{table}
 
 
-We perform end-to-end program dialysis on three large applications:
+We apply \sys on three large applications:
   KoaBlog~\cite{koa}, a minimal blogging platform built on the Koa framework;
   Moeda~\cite{moeda}, a command-line currency converter that, among other features, uses online currency exchange rates; and
   Terminalizer~\cite{terminalizer}, an application for recording terminal sessions to generate animated gif images and shareable web-player links.
@@ -1084,8 +1083,7 @@ In terms of unique number of accesses, for both invalid and invalid ones the maj
 \section{Discussion}
 \label{diss}
 
-In this section, we start by reflecting on the requirements of dialysis from the programming language~\sx{reqs} and then on some of its strengths and weaknesses~\sx{principles}.
-% Program dialysis depends on a few features provided by the programming language.
+This section starts by discussing \sys's requirements from the programming language~\sx{reqs}. It then reflects on its strengths and weaknesses~\sx{principles}.
 
 \subsection{Applying \sys to Other Environments}
 \label{reqs}
@@ -1095,9 +1093,9 @@ We chose the JavaScript ecosystem % to evaluate the feasibility of our approach,
 primarily because
   (i) it boasts the largest collection of libraries~\cite{modulecounts} and
 	(ii) we had prior experience developing more sophisticated versions of SA and PD.
-We now expand on the requirements bolting dialysis on other runtime environments.
+We now expand on the requirements bolting our techniques on other runtime environments.
 
-By operating on library boundaries, dialysis uses a few special language features, supported by all major programming languages.
+By operating on library boundaries, \sys uses a few special language features, supported by all major programming languages.
 First, \sys needs to re-wire the \ttt{import} keyword:
   if it is a function (\eg JavaScript, Scheme, Racket), re-wiring amounts to an overwrite;
   if it is a special non-functional keyword, re-wiring needs to be prefixed by a rewriting pass replacing \ttt{import} with a function (during module loading).
@@ -1122,23 +1120,23 @@ Finally, \sys makes use of variable shadowing to hide the original, unmodified v
 }
 % Differences in scoping rules---\ie what the shadowed variable ends up referring to upon execution---do not affect the usefulness of this feature, although we have found lexical scoping easier than dynamic scoping.
 
-To conclude, all major languages provide facilities to support dialysis, albeit with a different level of convenience.
+To conclude, all major languages provide facilities to support a \sys-like framework, albeit with a different level of convenience.
 Dynamic languages have features---\eg name (re-)binding, value introspection, dynamic code evaluation, and access interposition---that enable runtime transformations, which conveniently unify module identification with interposition:
   a single function-like operator locates a module, interprets it, and applies transformations before exposing its interface in the caller context.
 Static languages have other benefits, such as avoiding the runtime overheads of transformations by applying them at compile-time.
 % and type checking could further aid developers by issuing warnings of incompatible privilege settings.
 
 
-\subsection{When to Use Dialysis}
+\subsection{When to Use \sys-like Analysis}
 \label{principles}
 While heavy-weight dynamic analysis provides full visibility into program execution, it may suffer from higher performance overheads, require significant developer effort, or offer results that are too low-level for the problem at hand.
 
-Dialysis shines when there is a need for urgency, select online analysis, and a high level of abstraction.
+The set of techniques presented in this paper shines when there is a need for urgency, select online analysis, and a high level of abstraction.
 It can help identify (or narrow down) the source of a problem quickly, by swiftly isolating homegrown code from standard and third-party libraries, by requiring a few lines of analysis-specific code inlined, and by leveraging the developer's expertise in their language of choice.
 By operating at coarser granularity, using the vanilla optimized runtime, and by toggling parts of the analysis on and off, it provides the ability to perform the analysis online.
 Finally, it deconstructs programs only at library boundaries, a naturally coarser granularity that is just right for certain classes of problems.
 
-Dialysis is \emph{not appropriate} for monolithic programs or ones written in low-level languages such as C.
+\sys's set of techniques is \emph{not appropriate} for monolithic programs or ones written in low-level languages such as C.
 These limitations are due to several reasons.
 First, C programs do not feature clear, ``impenetrable'' boundaries like the ones available in memory- and type-safe languages.
 An important feature of the wrapping techniques presented in this paper is that they can track a library's full observable behavior.
@@ -1151,7 +1149,7 @@ A related problem is C's inability to traverse and wrap objects;
 \section{Related Work}
 \label{rw}
 
-The previous section~\sx{principles} offers a principles-comparison between dynamic analysis and dialysis.
+The previous section~\sx{principles} offers a theoretical comparison between conventional dynamic analysis and \sys.
 This section we turn to a technical comparison of \sys to prior systems.
 
 % \heading{Dynamic Analysis Systems}
@@ -1183,7 +1181,7 @@ JavaScript is related to WebAssembly, a standardized subset of JavaScript target
 The first dynamic analysis framework for WebAssembly, Wasabi~\cite{wasabi}, shares some of \sys' goals---\eg low-effort analysis and API for observation rather than manipulation.
 % Wasabi is also programmable in JavaScript (which, however, is not its target language), a similarity to \sys that is mostly accidental:
 %   Wasabi needs to be provide a high-level analysis scripting interface and chose JavaScript;
-%   whereas \sys's partial goal is supporting analysis in the same language as the program~\sx{goals}. % ---that is, dialysis implemented for Python would be using Python abstractions.
+%   whereas \sys's partial goal is supporting analysis in the same language as the program~\sx{goals}. % ---that is, \sys implemented for Python would be using Python abstractions.
 Contrary to \sys, Wasabi instruments binaries statically, \ie ahead-of-time, and aims for heavyweight instrumentation.
 
 \sys has some resemblance to dynamic instrumentation frameworks~\cite{pin, valgrind, disl, roadrunner}.
@@ -1192,25 +1190,28 @@ These wrap basic blocks of a program incrementally and right before execution, s
 %   \sys starts by wrapping a library during import, adding a small overhead on its loading time.
 However, they operate at a much lower level (binary) than \sys, are much more detailed and heavy-weight, and are not available to high-level runtime environments as a language-aware library.
 
-Module dialysis builds on aspect-oriented programming (AOP), a programming model where program points map to actions taken at these points~\cite{aop}.
-Both approaches lower complexity by mapping multiple points across the program to the same actions, but dialysis does not alter the program's control flow.
-Moreover, AOP works on languages that were already designed to support it, whereas module dialysis is explicitly designed to bolt onto existing languages.
+\nv{
+\sys builds on aspect-oriented programming (AOP), a programming model where program points map to actions taken at these points~\cite{aop}.
+Both approaches lower complexity by mapping multiple points across the program to the same actions, but \sys does not alter the program's control flow.
+Moreover, AOP works on languages that were already designed to support it, whereas \sys is explicitly designed to bolt onto existing languages.
+}
 
 More generally AOP is related to metaobjects~\cite{metaobject}, objects that manipulate object structure, and which enable a program to access to its own internal structure, including rewriting itself as it executes.
 While \sys uses metaobjects to traverse, understand, wrap, and rewrite interfaces, it shields developers from building the required metaobject infrastructure.
 % self element
 
-Dialysis draws inspiration directly from program fracture and recombination (PFR)~\cite{fracture1, fracture3}, a line of work less tied to program analysis and more towards program synthesis and automated patch generation.
+\sys draws inspiration directly from program fracture and recombination (PFR)~\cite{fracture1, fracture3}, a line of work less tied to program analysis and more towards program synthesis and automated patch generation.
 PFR breaks up multiple programs into many components with the goal of exchanging functionality between donor-donee pairs of programs.
-Contrary to PFR, dialysis operates on single programs, avoids breaking semantics, and leverages the existence of components with (mostly) explicit boundaries in the guise of libraries or modules.
+Contrary to PFR, \sys operates on single programs, avoids breaking semantics, and leverages the existence of components with (mostly) explicit boundaries in the guise of libraries or modules.
 
 \section{Conclusion}
 \label{end}
 
 Recent trends in software engineering have led to unprecedented levels of third-party code (re-)use.
-We present \emph{program dialysis}, a novel library-aware analysis technique for dismantling, analyzing, and reassembling programs by combining name shadowing, context wrapping, and transformation of the underlying dependency graph.
-Contrary to heavy-weight dynamic analysis, dialysis lowers developer effort in writing and deploying analysis, improves runtime performance, and operates at a high level of abstraction.
-Our dialysis prototype for JavaScript, \sys, is available as an open-source library for experimentation with other applications and analyses.
+We present \sys, a novel library-aware analysis framework for dismantling, analyzing, and reassembling programs by combining name shadowing, context wrapping, and transformation of the underlying dependency graph.
+Contrary to heavy-weight dynamic analysis, \sys lowers developer effort in writing and deploying analysis, improves runtime performance, and operates at a high level of abstraction.
+
+\sys is  available as an open-source library for experimentation with other applications and analyses.
 
 \bibliographystyle{plain}
 \bibliography{bib}
