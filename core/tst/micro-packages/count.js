@@ -27,4 +27,4 @@ for (let m in rwx) {
 // console.log(count);
 //
 // console.log('r' + '\t' + 'w' + '\t' + 'x' + '\t' + 'i');
-console.log(count.r + '\t' + count.w + '\t' + count.x + '\t' + count.i);
+console.log(count.r + ',' + count.w + ',' + count.x + ',' + count.i);
