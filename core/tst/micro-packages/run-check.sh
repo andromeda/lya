@@ -16,7 +16,7 @@ analysis() {
   # java -Dmaybe.reaching=true -jar $MIR_SA . | grep "^{" | jq .  > static.json
   # java -Dbase.stars=true -jar $MIR_SA . | grep "^{" | jq .  > static.json
   # java -Dprop.stars=true -jar $MIR_SA . | grep "^{" | jq .  > static.json
-
+  # java -Dprop.stars=true -Dbase.stars=true -jar $MIR_SA . | grep "^{" | jq .  > static.json
   # TODO: Pattern for exclusive-wrapper command
   # It identifies an input file and calls the Lya only for that input file
   # read -r -d '' PLG <<PROLOGUE

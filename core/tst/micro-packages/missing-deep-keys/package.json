@@ -4,7 +4,7 @@
   "description": "Tells you what keys from one object are missing in another",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/mocha/bin/mocha test.js && npm run coverage",
+    "test": "./node_modules/mocha/bin/mocha test.js",
     "lint": "eslint . --format=node_modules/eslint-formatter-pretty",
     "coverage": "./node_modules/istanbul/lib/cli.js cover ./node_modules/mocha/bin/_mocha test.js"
   },
