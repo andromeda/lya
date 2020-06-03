@@ -1,0 +1,101 @@
+NAME: algebra:
+9	16	5	7
+NAME: arr-diff:
+3	1	1	0
+NAME: arr-flatten:
+3	1	1	0
+NAME: array-first:
+0	0	0	0
+NAME: array-last:
+6	1	5	1
+NAME: array-range:
+3	1	2	0
+NAME: array.chunk:
+6	1	2	0
+NAME: concat-stream:
+21	1	9	4
+NAME: deep-bind:
+4	1	3	1
+NAME: document-ready:
+3	1	2	0
+NAME: file-size:
+5	1	2	0
+NAME: fs-promise:
+9	0	2	4
+NAME: get-value:
+6	1	4	1
+NAME: group-array:
+13	1	11	6
+NAME: has-key-deep:
+1	1	0	0
+NAME: has-value:
+6	1	4	2
+NAME: he:
+8	0	3	0
+NAME: identity-function:
+1	1	0	0
+NAME: in-array:
+1	1	0	0
+NAME: is-empty-object:
+5	1	2	0
+NAME: is-generator:
+2	2	0	0
+NAME: is-number:
+4	1	2	0
+NAME: is-promise:
+1	1	0	0
+NAME: is-sorted:
+4	1	2	0
+NAME: left-pad:
+1	1	0	0
+NAME: missing-deep-keys:
+4	1	3	2
+NAME: ndarray:
+18	1	10	2
+NAME: node-du:
+10	1	7	3
+NAME: node-glob:
+46	3	28	13
+NAME: node-slug:
+5	1	2	1
+NAME: node-stream-spigot:
+16	4	6	3
+NAME: normalize-pkg:
+0	0	0	0
+NAME: not-defined:
+4	1	2	0
+NAME: once:
+9	2	4	1
+NAME: pad-left-simple:
+4	1	2	0
+NAME: pad-left:
+3	1	2	1
+NAME: parse-next-json-value:
+3	1	2	1
+NAME: periods:
+2	0	0	0
+NAME: property-validator:
+8	1	2	6
+NAME: rimraf:
+13	2	6	4
+NAME: rtrim:
+1	1	0	0
+NAME: schema-inspector:
+3	1	1	1
+NAME: set-value:
+9	1	5	1
+NAME: static-props:
+4	2	1	0
+NAME: staticFiles:
+NAME: syncthrough:
+10	1	6	4
+NAME: through2-map:
+6	4	3	2
+NAME: through2:
+12	3	5	2
+NAME: time-stamp:
+3	1	2	0
+NAME: unordered-array-remove:
+1	1	0	0
+NAME: zipmap:
+10	1	3	0
