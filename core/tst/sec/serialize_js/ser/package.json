@@ -1,0 +1,58 @@
+{
+  "name": "serialize-to-js",
+  "version": "0.5.0",
+  "description": "serialize objects to javascript",
+  "main": "lib",
+  "engines": {
+    "node": ">=0.8.0"
+  },
+  "directories": {
+    "doc": "doc",
+    "test": "test"
+  },
+  "dependencies": {
+    "js-beautify": "~1.6.8"
+  },
+  "devDependencies": {
+    "eslint": "^3.13.1",
+    "eslint-config-standard": "^6.2.1",
+    "eslint-plugin-promise": "^3.4.0",
+    "eslint-plugin-standard": "^2.0.1",
+    "istanbul": "^0.4.5",
+    "mocha": "^3.2.0",
+    "rimraf": "^2.5.4"
+  },
+  "scripts": {
+    "test": "mocha --reporter spec --check-leaks test/*.mocha.js",
+    "cover": "istanbul cover _mocha --report lcov --report text -- --reporter dot --check-leaks test/*.mocha.js",
+    "doc": "jsdox -o doc lib/*.js",
+    "lint": "eslint --quiet '**/*.js'",
+    "readme": "markedpp --githubid -i README.md -o README.md",
+    "clean": "rimraf doc coverage node_modules"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/commenthol/serialize-to-js.git"
+  },
+  "keywords": [
+    "serialize",
+    "javascript",
+    "objects"
+  ],
+  "author": "commenthol <commenthol@gmail.com>",
+  "maintainers": "commenthol <commenthol@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/commenthol/serialize-to-js/issues"
+  },
+  "homepage": "https://github.com/commenthol/serialize-to-js",
+  "eslintConfig": {
+    "extends": "standard",
+    "plugins": [
+      "standard"
+    ],
+    "rules": {
+      "key-spacing": 0
+    }
+  }
+}
