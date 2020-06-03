@@ -1,0 +1,7 @@
+{
+  "/home/grigorisntousakis/lya/core/tst/sec/node_serialize/main.js": {
+    "require": "rx",
+    "require('node-serialize')": "ir",
+    "require('node-serialize').unserialize": "rx"
+  }
+}
