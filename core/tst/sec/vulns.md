@@ -36,6 +36,8 @@ https://snyk.io/vuln/SNYK-JS-SAFEREVAL-534901  2019-10769
 https://snyk.io/vuln/SNYK-JS-SAFEREVAL-173772  2019-10759
 https://snyk.io/vuln/SNYK-JS-SAFEREVAL-473029  2019-10760
 
+This needs dynamic analysis first.
+
 ### Safe Eval
 
 https://snyk.io/vuln/npm:safe-eval:20170830 2017-16088

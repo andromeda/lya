@@ -1,4 +1,4 @@
-var evaluate = require('static-eval');
+var evaluate = require('./index.js');
 var parse = require('esprima').parse;
 
 var src = process.argv[2];

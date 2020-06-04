@@ -1,6 +1,0 @@
-{
-  "/home/grigorisntousakis/lya/core/tst/sec/safer-eval/main.js": {
-    "require": "rx",
-    "require('safe-eval')": "irx"
-  }
-}
