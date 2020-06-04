@@ -1,0 +1,7 @@
+{
+  "/home/grigorisntousakis/lya/core/tst/sec/pixl-class/poc.js": {
+    "require": "rx",
+    "require('pixl-class')": "ir",
+    "require('pixl-class').create": "rx"
+  }
+}

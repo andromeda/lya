@@ -1,0 +1,7 @@
+{
+  "/home/grigorisntousakis/lya/core/tst/sec/fs-path/poc.js": {
+    "require": "rx",
+    "require('fs-path')": "ir",
+    "require('fs-path').copySync": "rx"
+  }
+}

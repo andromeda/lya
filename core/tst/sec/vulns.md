@@ -82,6 +82,11 @@ https://snyk.io/vuln/SNYK-JS-MORGAN-72579 2019-5413
 PoC:
 https://hackerone.com/reports/390881
 
+### fs-path
+
+https://snyk.io/vuln/npm:fs-path:20180512
+
+
 ### Other Notes
 
 (For Nikos: https://github.com/bkimminich/juice-shop/issues/269)
