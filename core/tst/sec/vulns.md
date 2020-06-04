@@ -5,7 +5,7 @@ To see all versions of a package:
 
 
 ### Serialize js 
-
+**Lya does work**
 https://snyk.io/vuln/npm:serialize-to-js:20170208
 `npm i serialize-to-js@0.8`
 
@@ -17,7 +17,7 @@ serialize.deserialize(payload);
 
 
 ### Node Serialize
-
+**works**
 https://snyk.io/test/npm/node-serialize/0.0.4
 
 `npm install node-serialize`
@@ -31,7 +31,7 @@ https://snyk.io/vuln/SNYK-JS-SERIALIZEJAVASCRIPT-570062
 
 
 ### Safer Eval
-
+**Works**
 https://snyk.io/vuln/SNYK-JS-SAFEREVAL-534901  2019-10769
 https://snyk.io/vuln/SNYK-JS-SAFEREVAL-173772  2019-10759
 https://snyk.io/vuln/SNYK-JS-SAFEREVAL-473029  2019-10760
@@ -39,12 +39,11 @@ https://snyk.io/vuln/SNYK-JS-SAFEREVAL-473029  2019-10760
 This needs dynamic analysis first.
 
 ### Safe Eval
-
 https://snyk.io/vuln/npm:safe-eval:20170830 2017-16088
 https://www.npmjs.com/advisories/1021
 
 ### Static Eval
-
+**Works**
 `npm i static-eval` (<2.0.0)
 
 https://snyk.io/vuln/npm:static-eval:20171016    2017-16226

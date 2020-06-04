@@ -1,0 +1,6 @@
+{
+  "/home/grigorisntousakis/lya/core/tst/sec/morgan/poc.js": {
+    "require": "rx",
+    "require('./index.js')": "irx"
+  }
+}

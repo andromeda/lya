@@ -8,5 +8,5 @@ let conf = {
   debug: true,
 };
 lya.configRequire(require, conf);
-require("./main.js");
+require("./poc.js");
 

@@ -1,7 +1,7 @@
 {
-  "/home/grigorisntousakis/lya/core/tst/sec/node_serialize/main.js": {
+  "/home/grigorisntousakis/lya/core/tst/sec/node_serialize/poc.js": {
     "require": "rx",
-    "require('node-serialize')": "ir",
-    "require('node-serialize').unserialize": "rx"
+    "require('./serialize.js')": "ir",
+    "require('./serialize.js').unserialize": "rx"
   }
 }
