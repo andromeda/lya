@@ -1,5 +1,6 @@
 let env;
 const fs = require('fs');
+const chalk = require('chalk');
 
 const updateTypeData = (store, type) => {
   if (Object.prototype.hasOwnProperty.
@@ -22,18 +23,28 @@ const onWrite = (target, name, argumentsList, currentModule, parentName,
 // onCallPre <~ is called before the execution of a function
 const onCallPre = (target, thisArg, argumentsList, name, nameToStore,
     currentModule, declareModule, typeClass) => {
+  const types = [];
   
+  // From here we get the type of each input argument
+  // TODO: Maybe the unique key should the nameToStore?
   for (let i = 0; i < argumentsList.length; i++) {
-    const type = typeof argumentsList[i];
-    console.log("Input ",type, nameToStore);
+    types[i] = typeof argumentsList[i];
+
   }
+
+  console.log(chalk.green.bold("Input: "), chalk.yellow(types), nameToStore);
+  // NOTE: The one hook could be added here
 };
 
 // onCallPost <~ Is call after every execution of a function
 const onCallPost = (target, thisArg, argumentsList, name, nameToStore,
     currentModule, declareModule, typeClass, result) => {
-  
-  console.log("Output: ", typeof result, nameToStore);
+  // From here we get the result type of the module
+  const type = result !== undefined ? typeof result : "No result"; 
+
+  console.log(chalk.blue.bold("Output: "), chalk.yellow(type), nameToStore);
+
+  // NOTE: And the other hook here
 };
 
 // onConstruct <~ Is call before every construct
