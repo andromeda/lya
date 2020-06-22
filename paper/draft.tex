@@ -140,8 +140,10 @@
 \title{\Large \bf \sys: Library-Oriented Program Analysis}
 
 \author{
-{\rm Anonymous Author(s)}\\
-\normalsize{Additional Anonymized Material: \href{https://git.io/JvfCf}{https://git.io/JvfCf}.}
+% {\rm Anonymous Author(s)}\\
+% \normalsize{Additional Anonymized Material: \href{https://git.io/JvfCf}{https://git.io/JvfCf}.}
+% {\rm Nikos Vasilakis \quad Grigorios Ntousakis\textsuperscript{$*$} \quad Martin Rinard}\\
+% MIT, CSAIL \quad \quad \quad \textsuperscript{$*$}TU Crete, ECE
 }
 
 \maketitle
@@ -217,7 +219,7 @@ Finally, \sys's performance is evaluated extensively, using
 \S\ref{bg}--\ref{eval} present our key contributions:
 \begin{itemize}
 \item \S\ref{bg} characterizes the shared needs of three case-study multi-module analyses whose needs remain mostly by general-purpose analysis frameworks.
-\item \S\ref{design} presents the design of \sys, bolt-on library-oriented dynamic analysis~\sx{design}, which meets the requirements of the three case-study analyses.
+\item \S\ref{design} presents the design of \sys, bolt-on library-oriented dynamic analysis, which meets the requirements of the three case-study analyses.
 \item \S\ref{impl} discusses our implementation, \sys, as a pluggable library for the JavaScript ecosystem, as well as the implementation of the three analyses.
 \item \S\ref{eval} evaluates \sys, showing that it expresses insightful analyses succinctly, adds minimal overheads over the baseline runtime, and scales to hundred-library programs.
 \end{itemize}
@@ -1061,6 +1063,7 @@ This is because most interfaces follow a mostly-flat format where all methods ar
     (i) number of \sys wrappers,
     (ii) unique valid accesses (\ie counting each access once),
     (iii) total valid accesses~\cf{micro}.
+    \vspace{-4mm}
   }
   \label{fig:objects}
 \end{figure}
@@ -1075,9 +1078,9 @@ A few names seem globally available but are in fact module-locals (\ttt{require}
 User-defined global variables are not prefixed with \ttt{global} thus requiring special interposition (\ttt{with}).
 
 Fig.~\ref{fig:objects} shows \sys's context characteristics on all 50 libraries~\sx{meso}. % as a function of context.
-In terms of the number of objects wrapped, the vast majority comes from Node which accounts for 91.1\% of all wrappers.
-In terms of unique number of accesses, for both invalid and invalid ones the majority comes from \ttt{require};
-  taking their number into account, the majority comes from ES and Node names, whereas the majority of invalid ones comes from \ttt{export}s.
+In terms of the number of objects wrapped, the majority comes from Node (91.1\% of all wrappers).
+In terms of unique number of accesses, for both invalid and invalid the majority comes from \ttt{require};
+  taking their number into account, valid accesses concentrate on ES and Node, whereas invalid ones concentrate on \ttt{export}s.
 
 \begin{figure}[t]
   \centering
@@ -1090,6 +1093,7 @@ In terms of unique number of accesses, for both invalid and invalid ones the maj
     (i) number of \sys wrappers applied,
     (ii) number of unique accesses (\ie counting each access once),
     (iii) total number of accesses~\cf{micro}.
+    \vspace{-5mm}
   }
   \label{fig:objects}
 \end{figure}
@@ -1097,13 +1101,13 @@ In terms of unique number of accesses, for both invalid and invalid ones the maj
 \section{Discussion}
 \label{diss}
 
-This section starts by discussing \sys's requirements from the programming language~\sx{reqs}. It then reflects on its strengths and weaknesses~\sx{principles}.
+This section discusses \sys's minimum requirements~\sx{reqs} and reflects on its strengths and weaknesses~\sx{principles}.
 
 \subsection{Applying \sys to Other Environments}
 \label{reqs}
 
 The techniques presented in this paper are applicable to any programming language.
-We chose the JavaScript ecosystem % to evaluate the feasibility of our approach,
+We chose JavaScript % to evaluate the feasibility of our approach,
 primarily because
   (i) it boasts the largest collection of libraries~\cite{modulecounts} and
 	(ii) we had prior experience developing more sophisticated versions of SA and PD.
@@ -1205,13 +1209,13 @@ Contrary to \sys, Wasabi instruments binaries statically, \ie ahead-of-time, and
 These wrap basic blocks of a program incrementally and right before execution, similar in vein to how \sys wraps libraries.
 % Pin~\cite{pin} and Valgrind~\cite{valgrind} translate basic blocks of the program just before their execution;
 %   \sys starts by wrapping a library during import, adding a small overhead on its loading time.
-However, they operate at a much lower level (binary) than \sys, are much more detailed and heavy-weight, and are not available to high-level runtime environments as a language-aware library.
+However, they operate at a much lower level (binary) than \sys, are much more detailed and heavy-weight, and are usually not available to high-level languages as a language-aware library.
 
 Aspect-oriented programming (AOP) is a programming model where program points map to actions taken at these points~\cite{aop}.
-A part of \sys is genetically related to AOP, drawing from proxies, wrappers, mirrors and other related mechanisms up to  metaobjects~\cite{metaobject},
-While aspects are a powerful---and indeed more cross-cutting than \sys's localized transformations---adding support for aspects in a language is not trivial;
-  while AspectJ and AspectC++ are indeed extensions of popular languages, they do require modifications to the language and runtime system.
-This is antithetical to \sys, which operates on a completely unmodified language and runtime environment.
+A part of \sys is genetically related to AOP, drawing from proxies, wrappers, mirrors and other related mechanisms up to  metaobjects~\cite{metaobject}.
+While aspects are more powerful than \sys's localized transformations, adding support for them in a language is not trivial:
+  for example, AspectJ and AspectC++, while extensions of popular languages, require modifications to the original language and/or runtime system.
+\sys operates on a completely unmodified language and runtime environment.
 % Key ingredients of \sys's approach include variable shadowing, runtime loading, 
 
 % \sys piggy-backs on a common  mechanism of existing (dynamic) languages---runtime module loading---to enable dynamic analysis.
@@ -1232,6 +1236,12 @@ We present \sys, a novel library-oriented dynamic analysis framework for dismant
 \sys delivers better performance  than conventional analysis systems, improved compatibility, and support for a range of dynamic analyses.
 
 % \sys is  available as an open-source library for experimentation with other applications and analyses.
+
+% \subsection*{Acknowledgments}
+% 
+% We thank Ben Karel, Jeff Perkins, and the MIT PAC group for their valuable thoughts. 
+% Much of \sys's design was informed through interactions with the community---we are particularly thankful to Isaac Z. Schlueter and CJ Silverio from npm and Daniel Katz, Petros Efstathopoulos, Kevin Roundy, and Daniel Marino from Symantec/NortonLifeLock Research Group.
+% This work was partly supported by DARPA contract no. HR00112020013 (ALRSCC).
 
 \bibliographystyle{plain}
 \bibliography{bib}
