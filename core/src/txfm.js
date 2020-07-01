@@ -25,6 +25,7 @@ const preset = {
   STAR_CHECK: pathJoin(__dirname, 'star-check.js'),
   UCOMMENT: pathJoin(__dirname, 'uncomment.js'),
   TERM_INDEX: pathJoin(__dirname, 'term-index.js'),
+  PRINT_REQUIRE: pathJoin(__dirname, 'printRequire.js'),
 };
 
 const systemPreset = {
@@ -531,6 +532,11 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   Module.prototype.require = function(...args) {
     const importName = args[0];
     moduleId = importName;
+    
+    // A hook to expose all the require calls 
+    if (policy.onRequire !== undefined) {
+      policy.onRequire(moduleName[env.requireLevel], importName);
+    };
 
     if (lyaConfig.modules.include !== null &&
       !lyaConfig.modules.include.includes(moduleName[env.requireLevel])) {
