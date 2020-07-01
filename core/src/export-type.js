@@ -1,17 +1,7 @@
-// This is the policy for true false analysis. Each time we access a variable
-// or a function we write it with true in a export file dynamic.json
-let locEnv;
+let env;
+const fs = require('fs');
+const inputStore = [];
 
-// Holds the end of each name store of new assigned global variables
-// suffix for our own metadata
-const endName = '@name';
-
-// @storedCalls it is a table that contains all the analysis data
-// @truename the name of the current function, object etc that we want to add to
-// the table
-// @inputType the type of the inputs of the function ~> as a string
-// @outputType the type of the output of the function ~> as a string
-// Update the analysis data that are stored in storedCalls
 const updateAnalysisData = (storedCalls, truename, inputType, outputType) => {
   const saveData = 'input: ' + inputType + ' => output: ' + outputType;
   if (Object.prototype.hasOwnProperty.
@@ -24,101 +14,64 @@ const updateAnalysisData = (storedCalls, truename, inputType, outputType) => {
   }
 };
 
-const updateRestData = (target, name, type) => {
+// Analyses provided by LYA.
+// onRead <~ is called before every object is read
+const onRead = (target, name, nameToStore, currentModule, typeClass) => {
 };
 
-const exportObj = () => {
-};
+// onWrite <~ is called before every write of an object
+const onWrite = (target, name, argumentsList, currentModule, parentName,
+    nameToStore) => {
 
-// This the handler of the require function. Every time a "require" is used to load up a module
-// this handler is called. It updates the analysis data that are stored in the accessMatrix table.
-const requireHandler = {
-  apply: function(target, thisArg, argumentsList) {
-    const currentName = locEnv.trueName[locEnv.requireLevel];
-    const origReqModuleName = argumentsList[0];
-    // locEnv.accessMatrix[currentName]['require(\'' + origReqModuleName + '\')'] = true;
-    return Reflect.apply(...arguments);
-  },
-};
+}
 
-// The handler of the global variable.Every time we access the global variabe in order to declare
-// or call a variable, then we can print it on the export file.
-const globalHandler = {
-  get: function(target, name) {
-    return Reflect.get(target, name);
-  },
-  set: function(target, name, value) {
-    return Reflect.set(target, name, value);
-  },
-};
-
-// The handler of the all the function that are called inside a module. Every time we
-// load a module with require it first execute all the code and then prepary and exports
-// all the export data. We use this handler to catch all the code that is executed on the
-// module.
-const moduleHandler = {
-  apply: function(target) {
-    return Reflect.apply(...arguments);
-  },
-  get: function(target, name) {
-    return Reflect.get(target, name);
-  },
-};
-
-// The handler of the functions on the export module. Every time we require a module
-// and we have exports, we wrap them in a handler. Each time we call a function from inside
-// exports this is the handler that we wrap the function.
-const exportsFuncHandler = {
-  apply: function(target, thisArg, argumentsList) {
-    // This is for the names
-    let truename;
-    truename = locEnv.objName.get(target);
-    const currentName = locEnv.objPath.get(target);
-    truename = truename + '.' + target.name;
-
-    // Here the input and the output type
-    let inputType = '';
-    let outputType;
-
-    if (!argumentsList.length) {
-      inputType += 'no-input';
-    } else {
-      for (let i = 0; i < argumentsList.length; i++) {
-        inputType += i + '.' + typeof argumentsList[i] + ' ';
-      }
+// onCallPre <~ is called before the execution of a function
+const onCallPre = (target, thisArg, argumentsList, name, nameToStore,
+    currentModule, declareModule, typeClass) => {
+  
+  let inputType = '';
+  if (!argumentsList.length) {
+    inputType += 'no-input';
+  } else {
+    for (let i = 0; i < argumentsList.length; i++) {
+      inputType += i + '.' + typeof argumentsList[i] + ' ';
     }
-    const result = Reflect.apply(...arguments);
-    outputType = typeof result;
-    updateAnalysisData(locEnv.accessMatrix[currentName], truename, inputType, outputType);
-
-    return result;
-  },
+  }
+  inputStore[nameToStore] = inputType;
 };
 
-// Read function so we print it in the export file
-// This is to catch the read
-const readFunction = (myFunc, name) => {
+// onCallPost <~ Is call after every execution of a function
+const onCallPost = (target, thisArg, argumentsList, name, nameToStore,
+    currentModule, declareModule, typeClass, result) => {
+  const inputType = inputStore[nameToStore]; 
+  const outputType = result ? typeof result : "no output"; 
+  updateAnalysisData(env.analysisResult[currentModule], nameToStore, inputType, outputType);
 };
 
-// This is the handler of the global constanst variables, like Math.PI etc. We store the name
-// in the same object but we use a different name, for example, for Math.PI we store the
-// name "Math.PI" in the object Math.PIPI. That way we can have accurate name analysis.
-const globalConstHandler = {
-  get: function(target, name) {
-    return Reflect.get(target, name);
-  },
+// onConstruct <~ Is call before every construct
+const onConstruct = (target, args, currentName, nameToStore) => {
 };
 
-module.exports = (env) => {
-  locEnv = env;
+const onHas = (target, prop, currentName, nameToStore) => {
+};
+
+// onExit (toSave == place to save the result) --maybe make it module-local?
+const onExit = (intersection, candidateModule) => {
+  if (env.conf.SAVE_RESULTS) {
+    fs.writeFileSync(env.conf.SAVE_RESULTS, 
+      JSON.stringify(env.analysisResult, null, 2), 'utf-8');
+  }
+}
+
+module.exports = (e) => {
+  env = e;
   return {
-    require: requireHandler,
-    globalHandler: globalHandler,
-    moduleHandler: moduleHandler,
-    readFunction: readFunction,
-    exportsFuncHandler: exportsFuncHandler,
-    globalConstHandler: globalConstHandler,
-    updateRestData: updateRestData,
-    exportObj: exportObj,
+    onRead: onRead,
+    onCallPre: onCallPre,
+    onCallPost: onCallPost,
+    onWrite: onWrite,
+    onConstruct: onConstruct,
+    onHas: onHas,
+    onExit: onExit,
   };
 };
