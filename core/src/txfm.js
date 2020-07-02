@@ -699,6 +699,10 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 module.exports = {
   preset: preset,
   configRequire: (origRequire, conf) => {
+    
+    // Uncomment next line to find the current node version
+    // console.log("Node.js version is:", process.version);
+    
     conf.analysis = conf.analysis || preset.ALLOW_DENY;
     if (!fs.existsSync(conf.analysis)) {
       console.error('Analysis file not found: ', conf.analysis);
