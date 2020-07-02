@@ -67,8 +67,9 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   analysisResult[moduleName[0]] = {};
 
   // This holds the string of the transformations inside modules
+  const declaration = (lyaConfig.context.enableWith === false) ? 'var' : 'let';
   let prologue = '';
-
+  
   // WeakMaps to store the name and the path for every object value
   const objectName = new WeakMap();
   const objectPath = new WeakMap();
@@ -383,7 +384,8 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   };
 
   const setDeclaration = (name) => {
-    prologue += 'let ' + name + ' = localGlobal["' + name +'"];\n';
+    prologue += declaration + ' ' + name + 
+      ' = localGlobal["' + name +'"];\n';
   };
 
   const passJSONFile = (func, json) => {
@@ -402,7 +404,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   // This will run once and produce prologue string
   const setPrologue = () => {
     passJSONFile(setDeclaration, defaultNames.globals);
-    prologue = 'let global = localGlobal["proxyGlobal"]\n' + prologue;
+    prologue = declaration + ' global = localGlobal["proxyGlobal"]\n' + prologue;
     prologue = lyaConfig.context.enableWith ? 'with (withGlobal) {\n' + prologue
       : prologue;
     return prologue;
