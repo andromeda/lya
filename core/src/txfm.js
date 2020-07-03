@@ -25,7 +25,7 @@ const preset = {
   STAR_CHECK: pathJoin(__dirname, 'star-check.js'),
   UCOMMENT: pathJoin(__dirname, 'uncomment.js'),
   TERM_INDEX: pathJoin(__dirname, 'term-index.js'),
-  PRINT_REQUIRE: pathJoin(__dirname, 'printRequire.js'),
+  PRINT_REQUIRE: pathJoin(__dirname, 'print-require.js'),
 };
 
 const systemPreset = {
