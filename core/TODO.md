@@ -60,3 +60,9 @@ Changed how users specify analyses. This requires several changes in the tests, 
 ./tst/RWX/t9/simpleMain.js:    analysisCh: 12,
 ```
 
+
+### Things to fix
+- Make lya run on node 12+
+- Fix let ~> var or with source transformation
+
+

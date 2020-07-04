@@ -1,0 +1,10 @@
+let lya = require("../../../src/txfm.js");
+let conf = {
+  SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
+  analysis: lya.preset.RWX,
+  context: {
+    enableWith: false
+  },
+};
+lya.configRequire(require, conf);
+require("./main.js");

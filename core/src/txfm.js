@@ -25,6 +25,7 @@ const preset = {
   STAR_CHECK: pathJoin(__dirname, 'star-check.js'),
   UCOMMENT: pathJoin(__dirname, 'uncomment.js'),
   TERM_INDEX: pathJoin(__dirname, 'term-index.js'),
+  PRINT_REQUIRE: pathJoin(__dirname, 'print-require.js'),
 };
 
 const systemPreset = {
@@ -66,6 +67,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   analysisResult[moduleName[0]] = {};
 
   // This holds the string of the transformations inside modules
+  const declaration = (lyaConfig.context.enableWith === false) ? 'var' : 'let';
   let prologue = '';
 
   // WeakMaps to store the name and the path for every object value
@@ -127,6 +129,13 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     counters: counters,
   };
 
+  // Check that a hook is declared in the analysis
+  const hookCheck = (hook, ...args) => {
+    if (hook !== undefined) {
+      hook.call(this, ...args)
+    };
+  }
+
   // user-globals: e.g., global.x, x,                                   [global, x]
   // es-globals: Math, Map, Array,                                      [Math, PI]
   // node-globals: console, setImmediate,                               [console, log]
@@ -150,14 +159,14 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
           : null;
 
         if (nameToStore) {
-          policy.onCallPre(target, thisArg, argumentsList, target.name, nameToStore,
-            currentModule, currentName, moduleClass);
+          hookCheck(policy.onCallPre, target, thisArg, argumentsList, target.name,
+            nameToStore, currentModule, currentName, moduleClass);
         };
         const result = Reflect.apply(...arguments);
 
         if (nameToStore) {
-          policy.onCallPost(target, thisArg, argumentsList, target.name, nameToStore,
-            currentModule, currentName, moduleClass, result);
+          hookCheck(policy.onCallPost, target, thisArg, argumentsList, target.name,
+            nameToStore, currentModule, currentName, moduleClass, result);
         };
 
         return result;
@@ -171,7 +180,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
           : null;
 
         if (storeName && name) {
-          policy.onRead(target, name, storeName, currentModule, moduleClass);
+          hookCheck(policy.onRead, target, name, storeName, currentModule, moduleClass)
         }
 
         return Reflect.get(...arguments);
@@ -184,10 +193,12 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
           const nameToStore = globalNames.has(name) ? globalNames.get(name) :
             parentName + '.' + name;
           if (globalNames.has(name)) {
-            policy.onWrite(target, name, value, currentModule, null, nameToStore);
+            hookCheck(policy.onWrite, target, name, value, currentModule,
+              null, nameToStore);
             return Reflect.set(...arguments);
           }
-          policy.onWrite(target, name, value, currentModule, parentName, nameToStore);
+          hookCheck(policy.onWrite, target, name, value,
+            currentModule, parentName, nameToStore);
           if (parentName === 'global' || typeof value === 'number') {
             globalNames.set(name, nameToStore);
           }
@@ -207,7 +218,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
               candidateModule.set(prop, currentName);
               globalNames.set(prop, prop);
           }
-          policy.onHas(target, prop, currentName, nameToStore);
+          hookCheck(policy.onHas, target, prop, currentName, nameToStore);
         }
 
         return result;
@@ -216,7 +227,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
         const currentName = env.moduleName[env.requireLevel];
         const nameToStore = target.name;
         if (target.name !== 'Proxy') {
-          policy.onConstruct(target, args, currentName, nameToStore)
+          hookCheck(policy.onConstruct, target, args, currentName, nameToStore);
         }
 
         return new target(...args);
@@ -382,7 +393,8 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   };
 
   const setDeclaration = (name) => {
-    prologue += 'let ' + name + ' = localGlobal["' + name +'"];\n';
+    prologue += declaration + ' ' + name +
+      ' = localGlobal["' + name +'"];\n';
   };
 
   const passJSONFile = (func, json) => {
@@ -401,7 +413,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   // This will run once and produce prologue string
   const setPrologue = () => {
     passJSONFile(setDeclaration, defaultNames.globals);
-    prologue = 'let global = localGlobal["proxyGlobal"]\n' + prologue;
+    prologue = declaration + ' global = localGlobal["proxyGlobal"]\n' + prologue;
     prologue = lyaConfig.context.enableWith ? 'with (withGlobal) {\n' + prologue
       : prologue;
     return prologue;
@@ -532,6 +544,9 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     const importName = args[0];
     moduleId = importName;
 
+    // A hook to expose all the require calls
+    hookCheck(policy.onRequire, moduleName[env.requireLevel], importName);
+
     if (lyaConfig.modules.include !== null &&
       !lyaConfig.modules.include.includes(moduleName[env.requireLevel])) {
       let moduleExports = originalRequire.apply(this, args);
@@ -574,7 +589,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       const nameToStore = objectName.get(target);
       const currModule = moduleName[env.requireLevel];
       const declareModule = moduleName[env.requireLevel];
-      policy.onCallPre(target, thisArg, argumentsList, target.name,
+      hookCheck(policy.onCallPre, target, thisArg, argumentsList, target.name,
           nameToStore, currModule, declareModule);
 
       return Reflect.apply(...arguments);
@@ -595,7 +610,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
             const birthplace = objectPath.get(receiver) ?
                 objectPath.get(receiver) : objectPath.get(target);
             const childName = fatherName + '.' + name;
-            policy.onRead(target, name, childName, currModule);
+            hookCheck(policy.onRead, target, name, childName, currModule);
             target[name] = setProxy(target[name], exportHandler, exportType);
             namePathSet(currObject, childName, birthplace);
 
@@ -618,11 +633,11 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
             }
             storePureFunctions.set(target[name], currFunction);
             if (lyaConfig.fields.excludes.has(name)) {
-              policy.onRead(target, name, parentName, currModule);
+              hookCheck(policy.onRead, target, name, parentName, currModule);
               return Reflect.get(...arguments);
             };
             namePathSet(currFunction, parentName, currModule);
-            policy.onRead(target, name, nameToStore, currModule);
+            hookCheck(policy.onRead, target, name, nameToStore, currModule);
           } else {
             const key = storePureFunctions.get(currFunction);
             namePathSet(key, parentName, currModule);
@@ -638,7 +653,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
           const nameToStore = parentName + '.' + name;
           const currModule = moduleName[env.requireLevel];
           if (!passedOver.has(nameToStore + currModule)) {
-            policy.onRead(target, name, nameToStore, currModule);
+            hookCheck( policy.onRead, target, name, nameToStore, currModule);
             passedOver.set(nameToStore + currModule, true);
           }
         }
@@ -651,10 +666,11 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
         const parentName = objectName.get(target);
         const nameToStore = parentName + '.' + name;
         const currModule = moduleName[env.requireLevel];
-        policy.onWrite(target, name, value, currModule, parentName, nameToStore);
+        hookCheck(policy.onWrite, target, name, value,
+          currModule, parentName, nameToStore);
       }
         return Reflect.set(...arguments);
-      
+
     },
   };
 
@@ -691,6 +707,10 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 module.exports = {
   preset: preset,
   configRequire: (origRequire, conf) => {
+
+    // Uncomment next line to find the current node version
+    // console.log("Node.js version is:", process.version);
+
     conf.analysis = conf.analysis || preset.ALLOW_DENY;
     if (!fs.existsSync(conf.analysis)) {
       console.error('Analysis file not found: ', conf.analysis);
