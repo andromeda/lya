@@ -47,7 +47,8 @@ const hasStar = (name) => {
 // We need to get the path of the main module in order to find dynamic json
 const getAnalysisData = () => {
   // We save all the json data inside an object
-  const appDir = env.conf.rules? env.conf.rules : path.join(path.dirname(require.main.filename), 'correct.json');
+  const appDir = env.conf.rules? env.conf.rules :
+    path.join(path.dirname(require.main.filename), 'correct.json');
   let dynamicData;
   try {
     dynamicData = require(appDir);
@@ -63,27 +64,29 @@ const getAnalysisData = () => {
 // etc.. /greg/home/lya/tst/main.js ~> main.js
 const checkRWX = (storedCalls, truename, modeGrid) => {
   for (const key in modeGrid) {
-    const mode = modeGrid[key];
-    if (Object.prototype.hasOwnProperty.
-        call(storedCalls, truename) === false) {
-      if (hasStar(truename)) {
-        log('Valid access because of * on ' + truename);
-        countValid++;
-        return;
-      }
-      log('Invalid access in: ' + truename + ' and mode ' + mode, 'red');
-      uniqueInvalid.add(truename+mode);
-      countInvalid++;
-    } else {
-      const permissions = storedCalls[truename];
-      if (!permissions.includes(mode)) {
+    if (Object.prototype.hasOwnProperty.call(modeGrid, key)) {
+      const mode = modeGrid[key];
+      if (Object.prototype.hasOwnProperty.
+          call(storedCalls, truename) === false) {
+        if (hasStar(truename)) {
+          log('Valid access because of * on ' + truename);
+          countValid++;
+          return;
+        }
         log('Invalid access in: ' + truename + ' and mode ' + mode, 'red');
         uniqueInvalid.add(truename+mode);
         countInvalid++;
       } else {
-        log('Valid access in: ' + truename + ' and mode ' + mode, 'green');
-        uniqueValid.add(truename+mode);
-        countValid++;
+        const permissions = storedCalls[truename];
+        if (!permissions.includes(mode)) {
+          log('Invalid access in: ' + truename + ' and mode ' + mode, 'red');
+          uniqueInvalid.add(truename+mode);
+          countInvalid++;
+        } else {
+          log('Valid access in: ' + truename + ' and mode ' + mode, 'green');
+          uniqueValid.add(truename+mode);
+          countValid++;
+        }
       }
     }
   }
@@ -107,7 +110,8 @@ const onRead = (target, name, nameToStore, currentModule, typeClass) => {
 };
 
 // onWrite <~ is called before every write of an object
-const onWrite = (target, name, value, currentModule, parentName, nameToStore) => {
+const onWrite = (target, name, value, currentModule,
+    parentName, nameToStore) => {
   checkRWX(groundTruth[currentModule], parentName, ['r']);
   checkRWX(groundTruth[currentModule], nameToStore, ['w']);
 };
@@ -155,7 +159,8 @@ const onExit = () => {
   const total = env.counters.total;
   const ratio = (+(countInvalid / total).toFixed(5));
   const corr = countValid > 0? 'correct' : '';
-  const msg = `${debugName} ${total} ${uniqueValid.size} ${uniqueInvalid.size} ${countValid} ${countInvalid} ${ratio} ${corr}`;
+  const msg = `${debugName} ${total} ${uniqueValid.size} ${uniqueInvalid.size} 
+    ${countValid} ${countInvalid} ${ratio} ${corr}`;
   if (env.conf.printResults) {
     console.error(msg);
     printExtended();

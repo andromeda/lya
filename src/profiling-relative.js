@@ -1,5 +1,4 @@
 let env;
-const pattern = /require[(](.*)[)]/;
 const fs = require('fs');
 const storeTime = new Map();
 // Array to store the time of the modules

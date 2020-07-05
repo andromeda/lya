@@ -2,16 +2,6 @@ let env;
 const pattern = /require[(](.*)[)]/;
 const fs = require('fs');
 
-// We add the R or W or E to the existing string
-const addEvent = (event, values, index) => {
-  let permissions = values[index];
-  if (!permissions.includes(event)) {
-    permissions += event;
-    permissions = permissions.split('').sort().join('');
-    values[index] = permissions;
-  }
-};
-
 // Change the time parameters
 const convert = (hrtime) => {
   const nanos = (hrtime[0] * 1e9) + hrtime[1];

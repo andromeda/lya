@@ -2,11 +2,12 @@ let env;
 const fs = require('fs');
 const chalk = require('chalk');
 
-const updateTypeData = (store, type) => {
-  if (Object.prototype.hasOwnProperty.
-      call(store, type) === false) {
-    store[type] = {};
-  }
+// Change the time parameters
+const convert = (hrtime) => {
+  const nanos = (hrtime[0] * 1e9) + hrtime[1];
+  const millis = nanos / 1e6;
+  const secs = nanos / 1e9;
+  return {secs: secs, millis: millis, nanos: nanos};
 };
 
 // onCallPre <~ is called before the execution of a function

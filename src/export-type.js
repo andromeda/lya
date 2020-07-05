@@ -33,7 +33,8 @@ const onCallPost = (target, thisArg, argumentsList, name, nameToStore,
     currentModule, declareModule, typeClass, result) => {
   const inputType = inputStore[nameToStore];
   const outputType = result ? typeof result : 'no output';
-  updateAnalysisData(env.analysisResult[currentModule], nameToStore, inputType, outputType);
+  updateAnalysisData(env.analysisResult[currentModule], nameToStore, inputType,
+      outputType);
 };
 
 // onExit (toSave == place to save the result) --maybe make it module-local?

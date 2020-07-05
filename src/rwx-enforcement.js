@@ -20,14 +20,17 @@ const getAnalysisData = () => {
 // etc.. /greg/home/lya/tst/main.js ~> main.js
 const checkRWX = (storedCalls, truename, modeGrid) => {
   for (const key in modeGrid) {
-    const mode = modeGrid[key];
-    if (Object.prototype.hasOwnProperty.
-        call(storedCalls, truename) === false) {
-      throw new Error('Invalid access in: ' + truename + ' and mode ' + mode);
-    } else {
-      const permissions = storedCalls[truename];
-      if (!permissions.includes(mode)) {
+    if (Object.prototype.hasOwnProperty.call(modeGrid, key)) {
+      const mode = modeGrid[key];
+      if (Object.prototype.hasOwnProperty.
+          call(storedCalls, truename) === false) {
         throw new Error('Invalid access in: ' + truename + ' and mode ' + mode);
+      } else {
+        const permissions = storedCalls[truename];
+        if (!permissions.includes(mode)) {
+          throw new Error('Invalid access in: ' + truename +
+            ' and mode ' + mode);
+        }
       }
     }
   }
@@ -51,7 +54,8 @@ const onRead = (target, name, nameToStore, currentModule, typeClass) => {
 };
 
 // onWrite <~ is called before every write of an object
-const onWrite = (target, name, value, currentModule, parentName, nameToStore) => {
+const onWrite = (target, name, value, currentModule, parentName,
+    nameToStore) => {
   checkRWX(groundTruth[currentModule], parentName, ['r']);
   checkRWX(groundTruth[currentModule], nameToStore, ['w']);
 };
