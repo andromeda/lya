@@ -58,6 +58,8 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   const originalWrap = Module.wrap;
   const originalRequire = Module.prototype.require;
   const originalRun = vm.runInThisContext;
+  const originalFilename = Module._resolveFilename;
+  const originalLoad = Module._load;
 
   const moduleName = [];
   const requireLevel = 0;
@@ -537,15 +539,23 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     }
   }
 
+  // FIXME: the original _load has some special conditions that
+  // we need to account for.
+  Module._load = function(...args) {
+    // We use Module._resolveFilename to find the filename
+    // and then attach it to the hook
+    const filename = originalFilename.call(this, ...args);
+    hookCheck(policy.onRequire, moduleName[env.requireLevel], filename);
+
+    return originalLoad.call(this, ...args);
+  };
+
   // We wrap the result in the wrapper function and we use passName
   // to pass the module id to Module.wrap
   let moduleId;
   Module.prototype.require = function(...args) {
     const importName = args[0];
     moduleId = importName;
-
-    // A hook to expose all the require calls
-    hookCheck(policy.onRequire, moduleName[env.requireLevel], importName);
 
     if (lyaConfig.modules.include !== null &&
       !lyaConfig.modules.include.includes(moduleName[env.requireLevel])) {
@@ -582,7 +592,6 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     objectName.set(key, name);
     objectPath.set(key, path);
   };
-
 
   const exportHandler = {
     apply: function(target, thisArg, argumentsList) {
