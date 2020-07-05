@@ -43,6 +43,7 @@ lya <fl> [hpVvvv] [a=<a.js>] [d=<n>] [{module, context, prop}-{include, exclude}
 
   Analyses can be a built-in or an absolute path to a user-defined analysis, and focus on the dynamic analysis target.
   Each analysis reads or writes its invariants in a file, whose path defaults to "./dynamic.json" but can be overwritten via  '-f <f>'.
+  The full set of analyses can be found
 
   * allow_deny:               Extracts an access policy
   * allow_deny_enforcement:   Enforces an allow-deny access policy
@@ -50,7 +51,6 @@ lya <fl> [hpVvvv] [a=<a.js>] [d=<n>] [{module, context, prop}-{include, exclude}
   * call_freq:                Extract call frequencies for all functions and fields part of the analysis target
   * global_only:              Capture accesses to global-only variables
   * term_index:               Calculate TF-IDF metrics on source code
-
 `;
 
 // -e,   --enforce <f.json>:   Run in enforcement mode, where mir enforces access rules in <f.json>
