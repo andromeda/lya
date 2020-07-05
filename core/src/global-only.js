@@ -11,11 +11,11 @@ const updateAnalysisData = (analysisResult, name) => {
 };
 
 // Change the time parameters
-const convert = hrtime => {
+const convert = (hrtime) => {
   const nanos = (hrtime[0] * 1e9) + hrtime[1];
   const millis = nanos / 1e6;
   const secs = nanos / 1e9;
-  return { secs: secs, millis: millis, nanos: nanos };
+  return {secs: secs, millis: millis, nanos: nanos};
 };
 
 // onCallPre <~ is called before the execution of a function
@@ -36,14 +36,14 @@ const onConstruct = (target, args, currentName, nameToStore) => {
 const onExit = (intersection, candidateModule) => {
   if (env.conf.reportTime) {
     const timerEnd = process.hrtime(env.conf.timerStart);
-    const timeMillis = convert(timerEnd).millis
+    const timeMillis = convert(timerEnd).millis;
     console.log(timeMillis, 'Time');
-  };
-  if (env.conf.SAVE_RESULTS) {
-    fs.writeFileSync(env.conf.SAVE_RESULTS, 
-      JSON.stringify(env.analysisResult, null, 2), 'utf-8');
   }
-}
+  if (env.conf.SAVE_RESULTS) {
+    fs.writeFileSync(env.conf.SAVE_RESULTS,
+        JSON.stringify(env.analysisResult, null, 2), 'utf-8');
+  }
+};
 
 module.exports = (e) => {
   env = e;

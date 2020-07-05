@@ -3,10 +3,10 @@
 
 // also try google closure compiler
 // https://stackoverflow.com/a/3577901
-const sourceTransform = src => src.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g,'');
+const sourceTransform = (src) => src.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '');
 
 module.exports = () => {
   return {
-    sourceTransform: sourceTransform
+    sourceTransform: sourceTransform,
   };
 };

@@ -1,54 +1,54 @@
-let RW = {
-   apply: function(target, thisArg, argumentsList) {
-     console.log("apply", target, thisArg, argumentsList);
-     Reflect.apply(...arguments);
-   },
-   construct: function(target, argumentsList, newTarget) {
-     console.log("construct", target, argumentsList);
-     Reflect.construct(...arguments);
-   },
-   defineProperty: function(target, property, descriptor){
-     console.log("defineProperty", target, property, descriptor);
-     Reflect.defineProperty(...arguments);
-   },
-   getOwnPropertyDescriptor: function(target, prop){
-     console.log("getOwnPropertyDescriptor", target, prop);
-     Reflect.getOwnPropertyDescriptor(...arguments);
-   },
-   deleteProperty: function(target, property){
-     console.log("deleteProperty", target, property);
-     Reflect.deleteProperty(...arguments);
-   },
-   getPrototypeOf: function(target){
-     console.log("getPrototypeOf", target);
-     Reflect.getPrototypeOf(...arguments);
-   },
-   setPrototypeOf: function(target, prototype){
-     console.log("setPrototypeOf", target, prototype);
-     Reflect.setPrototypeOf(...arguments);
-   },
-   isExtensible: function(){
-     console.log("isExtensible", ...arguments);
-     Reflect.isExtensible(...arguments);
-   },
-   preventExtensions: function(target){
-     console.log("preventExtensions", ...arguments);
-     Reflect.preventExtensions(...arguments);
-   },
-   get: function(target, prop, receiver) {
-     console.log("get", target, prop);
-     Reflect.get(...arguments);
-   },
-   set: function(target, prop, value, receiver) {
-     console.log("set", target, prop, value);
-     Reflect.set(...arguments);
-   },
-  has: function(target, prop){
-    console.log("has", target, prop);
+const RW = {
+  apply: function(target, thisArg, argumentsList) {
+    console.log('apply', target, thisArg, argumentsList);
+    Reflect.apply(...arguments);
+  },
+  construct: function(target, argumentsList, newTarget) {
+    console.log('construct', target, argumentsList);
+    Reflect.construct(...arguments);
+  },
+  defineProperty: function(target, property, descriptor) {
+    console.log('defineProperty', target, property, descriptor);
+    Reflect.defineProperty(...arguments);
+  },
+  getOwnPropertyDescriptor: function(target, prop) {
+    console.log('getOwnPropertyDescriptor', target, prop);
+    Reflect.getOwnPropertyDescriptor(...arguments);
+  },
+  deleteProperty: function(target, property) {
+    console.log('deleteProperty', target, property);
+    Reflect.deleteProperty(...arguments);
+  },
+  getPrototypeOf: function(target) {
+    console.log('getPrototypeOf', target);
+    Reflect.getPrototypeOf(...arguments);
+  },
+  setPrototypeOf: function(target, prototype) {
+    console.log('setPrototypeOf', target, prototype);
+    Reflect.setPrototypeOf(...arguments);
+  },
+  isExtensible: function() {
+    console.log('isExtensible', ...arguments);
+    Reflect.isExtensible(...arguments);
+  },
+  preventExtensions: function(target) {
+    console.log('preventExtensions', ...arguments);
+    Reflect.preventExtensions(...arguments);
+  },
+  get: function(target, prop, receiver) {
+    console.log('get', target, prop);
+    Reflect.get(...arguments);
+  },
+  set: function(target, prop, value, receiver) {
+    console.log('set', target, prop, value);
+    Reflect.set(...arguments);
+  },
+  has: function(target, prop) {
+    console.log('has', target, prop);
     Reflect.has(...arguments);
   },
-  ownKeys: function(target){
-    console.log("ownKeys", target);
+  ownKeys: function(target) {
+    console.log('ownKeys', target);
     Reflect.ownKeys(...arguments);
   },
 };
@@ -77,18 +77,18 @@ function sandboxJS(js) {
 
 // sandboxJS("console.log(2)");        // 2
 // sandboxJS("console.log(history)");  // Error, Not allowed: history
-console.log("x = 3");
+console.log('x = 3');
 sandboxJS('x = 3');
-// 
+//
 // console.log("x = 4");
 // sandboxJS('x = 4');
-// 
+//
 // console.log('console.log(x)');
 // sandboxJS('console.log(x)');
 
 // console.log('Infinity');
 // sandboxJS('Infinity');
-// 
+//
 // console.log('process');
 // sandboxJS('process');
 
@@ -102,8 +102,6 @@ createHandler(root, ..){
     get: ...
     ...
     ... new Proxy(target[name], createHandler(root.push("target"))]))
-
-
 
 
 }

@@ -17,7 +17,6 @@ const updateAnalysisData = (storedCalls, truename, inputType, outputType) => {
 // onCallPre <~ is called before the execution of a function
 const onCallPre = (target, thisArg, argumentsList, name, nameToStore,
     currentModule, declareModule, typeClass) => {
-  
   let inputType = '';
   if (!argumentsList.length) {
     inputType += 'no-input';
@@ -32,18 +31,18 @@ const onCallPre = (target, thisArg, argumentsList, name, nameToStore,
 // onCallPost <~ Is call after every execution of a function
 const onCallPost = (target, thisArg, argumentsList, name, nameToStore,
     currentModule, declareModule, typeClass, result) => {
-  const inputType = inputStore[nameToStore]; 
-  const outputType = result ? typeof result : "no output"; 
+  const inputType = inputStore[nameToStore];
+  const outputType = result ? typeof result : 'no output';
   updateAnalysisData(env.analysisResult[currentModule], nameToStore, inputType, outputType);
 };
 
 // onExit (toSave == place to save the result) --maybe make it module-local?
 const onExit = (intersection, candidateModule) => {
   if (env.conf.SAVE_RESULTS) {
-    fs.writeFileSync(env.conf.SAVE_RESULTS, 
-      JSON.stringify(env.analysisResult, null, 2), 'utf-8');
+    fs.writeFileSync(env.conf.SAVE_RESULTS,
+        JSON.stringify(env.analysisResult, null, 2), 'utf-8');
   }
-}
+};
 
 module.exports = (e) => {
   env = e;

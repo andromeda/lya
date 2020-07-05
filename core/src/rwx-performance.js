@@ -13,11 +13,11 @@ const addEvent = (event, values, index) => {
 };
 
 // Change the time parameters
-const convert = hrtime => {
+const convert = (hrtime) => {
   const nanos = (hrtime[0] * 1e9) + hrtime[1];
   const millis = nanos / 1e6;
   const secs = nanos / 1e9;
-  return { secs: secs, millis: millis, nanos: nanos };
+  return {secs: secs, millis: millis, nanos: nanos};
 };
 
 // @storedCalls it is a table that contains all the analysis data
@@ -80,7 +80,7 @@ const onCallPre = (target, thisArg, argumentsList, name, nameToStore,
         nameToStore, ['r', 'x']);
     if (pattern.test(nameToStore)) {
       updateAnalysisData(env.analysisResult[currentModule],
-        nameToStore.match(pattern)[0], ['r']);
+          nameToStore.match(pattern)[0], ['r']);
     }
   }
 };
@@ -100,13 +100,13 @@ const onExit = (intersection, candidateModule) => {
   }
   if (env.conf.reportTime) {
     const timerEnd = process.hrtime(env.conf.timerStart);
-    const timeMillis = convert(timerEnd).millis
+    const timeMillis = convert(timerEnd).millis;
     console.log(timeMillis, 'Time');
-  };
+  }
   if (env.conf.print) {
-    console.log(JSON.stringify(env.analysisResult, null, 2))
-  };
-}
+    console.log(JSON.stringify(env.analysisResult, null, 2));
+  }
+};
 
 module.exports = (e) => {
   env = e;

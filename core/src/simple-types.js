@@ -13,15 +13,14 @@ const updateTypeData = (store, type) => {
 const onCallPre = (target, thisArg, argumentsList, name, nameToStore,
     currentModule, declareModule, typeClass) => {
   const types = [];
-  
+
   // From here we get the type of each input argument
   // TODO: Maybe the unique key should the nameToStore?
   for (let i = 0; i < argumentsList.length; i++) {
     types[i] = typeof argumentsList[i];
-
   }
 
-  console.log(chalk.green.bold("Input: "), chalk.yellow(types), nameToStore);
+  console.log(chalk.green.bold('Input: '), chalk.yellow(types), nameToStore);
   // NOTE: The one hook could be added here
 };
 
@@ -29,9 +28,9 @@ const onCallPre = (target, thisArg, argumentsList, name, nameToStore,
 const onCallPost = (target, thisArg, argumentsList, name, nameToStore,
     currentModule, declareModule, typeClass, result) => {
   // From here we get the result type of the module
-  const type = result !== undefined ? typeof result : "No result"; 
+  const type = result !== undefined ? typeof result : 'No result';
 
-  console.log(chalk.blue.bold("Output: "), chalk.yellow(type), nameToStore);
+  console.log(chalk.blue.bold('Output: '), chalk.yellow(type), nameToStore);
 
   // NOTE: And the other hook here
 };
@@ -40,14 +39,14 @@ const onCallPost = (target, thisArg, argumentsList, name, nameToStore,
 const onExit = (intersection, candidateModule) => {
   if (env.conf.reportTime) {
     const timerEnd = process.hrtime(env.conf.timerStart);
-    const timeMillis = convert(timerEnd).millis
+    const timeMillis = convert(timerEnd).millis;
     console.log(timeMillis, 'Time');
-  };
-  if (env.conf.SAVE_RESULTS) {
-    fs.writeFileSync(env.conf.SAVE_RESULTS, 
-      JSON.stringify(env.analysisResult, null, 2), 'utf-8');
   }
-}
+  if (env.conf.SAVE_RESULTS) {
+    fs.writeFileSync(env.conf.SAVE_RESULTS,
+        JSON.stringify(env.analysisResult, null, 2), 'utf-8');
+  }
+};
 
 module.exports = (e) => {
   env = e;

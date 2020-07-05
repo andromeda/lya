@@ -6,11 +6,11 @@ const storeTime = new Map();
 const timeCapsule = {};
 
 // Change the time parameters
-const convert = hrtime => {
+const convert = (hrtime) => {
   const nanos = (hrtime[0] * 1e9) + hrtime[1];
   const millis = nanos / 1e6;
   const secs = nanos / 1e9;
-  return { secs: secs, millis: millis, nanos: nanos };
+  return {secs: secs, millis: millis, nanos: nanos};
 };
 
 // Normalize all values (seconds and to microseconds)
@@ -33,7 +33,7 @@ const onCallPost = (target, thisArg, argumentsList, name, nameToStore,
     timeCapsule[level] += toMillis(diff[0], diff[1]);
   } else {
     timeCapsule[level] = toMillis(diff[0], diff[1]);
-  };
+  }
 
   if (timeCapsule[level+1]) {
     env.analysisResult[currentModule][nameToStore] = thisTime -
@@ -41,21 +41,21 @@ const onCallPost = (target, thisArg, argumentsList, name, nameToStore,
     timeCapsule[level+1] = 0;
   } else {
     env.analysisResult[currentModule][nameToStore] = thisTime;
-  };
+  }
 };
 
 // onExit (toSave == place to save the result) --maybe make it module-local?
 const onExit = (intersection, candidateModule) => {
   if (env.conf.reportTime) {
     const timerEnd = process.hrtime(env.conf.timerStart);
-    const timeMillis = convert(timerEnd).millis
+    const timeMillis = convert(timerEnd).millis;
     console.log(timeMillis, 'Time');
-  };
+  }
   if (env.conf.SAVE_RESULTS) {
     fs.writeFileSync(env.conf.SAVE_RESULTS,
-      JSON.stringify(env.analysisResult, null, 2), 'utf-8');
+        JSON.stringify(env.analysisResult, null, 2), 'utf-8');
   }
-}
+};
 
 module.exports = (e) => {
   env = e;

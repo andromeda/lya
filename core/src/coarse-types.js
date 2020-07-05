@@ -23,10 +23,10 @@ const onCallPre = (target, thisArg, argumentsList, name, nameToStore,
 // onExit (toSave == place to save the result) --maybe make it module-local?
 const onExit = (intersection, candidateModule) => {
   if (env.conf.SAVE_RESULTS) {
-    fs.writeFileSync(env.conf.SAVE_RESULTS, 
-      JSON.stringify(env.analysisResult, null, 2), 'utf-8');
+    fs.writeFileSync(env.conf.SAVE_RESULTS,
+        JSON.stringify(env.analysisResult, null, 2), 'utf-8');
   }
-}
+};
 
 module.exports = (e) => {
   env = e;

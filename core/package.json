@@ -1,7 +1,7 @@
 {
   "name": "@andromeda/lya",
-  "version": "0.0.6",
-  "description": "A Program Dialysis Library",
+  "version": "0.0.8",
+  "description": "Library-oriented Dynamic Analysis",
   "main": "src/txfm.js",
   "scripts": {
     "all": "npm run l && npm run t",
@@ -9,7 +9,9 @@
     "fix": "eslint --fix ./src",
     "test": "cd tst; ./run-tests.sh"
   },
-  "pre-commit": [ "lint" ],
+  "pre-commit": [
+    "lint"
+  ],
   "eslintConfig": {
     "extends": [
       "eslint:recommended",
@@ -38,6 +40,7 @@
       "url": "http://nikos.vasilak.is"
     }
   ],
+  "license": "MIT",
   "files": [
     "README.md",
     "lya.js",
@@ -73,10 +76,10 @@
     "json-diff": "^0.5.4",
     "lodash.isequal": "^4.5.0",
     "node-serialize": "0.0.4",
+    "pre-commit": "^1.2.2",
     "safe-eval": "^0.3.0",
     "safer-eval": "^1.0.0",
     "serialize-javascript": "^3.0.0",
-    "static-eval": "^2.0.1",
-    "pre-commit": "^1.2.2"
+    "static-eval": "^2.0.1"
   }
 }

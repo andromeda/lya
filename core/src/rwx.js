@@ -72,7 +72,7 @@ const onCallPre = (target, thisArg, argumentsList, name, nameToStore,
         nameToStore, ['r', 'x']);
     if (pattern.test(nameToStore)) {
       updateAnalysisData(env.analysisResult[currentModule],
-        nameToStore.match(pattern)[0], ['r']);
+          nameToStore.match(pattern)[0], ['r']);
     }
   }
 };
@@ -92,12 +92,12 @@ const onExit = (intersection, candidateModule) => {
   }
   if (env.conf.SAVE_RESULTS) {
     fs.writeFileSync(env.conf.SAVE_RESULTS,
-      JSON.stringify(env.analysisResult, null, 2), 'utf-8');
+        JSON.stringify(env.analysisResult, null, 2), 'utf-8');
   }
   if (env.conf.print) {
-    console.log(JSON.stringify(env.analysisResult, null, 2))
+    console.log(JSON.stringify(env.analysisResult, null, 2));
   }
-}
+};
 
 module.exports = (e) => {
   env = e;
