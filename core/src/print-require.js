@@ -1,17 +1,14 @@
 let env;
-const chalk = require('chalk');
 
-// onRequire <~ Each time a require is made this functions is called
-// caller <- calls the require
-// calle <- the module we fetch
-const onRequire = (caller, calle) => {
-  console.log(chalk.blue("Module", caller), 
-    chalk.green("calls the", calle));
+// TODO:
+// add callee path
+const onRequire = (caller, callee) => {
+  console.log('lya:', caller, "imports", callee);
 };
 
 module.exports = (e) => {
   env = e;
   return {
-    onRequire: onRequire,
+    onRequire: onRequire
   };
 };

@@ -28,6 +28,8 @@ const preset = {
   PRINT_REQUIRE: pathJoin(__dirname, 'print-require.js'),
 };
 
+const identity = () => {};
+
 const systemPreset = {
   // TODO: Rewrite flags structure
   INPUT_STRING: true,
