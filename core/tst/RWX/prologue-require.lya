@@ -1,0 +1,4 @@
+let lya = require("../../../src/txfm.js");
+lya.configRequire(require, {analysis: lya.preset.PRINT_REQUIRE});
+require("./main.js");
+
