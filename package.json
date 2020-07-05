@@ -5,8 +5,8 @@
   "main": "src/txfm.js",
   "scripts": {
     "all": "npm run l && npm run t",
-    "lint": "eslint ./src",
-    "fix": "eslint --fix ./src",
+    "lint": "./node_modules/eslint/bin/eslint.js ./src",
+    "fix": "./node_modules/eslint/bin/eslint.js --fix ./src",
     "test": "cd tst; ./run-tests.sh"
   },
   "pre-commit": [
