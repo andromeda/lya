@@ -14,17 +14,6 @@ const updateAnalysisData = (storedCalls, truename, inputType, outputType) => {
   }
 };
 
-// Analyses provided by LYA.
-// onRead <~ is called before every object is read
-const onRead = (target, name, nameToStore, currentModule, typeClass) => {
-};
-
-// onWrite <~ is called before every write of an object
-const onWrite = (target, name, argumentsList, currentModule, parentName,
-    nameToStore) => {
-
-}
-
 // onCallPre <~ is called before the execution of a function
 const onCallPre = (target, thisArg, argumentsList, name, nameToStore,
     currentModule, declareModule, typeClass) => {
@@ -48,13 +37,6 @@ const onCallPost = (target, thisArg, argumentsList, name, nameToStore,
   updateAnalysisData(env.analysisResult[currentModule], nameToStore, inputType, outputType);
 };
 
-// onConstruct <~ Is call before every construct
-const onConstruct = (target, args, currentName, nameToStore) => {
-};
-
-const onHas = (target, prop, currentName, nameToStore) => {
-};
-
 // onExit (toSave == place to save the result) --maybe make it module-local?
 const onExit = (intersection, candidateModule) => {
   if (env.conf.SAVE_RESULTS) {
@@ -66,12 +48,8 @@ const onExit = (intersection, candidateModule) => {
 module.exports = (e) => {
   env = e;
   return {
-    onRead: onRead,
     onCallPre: onCallPre,
     onCallPost: onCallPost,
-    onWrite: onWrite,
-    onConstruct: onConstruct,
-    onHas: onHas,
     onExit: onExit,
   };
 };

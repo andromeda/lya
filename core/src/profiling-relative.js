@@ -16,16 +16,6 @@ const convert = hrtime => {
 // Normalize all values (seconds and to microseconds)
 const toMillis = (a, b) => (a * 1e9 + b) * 1e-6;
 
-// Analyses provided by LYA.
-// onRead <~ is called before every object is read
-const onRead = (target, name, nameToStore, currentModule, typeClass) => {
-};
-
-// onWrite <~ is called before every write of an object
-const onWrite = (target, name, value, currentModule, parentName,
-    nameToStore) => {
-};
-
 // onCallPre <~ is called before the execution of a function
 const onCallPre = (target, thisArg, argumentsList, name, nameToStore,
     currentModule, declareModule, typeClass) => {
@@ -54,13 +44,6 @@ const onCallPost = (target, thisArg, argumentsList, name, nameToStore,
   };
 };
 
-// onConstruct <~ Is call before every construct
-const onConstruct = (target, args, currentName, nameToStore) => {
-};
-
-const onHas = (target, prop, currentName, nameToStore) => {
-};
-
 // onExit (toSave == place to save the result) --maybe make it module-local?
 const onExit = (intersection, candidateModule) => {
   if (env.conf.reportTime) {
@@ -77,12 +60,8 @@ const onExit = (intersection, candidateModule) => {
 module.exports = (e) => {
   env = e;
   return {
-    onRead: onRead,
     onCallPre: onCallPre,
     onCallPost: onCallPost,
-    onWrite: onWrite,
-    onConstruct: onConstruct,
-    onHas: onHas,
     onExit: onExit,
   };
 };

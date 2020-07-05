@@ -130,19 +130,11 @@ const onCallPre = (target, thisArg, argumentsList, name, nameToStore,
   }
 };
 
-// onCallPost <~ Is call after every execution of a function
-const onCallPost = (target, thisArg, argumentsList, name, nameToStore,
-  currentModule, declareModule, typeClass, result) => {
-}
-
 // onConstruct <~ Is call before every construct
 const onConstruct = (target, args, currentName, nameToStore) => {
   checkRWX(groundTruth[currentName], nameToStore, ['r', 'x']);
 }
 
-const onHas = (target, prop, currentName, nameToStore) => {
-  //checkRWX(groundTruth[currentName], nameToStore, ['r', 'w']);
-}
 
 // There is also another number missing: how many of the total accesses were
 let printExtended = () => {
@@ -181,10 +173,8 @@ module.exports = (e) => {
   return {
     onRead: onRead,
     onCallPre: onCallPre,
-    onCallPost: onCallPost,
     onWrite: onWrite,
     onConstruct: onConstruct,
-    onHas: onHas,
     onExit: onExit,
   };
 };
