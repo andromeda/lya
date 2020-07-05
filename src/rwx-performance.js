@@ -1,6 +1,5 @@
 let env;
 const pattern = /require[(](.*)[)]/;
-const fs = require('fs');
 
 // We add the R or W or E to the existing string
 const addEvent = (event, values, index) => {

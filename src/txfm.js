@@ -28,7 +28,7 @@ const preset = {
   PRINT_REQUIRE: pathJoin(__dirname, 'print-require.js'),
 };
 
-const identity = () => {};
+// const identity = () => {};
 
 const systemPreset = {
   // TODO: Rewrite flags structure
@@ -112,7 +112,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   const getObjectInfo = (obj) => {
     const objName = objectName.has(obj) ? objectName.get(obj) :
       methodNames.has(obj) ? methodNames.get(obj) :
-      globalNames.has(obj.name) ? globalName.get(obj.name) :
+      globalNames.has(obj.name) ? globalNames.get(obj.name) :
       (obj.name) ? obj.name :
       null;
     const objPath = objectPath.has(obj) ? objectPath.get(obj) :
@@ -140,37 +140,42 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     }
   };
 
-  // user-globals: e.g., global.x, x,                                   [global, x]
-  // es-globals: Math, Map, Array,                                      [Math, PI]
-  // node-globals: console, setImmediate,                               [console, log]
-  // module-locals: exports, require, module, __filename, __dirname     [require]
-  // module-returns: exports, module.exports                            [ID, math, pi]
+  // user-globals: e.g., global.x, x,
+  // es-globals: Math, Map, Array,
+  // node-globals: console, setImmediate,
+  // module-locals: exports, require, module, __filename, __dirname
+  // module-returns: exports, module.exports
   // One create handler to rule them all
-  // TODO: Add option to return specific handlers, only get,set or only apply etc..
+  // TODO: Add option to return specific handlers,
+  // only get,set or only apply etc..
   const createHandler = (moduleClass) => {
     return {
       apply: function(target, thisArg, argumentsList) {
         const currentName = objectPath.get(target);
-        const birthplace = objectName.has(target) ? objectName.get(target) : null;
+        const birthplace = objectName.has(target) ?
+          objectName.get(target) : null;
         const birthName = birthplace + '.' + target.name;
         const currentModule = moduleName[env.requireLevel];
         const origReqModuleName = argumentsList[0];
 
         const nameToStore =
-          (target.name === 'require') ? 'require(\'' + origReqModuleName + '\')' :
+          (target.name === 'require') ? 'require(\'' +
+            origReqModuleName + '\')' :
           methodNames.has(target) ? methodNames.get(target) :
           (birthplace && (currentModule === currentName)) ? birthName :
           null;
 
         if (nameToStore) {
-          hookCheck(policy.onCallPre, target, thisArg, argumentsList, target.name,
-              nameToStore, currentModule, currentName, moduleClass);
+          hookCheck(policy.onCallPre, target, thisArg, argumentsList,
+              target.name, nameToStore, currentModule,
+              currentName, moduleClass);
         }
         const result = Reflect.apply(...arguments);
 
         if (nameToStore) {
-          hookCheck(policy.onCallPost, target, thisArg, argumentsList, target.name,
-              nameToStore, currentModule, currentName, moduleClass, result);
+          hookCheck(policy.onCallPost, target, thisArg, argumentsList,
+              target.name, nameToStore, currentModule,
+              currentName, moduleClass, result);
         }
 
         return result;
@@ -184,7 +189,8 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
           null;
 
         if (storeName && name) {
-          hookCheck(policy.onRead, target, name, storeName, currentModule, moduleClass);
+          hookCheck(policy.onRead, target, name, storeName,
+              currentModule, moduleClass);
         }
 
         return Reflect.get(...arguments);
@@ -234,6 +240,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
           hookCheck(policy.onConstruct, target, args, currentName, nameToStore);
         }
 
+        // eslint-disable-next-line new-cap
         return new target(...args);
       },
     };
@@ -276,6 +283,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     let localCopy;
     if (type === 'string') {
       if (lyaConfig.inputString) {
+        // eslint-disable-next-line no-new-wrappers
         localCopy = new String(obj[count]);
       } else {
         return obj[count];
@@ -417,9 +425,10 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   // This will run once and produce prologue string
   const setPrologue = () => {
     passJSONFile(setDeclaration, defaultNames.globals);
-    prologue = declaration + ' global = localGlobal["proxyGlobal"]\n' + prologue;
-    prologue = lyaConfig.context.enableWith ? 'with (withGlobal) {\n' + prologue :
+    prologue = declaration + ' global = localGlobal["proxyGlobal"]\n' +
       prologue;
+    prologue = lyaConfig.context.enableWith ? 'with (withGlobal) {\n' +
+      prologue : prologue;
     return prologue;
   };
 
@@ -451,16 +460,18 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   // TODO: Combine with flattenAndSkip
   const skipMe = (group) => {
     for (const v in group) {
-      group[v] = group[v].filter((e) =>
-        !lyaConfig.context.excludes.includes(e));
+      if (Object.prototype.hasOwnProperty.call(group, v)) {
+        group[v] = group[v].filter((e) =>
+          !lyaConfig.context.excludes.includes(e));
+      }
     }
     return group;
   };
 
   const getClone = (obj, name) => {
-    let _obj;
-    _obj = function(...args) {
+    const _obj = function(...args) {
       if (new.target) {
+        // eslint-disable-next-line new-cap
         return new obj(...args);
       } else {
         return obj.call(this, ...args);
@@ -472,14 +483,17 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   };
 
   const cloneFunctions = () => {
-    for (topClass in defaultNames.globals) {
-      defaultNames.globals[topClass].filter((e) => {
-        if (typeof global[e] === 'function' && e !== 'Promise') {
-          return e;
-        }
-      }).forEach((e) => {
-        clonedFunctions.set(e, getClone(global[e], e));
-      });
+    for (const topClass in defaultNames.globals) {
+      if (Object.prototype.hasOwnProperty.call(defaultNames.globals,
+          topClass)) {
+        defaultNames.globals[topClass].filter((e) => {
+          if (typeof global[e] === 'function' && e !== 'Promise') {
+            return e;
+          }
+        }).forEach((e) => {
+          clonedFunctions.set(e, getClone(global[e], e));
+        });
+      }
     }
   };
 
@@ -734,8 +748,9 @@ module.exports = {
       conf.context.enableWith : systemPreset.CONTEXT.enableWith;
     conf.context.include = conf.context.include ? conf.context.include :
       systemPreset.CONTEXT.include;
-    conf.context.include = conf.context.excludes ? conf.context.include.filter((e) =>
-      !conf.context.excludes.includes(e)) : conf.context.include;
+    conf.context.include = conf.context.excludes ?
+      conf.context.include.filter((e) => !conf.context.excludes.includes(e)) :
+      conf.context.include;
     conf.context.excludes = conf.context.excludes ? conf.context.excludes : [];
     conf.fields = conf.fields ? conf.fields : systemPreset.FIELDS;
     conf.modules = conf.modules ? conf.modules : systemPreset.MODULES;

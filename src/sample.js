@@ -46,7 +46,7 @@ const onExit = (intersection, candidateModule) => {
 };
 
 module.exports = (e) => {
-  env = e;
+//  env = e;
   return {
     sourceTransform: sourceTransform,
     onRequire: onRequire,
