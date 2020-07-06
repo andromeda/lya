@@ -1,9 +1,9 @@
-const onRequire = (caller, callee) => {
-  console.log('lya:', caller, 'imports', callee);
+const onImport = (caller, callee, name) => {
+  console.log('lya:', caller, 'imports', callee, name);
 };
 
 module.exports = (e) => {
   return {
-    onRequire: onRequire,
+    onImport: onImport,
   };
 };

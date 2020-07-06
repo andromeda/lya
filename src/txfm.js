@@ -150,16 +150,10 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       },
       set: function(target, name, value) {
         const currentModule = objectPath.get(target);
-
         if (methodNames.has(target)) {
           const parentName = methodNames.get(target);
           const nameToStore = globalNames.has(name) ? globalNames.get(name) :
             parentName + '.' + name;
-          if (globalNames.has(name)) {
-            hookCheck(policy.onWrite, target, name, value, currentModule,
-                null, nameToStore);
-            return Reflect.set(...arguments);
-          }
           hookCheck(policy.onWrite, target, name, value,
               currentModule, parentName, nameToStore);
           if (parentName === 'global' || typeof value === 'number') {
@@ -514,8 +508,9 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   Module._load = function(...args) {
     // We use Module._resolveFilename to find the filename
     // and then attach it to the hook
-    const filename = originalFilename.call(this, ...args);
-    hookCheck(policy.onRequire, moduleName[env.requireLevel], filename);
+    const name = args[0];
+    const path = originalFilename.call(this, ...args);
+    hookCheck(policy.onImport, moduleName[env.requireLevel], path, name);
 
     return originalLoad.call(this, ...args);
   };

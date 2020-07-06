@@ -10,7 +10,7 @@ const sourceTransform = (source, moduleName) => {
 // This hook is called each time we initiate a new require
 // caller <~ the module that calls the require function
 // calle <~ the module that has been required
-const onRequire = (caller, calle) => {
+const onImport = (caller, calle, name) => {
 };
 
 // This hook is called before every object is read
@@ -49,7 +49,7 @@ module.exports = (e) => {
 //  env = e;
   return {
     sourceTransform: sourceTransform,
-    onRequire: onRequire,
+    onImport: onImport,
     onRead: onRead,
     onCallPre: onCallPre,
     onCallPost: onCallPost,
