@@ -7,7 +7,7 @@ if (require.main !== module) {
 const pkg = require('./package.json');
 const path = require('path');
 const lya = require('./src/txfm.js');
-
+const fs = require('fs');
 
 /* eslint-disable max-len */
 const h = `Analyze JavaScript programs dynamically, to extract information or enforce invariants.
@@ -53,11 +53,36 @@ lya <fl> [hpVvvv] [a=<a.js>] [d=<n>] [{module, context, prop}-{include, exclude}
 `;
 /* eslint-enable max-len */
 
+const conf = {
+  print: true,
+  depth: 3,
+  analysis: path.join(__dirname, './src/rwx.js'),
+  context: {
+    enableWith: true,
+    include: [
+      'user-globals',
+      'es-globals',
+      'node-globals',
+      'module-locals',
+      'module-returns'],
+    excludes: ['Promise', 'toString', 'escape', 'setImmediate'],
+  },
+  modules: {
+    include: null,
+    excludes: null,
+  },
+  fields: {
+    include: true,
+    excludes: ['toString', 'valueOf', 'prototype', 'name', 'children'],
+  },
+};
+
 const help = () => {
   console.log(h);
 };
 
 const arg = require('arg');
+// const { fstat } = require('fs');
 const template = {
   // Types
   '--help': Boolean,
@@ -103,36 +128,32 @@ if (args['--version']) {
   process.exit();
 }
 
-let cwd;
+if (args['--depth']) {
+  conf.depth = args['--depth'];
+}
+
+if (args['--analysis']) {
+  conf.analysis = path.join(__dirname, args['--analysis']);
+}
+
+if (args['--print']) {
+  conf.print = args['--print'];
+}
+
+let filePath;
 switch (args['_'].length) {
-  case 0:
-    cwd = process.cwd();
-    // FIXME: choose index.json
-    break;
   case 1:
-    cwd = process.cwd() + path.sep + args['_'][0];
-    // FIXME check if file exists
+    filePath = process.cwd() + path.sep + args['_'][0];
+    if (!fs.existsSync(filePath)) {
+      console.log('File does not exists');
+      console.log('Exiting..');
+      process.exit(-1);
+    }
     break;
   default:
     console.log('Too many ``extra\'\' parameters: ' + args['_'].join(', '));
     process.exit(-1);
 }
 
-// FIXME: add the rest of the flags
-
-const conf = {
-  print: true,
-  analysis: path.join(__dirname, 'rwx.js'),
-  context: {
-    excludes: ['Promise', 'toString', 'escape', 'setImmediate'],
-  },
-  modules: {
-    include: [require.resolve(cwd)],
-  },
-};
-
-
 lya.configRequire(require, conf);
-// TODO: check if file exists
-// file should be passed as an argument (see <fl> above)
-// require(file);
+require(filePath);
