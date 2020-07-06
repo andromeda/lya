@@ -11,6 +11,6 @@
     "process.env.PATH": "r",
     "process.env.PWD": "r",
     "process.env.SHELL": "r",
-    "process.env.USER": "r"
+    "process.env.LOGNAME": "r"
   }
 }
