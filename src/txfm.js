@@ -514,8 +514,9 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   Module._load = function(...args) {
     // We use Module._resolveFilename to find the filename
     // and then attach it to the hook
-    const filename = originalFilename.call(this, ...args);
-    hookCheck(policy.onRequire, moduleName[env.requireLevel], filename);
+    const name = args[0];
+    const path = originalFilename.call(this, ...args);
+    hookCheck(policy.onImport, moduleName[env.requireLevel], path, name);
 
     return originalLoad.call(this, ...args);
   };
