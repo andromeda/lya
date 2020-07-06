@@ -130,13 +130,13 @@ sophisticated analysis,  but here  is a  small one that  counts all  accesses to
 global variables from a module called `serial`:
 
 ```JavaScript
-let count = {};
-forevery.global.in(["serial"]).do({
-  pre: (name, path) => {
-    let o = resolve(name, path);
-    count[o] = count[o]?  count[o] + 1 : 1;
-  }
-});
+let count = 0;
+const onCallPre = (target, thisArg, argumentsList, name, nameToStore,
+    currentModule, declareModule, typeClass) => {
+  if (global[target]) {
+    count++;
+  };
+};
 ```
 **TODO Correct and explain**
 
