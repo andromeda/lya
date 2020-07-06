@@ -113,8 +113,14 @@ Lya provides the following hooks:
   * `data`: 
   * Expected `return`: None.
   
+Lya provides the following utility function:
 
-
+```JavaScript
+const getObjectInfo = (obj) => {
+      name: objName,
+      path: objPath,
+}
+```
 Every time any of these methods is called, it is provided 
 
 Lya's  built-in analyses---which  include  an  [access control](./src/rwx.js),  [performance
