@@ -24,7 +24,7 @@ analysis](how-to-write-an-analysis) below.
 
 ## How to Use Lya?
 
-Currently, Lya runs with Node v8.9.4.;
+Lya runs with Node v8.9.4.;
 Setup Lya by cloning the repository or by running `npm i @andromeda/lya --save-dev`.
 
 Then, add lya _as  a first import at the top-level  file_ in your project---that
@@ -49,6 +49,22 @@ For more configuration options and details, see the [configuration docs]().
 Lya expects the  developer of a new  analysis to provide a few  methods that Lya
 will hook  across all modules. It  supports five methods, but  a useful analysis
 can be written with any subset of them.
+
+Lya provides the following hooks:
+
+* `sourceTransform(src)`: Apply a source transformation to the loaded library. Example analyses: [uncomment](./src/uncomment.js).
+  * `src`: String representation of the library
+  * Expected `return`: a script representation of the library
+
+* `onCall{Pre, Post}(target, thisArg, ...)`: Explain
+
+* `onImport(caller, callee, name)`: TODO
+
+* `onExit(data)`: Last call before program exit -- commonly used for flushing results. Example analyses: [coarse-types](./src/coarse-types.js).
+  * `data`: 
+  * Expected `return`: None.
+  
+
 
 Every time any of these methods is called, it is provided 
 

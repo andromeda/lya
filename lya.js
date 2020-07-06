@@ -1,21 +1,20 @@
 #!/usr/bin/env node
 
-if (require.main !== module) { 
-  return require("./src/txfm.js");
+if (require.main !== module) {
+  return require('./src/txfm.js');
 }
 
-var pkg = require("./package.json");
-var fs = require("fs");
-var path = require('path');
-var lya = require("./src/txfm.js");
+const pkg = require('./package.json');
+const path = require('path');
+const lya = require('./src/txfm.js');
 
 
-var version = "v" + pkg.version;
-var h = `Dynamically analyze JavaScript programs to extract or enforce invariants.
+/* eslint-disable max-len */
+const h = `Analyze JavaScript programs dynamically, to extract information or enforce invariants.
 
 lya <fl> [hpVvvv] [a=<a.js>] [d=<n>] [{module, context, prop}-{include, exclude}=<m | c | p>]
 
-  <fl>                        File to start analysis from; defaults to index.js if it exists
+  <fl>                        File to start analysis from (i.e., program entry point).
 
   -h,   --help:               Output (this) help 
   -V    --version:            Output version information
@@ -52,56 +51,38 @@ lya <fl> [hpVvvv] [a=<a.js>] [d=<n>] [{module, context, prop}-{include, exclude}
   * global_only:              Capture accesses to global-only variables
   * term_index:               Calculate TF-IDF metrics on source code
 `;
+/* eslint-enable max-len */
 
-// -e,   --enforce <f.json>:   Run in enforcement mode, where mir enforces access rules in <f.json>
-// -r,   --report <f.json>:    Run in reporting mode, where mir simply reports on invalid accesses in <f.json>
-// -s,   --save <f.json>:      File to output resuslts
-
-// Moved outside:
-// * rwx:
-// * rwx_enforcement:
-// * rwx_checking:
-// * rwx_performance:
-// * star_check:
-
-// Should combine:
-// call_numbers: 
-// profiling:
-// profiling_relative:
-
-// export_type:
-// coarse_types:
-// simple_types:
-// sub_types:
-
-let help = () => {console.log(h); }
+const help = () => {
+  console.log(h);
+};
 
 const arg = require('arg');
 const template = {
   // Types
-  '--help':              Boolean,
-  '--version':           Boolean,
-  '--verbosity':         arg.COUNT,
+  '--help': Boolean,
+  '--version': Boolean,
+  '--verbosity': arg.COUNT,
 
-  '--depth':             Number,
-  '--analysis':          String,
-  '--print':             Boolean,
+  '--depth': Number,
+  '--analysis': String,
+  '--print': Boolean,
 
-  '--module-exclude':    String,
-  '--module-include':    String,
-  '--context-exclude':   String,
-  '--context-include':   String,
-  '--prop-exclude':      String,
-  '--prop-include':      String,
+  '--module-exclude': String,
+  '--module-include': String,
+  '--context-exclude': String,
+  '--context-include': String,
+  '--prop-exclude': String,
+  '--prop-include': String,
 
   // Aliases
-  '-h':                  '--help',
-  '-V':                  '--version',
-  '-v':                  '--verbosity',
-                                        
-  '-d':                  '--depth',
-  '-a':                  '--analysis',
-  '-p':                  '--print',
+  '-h': '--help',
+  '-V': '--version',
+  '-v': '--verbosity',
+
+  '-d': '--depth',
+  '-a': '--analysis',
+  '-p': '--print',
 };
 
 let args;
@@ -112,47 +93,46 @@ try {
   process.exit();
 }
 
-if (args["--help"]){
+if (args['--help']) {
   help();
   process.exit();
 }
 
-if (args["--version"]) {
-  console.log("v" + pkg.version + " (extractor: 8799cd1)");
+if (args['--version']) {
+  console.log('v' + pkg.version); // + " (commit: 8799cd1)");
   process.exit();
 }
 
-switch (args["_"].length) {
+let cwd;
+switch (args['_'].length) {
   case 0:
-    cwd = process.cwd()
+    cwd = process.cwd();
     // FIXME: choose index.json
     break;
   case 1:
-    cwd = process.cwd() + path.sep +  args["_"][0]
+    cwd = process.cwd() + path.sep + args['_'][0];
     // FIXME check if file exists
     break;
   default:
-    console.log("Too many ``extra'' parameters: " + args["_"].join(", "));
+    console.log('Too many ``extra\'\' parameters: ' + args['_'].join(', '));
     process.exit(-1);
 }
 
 // FIXME: add the rest of the flags
 
-let conf = {
+const conf = {
   print: true,
   analysis: path.join(__dirname, 'rwx.js'),
-	context: {
+  context: {
     excludes: ['Promise', 'toString', 'escape', 'setImmediate'],
   },
   modules: {
-    include: [require.resolve(cwd)]
+    include: [require.resolve(cwd)],
   },
 };
 
 
 lya.configRequire(require, conf);
 // TODO: check if file exists
-require(file);
-
-// if (require.main === module) { }
-
+// file should be passed as an argument (see <fl> above)
+// require(file);
