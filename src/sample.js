@@ -49,7 +49,7 @@ module.exports = (e) => {
 //  env = e;
   return {
     sourceTransform: sourceTransform,
-    onRequire: onRequire,
+    onImport: onImport,
     onRead: onRead,
     onCallPre: onCallPre,
     onCallPost: onCallPost,
