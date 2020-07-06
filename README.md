@@ -1,5 +1,6 @@
-# Lya
-_Module-aware Fracture and Recombination for Dynamic Analysis_
+<img src="logo.png" width="700">
+
+>Module-aware Fracture and Recombination for Dynamic Analysis
 
 ## What's Lya?
 
