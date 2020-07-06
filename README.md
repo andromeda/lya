@@ -117,8 +117,8 @@ Lya provides the following hooks:
 
 Every time any of these methods is called, it is provided 
 
-Lya's  built-in analyses---which  include  an  [access control](),  [performance
-pathologies](), and  [interface types]()---are good  examples of how to  write a
+Lya's  built-in analyses---which  include  an  [access control](./src/rwx.js),  [performance
+pathologies](./src/profiling-relative.js), and  [interface types](./src/export-type.js)---are good  examples of how to  write a
 sophisticated analysis,  but here  is a  small one that  counts all  accesses to
 global variables from a module called `serial`:
 
