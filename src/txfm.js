@@ -150,16 +150,10 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       },
       set: function(target, name, value) {
         const currentModule = objectPath.get(target);
-
         if (methodNames.has(target)) {
           const parentName = methodNames.get(target);
           const nameToStore = globalNames.has(name) ? globalNames.get(name) :
             parentName + '.' + name;
-          if (globalNames.has(name)) {
-            hookCheck(policy.onWrite, target, name, value, currentModule,
-                null, nameToStore);
-            return Reflect.set(...arguments);
-          }
           hookCheck(policy.onWrite, target, name, value,
               currentModule, parentName, nameToStore);
           if (parentName === 'global' || typeof value === 'number') {
