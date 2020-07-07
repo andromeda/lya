@@ -7,7 +7,7 @@ Currently, the implementation comprises four files:
 * [config.js](./config.js): A set of default values in order to start `lya` up.
 * [utils.js](./utils.js): ?????
 
-## Policies
+## Analysis
 
 * [Allow-Deny](./allow-deny.js): A simple access/ no access policy that checks if a obj has been used.
 * [Allow-Deny Enforcement](./allow-deny-enforcement.js ): We use as a ground truth the results of the `Allow-Deny analysis`. 
@@ -30,9 +30,29 @@ If check if we try to access a module outside dynamic.json or if we try to acces
 * [Term-Index](./term-index.js): ????
 * [Uncomment](./uncomment.js): Remove all comments from the module we load. Displays the ability of `lya` to perform source manipulation.
 
-### Options
-```JavaScript
-lya.analysisDepth
-lya.roots = ["user-globals", "node-globals"]
-lya.granularity = ["prototype", "Object.keys", "ourFunctions"]
+### Analysis examples
+
+Below are some examples of simple analyses:
+
+* `Global check`: Counts all acceses to the global object
+```Javascript
+let count = 0;
+const onCallPre = (target, thisArg, argumentsList, name, nameToStore,
+    currentModule, declareModule, typeClass) => {
+  if (global[target]) {
+    count++;
+  };
+};
+```
+
+* `Print on Import`: Every time we import a library the analysis displays a message
+```Javascript
+const onImport = (caller, callee, name) => {
+  console.log('lya:', caller, 'imports', callee, name);
+};
+```
+
+* `Remove comments`: We manipulate the source and we remove all comments from the imported module
+```Javascript
+const sourceTransform = (src) => src.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '');
 ```
