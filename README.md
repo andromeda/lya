@@ -23,10 +23,24 @@ providing a few methods and parameters; in our experience, powerful analyses can
 be expressed in only  a few lines of code---for more info, see  [how to write an
 analysis](how-to-write-an-analysis) below.
 
-## How to Use Lya?
+## Installation
 
-Lya runs with Node v8.9.4.;
-Setup Lya by cloning the repository or by running `npm i @andromeda/lya --save-dev`.
+Lya runs with __Node v8.9.4__. You can use [nvm (macOS/Linux)](https://github.com/nvm-sh/nvm#installation) 
+to switch Node versions between different projects.
+
+### Option 1: Npm
+```Shell
+npm i @andromeda/lya --save-dev
+```
+
+### Option 1: From source
+```Shell 
+git clone https://github.com/andromeda/lya/
+cd lya
+npm install
+```
+
+## How to Use Lya?
 
 Then, add lya _as  a first import at the top-level  file_ in your project---that
 is,  almost always  Lya  has to  be  the first  package to  be  loaded. One  can
