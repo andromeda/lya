@@ -1,5 +1,6 @@
-# Lya
-_Module-aware Fracture and Recombination for Dynamic Analysis_
+<img src="logo.png" width="700">
+
+>Module-aware Fracture and Recombination for Dynamic Analysis
 
 ## What's Lya?
 
@@ -22,26 +23,43 @@ providing a few methods and parameters; in our experience, powerful analyses can
 be expressed in only  a few lines of code---for more info, see  [how to write an
 analysis](how-to-write-an-analysis) below.
 
-## How to Use Lya?
+## Installation
 
-Lya runs with Node v8.9.4.;
-Setup Lya by cloning the repository or by running `npm i @andromeda/lya --save-dev`.
+Lya runs with __Node v8.9.4__. You can use [nvm (macOS/Linux)](https://github.com/nvm-sh/nvm#installation) 
+to switch Node versions between different projects.
+
+### Option 1: Npm
+```Shell
+npm i @andromeda/lya --save-dev
+```
+
+If you want to install globally, so as to analyzing any program or library in the system, replace `--save-dev` with `-g`.
+
+### Option 1: From source
+```Shell 
+git clone https://github.com/andromeda/lya/
+cd lya
+npm install
+```
+
+## How to Use Lya?
 
 Then, add lya _as  a first import at the top-level  file_ in your project---that
 is,  almost always  Lya  has to  be  the first  package to  be  loaded. One  can
 configure  several parameters,  including  use  any of  the  predefined list  of
-analyses.
+analyses. For example:
 
 ```JavaScript
 let lya = require("@andromeda/lya");
 let conf = {
-  save_results: 
-  analysis: lya.preset.RWX,
+  analysis: lya.preset.ON_OFF
+  saveResults: require("path").join(__dirname, "dynamic.json"),
 };
 lya.configRequire(require, conf);
 require("./main.js");
 ```
 
+The configuration above first configures running the `ON_OFF` analysis, and saves the results in `./dynamic.json`. 
 For more configuration options and details, see the [configuration docs]().
 
 ## How to Create a New  Analysis?
@@ -113,24 +131,11 @@ Lya provides the following hooks:
   * `data`: 
   * Expected `return`: None.
   
-
-
-Every time any of these methods is called, it is provided 
-
-Lya's  built-in analyses---which  include  an  [access control](./src/rwx.js),  [performance
-pathologies](./src/profiling-relative.js), and  [interface types](./src/export-type.js)---are good  examples of how to  write a
-sophisticated analysis,  but here  is a  small one that  counts all  accesses to
-global variables from a module called `serial`:
+Lya provides the following utility function:
 
 ```JavaScript
-let count = {};
-forevery.global.in(["serial"]).do({
-  pre: (name, path) => {
-    let o = resolve(name, path);
-    count[o] = count[o]?  count[o] + 1 : 1;
-  }
-});
+const getObjectInfo = (obj) => {
+      name: objName,
+      path: objPath,
+}
 ```
-**TODO Correct and explain**
-
-For more information on how to write an analysis, see the [analysis docs]().

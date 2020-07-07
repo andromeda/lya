@@ -2,104 +2,57 @@
 
 Currently, the implementation comprises four files:
 
-* [globals.json](./globals.json): A set of globally available names from EcmaScript and Node.js
-* [prototypeGlobals.json](./prototypeGlobals.json): A set of prototype functions for globally available name.
-* [staticGlobals.json](./staticGlobals.json): A set of global names part of the standard library.
 * [txfm.js](./txfm.js): The main `lya` implementation.
+* [default-names.json](./default-names.json): A set of globally available names used in `lya`.
+* [config.js](./config.js): A set of default values in order to start `lya` up.
+* [utils.js](./utils.js): ?????
 
-## Main Implementation
+## Analysis
 
-We import the user choice. We import the right policy by importing the right module.
-The execution begins and we wrap the main require in a proxy.
+* [Allow-Deny](./allow-deny.js): A simple access/ no access policy that checks if a obj has been used.
+* [Allow-Deny Enforcement](./allow-deny-enforcement.js ): We use as a ground truth the results of the `Allow-Deny analysis`. 
+If the is a change from the the ground truth the analysis informs the user. Especialy usefull for access control and security
+check.
+* [Call-Numbers](./call-numbers.js): We track how many times a object has been accessed. Usefull for fixing performance pathologies. 
+* [Coarse-Types](./coarse-types.js ): It lists all the functions that have been. Usefull for detecting interface types.
+* [Export-Type](./export-type.js): Usefull analysis that displays all the inputs of function and all the output. 
+For example, if we have an `add(a, b) => a + b` it will display "input: number, number => output: number"
+* [Global-Only](./global-only.js): A simple analysis that display all access to `global` object.
+* [Print-Require](./print-require.js): Each time we import a library, this analysis displays a message. Usefull for 
+creating the depentecy graph.
+* [Profiling-Relative](./profiling-relative.js): A better timer counter that keeps the time counts on the module.
+Usefull for detecting performance pathologies.
+* [Read-Write-Execute](./rwx.js): A read/ write/ execute analysis. 
+* [Read-Write-Execute Enforcement](./rwx-enforcement.js): We use as ground truth the result of `rwx` analysis.
+If check if we try to access a module outside dynamic.json or if we try to access a value diff than before(R and try RE, E and we try RW etc).
+* [Simple-Types](./simple-types.js): A simple type analysis. 
+* [star-Check](./star-check.js) - This analysis is better used in compination of a static analysis. 
+* [Term-Index](./term-index.js): ????
+* [Uncomment](./uncomment.js): Remove all comments from the module we load. Displays the ability of `lya` to perform source manipulation.
 
-Every time we use the `require('xxx')` things happen on two levels:
+### Analysis examples
 
-* The modules xxx code: This code runs for one time, only on the first import.
-We prepare all the global functions by wrapping them using `globalsDecl` function and
-then we pass them inside the module before runtime, using `vm.runInThisContext`.  
-* The modules xxx export code: We wrap the export obj in a proxy. The idea is that we wrap
-only the outside obj. Every time we access the object in order to call some of exported functions,
-variables etc we wrap the specific thing to its own proxy.  
+Below are some examples of simple analyses:
 
-+ Control functions to say what we want to exclude
-
-## Policies
-
-* [Policy 1](./policy1.js) - True/False: A simple access/ no access policy that checks if a obj has been used.
-* [Policy 2](./policy2.js) - Counter: We track how many times a object has been accessed.
-* [Policy 3](./policy3.js) - Time: A simple time counter
-* [Policy 4](./policy4.js) - Time2.0: A better timer counter that keeps the time counts on the module
-* [Policy 5](./policy5.js) - Enforcement: If a module try to accesss any object outside of the dynamic.json file we
-stop it from exec.
-* [Policy 6](./policy6.js) - RWE: A read/ write/ execute analysis
-* [Policy 7](./policy7.js) - Enforcement-RWE: If check if we try to access a module outside dynamic.json or if we try
-to access a value diff than before(R and try RE, E and we try RW etc)
-* [Policy 8](./policy8.js) - A simple true false analysis that tracks the access of the global object (console.log,Math etc).
-* [Policy 9](./policy9.js) - TypeOf analysis, that check the type of input and output on every export function we use.
-
-## TODO
-
-* Find large program (with regex) for testing timing (t3) (@nvasilakis)
-
-* Code improvements for txfm (@nvasilakis)
-
-* Create configuration object (@nvasilakis)
-
-* Find more repos that our system plays right (@gntousakis)
-
-* Clearup String from handlerObject
-
-* Handle module cache and circular dependencies
-
-## Interface
-
-### Analysis interface (analysis hooks)
-analysis.onRead = (target, name) => {...}
-
-analysis.onWrite = (target, name, value) => {}
-
-analysis.onCallPre = (target, thisArg, argumentsList) => {...}
-
-analysis.onCallPost = (target, thisArg, argumentsList) => {...}
-
-+ ? id of module attempting accesss: (absolute file path)
-+ ? path of target from "root": [process, env, HOME]
-- ? name of target: (no need, it **has to be** the last element of list)
-
-### Utility / helper functions
-
-```JavaScript
-lya.getObjectPath (target[name]) -> {
-  absolutePath: [process, env, HOME]
-}
+* `Global check`: Counts all acceses to the global object
+```Javascript
+let count = 0;
+const onCallPre = (target, thisArg, argumentsList, name, nameToStore,
+    currentModule, declareModule, typeClass) => {
+  if (global[target]) {
+    count++;
+  };
+};
 ```
 
-```JavaScript
-lya.getModuleInfo (o) -> {
-  absoluteID: "/blah/foo/bar/lodash.js",
-  importString: "lodash.js",
-}
+* `Print on Import`: Every time we import a library the analysis displays a message
+```Javascript
+const onImport = (caller, callee, name) => {
+  console.log('lya:', caller, 'imports', callee, name);
+};
 ```
 
-### Options
-```JavaScript
-lya.analysisDepth
-lya.roots = ["user-globals", "node-globals"]
-lya.granularity = ["prototype", "Object.keys", "ourFunctions"]
+* `Remove comments`: We manipulate the source and we remove all comments from the imported module
+```Javascript
+const sourceTransform = (src) => src.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '');
 ```
-
-examples:
-```JavaScript
-let x = process.env.HOME // {process: r, env: r}
-let x = Math.PI          // {process: r, env: r}
-```
-
-root: to whom does the value belong? (full absolute name)
-- user-globals: e.g., global.x, x,                                   [global, x]
-- es-globals: Math, Map, Array,                                      [Math, PI]
-- node-globals: console, setImmediate,                               [console, log]
-- module-locals: exports, require, module, __filename, __dirname     [require]
-- module-returns: exports, module.exports                            [ID, math, pi]
-
-main:
-  require("math").add(1, 2)  // [blah/foo/bar/math.js, add] [/../../main.js]

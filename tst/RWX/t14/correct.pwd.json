@@ -10,7 +10,6 @@
     "process.env.HOME": "r",
     "process.env.PATH": "r",
     "process.env.PWD": "r",
-    "process.env.SHELL": "r",
-    "process.env.LOGNAME": "r"
+    "process.env.SHELL": "r"
   }
 }

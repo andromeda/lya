@@ -4,7 +4,6 @@ no-shadow-restricted-names: "off" */
 const nativeModules = Object.keys(process.binding('natives'));
 const Module = require('module');
 const vm = require('vm');
-const fs = require('fs');
 // const utils = require('./utils.js');
 const config = require('./config.js');
 
@@ -663,14 +662,9 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     if (policy.onExit) {
       const globalSet = new Set(Object.keys(global));
       policy.onExit(intersection(globalSet, candidateGlobs), candidateModule);
-    } else {
-      // if not, our default handler should print or write the results to a file
-      if (lyaConfig.SAVE_RESULTS) {
-        fs.writeFileSync(env.conf.SAVE_RESULTS,
-            JSON.stringify(env.analysisResult, null, 2), 'utf-8');
-      }
+    } else if (env.conf.print) {
+      console.log(JSON.stringify(env.analysisResult, null, 2));
     }
-    // optionally, we can do some other cleanup too
   });
 
   return setProxy(callerRequire, createHandler('module-locals'), 'function');
