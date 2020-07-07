@@ -33,6 +33,8 @@ to switch Node versions between different projects.
 npm i @andromeda/lya --save-dev
 ```
 
+If you want to install globally, so as to analyzing any program or library in the system, replace `--save-dev` with `-g`.
+
 ### Option 1: From source
 ```Shell 
 git clone https://github.com/andromeda/lya/
@@ -45,18 +47,19 @@ npm install
 Then, add lya _as  a first import at the top-level  file_ in your project---that
 is,  almost always  Lya  has to  be  the first  package to  be  loaded. One  can
 configure  several parameters,  including  use  any of  the  predefined list  of
-analyses.
+analyses. For example:
 
 ```JavaScript
 let lya = require("@andromeda/lya");
 let conf = {
-  save_results: 
-  analysis: lya.preset.RWX,
+  analysis: lya.preset.ON_OFF
+  saveResults: require("path").join(__dirname, "dynamic.json"),
 };
 lya.configRequire(require, conf);
 require("./main.js");
 ```
 
+The configuration above first configures running the `ON_OFF` analysis, and saves the results in `./dynamic.json`. 
 For more configuration options and details, see the [configuration docs]().
 
 ## How to Create a New  Analysis?
@@ -136,22 +139,3 @@ const getObjectInfo = (obj) => {
       path: objPath,
 }
 ```
-Every time any of these methods is called, it is provided 
-
-Lya's  built-in analyses---which  include  an  [access control](./src/rwx.js),  [performance
-pathologies](./src/profiling-relative.js), and  [interface types](./src/export-type.js)---are good  examples of how to  write a
-sophisticated analysis,  but here  is a  small one that  counts all  accesses to
-global variables from a module called `serial`:
-
-```JavaScript
-let count = 0;
-const onCallPre = (target, thisArg, argumentsList, name, nameToStore,
-    currentModule, declareModule, typeClass) => {
-  if (global[target]) {
-    count++;
-  };
-};
-```
-**TODO Correct and explain**
-
-For more information on how to write an analysis, see the [analysis docs]().
