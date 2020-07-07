@@ -4,7 +4,6 @@ no-shadow-restricted-names: "off" */
 const nativeModules = Object.keys(process.binding('natives'));
 const Module = require('module');
 const vm = require('vm');
-const fs = require('fs');
 // const utils = require('./utils.js');
 const config = require('./config.js');
 
