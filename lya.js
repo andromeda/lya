@@ -4,10 +4,12 @@ if (require.main !== module) {
   return require('./src/txfm.js');
 }
 
-const pkg = require('./package.json');
-const path = require('path');
-const lya = require('./src/txfm.js');
 const fs = require('fs');
+const path = require('path');
+const arg = require('arg');
+const pkg = require('./package.json');
+const lya = require('./src/txfm.js');
+const conf = require('./src/config.js').settings;
 
 /* eslint-disable max-len */
 const h = `Analyze JavaScript programs dynamically, to extract information or enforce invariants.
@@ -23,7 +25,8 @@ lya <fl> [hpVvvv] [a=<a.js>] [d=<n>] [{module, context, prop}-{include, exclude}
   -d,   --depth <n>:          Object depth to analyze (default 3)
   -a,   --analysis <a.js>:    The program analysis to execute (see below)
   -p,   --print [<out, err>]: Stream to output results (defaults to file, see above)
-
+  -s,   --save <b.json>:      Stream output to a file (path or filename)
+  
   --module-exclude <m>:       Comma-separated list of module IDs (absolute fs paths) to be excluded from the analysis
   --module-include <m>:       Comma-separated list of module IDs (absolute fs paths) to be included (assumes module-exclude='*')
   --context-exclude <c>:      Comma-separated context starting points to exclude from tracking (for contexts, see below)
@@ -53,35 +56,11 @@ lya <fl> [hpVvvv] [a=<a.js>] [d=<n>] [{module, context, prop}-{include, exclude}
 `;
 /* eslint-enable max-len */
 
-const conf = {
-  print: true,
-  depth: 3,
-  analysis: path.join(__dirname, './src/rwx.js'),
-  context: {
-    enableWith: true,
-    include: [
-      'user-globals',
-      'es-globals',
-      'node-globals',
-      'module-locals',
-      'module-returns'],
-    excludes: ['Promise', 'toString', 'escape', 'setImmediate'],
-  },
-  modules: {
-    include: null,
-    excludes: null,
-  },
-  fields: {
-    include: true,
-    excludes: ['toString', 'valueOf', 'prototype', 'name', 'children'],
-  },
-};
-
 const help = () => {
   console.log(h);
 };
 
-const arg = require('arg');
+
 // const { fstat } = require('fs');
 const template = {
   // Types
@@ -92,6 +71,7 @@ const template = {
   '--depth': Number,
   '--analysis': String,
   '--print': Boolean,
+  '--save': String,
 
   '--module-exclude': String,
   '--module-include': String,
@@ -108,6 +88,7 @@ const template = {
   '-d': '--depth',
   '-a': '--analysis',
   '-p': '--print',
+  '-s': '--save',
 };
 
 let args;
@@ -140,8 +121,25 @@ if (args['--print']) {
   conf.print = args['--print'];
 }
 
+if (args['--save']) {
+  conf.SAVE_RESULTS = path.join(__dirname, args['--save']);
+}
+
+if (args['--module-include']) {
+  conf.modules.include = path.join(__dirname, args['--module-include']);
+}
+
+if (args['--context-exclude']) {
+  conf.context.excludes.push(args['--context-exclude']);
+}
+
 let filePath;
 switch (args['_'].length) {
+  case 0:
+    console.log('You must specify a file name');
+    console.log('Exiting..');
+    process.exit(-1);
+    break;
   case 1:
     filePath = process.cwd() + path.sep + args['_'][0];
     if (!fs.existsSync(filePath)) {
