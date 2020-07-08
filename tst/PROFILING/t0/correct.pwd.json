@@ -1,0 +1,10 @@
+{
+  "PWD_REPLACE/main.js": {
+    "require('./m1.js')": true,
+    "require('./m2.js')": true
+  },
+  "PWD_REPLACE/m1.js": {},
+  "PWD_REPLACE/m2.js": {
+    "console.log": true
+  }
+}
