@@ -26,7 +26,7 @@ const conf = {
   inputString: true,
   printCode: false,
   depth: 3,
-  analysis: preset.ALLOW_DENY,
+  analysis: preset.ON_OFF,
   context: {
     enableWith: true,
     include: [
