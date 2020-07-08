@@ -56,3 +56,36 @@ const onImport = (caller, callee, name) => {
 ```Javascript
 const sourceTransform = (src) => src.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '');
 ```
+### Analysis Result Example
+
+We run `lya` on the following code with the `Read-Write-Execute Analysis`. 
+```javascript
+\\ main.js
+const m1 = require('./m1.js');
+m1.w = m1.x(m1.r)
+```
+```javascipt
+\\ m1.js
+module.exports = {
+  r: () => 'r',
+  w: () => 'w',
+  x: () => 'x'
+};
+```
+And we got the following output result in a `json` file:
+```javascript
+{
+  "path/main.js": {
+    "require": "rx",
+    "require('./m1.js')": "ir",
+    "require('./m1.js').x": "rx",
+    "require('./m1.js').r": "r",
+    "require('./m1.js').w": "w"
+  },
+  "path/m1.js": {
+    "module": "r",
+    "module.exports": "w"
+  }
+}
+```
+
