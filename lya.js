@@ -60,6 +60,12 @@ const help = () => {
   console.log(h);
 };
 
+// const splitJoin = (a, separator) => {
+//  const comb = a.split(separator);
+//  const value = [];
+//  comb.forEach((m) => value.push(path.join(__dirname, m)));
+//  return value;
+// };
 
 // const { fstat } = require('fs');
 const template = {
@@ -126,11 +132,12 @@ if (args['--save']) {
 }
 
 if (args['--module-include']) {
-  conf.modules.include = path.join(__dirname, args['--module-include']);
+  conf.modules.include = args['--module-include'];
 }
 
 if (args['--context-exclude']) {
-  conf.context.excludes.push(args['--context-exclude']);
+  conf.context.excludes = args['--context-exclude'].split(',');
+  console.log(conf.context.excludes);
 }
 
 let filePath;
