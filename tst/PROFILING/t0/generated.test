@@ -1,0 +1,7 @@
+let lya = require("../../../src/txfm.js");
+let conf = {
+  print: true,
+  analysis: lya.preset.PROFILING_RELATIVE,
+};
+lya.configRequire(require, conf);
+require("./main.js");
