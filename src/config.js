@@ -8,7 +8,7 @@ const preset = {
   COARSE_TYPES: pathJoin(__dirname, 'coarse-types.js'),
   EXPORT_TYPE: pathJoin(__dirname, 'export-type.js'),
   GLOBAL_ONLY: pathJoin(__dirname, 'global-only.js'),
-  PRINT_REQUIRE: pathJoin(__dirname, 'print-require.js'),
+  IMPORTS: pathJoin(__dirname, 'imports.js'),
   PROFILING: pathJoin(__dirname, 'profiling.js'),
   PROFILING_RELATIVE: pathJoin(__dirname, 'profiling-relative.js'),
   RWX: pathJoin(__dirname, 'rwx.js'),
