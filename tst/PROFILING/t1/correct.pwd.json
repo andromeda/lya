@@ -4,11 +4,11 @@
   },
   "PWD_REPLACE/m1.js": {
     "Math.abs": 0,
-    "require('./m2.js')": 1
+    "require('./m2.js')": 3
   },
   "PWD_REPLACE/m2.js": {
     "console.log": 0,
-    "require('./m3.js')": 3,
+    "require('./m3.js')": 1,
     "require('./m4.js')": 2
   },
   "PWD_REPLACE/m3.js": {
