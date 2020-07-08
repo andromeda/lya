@@ -2,13 +2,13 @@ const fs = require('fs');
 const pathJoin = require('path').join;
 
 const preset = {
-  ALLOW_DENY: pathJoin(__dirname, 'allow-deny.js'),
-  ALLOW_DENY_ENFORCEMENT: pathJoin(__dirname, 'allow-deny-enforcement.js'),
   CALL_NUMBERS: pathJoin(__dirname, 'call-numbers.js'),
   COARSE_TYPES: pathJoin(__dirname, 'coarse-types.js'),
   EXPORT_TYPE: pathJoin(__dirname, 'export-type.js'),
   GLOBAL_ONLY: pathJoin(__dirname, 'global-only.js'),
   IMPORTS: pathJoin(__dirname, 'imports.js'),
+  ON_OFF: pathJoin(__dirname, 'on-off.js'),
+  ON_OFF_ENFORCEMENT: pathJoin(__dirname, 'on-off-enforcement.js'),
   PROFILING: pathJoin(__dirname, 'profiling.js'),
   PROFILING_RELATIVE: pathJoin(__dirname, 'profiling-relative.js'),
   RWX: pathJoin(__dirname, 'rwx.js'),
