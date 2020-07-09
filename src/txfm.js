@@ -19,6 +19,9 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   const requireLevel = 0;
   const analysisResult = {};
 
+  // A set of arguments that keeps lya from breaking
+  let safetyValve = ['toString', 'valueOf', 'prototype', 'name', 'children'];
+
   moduleName[0] = process.cwd() + '/' + 'main.js'; // FIXME: What is this?
   analysisResult[moduleName[0]] = {};
 
@@ -48,7 +51,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     }
     return _excludes;
   };
-  lyaConfig.fields.excludes = makeExcludes(lyaConfig.fields.excludes);
+  safetyValve = makeExcludes(safetyValve);
 
   // The counter for the wrapped objects and functions
   const counters = {
@@ -93,7 +96,6 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   };
 
   // user-globals: e.g., global.x, x,
-  // es-globals: Math, Map, Array,
   // node-globals: console, setImmediate,
   // module-locals: exports, require, module, __filename, __dirname
   // module-returns: exports, module.exports
@@ -196,7 +198,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   const policy = require(lyaConfig.analysis)(env);
 
   const setProxy = (obj, handler, type) => {
-    if (lyaConfig.fields.excludes.has(methodNames.get(obj))) {
+    if (safetyValve.has(methodNames.get(obj))) {
       return obj;
     }
     counters.total++;
@@ -301,7 +303,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
         localObj = clonedFunctions.get(name);
         stopLoops.set(localObj, true);
         for (const field of getValues(obj)) {
-          if (!lyaConfig.fields.excludes.has(field)) {
+          if (!safetyValve.has(field)) {
             const saveName = name + '.' + field;
             localObj[field] = proxyWrap(obj[field], handler, saveName, depth);
           } else {
@@ -316,7 +318,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     } else if (type === 'object') {
       stopLoops.set(obj, true);
       for (const field of getValues(obj)) {
-        if (!lyaConfig.fields.excludes.has(field)) {
+        if (!safetyValve.has(field)) {
           const saveName = name + '.' + field;
           localObj[field] = proxyWrap(obj[field], handler,
               saveName, depth);
@@ -391,10 +393,10 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   // User can remove things from json file that create conf
   const flattenAndSkip = (groups, under) => {
     groups.filter((e) => {
-      lyaConfig.context.excludes.indexOf(e);
+      lyaConfig.fields.excludes.indexOf(e);
     }).forEach((e) => {
       for (const v in defaultNames[under][e]) {
-        if (!lyaConfig.context.excludes.indexOf(v)) {
+        if (!lyaConfig.fields.excludes.indexOf(v)) {
           defaultNames[under][v] = true;
         }
       }
@@ -408,7 +410,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     for (const v in group) {
       if (Object.prototype.hasOwnProperty.call(group, v)) {
         group[v] = group[v].filter((e) =>
-          !lyaConfig.context.excludes.includes(e));
+          !lyaConfig.fields.excludes.includes(e));
       }
     }
     return group;
@@ -455,7 +457,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   // extend wrap to take additional argument
   let originalScript;
   Module.wrap = (script) => {
-    if (lyaConfig.modules.include) {
+    if (lyaConfig.modules.include || lyaConfig.modules.excludes) {
       originalScript = originalWrap(script);
     }
 
@@ -477,7 +479,9 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     }
 
     if (lyaConfig.modules.include!== null &&
-      !lyaConfig.modules.include.includes(options['filename'])) {
+      !lyaConfig.modules.include.includes(options['filename']) ||
+      (lyaConfig.modules.excludes!== null &&
+      lyaConfig.modules.excludes.includes(options['filename']))) {
       if (env.requireLevel !== 0) {
         env.requireLevel++;
         moduleName[env.requireLevel] = options['filename'];
@@ -522,7 +526,9 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     moduleId = importName;
 
     if (lyaConfig.modules.include !== null &&
-      !lyaConfig.modules.include.includes(moduleName[env.requireLevel])) {
+      !lyaConfig.modules.include.includes(moduleName[env.requireLevel]) ||
+      (lyaConfig.modules.excludes!== null &&
+      lyaConfig.modules.excludes.includes(moduleName[env.requireLevel]))) {
       const moduleExports = originalRequire.apply(this, args);
       reduceLevel(importName);
       return moduleExports;
@@ -605,7 +611,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
               }, exportType);
             }
             storePureFunctions.set(target[name], currFunction);
-            if (lyaConfig.fields.excludes.has(name)) {
+            if (safetyValve.has(name)) {
               hookCheck(policy.onRead, target, name, parentName, currModule);
               return Reflect.get(...arguments);
             }

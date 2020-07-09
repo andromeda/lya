@@ -43,7 +43,7 @@ const conf = {
   },
   fields: {
     include: true,
-    excludes: ['toString', 'valueOf', 'prototype', 'name', 'children'],
+    excludes: [],
   },
 };
 
