@@ -1,6 +1,6 @@
 ## Documentation tool generator
 
-We created `lya` docs using [docsify](https://docsify.js.orgi).
+We created `lya` docs using [docsify](https://docsify.js.org).
 
 ## How to run the docs localy
 
