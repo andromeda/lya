@@ -1,6 +1,7 @@
 <img src="logo.png" width="700">
 
->Module-aware Fracture and Recombination for Dynamic Analysis
+Module-aware Fracture and Recombination for Dynamic Analysis
+![npm](https://img.shields.io/npm/v/@andromeda/lya)
 
 ## What's Lya?
 
