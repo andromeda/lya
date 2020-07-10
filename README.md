@@ -1,6 +1,6 @@
 <img src="logo.png" width="700">
 
-![npm](https://img.shields.io/npm/v/@andromeda/lya)
+[![npm](https://img.shields.io/npm/v/@andromeda/lya)](https://www.npmjs.com/package/@andromeda/lya)
 
 Module-aware Fracture and Recombination for Dynamic Analysis
 
