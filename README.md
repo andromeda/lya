@@ -1,6 +1,8 @@
 <img src="logo.png" width="700">
 
->Module-aware Fracture and Recombination for Dynamic Analysis
+[![npm](https://img.shields.io/npm/v/@andromeda/lya)](https://www.npmjs.com/package/@andromeda/lya)
+
+Module-aware Fracture and Recombination for Dynamic Analysis
 
 ## What's Lya?
 
@@ -35,7 +37,7 @@ npm i @andromeda/lya --save-dev
 
 If you want to install globally, so as to analyzing any program or library in the system, replace `--save-dev` with `-g`.
 
-### Option 1: From source
+### Option 2: From source
 ```Shell 
 git clone https://github.com/andromeda/lya/
 cd lya

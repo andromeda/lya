@@ -2,13 +2,13 @@ const fs = require('fs');
 const pathJoin = require('path').join;
 
 const preset = {
-  ALLOW_DENY: pathJoin(__dirname, 'allow-deny.js'),
-  ALLOW_DENY_ENFORCEMENT: pathJoin(__dirname, 'allow-deny-enforcement.js'),
   CALL_NUMBERS: pathJoin(__dirname, 'call-numbers.js'),
   COARSE_TYPES: pathJoin(__dirname, 'coarse-types.js'),
   EXPORT_TYPE: pathJoin(__dirname, 'export-type.js'),
   GLOBAL_ONLY: pathJoin(__dirname, 'global-only.js'),
-  PRINT_REQUIRE: pathJoin(__dirname, 'print-require.js'),
+  IMPORTS: pathJoin(__dirname, 'imports.js'),
+  ON_OFF: pathJoin(__dirname, 'on-off.js'),
+  ON_OFF_ENFORCEMENT: pathJoin(__dirname, 'on-off-enforcement.js'),
   PROFILING: pathJoin(__dirname, 'profiling.js'),
   PROFILING_RELATIVE: pathJoin(__dirname, 'profiling-relative.js'),
   RWX: pathJoin(__dirname, 'rwx.js'),
@@ -26,7 +26,7 @@ const conf = {
   inputString: true,
   printCode: false,
   depth: 3,
-  analysis: preset.ALLOW_DENY,
+  analysis: preset.ON_OFF,
   context: {
     enableWith: true,
     include: [
@@ -43,7 +43,7 @@ const conf = {
   },
   fields: {
     include: true,
-    excludes: ['toString', 'valueOf', 'prototype', 'name', 'children'],
+    excludes: [],
   },
 };
 

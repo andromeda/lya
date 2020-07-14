@@ -60,6 +60,16 @@ const help = () => {
   console.log(h);
 };
 
+const splitAdd = (a, separator, join) => {
+  const comb = a.split(separator);
+  const value = [];
+  if (join) {
+    comb.forEach((m) => value.push(path.join(__dirname, m)));
+  } else {
+    comb.forEach((m) => value.push(m));
+  }
+  return value;
+};
 
 // const { fstat } = require('fs');
 const template = {
@@ -126,11 +136,29 @@ if (args['--save']) {
 }
 
 if (args['--module-include']) {
-  conf.modules.include = path.join(__dirname, args['--module-include']);
+  conf.modules.include = splitAdd(args['--module-include'], ',', true);
+}
+
+if (args['--module-exclude']) {
+  conf.modules.excludes = splitAdd(args['--module-exclude'], ',', true);
+}
+
+if (args['--context-include']) {
+  conf.context.include = splitAdd(args['--context-include'], ',', false);
 }
 
 if (args['--context-exclude']) {
-  conf.context.excludes.push(args['--context-exclude']);
+  const excl = splitAdd(args['--context-exclude'], ',', false);
+  conf.context.include = conf.context.include.filter((name) => {
+    if (excl.indexOf(name)) {
+      return name;
+    }
+  });
+  console.log(conf.context.excludes);
+}
+
+if (args['--prop-exclude']) {
+  conf.fields.excludes = splitAdd(args['--prop-exclude'], ',', false);
 }
 
 let filePath;
