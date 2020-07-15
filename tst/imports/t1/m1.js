@@ -1,11 +1,8 @@
-let test = -11;
-let test2 = test + 1;
+const pineapple = -100;
+const tommato = 10;
+const mozzarella = 10;
 
-test = Math.abs(test);
-test = Math.abs(test);
-test = Math.abs(test);
+const pizza = mozzarella + tommato + pineapple;
 
-let testString = 'this is a test';
-global.test = 3;
-
-require('./m2.js');
+const fs = require('fs');
+const path = require('path')
