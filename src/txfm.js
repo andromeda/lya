@@ -407,6 +407,10 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 
   // TODO: Combine with flattenAndSkip
   const skipMe = (group) => {
+    if (lyaConfig.fields.include) {
+      return [lyaConfig.fields.include];
+    }
+
     for (const v in group) {
       if (Object.prototype.hasOwnProperty.call(group, v)) {
         group[v] = group[v].filter((e) =>
