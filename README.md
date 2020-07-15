@@ -44,6 +44,12 @@ cd lya
 npm install
 ```
 
+### Option 3: From docker image
+```Shell
+docker pull xxxxx
+docker start -i "name of xxxxx"
+```
+
 ## How to Use Lya?
 
 Then, add lya _as  a first import at the top-level  file_ in your project---that
