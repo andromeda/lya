@@ -60,7 +60,7 @@ analyses. For example:
 ```JavaScript
 let lya = require("@andromeda/lya");
 let conf = {
-  analysis: lya.preset.ON_OFF
+  analysis: lya.preset.ON_OFF,
   saveResults: require("path").join(__dirname, "dynamic.json"),
 };
 lya.configRequire(require, conf);
