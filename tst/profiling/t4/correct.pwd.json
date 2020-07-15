@@ -1,12 +1,17 @@
 {
   "PWD_REPLACE/main.js": {
-    "require('./m1.js')": 0 
+    "require('./m1.js')": 3 
   },
   "PWD_REPLACE/m1.js": {
     "Math.abs": 0,
+    "console.log": 0,
     "require('./m2.js')": 1 
   },
   "PWD_REPLACE/m2.js": {
+    "console.log": 0,
+    "require('./m3.js')": 2
+  },
+  "PWD_REPLACE/m3.js": {
     "console.log": 0
   }
 }
