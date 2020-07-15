@@ -20,3 +20,16 @@ echo "We run with context-include, module-locals"
 ../lya.js ../tst/rwx/t1/main.js -p --context-include "module-locals"
 echo "We run with context-include, module-locals,node-globals"
 ../lya.js ../tst/rwx/t1/main.js -p --context-include "module-locals,node-globals"
+
+echo "We are going to test prop with t3"
+../lya.js ../tst/rwx/t4/main.js -p
+
+echo "We run with prop-exclude, console"
+../lya.js ../tst/rwx/t4/main.js -p --prop-exclude "console"
+echo "We run with prop-exclude, console, Error"
+../lya.js ../tst/rwx/t4/main.js -p --prop-exclude "console,Error"
+echo "We run with prop-include, console"
+../lya.js ../tst/rwx/t4/main.js -p --prop-include "console"
+echo "We run with prop-include, console,Error"
+../lya.js ../tst/rwx/t4/main.js -p --prop-include "console,Error"
+
