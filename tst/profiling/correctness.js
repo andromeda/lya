@@ -7,7 +7,11 @@ var sAnalysis = [];
 
 // We check if the base and result has the same stracture
 const stracture = (a, b) => {
-  console.log(jsonDiff.diffString(a, b, null, {'keysOnly':true}));
+  const result = jsonDiff.diffString(a, b, null, {'keysOnly':true});
+  if (result !== '') {
+    console.log(result);
+    process.exit(-1);
+  }
 };
 
 // If the tests are too quick we just compare the keys
