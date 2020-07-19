@@ -22,8 +22,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   // A set of arguments that keeps lya from breaking
   let safetyValve = ['toString', 'valueOf', 'prototype', 'name', 'children'];
 
-  moduleName[0] = process.cwd() + '/' + 'main.js'; // FIXME: What is this?
-  analysisResult[moduleName[0]] = {};
+  
 
   // This holds the string of the transformations inside modules
   const declaration = (lyaConfig.context.enableWith === false) ? 'var' : 'let';
@@ -526,6 +525,11 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   // to pass the module id to Module.wrap
   let moduleId;
   Module.prototype.require = function(...args) {
+    if (moduleName[0] === undefined) {
+      moduleName[0] = this.filename;
+      analysisResult[moduleName[0]] = {};
+    }
+
     const importName = args[0];
     moduleId = importName;
 
