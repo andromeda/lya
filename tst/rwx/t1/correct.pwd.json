@@ -1,4 +1,6 @@
 {
+  "PWD_REPLACE/generated.test": {
+  },
   "PWD_REPLACE/main.js": {
     "require": "rx",
     "require('fs')": "ir",

@@ -1,4 +1,6 @@
 {
+  "PWD_REPLACE/generated.test": {
+   },  
   "PWD_REPLACE/main.js": {
     "require('./math.js')": "input: 0.string  => output: object",
     "require('./math.js').add": "input: 0.number 1.number  => output: number",

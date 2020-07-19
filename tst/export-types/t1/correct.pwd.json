@@ -1,4 +1,6 @@
 {
+  "PWD_REPLACE/generated.test": {
+   },
   "PWD_REPLACE/main.js": {
     "require('./m1.js')": "input: 0.string  => output: object",
     "require('./m2.js')": "input: 0.string  => output: object"

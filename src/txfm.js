@@ -22,8 +22,6 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   // A set of arguments that keeps lya from breaking
   let safetyValve = ['toString', 'valueOf', 'prototype', 'name', 'children'];
 
-  
-
   // This holds the string of the transformations inside modules
   const declaration = (lyaConfig.context.enableWith === false) ? 'var' : 'let';
   let prologue = '';
