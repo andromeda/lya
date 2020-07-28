@@ -1,6 +1,5 @@
 const fs = require('fs');
 const pathJoin = require('path').join;
-
 const preset = {
   CALL_NUMBERS: pathJoin(__dirname, 'call-numbers.js'),
   COARSE_TYPES: pathJoin(__dirname, 'coarse-types.js'),
