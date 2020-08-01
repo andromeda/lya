@@ -49,6 +49,7 @@
     "src/coarse-types.js",
     "src/default-names.json",
     "src/export-type.js",
+    "src/export-type-acc.js",
     "src/global-only.js",
     "src/on-off.js",
     "src/on-off-enforcement.js",
