@@ -1,0 +1,23 @@
+{
+  "PWD_REPLACE/generated.test": {},
+  "PWD_REPLACE/main.js": {
+    "require('./m1.js')": "(string -> object) ! {require('fs').readFileSync, module.exports}",
+    "require('./m2.js')": "(string -> object) ! {console, require('fs').rmdirSync, require('fs').mkdirSync, require('./m3.js').fst, module.exports}"
+  },
+  "PWD_REPLACE/m1.js": {
+    "require('fs')": "(string -> object)",
+    "require('fs').readFileSync": "(string -> string -> string)",
+    "require('./m2.js')": "(string -> object) ! {console, require('fs').rmdirSync, require('fs').mkdirSync, require('./m3.js').fst, module.exports}"
+  },
+  "PWD_REPLACE/m2.js": {
+    "require('fs')": "(string -> object)",
+    "require('./m3.js')": "(string -> object) ! {console, module.exports}",
+    "console.log": "(string -> no output)",
+    "require('fs').readFileSync": "(string -> string -> string)"
+  },
+  "PWD_REPLACE/m3.js": {
+    "require('fs')": "(string -> object)",
+    "require('fs').readFileSync": "(string -> string -> string)",
+    "console.log": "(string -> no output)"
+  }
+}

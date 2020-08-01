@@ -1,0 +1,9 @@
+{
+  "PWD_REPLACE/generated.test": {
+  },
+  "PWD_REPLACE/main.js": {
+    "require('./m1.js')": "(string -> object)"
+  },
+  "PWD_REPLACE/m1.js": {
+  }
+}

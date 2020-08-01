@@ -1,0 +1,14 @@
+{
+  "PWD_REPLACE/generated.test": {
+   },
+  "PWD_REPLACE/main.js": {
+    "require('./m1.js')": "(string -> object) ! {console}",
+    "require('./m2.js')": "(string -> object) ! {console}"
+  },
+  "PWD_REPLACE/m1.js": {
+    "console.log": "(string -> no output)"
+  },
+  "PWD_REPLACE/m2.js": {
+    "console.log": "(string -> no output)"
+  }
+}
