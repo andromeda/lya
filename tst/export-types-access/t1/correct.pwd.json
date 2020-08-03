@@ -1,14 +1,34 @@
 {
-  "PWD_REPLACE/generated.test": {
-   },
-  "PWD_REPLACE/main.js": {
-    "require('./m1.js')": "(string -> object) ! {console}",
-    "require('./m2.js')": "(string -> object) ! {console}"
-  },
+  "PWD_REPLACE/generated.test": {},
+  "PWD_REPLACE/main.js": {},
   "PWD_REPLACE/m1.js": {
-    "console.log": "(string -> no output)"
+    "require('fs').readFileSync": {
+      "core": [
+        "string",
+        "string",
+        "string"
+      ],
+      "effect": []
+    }
   },
   "PWD_REPLACE/m2.js": {
-    "console.log": "(string -> no output)"
+    "require('fs').readFileSync": {
+      "core": [
+        "string",
+        "string",
+        "string"
+      ],
+      "effect": []
+    }
+  },
+  "PWD_REPLACE/m3.js": {
+    "require('fs').readFileSync": {
+      "core": [
+        "string",
+        "string",
+        "string"
+      ],
+      "effect": []
+    }
   }
 }

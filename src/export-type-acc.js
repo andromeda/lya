@@ -1,33 +1,26 @@
 let env;
 const fs = require('fs');
-const inputStore = [];
+const types = [];
 const accessTable = [];
 const currentFunction =[];
 
-const updateAnalysisData = (storedCalls, truename, inputType,
-    outputType, values) => {
-  if (values !== undefined) {
-    values = ' ! {' + values.toString().replace(/,/g, ', ') + '}';
-  } else {
-    values = '';
+const updateAnalysisData = (storedCalls, truename, type, values) => {
+  if (values === undefined) {
+    values = [];
   }
 
-  const saveData = '(' + inputType + outputType + ')' + values;
+  const saveData = {core: type, effect: [...values]};
   if (Object.prototype.hasOwnProperty.
       call(storedCalls, truename) === false) {
     storedCalls[truename] = saveData;
-  } else {
-    if (!storedCalls[truename].includes(saveData)) {
-      storedCalls[truename] += ' || ' + saveData;
-    }
   }
 };
 
 const addAccessValues = (table, fuctionName, name) => {
   if (table[fuctionName] === undefined) {
-    table[fuctionName] = [];
+    table[fuctionName] = new Set();
   }
-  table[fuctionName].push(name);
+  table[fuctionName].add(name);
 };
 
 const onRead = (target, name, nameToStore, currentModule, typeClass) => {
@@ -43,25 +36,31 @@ const onWrite = (target, name, value, currentModule, parentName,
 
 const onCallPre = (target, thisArg, argumentsList, name, nameToStore,
     currentModule, declareModule, typeClass) => {
-  let inputType = '';
+  if (typeClass !== 'module-returns') {
+    return;
+  }
+
+  const inputType = [];
   currentFunction.push(nameToStore);
   if (!argumentsList.length) {
-    inputType += 'no-input';
+    inputType.push('no-input');
   } else {
     for (let i = 0; i < argumentsList.length; i++) {
-      inputType += typeof argumentsList[i] + ' -> ';
+      inputType.push(typeof argumentsList[i]);
     }
   }
-  inputStore[nameToStore] = inputType;
+  types[nameToStore] = inputType;
 };
 
 const onCallPost = (target, thisArg, argumentsList, name, nameToStore,
     currentModule, declareModule, typeClass, result) => {
-  const inputType = inputStore[nameToStore];
-  const outputType = result ? typeof result : 'no output';
+  if (typeClass !== 'module-returns') {
+    return;
+  }
+  types[nameToStore].push(result ? typeof result : 'no output');
   const values = accessTable[currentFunction[currentFunction.length-1]];
-  updateAnalysisData(env.analysisResult[currentModule], nameToStore, inputType,
-      outputType, values);
+  updateAnalysisData(env.analysisResult[currentModule], nameToStore,
+      types[nameToStore], values);
   currentFunction.pop();
 };
 
@@ -77,6 +76,10 @@ const onExit = (intersection, candidateModule) => {
 
 module.exports = (e) => {
   env = e;
+  env.conf.context.include = [
+    'module-returns',
+    'node-globals',
+  ];
   return {
     onCallPre: onCallPre,
     onCallPost: onCallPost,

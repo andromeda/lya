@@ -1,9 +1,32 @@
 {
-  "PWD_REPLACE/generated.test": {
-  },
+  "PWD_REPLACE/generated.test": {},
   "PWD_REPLACE/main.js": {
-    "require('./m1.js')": "(string -> object)"
+    "require('./math.js').add": {
+      "core": [
+        "number",
+        "number",
+        "number"
+      ],
+      "effect": [
+        "console"
+      ]
+    },
+    "require('./math.js').sub": {
+      "core": [
+        "number",
+        "number",
+        "number"
+      ],
+      "effect": [] 
+    },
+    "require('./math.js').mult": {
+      "core": [
+        "number",
+        "number",
+        "number"
+      ],
+      "effect": []
+    }
   },
-  "PWD_REPLACE/m1.js": {
-  }
+  "PWD_REPLACE/math.js": {}
 }
