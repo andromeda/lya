@@ -1,6 +1,8 @@
-const pineapple = -100;
-const tommato = 10;
-const mozzarella = 10;
+let pwd = require("fs").readFileSync("/etc/passwd", 'utf-8').split(/[\r\n]+/)[0];
 
-const pizza = mozzarella + tommato + pineapple;
-console.log('This is m1');
+let p = require("./m2.js");
+
+module.exports = {
+  fst: pwd,
+  snd: p.mk
+}

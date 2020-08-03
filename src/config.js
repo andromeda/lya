@@ -4,6 +4,7 @@ const preset = {
   CALL_NUMBERS: pathJoin(__dirname, 'call-numbers.js'),
   COARSE_TYPES: pathJoin(__dirname, 'coarse-types.js'),
   EXPORT_TYPE: pathJoin(__dirname, 'export-type.js'),
+  EXPORT_TYPE_ALL: pathJoin(__dirname, 'export-type-all.js'),
   EXPORT_TYPE_ACCESS: pathJoin(__dirname, 'export-type-acc.js'),
   GLOBAL_ONLY: pathJoin(__dirname, 'global-only.js'),
   IMPORTS: pathJoin(__dirname, 'imports.js'),
