@@ -11,7 +11,7 @@ const updateAnalysisData = (analysisJSON, name, type) => {
 const onCallPre = (target, thisArg, argumentsList, name, nameToStore,
     currentModule, declareModule, typeClass) => {
   updateAnalysisData(env.analysisResult[currentModule], nameToStore,
-    'function');
+      'function');
 };
 
 const onExit = (intersection, candidateModule) => {
