@@ -8,6 +8,8 @@ We need to find a few really simple native libraries. One way would be to browse
 
 ..but these libraries are somewhat complex. We would want to find simpler ones.
 
+**Also on `npm`: node-levenshtein, sleep , crc16**
+
 Another idea would be to find libraries used in tutorials — there must be some tutorials out there that use string processing as an example.
 
 ### Identifying Native Addons
