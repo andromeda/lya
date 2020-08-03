@@ -2,7 +2,7 @@ let env;
 const fs = require('fs');
 const types = [];
 const accessTable = [];
-const currentFunction =[];
+const currentFunction = [];
 
 const updateAnalysisData = (storedCalls, truename, type, values) => {
   if (values === undefined) {
@@ -30,6 +30,10 @@ const onRead = (target, name, nameToStore, currentModule, typeClass) => {
 
 const onWrite = (target, name, value, currentModule, parentName,
     nameToStore) => {
+  const nameCheck = '.' + name;
+  if (nameToStore.includes(nameCheck)) {
+    nameToStore = nameToStore.replace(nameCheck,'');
+  };
   addAccessValues(accessTable, currentFunction[currentFunction.length-1],
       nameToStore);
 };
@@ -76,10 +80,6 @@ const onExit = (intersection, candidateModule) => {
 
 module.exports = (e) => {
   env = e;
-  env.conf.context.include = [
-    'module-returns',
-    'node-globals',
-  ];
   return {
     onCallPre: onCallPre,
     onCallPost: onCallPost,
