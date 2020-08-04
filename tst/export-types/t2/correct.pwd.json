@@ -21,6 +21,12 @@
         "number",
         "number"
       ]
+    },
+    "require('./math.js').asAString": {
+      "core": [
+        "number",
+        "string"
+      ]
     }
   },
   "PWD_REPLACE/math.js": {}
