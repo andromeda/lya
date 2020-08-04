@@ -18,3 +18,19 @@ To identify native modules in the dependency chain of larger applications:
 
 * [native-modules](https://github.com/juliangruber/native-modules)
 * [is-native-module](https://github.com/juliangruber/is-native-module/blob/master/index.js)
+
+
+### Working 
+  - [iconv](https://www.npmjs.com/package/iconv)
+  - [posix](https://www.npmjs.com/package/posix)
+  - [fs-ext](https://www.npmjs.com/package/fs-ext)
+  - [usage](https://www.npmjs.com/package/usage)
+  - [gc-stats](https://www.npmjs.com/package/gc-stats)
+  - [uriparser](https://www.npmjs.com/package/uriparser)
+  - [microtime](https://www.npmjs.com/package/@risingstack/microtime)
+  - [mtrace](https://www.npmjs.com/package/mtrace)
+  - [statvfs](https://www.npmjs.com/package/statvfs)
+  - [hll-native](https://www.npmjs.com/package/hll-native)
+  - [Sync Runner](https://www.npmjs.com/package/sync-runner)
+
+_Last tab on npm checked: https://www.npmjs.com/browse/depended/nan?offset=1080_
