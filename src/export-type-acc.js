@@ -32,8 +32,8 @@ const onWrite = (target, name, value, currentModule, parentName,
     nameToStore) => {
   const nameCheck = '.' + name;
   if (nameToStore.includes(nameCheck)) {
-    nameToStore = nameToStore.replace(nameCheck,'');
-  };
+    nameToStore = nameToStore.replace(nameCheck, '');
+  }
   addAccessValues(accessTable, currentFunction[currentFunction.length-1],
       nameToStore);
 };
