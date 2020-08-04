@@ -32,5 +32,12 @@ To identify native modules in the dependency chain of larger applications:
   - [statvfs](https://www.npmjs.com/package/statvfs)
   - [hll-native](https://www.npmjs.com/package/hll-native)
   - [Sync Runner](https://www.npmjs.com/package/sync-runner)
-
-_Last tab on npm checked: https://www.npmjs.com/browse/depended/nan?offset=1080_
+  - [at-exit-hook](https://www.npmjs.com/package/at-exit-hook)
+  - [johnny-cript-tmp](https://www.npmjs.com/package/johnny-cript-tmp)
+  - [fs-open-locked](https://www.npmjs.com/package/fs-open-locked)
+  - [node-blake2](https://www.npmjs.com/package/blake2_n)
+  - [node-delta](https://www.npmjs.com/package/node-delta)
+  - [shard-uuid](https://www.npmjs.com/package/shard-uuid)
+  - [faster-verify](https://www.npmjs.com/package/faster-verify)
+  - 
+_Last tab on npm checked: https://www.npmjs.com/browse/depended/nan?offset=1800_
