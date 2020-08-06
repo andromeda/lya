@@ -27,7 +27,7 @@ analysis](how-to-write-an-analysis) below.
 
 ## Installation
 
-Lya runs with __Node v8.9.4__. You can use [nvm (macOS/Linux)](https://github.com/nvm-sh/nvm#installation) 
+Lya runs with __Node v8.9.4__ (**FIXME: Add multiple versions to test on CI server**). You can use [nvm (macOS/Linux)](https://github.com/nvm-sh/nvm#installation) 
 to switch Node versions between different projects.
 
 ### Option 1: Npm
