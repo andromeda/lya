@@ -50,6 +50,8 @@ docker pull xxxxx
 docker start -i "name of xxxxx"
 ```
 
+**FIXME**
+
 ## How to Use Lya?
 
 Then, add lya _as  a first import at the top-level  file_ in your project---that
@@ -77,6 +79,8 @@ will hook  across all modules. It  supports five methods, but  a useful analysis
 can be written with any subset of them.
 
 Lya provides the following hooks:
+
+**FIXME: Summarize Hooks and Move to Doc**
 
 * `sourceTransform(src)`: Apply a source transformation to the loaded library. Example analyses: [uncomment](./src/uncomment.js).
   * `src`: String representation of the library
