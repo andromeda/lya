@@ -525,6 +525,16 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 
   // We wrap the result in the wrapper function and we use passName
   // to pass the module id to Module.wrap
+  const setNamePath = (type, moduleExports, importName) => {
+    if (type === 'function' && moduleExports.name !== '') {
+      objectName.set(moduleExports, 'require(\'' + importName + '\').' +
+        moduleExports.name);
+    } else {
+      objectName.set(moduleExports, 'require(\'' + importName + '\')');
+    }
+    objectPath.set(moduleExports, moduleName[env.requireLevel]);
+  };
+
   let moduleId;
   Module.prototype.require = function(...args) {
     if (moduleName[0] === undefined) {
@@ -534,32 +544,29 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 
     const importName = args[0];
     moduleId = importName;
+    let moduleExports = originalRequire.apply(this, args);
 
     if (lyaConfig.modules.include !== null &&
       !lyaConfig.modules.include.includes(moduleName[env.requireLevel]) ||
       (lyaConfig.modules.excludes!== null &&
       lyaConfig.modules.excludes.includes(moduleName[env.requireLevel]))) {
-      const moduleExports = originalRequire.apply(this, args);
       reduceLevel(importName);
       return moduleExports;
     }
 
-    let moduleExports = originalRequire.apply(this, args);
     const type = typeof moduleExports;
 
     if (type !== 'boolean' && type !== 'symbol' &&
           type !== 'number' && type !== 'string') {
       if (!objectName.has(moduleExports)) {
-        objectName.set(moduleExports, 'require(\'' + importName + '\')');
-        objectPath.set(moduleExports, moduleName[env.requireLevel]);
+        setNamePath(type, moduleExports, importName);
         if (lyaConfig.context.include.includes('module-returns')) {
           moduleExports = setProxy(moduleExports, exportHandler, type);
         }
         reduceLevel(importName);
       } else {
         moduleExports = setProxy(moduleExports, exportHandler, type);
-        objectName.set(moduleExports, 'require(\'' + importName + '\')');
-        objectPath.set(moduleExports, moduleName[env.requireLevel]);
+        setNamePath(type, moduleExports, importName);
       }
     }
     return moduleExports;
@@ -581,7 +588,13 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       hookCheck(policy.onCallPre, target, thisArg, argumentsList, target.name,
           nameToStore, currModule, declareModule);
 
-      return Reflect.apply(...arguments);
+      const result = Reflect.apply(...arguments);
+
+      hookCheck(policy.onCallPost, target, thisArg, argumentsList,
+          target.name, nameToStore, currModule,
+          declareModule, 'module-returns', result);
+
+      return result;
     },
     get: function(target, name, receiver) {
       const exportType = typeof target[name];
