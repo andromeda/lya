@@ -1,0 +1,26 @@
+{
+  "/home/grigorisntousakis/lya/doc/tutorial/showcase/example_2/lya.js": {},
+  "/home/grigorisntousakis/lya/doc/tutorial/showcase/example_2/main.js": {
+    "require": "rx",
+    "require('array-last')": "ir",
+    "require('array-last').last": "rx",
+    "require('is-number').isNumber": "rx",
+    "require('is-number')": "r",
+    "Array": "rx"
+  },
+  "/home/grigorisntousakis/lya/node_modules/array-last/index.js": {
+    "require": "rx",
+    "require('is-number')": "i",
+    "module": "r",
+    "module.exports": "w",
+    "Array": "r"
+  },
+  "/home/grigorisntousakis/lya/node_modules/is-number/index.js": {
+    "module": "r",
+    "module.exports": "w",
+    "Array": "r",
+    "Array.isArray": "rx",
+    "String": "r",
+    "Number": "r"
+  }
+}
