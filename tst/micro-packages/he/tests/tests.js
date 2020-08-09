@@ -6729,11 +6729,6 @@
 			'<img src=\'x\' onerror="prompt(1)"><script>alert(1)</script><img src="x` `<script>alert(1)</script>"` `>',
 			'XML/HTML-unescape'
 		);
-		strictEqual(
-			he.decode,
-			he.unescape,
-			'`decode` and `unescape` should be the same'
-		);
 	});
 
 	/*--------------------------------------------------------------------------*/
