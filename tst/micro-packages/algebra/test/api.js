@@ -4,7 +4,7 @@
 /* global BigInt */
 
 describe('API', () => {
-  const algebra = require('algebra')
+  const algebra = require('../')
 
   const R2 = algebra.R2
   const R3 = algebra.R3

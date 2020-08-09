@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-const CompositionAlgebra = require('algebra').CompositionAlgebra
+const CompositionAlgebra = require('../').CompositionAlgebra
 const realField = require('../src/realField')
 
 const R = CompositionAlgebra(realField)
