@@ -17,7 +17,7 @@
     "node": ">=0.10.0"
   },
   "scripts": {
-    "test": "mocha"
+    "test": "mocha test.js"
   },
   "dependencies": {
     "array-slice": "^0.2.3",
@@ -25,7 +25,7 @@
   },
   "devDependencies": {
     "gulp-format-md": "^0.1.5",
-    "mocha": "*",
+    "mocha": "^7.0.0",
     "should": "*"
   },
   "keywords": [
