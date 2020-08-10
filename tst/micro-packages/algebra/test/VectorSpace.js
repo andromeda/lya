@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-const algebra = require('algebra')
+const algebra = require('../')
 const notDefined = require('not-defined')
 
 const Real = algebra.Real

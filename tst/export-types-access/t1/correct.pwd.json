@@ -1,0 +1,34 @@
+{
+  "PWD_REPLACE/generated.test": {},
+  "PWD_REPLACE/main.js": {},
+  "PWD_REPLACE/m1.js": {
+    "require('fs').readFileSync": {
+      "core": [
+        "string",
+        "string",
+        "string"
+      ],
+      "effect": []
+    }
+  },
+  "PWD_REPLACE/m2.js": {
+    "require('fs').readFileSync": {
+      "core": [
+        "string",
+        "string",
+        "string"
+      ],
+      "effect": []
+    }
+  },
+  "PWD_REPLACE/m3.js": {
+    "require('fs').readFileSync": {
+      "core": [
+        "string",
+        "string",
+        "string"
+      ],
+      "effect": []
+    }
+  }
+}

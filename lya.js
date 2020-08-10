@@ -161,6 +161,10 @@ if (args['--prop-exclude']) {
   conf.fields.excludes = splitAdd(args['--prop-exclude'], ',', false);
 }
 
+if (args['--prop-include']) {
+  conf.fields.include = splitAdd(args['--prop-include'], ',', false);
+}
+
 let filePath;
 switch (args['_'].length) {
   case 0:

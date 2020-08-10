@@ -45,13 +45,14 @@
     "README.md",
     "lya.js",
     "src/README.md",
-    "src/allow-deny-enforcement.js",
-    "src/allow-deny.js",
     "src/call-numbers.js",
     "src/coarse-types.js",
     "src/default-names.json",
     "src/export-type.js",
+    "src/export-type-acc.js",
     "src/global-only.js",
+    "src/on-off.js",
+    "src/on-off-enforcement.js",
     "src/profiling-relative.js",
     "src/profiling.js",
     "src/rwx-checking.js",
@@ -80,6 +81,8 @@
     "safe-eval": "^0.3.0",
     "safer-eval": "^1.0.0",
     "serialize-javascript": "^3.0.0",
-    "static-eval": "^2.0.1"
+    "static-eval": "^2.0.1",
+    "arr-diff": "^4.0.0",
+    "array-last": "^1.3.0"
   }
 }

@@ -20,8 +20,8 @@ if [ "$#" -eq 1 ]; then
   analysis
   cd ..
 else
-  for d in t?/ t??/; do
-    cd $d;
+  for d in {0..19}; do
+    cd t$d;
     analysis
     cd ..
   done

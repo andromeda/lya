@@ -1,7 +1,7 @@
 /* eslint-disable indent */
 /* eslint-env mocha */
 
-const algebra = require('algebra')
+const algebra = require('../')
 const notDefined = require('not-defined')
 
 const MatrixSpace = algebra.MatrixSpace

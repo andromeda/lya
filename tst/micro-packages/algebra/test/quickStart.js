@@ -2,7 +2,7 @@
 /* eslint-env mocha */
 
 describe('Quick start', () => {
-  const algebra = require('algebra')
+  const algebra = require('../')
 
   it('works', () => {
     const R = algebra.Real

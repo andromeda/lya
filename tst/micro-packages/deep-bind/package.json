@@ -24,7 +24,7 @@
   },
   "devDependencies": {
     "gulp-format-md": "^0.1.5",
-    "mocha": "*"
+    "mocha": "7.0.0"
   },
   "keywords": [
     "bind",

@@ -22,9 +22,6 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   // A set of arguments that keeps lya from breaking
   let safetyValve = ['toString', 'valueOf', 'prototype', 'name', 'children'];
 
-  moduleName[0] = process.cwd() + '/' + 'main.js'; // FIXME: What is this?
-  analysisResult[moduleName[0]] = {};
-
   // This holds the string of the transformations inside modules
   const declaration = (lyaConfig.context.enableWith === false) ? 'var' : 'let';
   let prologue = '';
@@ -407,6 +404,10 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 
   // TODO: Combine with flattenAndSkip
   const skipMe = (group) => {
+    if (lyaConfig.fields.include) {
+      return [lyaConfig.fields.include];
+    }
+
     for (const v in group) {
       if (Object.prototype.hasOwnProperty.call(group, v)) {
         group[v] = group[v].filter((e) =>
@@ -461,8 +462,12 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       originalScript = originalWrap(script);
     }
 
-    script = policy.sourceTransform ? policy.sourceTransform(script, moduleId) :
-      script;
+    if (policy.sourceTransform !== undefined) {
+      const returnScript = policy.sourceTransform(script, moduleId);
+      if (returnScript !== undefined) {
+        script = returnScript;
+      }
+    }
     script = lyaConfig.context.enableWith ? getPrologue() + script + '\n}' :
       getPrologue() + script;
     const wrappedScript = originalWrap(script).replace('dirname)',
@@ -520,36 +525,48 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 
   // We wrap the result in the wrapper function and we use passName
   // to pass the module id to Module.wrap
+  const setNamePath = (type, moduleExports, importName) => {
+    if (type === 'function' && moduleExports.name !== '') {
+      objectName.set(moduleExports, 'require(\'' + importName + '\').' +
+        moduleExports.name);
+    } else {
+      objectName.set(moduleExports, 'require(\'' + importName + '\')');
+    }
+    objectPath.set(moduleExports, moduleName[env.requireLevel]);
+  };
+
   let moduleId;
   Module.prototype.require = function(...args) {
+    if (moduleName[0] === undefined) {
+      moduleName[0] = this.filename;
+      analysisResult[moduleName[0]] = {};
+    }
+
     const importName = args[0];
     moduleId = importName;
+    let moduleExports = originalRequire.apply(this, args);
 
     if (lyaConfig.modules.include !== null &&
       !lyaConfig.modules.include.includes(moduleName[env.requireLevel]) ||
       (lyaConfig.modules.excludes!== null &&
       lyaConfig.modules.excludes.includes(moduleName[env.requireLevel]))) {
-      const moduleExports = originalRequire.apply(this, args);
       reduceLevel(importName);
       return moduleExports;
     }
 
-    let moduleExports = originalRequire.apply(this, args);
     const type = typeof moduleExports;
 
     if (type !== 'boolean' && type !== 'symbol' &&
           type !== 'number' && type !== 'string') {
       if (!objectName.has(moduleExports)) {
-        objectName.set(moduleExports, 'require(\'' + importName + '\')');
-        objectPath.set(moduleExports, moduleName[env.requireLevel]);
+        setNamePath(type, moduleExports, importName);
         if (lyaConfig.context.include.includes('module-returns')) {
           moduleExports = setProxy(moduleExports, exportHandler, type);
         }
         reduceLevel(importName);
       } else {
         moduleExports = setProxy(moduleExports, exportHandler, type);
-        objectName.set(moduleExports, 'require(\'' + importName + '\')');
-        objectPath.set(moduleExports, moduleName[env.requireLevel]);
+        setNamePath(type, moduleExports, importName);
       }
     }
     return moduleExports;
@@ -571,7 +588,13 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       hookCheck(policy.onCallPre, target, thisArg, argumentsList, target.name,
           nameToStore, currModule, declareModule);
 
-      return Reflect.apply(...arguments);
+      const result = Reflect.apply(...arguments);
+
+      hookCheck(policy.onCallPost, target, thisArg, argumentsList,
+          target.name, nameToStore, currModule,
+          declareModule, 'module-returns', result);
+
+      return result;
     },
     get: function(target, name, receiver) {
       const exportType = typeof target[name];
