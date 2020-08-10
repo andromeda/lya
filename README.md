@@ -2,7 +2,9 @@
 
 [![npm](https://img.shields.io/npm/v/@andromeda/lya)](https://www.npmjs.com/package/@andromeda/lya)
 
-Module-aware Fracture and Recombination for Dynamic Analysis
+## Library-oriented Dynamic Program Analysis for JavaScript
+
+Mailing lists: [Commits](lya-commits@googlegroups.com) | [Discussion](lya-discuss@googlegroups.com)
 
 ## What's Lya?
 
