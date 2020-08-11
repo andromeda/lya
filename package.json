@@ -47,6 +47,7 @@
     "src/README.md",
     "src/call-numbers.js",
     "src/coarse-types.js",
+    "src/config.js",
     "src/default-names.json",
     "src/export-type.js",
     "src/export-type-acc.js",
