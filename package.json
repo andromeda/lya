@@ -1,6 +1,6 @@
 {
   "name": "@andromeda/lya",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Library-oriented Dynamic Analysis",
   "main": "src/txfm.js",
   "scripts": {
@@ -47,6 +47,7 @@
     "src/README.md",
     "src/call-numbers.js",
     "src/coarse-types.js",
+    "src/config.js",
     "src/default-names.json",
     "src/export-type.js",
     "src/export-type-acc.js",
