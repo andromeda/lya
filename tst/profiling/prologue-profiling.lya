@@ -2,7 +2,7 @@ let lya = require("../../../src/core.js");
 let conf = {
   print: true,
   SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"),
-  analysis: lya.preset.PROFILING_RELATIVE,
+  analysis: lya.preset.CALL_TIMES,
 };
 lya.configRequire(require, conf);
 require("./main.js");
