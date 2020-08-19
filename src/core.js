@@ -5,7 +5,7 @@ const nativeModules = Object.keys(process.binding('natives'));
 const Module = require('module');
 const vm = require('vm');
 // const utils = require('./utils.js');
-const config = require('./config.js');
+const config = require('./utils/config.js');
 
 const lyaStartUp = (callerRequire, lyaConfig) => {
   // All the necessary modules for swap
@@ -58,7 +58,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   };
 
   // We read and store the data of the json file
-  const defaultNames = require('./default-names.json');
+  const defaultNames = require('./utils/default-names.json');
 
   // Returns the objects name
   const getObjectInfo = (obj) => {
