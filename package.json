@@ -1,6 +1,6 @@
 {
   "name": "@andromeda/lya",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "Library-oriented Dynamic Analysis",
   "main": "src/txfm.js",
   "scripts": {
@@ -12,6 +12,9 @@
   "pre-commit": [
     "lint"
   ],
+  "bin": {
+    "lya": "./lya.js"
+  },
   "eslintConfig": {
     "extends": [
       "eslint:recommended",
@@ -56,9 +59,6 @@
     "src/on-off-enforcement.js",
     "src/profiling-relative.js",
     "src/profiling.js",
-    "src/rwx-checking.js",
-    "src/rwx-enforcement.js",
-    "src/rwx.js",
     "src/simple-types.js",
     "src/star-check.js",
     "src/sub-types.js",
