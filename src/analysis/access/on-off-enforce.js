@@ -27,43 +27,41 @@ const checkInvalid = (storedCalls, truename) => {
 
 // Analyses provided by LYA.
 // onRead <~ is called before every object is read
-const onRead = (target, name, nameToStore, currentModule, typeClass) => {
-  if (nameToStore != 'global') {
+const onRead = (info) => {
+  if (info.nameToStore != 'global') {
     const pattern = /require[(](.*)[)]/;
-    if (pattern.test(nameToStore)) {
-      checkInvalid(groundTruth[currentModule],
-          nameToStore.match(pattern)[0]);
+    if (pattern.test(info.nameToStore)) {
+      checkInvalid(groundTruth[info.currentModule],
+          info.nameToStore.match(pattern)[0]);
     } else {
-      checkInvalid(groundTruth[currentModule],
-          nameToStore.split('.')[0]);
+      checkInvalid(groundTruth[info.currentModule],
+          info.nameToStore.split('.')[0]);
     }
-    checkInvalid(groundTruth[currentModule],
-        nameToStore);
+    checkInvalid(groundTruth[info.currentModule],
+        info.nameToStore);
   }
 };
 
 // onWrite <~ is called before every write of an object
-const onWrite = (target, name, value, currentModule, parentName,
-    nameToStore) => {
-  checkInvalid(groundTruth[currentModule], parentName);
-  checkInvalid(groundTruth[currentModule], nameToStore);
+const onWrite = (info) => {
+  checkInvalid(groundTruth[info.currentModule], info.parentName);
+  checkInvalid(groundTruth[info.currentModule], info.nameToStore);
 };
 
 // onCallPre <~ is called before the execution of a function
-const onCallPre = (target, thisArg, argumentsList, name, nameToStore,
-    currentModule, declareModule, typeClass) => {
-  if (typeClass === 'module-locals') {
-    checkInvalid(groundTruth[currentModule],
+const onCallPre = (info) => {
+  if (info.typeClass === 'module-locals') {
+    checkInvalid(groundTruth[info.currentModule],
         'require');
-    checkInvalid(groundTruth[currentModule],
-        nameToStore);
+    checkInvalid(groundTruth[info.currentModule],
+        info.nameToStore);
   } else {
-    if (typeClass === 'node-globals') {
-      checkInvalid(groundTruth[declareModule],
-          nameToStore.split('.')[0]);
+    if (info.typeClass === 'node-globals') {
+      checkInvalid(groundTruth[info.declareModule],
+          info.nameToStore.split('.')[0]);
     }
-    checkInvalid(groundTruth[declareModule],
-        nameToStore);
+    checkInvalid(groundTruth[info.declareModule],
+        info.nameToStore);
   }
 };
 

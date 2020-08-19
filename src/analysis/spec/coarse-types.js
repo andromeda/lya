@@ -8,9 +8,8 @@ const updateAnalysisData = (analysisJSON, name, type) => {
   }
 };
 
-const onCallPre = (target, thisArg, argumentsList, name, nameToStore,
-    currentModule, declareModule, typeClass) => {
-  updateAnalysisData(env.analysisResult[currentModule], nameToStore,
+const onCallPre = (info) => {
+  updateAnalysisData(env.analysisResult[info.currentModule], info.nameToStore,
       'function');
 };
 

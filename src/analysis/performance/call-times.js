@@ -16,16 +16,14 @@ const convert = (hrtime) => {
 const toMillis = (a, b) => (a * 1e9 + b) * 1e-6;
 
 // onCallPre <~ is called before the execution of a function
-const onCallPre = (target, thisArg, argumentsList, name, nameToStore,
-    currentModule, declareModule, typeClass) => {
-  storeTime.set(target, process.hrtime());
+const onCallPre = (info) => {
+  storeTime.set(info.target, process.hrtime());
 };
 
 // onCallPost <~ Is call after every execution of a function
-const onCallPost = (target, thisArg, argumentsList, name, nameToStore,
-    currentModule, declareModule, typeClass, result) => {
+const onCallPost = (info) => {
   const level = env.requireLevel;
-  const time = storeTime.get(target);
+  const time = storeTime.get(info.target);
   const diff = process.hrtime(time);
   const thisTime = toMillis(diff[0], diff[1]);
   if (timeCapsule[level]) {
@@ -35,11 +33,11 @@ const onCallPost = (target, thisArg, argumentsList, name, nameToStore,
   }
 
   if (timeCapsule[level+1]) {
-    env.analysisResult[currentModule][nameToStore] = thisTime -
+    env.analysisResult[info.currentModule][info.nameToStore] = thisTime -
       timeCapsule[level+1];
     timeCapsule[level+1] = 0;
   } else {
-    env.analysisResult[currentModule][nameToStore] = thisTime;
+    env.analysisResult[info.currentModule][info.nameToStore] = thisTime;
   }
 };
 

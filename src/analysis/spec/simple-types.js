@@ -11,27 +11,27 @@ const convert = (hrtime) => {
 };
 
 // onCallPre <~ is called before the execution of a function
-const onCallPre = (target, thisArg, argumentsList, name, nameToStore,
-    currentModule, declareModule, typeClass) => {
+const onCallPre = (info) => {
   const types = [];
 
   // From here we get the type of each input argument
   // TODO: Maybe the unique key should the nameToStore?
-  for (let i = 0; i < argumentsList.length; i++) {
-    types[i] = typeof argumentsList[i];
+  for (let i = 0; i < info.argumentsList.length; i++) {
+    types[i] = typeof info.argumentsList[i];
   }
 
-  console.log(chalk.green.bold('Input: '), chalk.yellow(types), nameToStore);
+  console.log(chalk.green.bold('Input: '), chalk.yellow(types),
+      info.nameToStore);
   // NOTE: The one hook could be added here
 };
 
 // onCallPost <~ Is call after every execution of a function
-const onCallPost = (target, thisArg, argumentsList, name, nameToStore,
-    currentModule, declareModule, typeClass, result) => {
+const onCallPost = (info) => {
   // From here we get the result type of the module
-  const type = result !== undefined ? typeof result : 'No result';
+  const type = info.result !== undefined ? typeof result : 'No result';
 
-  console.log(chalk.blue.bold('Output: '), chalk.yellow(type), nameToStore);
+  console.log(chalk.blue.bold('Output: '), chalk.yellow(type),
+      info.nameToStore);
 
   // NOTE: And the other hook here
 };

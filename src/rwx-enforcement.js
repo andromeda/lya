@@ -38,43 +38,41 @@ const checkRWX = (storedCalls, truename, modeGrid) => {
 
 // Analyses provided by LYA.
 // onRead <~ is called before every object is read
-const onRead = (target, name, nameToStore, currentModule, typeClass) => {
-  if (nameToStore != 'global') {
+const onRead = (info) => {
+  if (info.nameToStore != 'global') {
     const pattern = /require[(](.*)[)]/;
-    if (pattern.test(nameToStore)) {
-      checkRWX(groundTruth[currentModule],
-          nameToStore.match(pattern)[0], ['r']);
+    if (pattern.test(info.nameToStore)) {
+      checkRWX(groundTruth[info.currentModule],
+          info.nameToStore.match(pattern)[0], ['r']);
     } else {
-      checkRWX(groundTruth[currentModule],
-          nameToStore.split('.')[0], ['r']);
+      checkRWX(groundTruth[info.currentModule],
+          info.nameToStore.split('.')[0], ['r']);
     }
-    checkRWX(groundTruth[currentModule],
-        nameToStore, ['r']);
+    checkRWX(groundTruth[info.currentModule],
+        info.nameToStore, ['r']);
   }
 };
 
 // onWrite <~ is called before every write of an object
-const onWrite = (target, name, value, currentModule, parentName,
-    nameToStore) => {
-  checkRWX(groundTruth[currentModule], parentName, ['r']);
-  checkRWX(groundTruth[currentModule], nameToStore, ['w']);
+const onWrite = (info) => {
+  checkRWX(groundTruth[info.currentModule], info.parentName, ['r']);
+  checkRWX(groundTruth[info.currentModule], info.nameToStore, ['w']);
 };
 
 // onCallPre <~ is called before the execution of a function
-const onCallPre = (target, thisArg, argumentsList, name, nameToStore,
-    currentModule, declareModule, typeClass) => {
-  if (typeClass === 'module-locals') {
-    checkRWX(groundTruth[currentModule],
+const onCallPre = (info) => {
+  if (info.typeClass === 'module-locals') {
+    checkRWX(groundTruth[info.currentModule],
         'require', ['r', 'x']);
-    checkRWX(groundTruth[currentModule],
-        nameToStore, ['i']);
+    checkRWX(groundTruth[info.currentModule],
+        info.nameToStore, ['i']);
   } else {
-    if (typeClass === 'node-globals') {
-      checkRWX(groundTruth[declareModule],
-          nameToStore.split('.')[0], ['r']);
+    if (info.typeClass === 'node-globals') {
+      checkRWX(groundTruth[info.declareModule],
+          info.nameToStore.split('.')[0], ['r']);
     }
-    checkRWX(groundTruth[declareModule],
-        nameToStore, ['r', 'x']);
+    checkRWX(groundTruth[info.declareModule],
+        info.nameToStore, ['r', 'x']);
   }
 };
 

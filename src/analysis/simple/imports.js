@@ -2,12 +2,12 @@ let env;
 const result = {};
 const fs = require('fs');
 
-const onImport = (caller, callee, name) => {
-  console.log('lya:', caller, 'imports', callee, name);
-  if (!result[caller]) {
-    result[caller] = [];
+const onImport = (info) => {
+  console.log('lya:', info.caller, 'imports', info.callee, info.name);
+  if (!result[info.caller]) {
+    result[info.caller] = [];
   }
-  result[caller].push(callee);
+  result[info.caller].push(info.callee);
 };
 
 const onExit = () => {

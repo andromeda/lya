@@ -117,16 +117,29 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
           null;
 
         if (nameToStore) {
-          hookCheck(policy.onCallPre, target, thisArg, argumentsList,
-              target.name, nameToStore, currentModule,
-              currentName, moduleClass);
+          hookCheck(policy.onCallPre, {
+            target: target,
+            thisArg: thisArg,
+            argumentsList: argumentsList,
+            name: target.name,
+            nameToStore: nameToStore,
+            currentModule: currentModule,
+            declareModule: currentName,
+            typeClass: moduleClass});
         }
         const result = Reflect.apply(...arguments);
 
         if (nameToStore) {
-          hookCheck(policy.onCallPost, target, thisArg, argumentsList,
-              target.name, nameToStore, currentModule,
-              currentName, moduleClass, result);
+          hookCheck(policy.onCallPost, {
+            target: target,
+            thisArg: thisArg,
+            argumentsList: argumentsList,
+            name: target.name,
+            nameToStore: nameToStore,
+            currentModule: currentModule,
+            declareModule: currentName,
+            typeClass: moduleClass,
+            result: result});
         }
 
         return result;
@@ -140,8 +153,12 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
           null;
 
         if (storeName && name) {
-          hookCheck(policy.onRead, target, name, storeName,
-              currentModule, moduleClass);
+          hookCheck(policy.onRead, {
+            target: target,
+            name: name,
+            nameToStore: storeName,
+            currentModule: currentModule,
+            typeClass: moduleClass});
         }
 
         return Reflect.get(...arguments);
@@ -152,8 +169,13 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
           const parentName = methodNames.get(target);
           const nameToStore = globalNames.has(name) ? globalNames.get(name) :
             parentName + '.' + name;
-          hookCheck(policy.onWrite, target, name, value,
-              currentModule, parentName, nameToStore);
+          hookCheck(policy.onWrite, {
+            target: target,
+            name: name,
+            value: value,
+            currentModule: currentModule,
+            parentName: parentName,
+            nameToStore: nameToStore});
           if (parentName === 'global' || typeof value === 'number') {
             globalNames.set(name, nameToStore);
           }
@@ -173,7 +195,11 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
             candidateModule.set(prop, currentName);
             globalNames.set(prop, prop);
           }
-          hookCheck(policy.onHas, target, prop, currentName, nameToStore);
+          hookCheck(policy.onHas, {
+            target: target,
+            prop: prop,
+            currentName: currentName,
+            nameToStore: nameToStore});
         }
 
         return result;
@@ -182,7 +208,11 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
         const currentName = env.moduleName[env.requireLevel];
         const nameToStore = target.name;
         if (target.name !== 'Proxy') {
-          hookCheck(policy.onConstruct, target, args, currentName, nameToStore);
+          hookCheck(policy.onConstruct, {
+            target: target,
+            args: args,
+            currentName: currentName,
+            nameToStore: nameToStore});
         }
 
         // eslint-disable-next-line new-cap
@@ -520,7 +550,10 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     // and then attach it to the hook
     const name = args[0];
     const path = originalFilename.call(this, ...args);
-    hookCheck(policy.onImport, moduleName[env.requireLevel], path, name);
+    hookCheck(policy.onImport, {
+      caller: moduleName[env.requireLevel],
+      callee: path,
+      name: name});
 
     return originalLoad.call(this, ...args);
   };
@@ -587,14 +620,28 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       const nameToStore = objectName.get(target);
       const currModule = moduleName[env.requireLevel];
       const declareModule = moduleName[env.requireLevel];
-      hookCheck(policy.onCallPre, target, thisArg, argumentsList, target.name,
-          nameToStore, currModule, declareModule);
+      hookCheck(policy.onCallPre, {
+        target: target,
+        thisArg: thisArg,
+        argumentsList: argumentsList,
+        name: target.name,
+        nameToStore: nameToStore,
+        currentModule: currModule,
+        declareModule: declareModule,
+        typeClass: 'module-returns'});
 
       const result = Reflect.apply(...arguments);
 
-      hookCheck(policy.onCallPost, target, thisArg, argumentsList,
-          target.name, nameToStore, currModule,
-          declareModule, 'module-returns', result);
+      hookCheck(policy.onCallPost, {
+        target: target,
+        thisArg: thisArg,
+        argumentsList: argumentsList,
+        name: target.name,
+        nameToStore: nameToStore,
+        currentModule: currModule,
+        declareModule: declareModule,
+        typeClass: 'module-returns',
+        result: result});
 
       return result;
     },
@@ -614,7 +661,12 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
             const birthplace = objectPath.get(receiver) ?
                 objectPath.get(receiver) : objectPath.get(target);
             const childName = fatherName + '.' + name;
-            hookCheck(policy.onRead, target, name, childName, currModule);
+            hookCheck(policy.onRead, {
+              target: target,
+              name: name,
+              nameToStore: childName,
+              currentModule: currModule,
+              typeClass: 'module-returns'});
             target[name] = setProxy(target[name], exportHandler, exportType);
             namePathSet(currObject, childName, birthplace);
 
@@ -637,11 +689,21 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
             }
             storePureFunctions.set(target[name], currFunction);
             if (safetyValve.has(name)) {
-              hookCheck(policy.onRead, target, name, parentName, currModule);
+              hookCheck(policy.onRead, {
+                target: target,
+                name: name,
+                nameToStore: parentName,
+                currentModule: currModule,
+                typeClass: 'module-returns'});
               return Reflect.get(...arguments);
             }
             namePathSet(currFunction, parentName, currModule);
-            hookCheck(policy.onRead, target, name, nameToStore, currModule);
+            hookCheck(policy.onRead, {
+              target: target,
+              name: name,
+              nameToStore: nameToStore,
+              currentModule: currModule,
+              typeClass: 'module-returns'});
           } else {
             const key = storePureFunctions.get(currFunction);
             namePathSet(key, parentName, currModule);
@@ -656,7 +718,12 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
           const nameToStore = parentName + '.' + name;
           const currModule = moduleName[env.requireLevel];
           if (!passedOver.has(nameToStore + currModule)) {
-            hookCheck( policy.onRead, target, name, nameToStore, currModule);
+            hookCheck(policy.onRead, {
+              target: target,
+              name: name,
+              nameToStore: nameToStore,
+              currentModule: currModule,
+              typeClass: 'module-returns'});
             passedOver.set(nameToStore + currModule, true);
           }
         }
@@ -669,8 +736,13 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
         const parentName = objectName.get(target);
         const nameToStore = parentName + '.' + name;
         const currModule = moduleName[env.requireLevel];
-        hookCheck(policy.onWrite, target, name, value,
-            currModule, parentName, nameToStore);
+        hookCheck(policy.onWrite, {
+          target: target,
+          name: name,
+          value: value,
+          currentModule: currModule,
+          parentName: parentName,
+          nameToStore: nameToStore});
       }
       return Reflect.set(...arguments);
     },

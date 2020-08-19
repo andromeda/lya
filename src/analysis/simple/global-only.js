@@ -19,17 +19,17 @@ const convert = (hrtime) => {
 };
 
 // onCallPre <~ is called before the execution of a function
-const onCallPre = (target, thisArg, argumentsList, name, nameToStore,
-    currentModule, declareModule, typeClass) => {
-  if (typeClass === 'es-globals' || typeClass === 'node-globals' ) {
-    updateAnalysisData(env.analysisResult[currentModule], nameToStore);
+const onCallPre = (info) => {
+  if (info.typeClass === 'es-globals' || info.typeClass === 'node-globals' ) {
+    updateAnalysisData(env.analysisResult[info.currentModule],
+        info.nameToStore);
   }
 };
 
 // onConstruct <~ Is call before every construct
-const onConstruct = (target, args, currentName, nameToStore) => {
-  updateAnalysisData(env.analysisResult[currentName],
-      nameToStore, ['r', 'x']);
+const onConstruct = (info) => {
+  updateAnalysisData(env.analysisResult[info.currentName],
+      info.nameToStore, ['r', 'x']);
 };
 
 // onExit (toSave == place to save the result) --maybe make it module-local?

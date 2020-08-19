@@ -15,26 +15,24 @@ const updateAnalysisData = (storedCalls, truename, inputType, outputType) => {
 };
 
 // onCallPre <~ is called before the execution of a function
-const onCallPre = (target, thisArg, argumentsList, name, nameToStore,
-    currentModule, declareModule, typeClass) => {
+const onCallPre = (info) => {
   let inputType = '';
-  if (!argumentsList.length) {
+  if (!info.argumentsList.length) {
     inputType += 'no-input';
   } else {
-    for (let i = 0; i < argumentsList.length; i++) {
-      inputType += i + '.' + typeof argumentsList[i] + ' ';
+    for (let i = 0; i < info.argumentsList.length; i++) {
+      inputType += i + '.' + typeof info.argumentsList[i] + ' ';
     }
   }
-  inputStore[nameToStore] = inputType;
+  inputStore[info.nameToStore] = inputType;
 };
 
 // onCallPost <~ Is call after every execution of a function
-const onCallPost = (target, thisArg, argumentsList, name, nameToStore,
-    currentModule, declareModule, typeClass, result) => {
-  const inputType = inputStore[nameToStore];
-  const outputType = result ? typeof result : 'no output';
-  updateAnalysisData(env.analysisResult[currentModule], nameToStore, inputType,
-      outputType);
+const onCallPost = (info) => {
+  const inputType = inputStore[info.nameToStore];
+  const outputType = info.result ? typeof info.result : 'no output';
+  updateAnalysisData(env.analysisResult[info.currentModule], info.nameToStore,
+      inputType, outputType);
 };
 
 // onExit (toSave == place to save the result) --maybe make it module-local?

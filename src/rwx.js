@@ -32,55 +32,55 @@ const updateAnalysisData = (storedCalls, truename, modeGrid) => {
 
 // Analyses provided by LYA.
 // onRead <~ is called before every object is read
-const onRead = (target, name, nameToStore, currentModule, typeClass) => {
-  if (nameToStore !== 'global') {
-    if (pattern.test(nameToStore)) {
-      updateAnalysisData(env.analysisResult[currentModule],
-          nameToStore.match(pattern)[0], ['r']);
+const onRead = (info) => {
+  if (info.nameToStore !== 'global') {
+    if (pattern.test(info.nameToStore)) {
+      updateAnalysisData(env.analysisResult[info.currentModule],
+          info.nameToStore.match(pattern)[0], ['r']);
     } else {
-      updateAnalysisData(env.analysisResult[currentModule],
-          nameToStore.split('.')[0], ['r']);
+      updateAnalysisData(env.analysisResult[info.currentModule],
+          info.nameToStore.split('.')[0], ['r']);
     }
-    updateAnalysisData(env.analysisResult[currentModule],
-        nameToStore, ['r']);
+    updateAnalysisData(env.analysisResult[info.currentModule],
+        info.nameToStore, ['r']);
   }
 };
 
 // onWrite <~ is called before every write of an object
-const onWrite = (target, name, value, currentModule, parentName,
-    nameToStore) => {
-  if (parentName) {
-    updateAnalysisData(env.analysisResult[currentModule], parentName, ['r']);
+const onWrite = (info) => {
+  if (info.parentName) {
+    updateAnalysisData(env.analysisResult[info.currentModule],
+        info.parentName, ['r']);
   }
-  updateAnalysisData(env.analysisResult[currentModule], nameToStore, ['w']);
+  updateAnalysisData(env.analysisResult[info.currentModule],
+      info.nameToStore, ['w']);
 };
 
 // onCallPre <~ is called before the execution of a function
-const onCallPre = (target, thisArg, argumentsList, name, nameToStore,
-    currentModule, declareModule, typeClass) => {
-  if (typeClass === 'module-locals') {
-    updateAnalysisData(env.analysisResult[currentModule],
+const onCallPre = (info) => {
+  if (info.typeClass === 'module-locals') {
+    updateAnalysisData(env.analysisResult[info.currentModule],
         'require', ['r', 'x']);
-    updateAnalysisData(env.analysisResult[currentModule],
-        nameToStore, ['i']);
+    updateAnalysisData(env.analysisResult[info.currentModule],
+        info.nameToStore, ['i']);
   } else {
-    if (typeClass === 'node-globals') {
-      updateAnalysisData(env.analysisResult[declareModule],
-          nameToStore.split('.')[0], ['r']);
+    if (info.typeClass === 'node-globals') {
+      updateAnalysisData(env.analysisResult[info.declareModule],
+          info.nameToStore.split('.')[0], ['r']);
     }
-    updateAnalysisData(env.analysisResult[declareModule],
-        nameToStore, ['r', 'x']);
-    if (pattern.test(nameToStore)) {
-      updateAnalysisData(env.analysisResult[currentModule],
-          nameToStore.match(pattern)[0], ['r']);
+    updateAnalysisData(env.analysisResult[info.declareModule],
+        info.nameToStore, ['r', 'x']);
+    if (pattern.test(info.nameToStore)) {
+      updateAnalysisData(env.analysisResult[info.currentModule],
+          info.nameToStore.match(pattern)[0], ['r']);
     }
   }
 };
 
 // onConstruct <~ Is call before every construct
-const onConstruct = (target, args, currentName, nameToStore) => {
-  updateAnalysisData(env.analysisResult[currentName],
-      nameToStore, ['r', 'x']);
+const onConstruct = (info) => {
+  updateAnalysisData(env.analysisResult[info.currentName],
+      info.nameToStore, ['r', 'x']);
 };
 
 // onExit (toSave == place to save the result) --maybe make it module-local?

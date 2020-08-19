@@ -23,48 +23,45 @@ const addAccessValues = (table, fuctionName, name) => {
   table[fuctionName].add(name);
 };
 
-const onRead = (target, name, nameToStore, currentModule, typeClass) => {
+const onRead = (info) => {
   addAccessValues(accessTable, currentFunction[currentFunction.length-1],
-      nameToStore);
+      info.nameToStore);
 };
 
-const onWrite = (target, name, value, currentModule, parentName,
-    nameToStore) => {
-  const nameCheck = '.' + name;
-  if (nameToStore.includes(nameCheck)) {
-    nameToStore = nameToStore.replace(nameCheck, '');
+const onWrite = (info) => {
+  const nameCheck = '.' + info.name;
+  if (info.nameToStore.includes(nameCheck)) {
+    info.nameToStore = info.nameToStore.replace(nameCheck, '');
   }
   addAccessValues(accessTable, currentFunction[currentFunction.length-1],
-      nameToStore);
+      info.nameToStore);
 };
 
-const onCallPre = (target, thisArg, argumentsList, name, nameToStore,
-    currentModule, declareModule, typeClass) => {
-  if (typeClass !== 'module-returns') {
+const onCallPre = (info) => {
+  if (info.typeClass !== 'module-returns') {
     return;
   }
 
   const inputType = [];
-  currentFunction.push(nameToStore);
-  if (!argumentsList.length) {
+  currentFunction.push(info.nameToStore);
+  if (!info.argumentsList.length) {
     inputType.push('no-input');
   } else {
-    for (let i = 0; i < argumentsList.length; i++) {
-      inputType.push(typeof argumentsList[i]);
+    for (let i = 0; i < info.argumentsList.length; i++) {
+      inputType.push(typeof info.argumentsList[i]);
     }
   }
-  types[nameToStore] = inputType;
+  types[info.nameToStore] = inputType;
 };
 
-const onCallPost = (target, thisArg, argumentsList, name, nameToStore,
-    currentModule, declareModule, typeClass, result) => {
-  if (typeClass !== 'module-returns') {
+const onCallPost = (info) => {
+  if (info.typeClass !== 'module-returns') {
     return;
   }
-  types[nameToStore].push(result ? typeof result : 'no output');
+  types[info.nameToStore].push(info.result ? typeof info.result : 'no output');
   const values = accessTable[currentFunction[currentFunction.length-1]];
-  updateAnalysisData(env.analysisResult[currentModule], nameToStore,
-      types[nameToStore], values);
+  updateAnalysisData(env.analysisResult[info.currentModule], info.nameToStore,
+      types[info.nameToStore], values);
   currentFunction.pop();
 };
 
