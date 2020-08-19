@@ -1,5 +1,3 @@
-const diff = require('arr-diff');
+let math = require("./deps/math.js");
 
-diff(['x', 'b', 'c', 'e', 'y'], ['b', 'x', 'e']);
-diff(['x', 'x'], ['a', 'b', 'c']);
-diff(['x'], ['a', 'b', 'c']);
+math.add(1, 2);
