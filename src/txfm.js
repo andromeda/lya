@@ -417,6 +417,8 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     return group;
   };
 
+  // We use this function to make each function a unique object
+  // We use this in order to create unique keys for WeakMap
   const getClone = (obj, name) => {
     const _obj = function(...args) {
       if (new.target) {
