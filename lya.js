@@ -10,6 +10,7 @@ const arg = require('arg');
 const pkg = require('./package.json');
 const lya = require('./src/txfm.js');
 const conf = require('./src/config.js').settings;
+const preset = require('./src/config.js').preset; 
 
 /* eslint-disable max-len */
 const h = `Analyze JavaScript programs dynamically, to extract information or enforce invariants.
@@ -24,8 +25,8 @@ lya <fl> [hpVvvv] [a=<a.js>] [d=<n>] [{module, context, prop}-{include, exclude}
 
   -d,   --depth <n>:          Object depth to analyze (default 3)
   -a,   --analysis <a.js>:    The program analysis to execute (see below)
-  -p,   --print [<out, err>]: Stream to output results (defaults to file, see above)
-  -s,   --save <b.json>:      Stream output to a file (path or filename)
+  -f,   --file <b.json>:      File/path to save results; defaults to 'lya.json'
+  -p,   --print [<out, err>]: Stream to output results (defaults to file)
   
   --module-exclude <m>:       Comma-separated list of module IDs (absolute fs paths) to be excluded from the analysis
   --module-include <m>:       Comma-separated list of module IDs (absolute fs paths) to be included (assumes module-exclude='*')
@@ -43,17 +44,31 @@ lya <fl> [hpVvvv] [a=<a.js>] [d=<n>] [{module, context, prop}-{include, exclude}
   * user-globals, g:          User-defined globals accessed with a 'global' prefix, e.g., 'global.y = 3'
   * with-globals, w:          User-defined globals accessed without a prefix, e.g., 'y = 3' (expensive to track)
 
-  Analyses can be a built-in or an absolute path to a user-defined analysis, and focus on the dynamic analysis target.
-  Each analysis reads or writes its invariants in a file, whose path defaults to "./dynamic.json" but can be overwritten via  '-f <f>'.
-  The full set of analyses can be found
+  Analyses can be one of the build-in options below, or any absolute file-system path pointing to a user-defined analysis.
+  Each analysis reads/writes invariants from/to a file, whose path defaults to "./lya.json" but can be overwritten via  '-f <f>'.
 
-  * allow_deny:               Extracts an access policy
-  * allow_deny_enforcement:   Enforces an allow-deny access policy
-  * call_time:                Extract call times for all function called
-  * call_freq:                Extract call frequencies for all functions and fields part of the analysis target
-  * global_only:              Capture accesses to global-only variables
-  * term_index:               Calculate TF-IDF metrics on source code
+  Simple
+  * imports:                  Extract dynamic dependency graph
+  * global-only:              Extract accesses to global-only variables
+  * sample                    No-op analysis used as a starting point
+  * term-index:               Calculate TF-IDF metrics on source code
+  * uncomment:                Uncomment code
+
+  Access
+  * on-off:                   Extracts an allow-deny access policy
+  * on-off-enforce:           Enforces an allow-deny access policy
+
+  Performance
+  * call-time:                Extract call times for all functions called
+  * call-freq:                Extract call frequencies for all functions and fields part of the analysis target
+
+  Partial Specification
+  * io
+  * io-effects
+
 `;
+// TODO: get analyses programmatically
+
 /* eslint-enable max-len */
 
 const help = () => {
@@ -81,7 +96,7 @@ const template = {
   '--depth': Number,
   '--analysis': String,
   '--print': Boolean,
-  '--save': String,
+  '--file': String,
 
   '--module-exclude': String,
   '--module-include': String,
@@ -98,7 +113,7 @@ const template = {
   '-d': '--depth',
   '-a': '--analysis',
   '-p': '--print',
-  '-s': '--save',
+  '-f': '--file',
 };
 
 let args;
@@ -124,15 +139,21 @@ if (args['--depth']) {
 }
 
 if (args['--analysis']) {
-  conf.analysis = path.join(__dirname, args['--analysis']);
+  let preset = args['--analysis'].replace('-', '_').toUpperCase();
+  if (Object.keys(conf.preset).contains(preset)) {
+    conf.analysis = conf.preset[preset];
+  } else {
+    conf.analysis = path.join(__dirname, args['--analysis']);
+  }
 }
 
 if (args['--print']) {
   conf.print = args['--print'];
 }
 
-if (args['--save']) {
-  conf.SAVE_RESULTS = path.join(__dirname, args['--save']);
+if (args['--file']) {
+  conf.SAVE_RESULTS = path.join(__dirname, args['--file']);
+  // TODO this should be the same if loading results
 }
 
 if (args['--module-include']) {
@@ -169,14 +190,11 @@ let filePath;
 switch (args['_'].length) {
   case 0:
     console.log('You must specify a file name');
-    console.log('Exiting..');
     process.exit(-1);
-    break;
   case 1:
     filePath = process.cwd() + path.sep + args['_'][0];
     if (!fs.existsSync(filePath)) {
-      console.log('File does not exists');
-      console.log('Exiting..');
+      console.log('File does not exist');
       process.exit(-1);
     }
     break;
