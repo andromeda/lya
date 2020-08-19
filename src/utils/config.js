@@ -12,7 +12,7 @@ const preset = {
   ON_OFF_ENFORCEMENT: pathJoin(__dirname, 'on-off-enforcement.js'),
   PROFILING: pathJoin(__dirname, 'profiling.js'),
   PROFILING_RELATIVE: pathJoin(__dirname, 'profiling-relative.js'),
-  RWX: pathJoin(__dirname, 'rwx.js'),
+  RWX: pathJoin(__dirname, '../rwx.js'),
   RWX_CHECKING: pathJoin(__dirname, 'rwx-checking.js'),
   RWX_ENFORCEMENT: pathJoin(__dirname, 'rwx-enforcement.js'),
   RWX_PERFORMANCE: pathJoin(__dirname, 'rwx-performance.js'),
