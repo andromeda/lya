@@ -27,6 +27,7 @@ lya <fl> [hpVvvv] [a=<a.js>] [d=<n>] [{module, context, prop}-{include, exclude}
   -a,   --analysis <a.js>:    The program analysis to execute (see below)
   -f,   --file <b.json>:      File/path to save results; defaults to 'lya.json'
   -p,   --print [<out, err>]: Stream to output results (defaults to file)
+  -o,   --only-prologue:      Print only the config prologue
   
   --module-exclude <m>:       Comma-separated list of module IDs (absolute fs paths) to be excluded from the analysis
   --module-include <m>:       Comma-separated list of module IDs (absolute fs paths) to be included (assumes module-exclude='*')
@@ -97,6 +98,7 @@ const template = {
   '--analysis': String,
   '--print': Boolean,
   '--file': String,
+  '--only-prologue': Boolean,
 
   '--module-exclude': String,
   '--module-include': String,
@@ -114,6 +116,7 @@ const template = {
   '-a': '--analysis',
   '-p': '--print',
   '-f': '--file',
+  '-o': '--only-prologue',
 };
 
 let args;
@@ -139,9 +142,9 @@ if (args['--depth']) {
 }
 
 if (args['--analysis']) {
-  let preset = args['--analysis'].replace('-', '_').toUpperCase();
-  if (Object.keys(conf.preset).contains(preset)) {
-    conf.analysis = conf.preset[preset];
+  let p = args['--analysis'].replace('-', '_').toUpperCase();
+  if (Object.keys(preset).includes(p)) {
+    conf.analysis = preset[p];
   } else {
     conf.analysis = path.join(__dirname, args['--analysis']);
   }
@@ -203,5 +206,10 @@ switch (args['_'].length) {
     process.exit(-1);
 }
 
+// print prologue
+if (args['--only-prologue']) {
+  console.log(conf)
+  process.exit(0);
+}
 lya.configRequire(require, conf);
 require(filePath);
