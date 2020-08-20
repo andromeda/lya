@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 
 if (require.main !== module) {
-  return require('./src/txfm.js');
+  return require('./src/core.js');
 }
 
 const fs = require('fs');
 const path = require('path');
 const arg = require('arg');
 const pkg = require('./package.json');
-const lya = require('./src/txfm.js');
-const conf = require('./src/config.js').settings;
-const preset = require('./src/config.js').preset; 
+const lya = require('./src/core.js');
+const conf = require('./src/utils/config.js').settings;
+const preset = require('./src/utils/config.js').preset;
 
 /* eslint-disable max-len */
 const h = `Analyze JavaScript programs dynamically, to extract information or enforce invariants.
