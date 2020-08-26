@@ -1,7 +1,7 @@
-//const fs = require('fs');
-let m1 = require("./m1.js");
-let m2 = require("./m2.js");
+const fs = require('fs');
 
-if (m1.fst === [m2.fst, m1.fst, m2.fst]) {
-  x = 3;
-}
+const add = (a, b) => a + b;
+console.log(add(1, 3));
+
+module.exports = add;
+

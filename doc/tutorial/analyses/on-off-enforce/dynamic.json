@@ -1,0 +1,12 @@
+{
+  "/home/grigorisntousakis/lya/lya.js": {},
+  "/home/grigorisntousakis/lya/doc/tutorial/analyses/on-off-enforce/main.js": {
+    "require": true,
+    "require('fs')": true,
+    "Array": false,
+    "console": true,
+    "console.log": true,
+    "module": true,
+    "module.exports": true
+  }
+}
