@@ -18,6 +18,9 @@ const onExit = (intersection, candidateModule) => {
     fs.writeFileSync(env.conf.SAVE_RESULTS,
         JSON.stringify(env.analysisResult, null, 2), 'utf-8');
   }
+  if (env.conf.print) {
+    console.log(JSON.stringify(env.analysisResult, null, 2));
+  }
 };
 
 module.exports = (e) => {
