@@ -70,7 +70,7 @@ const onExit = () => {
 
 module.exports = (e) => {
   env = e;
-  groundTruth = env.conf.rules? env.conf.rules : getAnalysisData();
+  groundTruth = env.conf.rules? require(env.conf.rules) : getAnalysisData();
   return {
     onRead: onRead,
     onCallPre: onCallPre,
