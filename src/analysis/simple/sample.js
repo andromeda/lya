@@ -1,3 +1,6 @@
+// The local env variable
+// let env;
+
 // This hook is called each time we import a module
 // and lets the developer have access to the source code
 // source <~ the source code of the imported module
