@@ -26,6 +26,7 @@ lya <fl> [hpVvvv] [a=<a.js>] [d=<n>] [{module, context, prop}-{include, exclude}
   -d,   --depth <n>:          Object depth to analyze (default 3)
   -a,   --analysis <a.js>:    The program analysis to execute (see below)
   -f,   --file <b.json>:      File/path to save results; defaults to 'lya.json'
+  -r,   --rules <b.json>:     File/path to enforcement file
   -p,   --print [<out, err>]: Stream to output results (defaults to file)
   -o,   --only-prologue:      Print only the config prologue
   
@@ -98,6 +99,7 @@ const template = {
   '--analysis': String,
   '--print': Boolean,
   '--file': String,
+  '--rules': String,
   '--only-prologue': Boolean,
 
   '--module-exclude': String,
@@ -116,6 +118,7 @@ const template = {
   '-a': '--analysis',
   '-p': '--print',
   '-f': '--file',
+  '-r': '--rules',
   '-o': '--only-prologue',
 };
 
@@ -156,6 +159,11 @@ if (args['--print']) {
 
 if (args['--file']) {
   conf.SAVE_RESULTS = path.join(__dirname, args['--file']);
+  // TODO this should be the same if loading results
+}
+
+if (args['--rules']) {
+  conf.rules = path.join(__dirname, args['--rules']);
   // TODO this should be the same if loading results
 }
 

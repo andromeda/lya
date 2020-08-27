@@ -20,7 +20,7 @@ const preset = {
   STAR_CHECK: pathJoin(__dirname, 'star-check.js'),
   SUB_TYPES: pathJoin(__dirname, 'sub-types.js'),
   TERM_INDEX: pathJoin(__dirname, '../analysis/simple/term-index.js'),
-  UCOMMENT: pathJoin(__dirname, '../analysis/simple/uncomment.js'),
+  UNCOMMENT: pathJoin(__dirname, '../analysis/simple/uncomment.js'),
 };
 
 const conf = {
