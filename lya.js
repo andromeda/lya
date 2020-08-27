@@ -64,8 +64,8 @@ lya <fl> [hpVvvv] [a=<a.js>] [d=<n>] [{module, context, prop}-{include, exclude}
   * call-freq:                Extract call frequencies for all functions and fields part of the analysis target
 
   Partial Specification
-  * io
-  * io-effects
+  * io                        Extract a base type signature every module field
+  * io-effects                Extract a module type signature that includes effects
 
 `;
 // TODO: get analyses programmatically

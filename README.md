@@ -4,23 +4,21 @@ Mailing lists: [Commits](lya-commits@googlegroups.com) | [Discussion](lya-discus
 
 ## What's Lya?
 
-Lya is a coarse-grained dynamic analysis framework. At runtime, it fractures the
-application  at  the  boundaries  of libraries,  transforms  their  context  and
-interfaces  to insert  interposition  wrappers, and  recombines  them back  into
-the  original structure.  Interposition  wrappers have  full  visibility at  any
-interaction  that  crosses  a  boundary---including  global  variables,  runtime
-primitives, access to the process's  environment, etc. This enables powerful but
-inexpensive analyses that  answer questions about the  security, performance, or
-general behavior of the program.
+Lya is a coarse-grained dynamic analysis framework that bolts onto a conventional production runtime as a library.
+Coarse-grained means that analyses with less detail than conventional frameworks but operates at a much lower overhead—enabling always-on operation on production environments.
+Despite operating at a coarser-than-typical granularity, it still allows for useful analyses.
+Examples include identifying security vulnerabilities, highlighting performance bottlenecks, and applying corrective actions.
+
+## Who should be interested?
 
 Programmers  interested  in  Lya  fall   under  two  categories.  The  first  is
 programmers who want to  use one of the available analyses  to gain insight into
 their  application.  These  can  install  and configure  Lya  with  an  existing
-analysis---for more information see [how to use lya](how-to-use-Lya) below.
+analysis—for more information see [how to use lya](how-to-use-Lya) below.
 
 The second  is programmers who want  to write their own  analyses, achievable by
 providing a few methods and parameters; in our experience, powerful analyses can
-be expressed in only  a few lines of code---for more info, see  [how to write an
+be expressed in only  a few lines of code—for more info, see  [how to write an
 analysis](how-to-write-an-analysis) below.
 
 ## Installation
@@ -54,7 +52,7 @@ docker start -i "name of xxxxx"
 
 #### How to Use Lya?
 
-Then, add lya _as  a first import at the top-level  file_ in your project---that
+Then, add lya _as  a first import at the top-level  file_ in your project—that
 is,  almost always  Lya  has to  be  the first  package to  be  loaded. One  can
 configure  several parameters,  including  use  any of  the  predefined list  of
 analyses. For example:
@@ -83,6 +81,6 @@ Their details are provided in [doc](./doc).
 
 * [ICFP Tutorial Material](./doc/tutorial/)
 * [Configuring and Using Lya](./doc/config.md)
-* [Developing Analyses](./doc/develop.md)
+* [Developing Analyses](./doc/dev.md)
 * [Contributing](./doc/contrib.md)
 
