@@ -1,3 +1,5 @@
+//dbc = require("./secret/dbc.json");
+
 var dispatch = (obj, res) => {
   console.log(obj)
 }

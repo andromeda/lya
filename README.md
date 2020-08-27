@@ -50,7 +50,9 @@ docker start -i "name of xxxxx"
 
 **FIXME**
 
-## How to Use Lya?
+## Quick Start
+
+#### How to Use Lya?
 
 Then, add lya _as  a first import at the top-level  file_ in your project---that
 is,  almost always  Lya  has to  be  the first  package to  be  loaded. One  can
@@ -70,8 +72,17 @@ require("./main.js");
 The configuration above first configures running the `ON_OFF` analysis, and saves the results in `./dynamic.json`. 
 For more configuration options and details, see the [configuration docs]().
 
-## How to Create a New  Analysis?
+#### How to Create a New  Analysis?
 
 Lya expects the  developer of a new  analysis to provide a few  methods that Lya
 will hook  across all modules. It  supports several methods, but  a useful analysis
-can be written with any subset of them. Example methods include `sourceTransform`, `onImport`, `onRead`.. Their details are provided in [doc](./doc).
+can be written with any subset of them. Example methods include `sourceTransform`, `onImport`, and `onRead`.
+Their details are provided in [doc](./doc).
+
+## Documentation
+
+* [ICFP Tutorial Material](./doc/tutorial/)
+* [Configuring and Using Lya](./doc/config.md)
+* [Developing Analyses](./doc/develop.md)
+* [Contributing](./doc/contrib.md)
+
