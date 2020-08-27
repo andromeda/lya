@@ -14,12 +14,12 @@ Examples include identifying security vulnerabilities, highlighting performance 
 Programmers  interested  in  Lya  fall   under  two  categories.  The  first  is
 programmers who want to  use one of the available analyses  to gain insight into
 their  application.  These  can  install  and configure  Lya  with  an  existing
-analysis—for more information see [how to use lya](how-to-use-Lya) below.
+analysis—for more information see [how to use lya](#how-to-use-Lya) below.
 
 The second  is programmers who want  to write their own  analyses, achievable by
 providing a few methods and parameters; in our experience, powerful analyses can
 be expressed in only  a few lines of code—for more info, see  [how to write an
-analysis](how-to-write-an-analysis) below.
+analysis](#how-to-write-an-analysis) below.
 
 ## Installation
 
@@ -68,16 +68,16 @@ require("./main.js");
 ```
 
 The configuration above first configures running the `ON_OFF` analysis, and saves the results in `./dynamic.json`. 
-For more configuration options and details, see the [configuration docs]().
+For more configuration options and details, see the [configuration docs](./doc/config.md).
 
 #### How to Create a New  Analysis?
 
 Lya expects the  developer of a new  analysis to provide a few  methods that Lya
 will hook  across all modules. It  supports several methods, but  a useful analysis
 can be written with any subset of them. Example methods include `sourceTransform`, `onImport`, and `onRead`.
-Their details are provided in [doc](./doc).
+Their details are provided in [doc](./doc/dev.md).
 
-## Documentation
+## Docs
 
 * [ICFP Tutorial Material](./doc/tutorial/)
 * [Configuring and Using Lya](./doc/config.md)
