@@ -158,12 +158,12 @@ if (args['--print']) {
 }
 
 if (args['--file']) {
-  conf.SAVE_RESULTS = path.join(__dirname, args['--file']);
+  conf.SAVE_RESULTS = path.join(process.cwd(), args['--file']);
   // TODO this should be the same if loading results
 }
 
 if (args['--rules']) {
-  conf.rules = path.join(__dirname, args['--rules']);
+  conf.rules = path.join(process.cwd(), args['--rules']);
   // TODO this should be the same if loading results
 }
 
