@@ -149,7 +149,13 @@ if (args['--analysis']) {
   if (Object.keys(preset).includes(p)) {
     conf.analysis = preset[p];
   } else {
-    conf.analysis = path.join(__dirname, args['--analysis']);
+    if (args['--analysis'].startsWith('/')) {
+      conf.analysis = path.resolve(args['--analysis']);
+      // console.log(conf.analysis)
+    } else {
+      conf.analysis = path.join(process.cwd(), args['--analysis']);
+      // console.log(conf.analysis)
+    }
   }
 }
 
