@@ -48,9 +48,13 @@ Join us on [Zoom](https://us04web.zoom.us/j/73421488949?pwd=L2xDOXJiK3NobWxrbUtE
 * [Nikos Vasilakis](https://github.com/nvasilakis) (Massachusetts Institute of Technology)
 * [Grigoris Ntousakis](http://github.com/gntousakis) (TU Crete)
 
-## Tools and Community
+## Tools 
+
+  Ideally, use [Node 8.9.4](https://nodejs.org/dist/v8.9.4/)
 
   Installation: `npm i -g @andromeda/lya`.
+
+## Community
 
   GitHub Project: [github.com/andromeda/lya](https://github.com/andromeda/lya)
 
