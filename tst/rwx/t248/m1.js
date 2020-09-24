@@ -1,2 +1,0 @@
-parseInt.length = {};
-parseInt.name = {};

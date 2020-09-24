@@ -1,2 +1,0 @@
-escape.length = {};
-escape.name = {};

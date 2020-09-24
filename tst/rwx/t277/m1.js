@@ -1,2 +1,0 @@
-new Proxy({}, {});
-Proxy.revocable({}, {});

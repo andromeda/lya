@@ -1,9 +1,0 @@
-let lya = require("../../../src/core.js");
-let conf = {
-  analysis: lya.preset.STAR_CHECK,
-  rules: require("path").join(__dirname, "GROUND_TRUTH.json"),
-  printResults: true,
-  appendStats: "../stats.txt",
-};
-lya.configRequire(require, conf);
-require("./main.js");

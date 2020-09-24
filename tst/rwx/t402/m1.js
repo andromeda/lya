@@ -1,2 +1,0 @@
-valueOf.length = {};
-valueOf.name = {};

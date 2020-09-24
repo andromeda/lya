@@ -1,2 +1,0 @@
-propertyIsEnumerable.length = {};
-propertyIsEnumerable.name = {};
