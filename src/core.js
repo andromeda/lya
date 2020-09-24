@@ -75,6 +75,19 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       path: objPath,
     };
   };
+
+  const conditionCheck = (name, check, condition) => {
+    if (check !== null) {
+      if (check !== undefined) {
+        if (check.includes(name) === condition) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  };
+
   // We make a test on fragment
   const env = {
     conf: lyaConfig,
@@ -234,7 +247,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   };
   // We wrap the global variable in a proxy
   const createGlobalPr = () => {
-    if (!lyaConfig.context.include.includes('user-globals')) {
+    if (conditionCheck('user-globals', lyaConfig.context.include, false)) {
       return global;
     }
 
@@ -268,9 +281,10 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     }
     methodNames.set(localCopy, moduleInputNames[count]);
     objectPath.set(localCopy, moduleName[env.requireLevel]);
-    if (!lyaConfig.context.include.includes('module-locals')) {
+    if (conditionCheck('module-locals', lyaConfig.context.include, false)) {
       return localCopy;
     }
+
     const handler = createHandler('module-locals');
     return setProxy(localCopy, {
       apply: handler.apply,
@@ -364,9 +378,10 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 
   const createGlobal = (name) => {
     if (global[name] !== undefined) {
-      if (!lyaConfig.context.include.includes('node-globals')) {
+      if (conditionCheck('node-globals', lyaConfig.context.include, false)) {
         return global[name];
       }
+
       const depth = lyaConfig.depth;
       stopLoops = new WeakMap();
       const proxyObj = proxyWrap(global[name], createHandler('node-globals'),
@@ -487,18 +502,6 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     flattenAndSkip(['node'], 'locals');
   };
 
-  const moduleCheck = (name, check, condition) => {
-    if (check !== null) {
-      if (check !== undefined) {
-        if (check.includes(name) === condition) {
-          return true;
-        }
-      }
-    }
-
-    return false;
-  };
-
   // extend wrap to take additional argument
   let originalScript;
   Module.wrap = (script) => {
@@ -527,8 +530,8 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       console.log(code);
     }
 
-    if (moduleCheck(options['filename'], lyaConfig.modules.include, false) ||
-      moduleCheck(options['filename'], lyaConfig.modules.excludes, true)) {
+    if (conditionCheck(options['filename'], lyaConfig.modules.include, false) ||
+    conditionCheck(options['filename'], lyaConfig.modules.excludes, true)) {
       if (env.requireLevel !== 0) {
         env.requireLevel++;
         moduleName[env.requireLevel] = options['filename'];
@@ -591,10 +594,10 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     moduleId = importName;
     let moduleExports = originalRequire.apply(this, args);
 
-    if (moduleCheck(moduleName[env.requireLevel],
+    if (conditionCheck(moduleName[env.requireLevel],
         lyaConfig.modules.include, false) ||
-      moduleCheck(moduleName[env.requireLevel],
-          lyaConfig.modules.excludes, true)) {
+        conditionCheck(moduleName[env.requireLevel],
+            lyaConfig.modules.excludes, true)) {
       reduceLevel(importName);
       return moduleExports;
     }
@@ -605,9 +608,10 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
           type !== 'number' && type !== 'string') {
       if (!objectName.has(moduleExports)) {
         setNamePath(type, moduleExports, importName);
-        if (lyaConfig.context.include.includes('module-returns')) {
+        if (conditionCheck('module-returns', lyaConfig.context.include, true)) {
           moduleExports = setProxy(moduleExports, exportHandler, type);
         }
+
         reduceLevel(importName);
       } else {
         moduleExports = setProxy(moduleExports, exportHandler, type);
@@ -692,7 +696,8 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
 
           if (!withProxy.has(target[name])) {
             Object.defineProperty(currFunction, 'name', {value: name});
-            if (lyaConfig.context.include.includes('module-returns')) {
+            if (conditionCheck('module-returns',
+                lyaConfig.context.include, true)) {
               target[name] = setProxy(currFunction, {
                 apply: createHandler('module-returns').apply,
               }, exportType);
