@@ -487,6 +487,18 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     flattenAndSkip(['node'], 'locals');
   };
 
+  const moduleCheck = (name, check, condition) => {
+    if (check !== null) {
+      if (check !== undefined) {
+        if (check.includes(name) === condition) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  };
+
   // extend wrap to take additional argument
   let originalScript;
   Module.wrap = (script) => {
@@ -515,10 +527,8 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
       console.log(code);
     }
 
-    if (lyaConfig.modules.include!== null &&
-      !lyaConfig.modules.include.includes(options['filename']) ||
-      (lyaConfig.modules.excludes!== null &&
-      lyaConfig.modules.excludes.includes(options['filename']))) {
+    if (moduleCheck(options['filename'], lyaConfig.modules.include, false) ||
+      moduleCheck(options['filename'], lyaConfig.modules.excludes, true)) {
       if (env.requireLevel !== 0) {
         env.requireLevel++;
         moduleName[env.requireLevel] = options['filename'];
@@ -581,10 +591,10 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     moduleId = importName;
     let moduleExports = originalRequire.apply(this, args);
 
-    if (lyaConfig.modules.include !== null &&
-      !lyaConfig.modules.include.includes(moduleName[env.requireLevel]) ||
-      (lyaConfig.modules.excludes!== null &&
-      lyaConfig.modules.excludes.includes(moduleName[env.requireLevel]))) {
+    if (moduleCheck(moduleName[env.requireLevel],
+        lyaConfig.modules.include, false) ||
+      moduleCheck(moduleName[env.requireLevel],
+          lyaConfig.modules.excludes, true)) {
       reduceLevel(importName);
       return moduleExports;
     }
