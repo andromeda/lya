@@ -1,8 +1,8 @@
 {
   "name": "@andromeda/lya",
-  "version": "0.0.14",
+  "version": "0.0.17",
   "description": "Library-oriented Dynamic Analysis",
-  "main": "src/txfm.js",
+  "main": "src/core.js",
   "scripts": {
     "all": "npm run l && npm run t",
     "lint": "./node_modules/eslint/bin/eslint.js ./src",

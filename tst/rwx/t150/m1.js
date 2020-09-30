@@ -1,2 +1,0 @@
-hasOwnProperty.length = {};
-hasOwnProperty.name = {};

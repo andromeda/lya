@@ -1,2 +1,0 @@
-unescape.length = {};
-unescape.name = {};

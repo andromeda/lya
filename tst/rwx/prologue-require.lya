@@ -1,4 +1,0 @@
-let lya = require("../../../src/core.js");
-lya.configRequire(require, {analysis: lya.preset.PRINT_REQUIRE});
-require("./main.js");
-

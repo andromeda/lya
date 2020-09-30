@@ -1,2 +1,0 @@
-isPrototypeOf.length = {};
-isPrototypeOf.name = {};

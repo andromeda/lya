@@ -5,7 +5,7 @@
 ##
 
 echo '>>>' $(pwd)
-for d in export-types imports profiling rwx; do
+for d in export-types imports profiling; do
   cd $d
   echo '>>>' $(pwd)
   ./run-dynamic.sh

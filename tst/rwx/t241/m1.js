@@ -1,2 +1,0 @@
-parseFloat.length = {};
-parseFloat.name = {};

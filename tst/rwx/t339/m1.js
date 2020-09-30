@@ -1,2 +1,0 @@
-toLocaleString.length = {};
-toLocaleString.name = {};

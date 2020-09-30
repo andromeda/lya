@@ -1,2 +1,0 @@
-isNaN.length = {};
-isNaN.name = {};
