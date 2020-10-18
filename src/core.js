@@ -23,7 +23,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   let safetyValve = ['toString', 'valueOf', 'prototype', 'name', 'children'];
 
   // This holds the string of the transformations inside modules
-  const declaration = (lyaConfig.context.enableWith === false) ? 'var' : 'let';
+  const declaration = (lyaConfig.enableWith === false) ? 'var' : 'let';
   let prologue = '';
 
   // WeakMaps to store the name and the path for every object value
@@ -417,7 +417,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     passJSONFile(setDeclaration, defaultNames.globals);
     prologue = declaration + ' global = localGlobal["proxyGlobal"]\n' +
       prologue;
-    prologue = lyaConfig.context.enableWith ? 'with (withGlobal) {\n' +
+    prologue = lyaConfig.enableWith ? 'with (withGlobal) {\n' +
       prologue : prologue;
     return prologue;
   };
@@ -515,7 +515,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
         script = returnScript;
       }
     }
-    script = lyaConfig.context.enableWith ? getPrologue() + script + '\n}' :
+    script = lyaConfig.enableWith ? getPrologue() + script + '\n}' :
       getPrologue() + script;
     const wrappedScript = originalWrap(script).replace('dirname)',
         'dirname, localGlobal, withGlobal)');

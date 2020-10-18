@@ -29,6 +29,7 @@ lya <fl> [hpVvvv] [a=<a.js>] [d=<n>] [{module, context, prop}-{include, exclude}
   -r,   --rules <b.json>:     File/path to enforcement file
   -p,   --print [<out, err>]: Stream to output results (defaults to file)
   -o,   --only-prologue:      Print only the config prologue
+  -w,   --enable-with	      Enable with functionality
   
   --module-exclude <m>:       Comma-separated list of module IDs (absolute fs paths) to be excluded from the analysis
   --module-include <m>:       Comma-separated list of module IDs (absolute fs paths) to be included (assumes module-exclude='*')
@@ -101,6 +102,7 @@ const template = {
   '--file': String,
   '--rules': String,
   '--only-prologue': Boolean,
+  '--enable-with': Boolean,
 
   '--module-exclude': String,
   '--module-include': String,
@@ -120,6 +122,7 @@ const template = {
   '-f': '--file',
   '-r': '--rules',
   '-o': '--only-prologue',
+  '-w': '--enable-with',
 };
 
 let args;
@@ -220,10 +223,15 @@ switch (args['_'].length) {
     process.exit(-1);
 }
 
+if (args['--enable-with']) {
+  conf.enableWith = true;
+}
+
 // print prologue
 if (args['--only-prologue']) {
   console.log(conf)
   process.exit(0);
 }
+
 lya.configRequire(require, conf);
 require(filePath);

@@ -23,8 +23,8 @@ const conf = {
   printCode: false,
   depth: 3,
   analysis: preset.ON_OFF,
+  enableWith: false,
   context: {
-    enableWith: true,
     include: [
       'user-globals',
       'es-globals',
