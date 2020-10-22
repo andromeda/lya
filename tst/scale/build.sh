@@ -5,19 +5,17 @@ PRE="_"
 clone(){
   dir=$1
   cd packages
-  
-
 
   git clone $dir 
   cd "$(basename "$1" .git)"
-  hash= git log --before="4 year ago" -n 1  --format="%H"
+  hash=$(git log --before="4 year ago" -n 1  --format="%H")
   git reset $hash
   git reset --soft HEAD@{1}
   git commit -m "Revert"
   git reset --hard
   echo "$hash"
 
-#  npm install 
+  npm install 
   cd ../../
 }
 
@@ -38,9 +36,13 @@ build(){
     if [[ "$directory" == *"git+"* ]]; then
       directory=$(echo "$directory" | sed 's/^.\{4\}//') 
     fi
-    echo "$directory"
     
-    clone $directory
+    # If the package is cloned skip it
+    if [ ! -d "./packages/$package" ] 
+    then
+      clone $directory
+    fi
+
     counter=`expr $counter + 1`
     
   done
@@ -60,6 +62,7 @@ let lya = require("@andromeda/mir-da");
 let conf = {
   debugName: '$t',
   analysis: lya.preset.RWX,
+  SAVE_RESULTS: require("path").join(__dirname, "dynamic.json"), 
   fields: {
     excludes: ['Promise', 'toString', 'escape', 'setImmediate'],
   },
@@ -83,6 +86,6 @@ else
 fi
 
 cd packages
-#for d in */; do
-  #dynamic $d
-#done
+for d in */; do
+  dynamic $d
+done
