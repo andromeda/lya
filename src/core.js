@@ -101,7 +101,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   // Check that a hook is declared in the analysis
   const hookCheck = (hook, ...args) => {
     if (hook !== undefined) {
-      hook.call(this, ...args);
+      return hook.call(this, ...args);
     }
   };
 
@@ -130,7 +130,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
           null;
 
         if (nameToStore) {
-          hookCheck(policy.onCallPre, {
+          const newTarget = hookCheck(policy.onCallPre, {
             target: target,
             thisArg: thisArg,
             argumentsList: argumentsList,
@@ -139,6 +139,11 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
             currentModule: currentModule,
             declareModule: currentName,
             typeClass: moduleClass});
+
+          if (newTarget) {
+            target = newTarget;
+            return Reflect.apply(...arguments);
+          }
         }
         const result = Reflect.apply(...arguments);
 
