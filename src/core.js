@@ -115,6 +115,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   const createHandler = (moduleClass) => {
     return {
       apply: function(target, thisArg, argumentsList) {
+        let result;
         const currentName = objectPath.get(target);
         const birthplace = objectName.has(target) ?
           objectName.get(target) : null;
@@ -145,7 +146,14 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
             return Reflect.apply(...arguments);
           }
         }
-        const result = Reflect.apply(...arguments);
+
+        // In case the target is not a pure function Reflect doesnt work
+        // for example: in native modules
+        try {
+          result = Reflect.apply(...arguments);
+        } catch (e) {
+          result = target(...argumentsList);
+        }
 
         if (nameToStore) {
           hookCheck(policy.onCallPost, {

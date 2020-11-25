@@ -19,7 +19,7 @@ const preset = {
 };
 
 const conf = {
-  inputString: true,
+  inputString: false,
   printCode: false,
   depth: 3,
   analysis: preset.ON_OFF,
