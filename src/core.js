@@ -213,7 +213,15 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
         const currentName = env.moduleName[env.requireLevel];
         const parentObject = methodNames.get(target);
         const result = Reflect.has(...arguments);
-        const nameToStore = parentObject + '.' + prop;
+
+        /* Fix the edge case that prop is a symbol type */
+        let nameToStore;
+        if (typeof prop !== 'symbol') {
+           nameToStore = parentObject + '.' + prop;
+        } else {
+          nameToStore = parentObject + '.' + prop.toString();
+        }
+
         if (parentObject === 'global' && !result &&
           prop !== 'localGlobal') {
           candidateGlobs.add(prop);
