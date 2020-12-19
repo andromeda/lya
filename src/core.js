@@ -217,7 +217,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
         /* Fix the edge case that prop is a symbol type */
         let nameToStore;
         if (typeof prop !== 'symbol') {
-           nameToStore = parentObject + '.' + prop;
+          nameToStore = parentObject + '.' + prop;
         } else {
           nameToStore = parentObject + '.' + prop.toString();
         }
@@ -646,6 +646,10 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   // and it has export data we wrap those data in this handler. So this is
   // the first So this is the first layer of the export data wraping.
   const namePathSet = (key, name, path) => {
+    /* In case of faulty key return */
+    if (key === undefined) {
+      return;
+    }
     objectName.set(key, name);
     objectPath.set(key, path);
   };
