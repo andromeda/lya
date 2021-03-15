@@ -1,13 +1,13 @@
 // We import this module
 // We add 
-const add = (a, b) => a + b
+const add = (a, b) => a + b;
 
 // We sub 
-const sub = (a, b) => a - b
+const sub = (a, b) => a - b;
 
 // We export both functions
 module.exports = {
-  add: add,
-  sub: sub
-}
+    add: add,
+    sub: sub,
+};
 

@@ -1,30 +1,16 @@
-let lib = {};
+module.exports = (
+    Object.entries(lib.levels).reduce(([name, level], lib) =>
+        Object.assign(lib, {
+            [name]: (...a) => (lib.lvl <= level && console.log(...a)),
+        }),
+    {
+        // by default, output everything
+        lvl: 1,
+        levels: {
+            err: 3,
+            warn: 2,
+            info: 1, 
+        }
+    });
+);
 
-// by default, output everything
-lib.lvl = 1;
-
-lib.levels = {
-  ERR: 3,
-  WARN: 2,
-  INFO: 1, 
-};
-
-lib.info = (...s) => {
-  if (lib.lvl <= lib.levels.INFO) {
-    console.log(...s)
-  }
-};
-
-lib.warn = (...s) => {
-  if (lib.lvl <= lib.levels.WARN) {
-    console.log(...s)
-  }
-};
-
-lib.err = (...s) => {
-  if (lib.lvl <= lib.levels.ERR) {
-    console.log(...s)
-  }
-};
-
-module.exports = lib;

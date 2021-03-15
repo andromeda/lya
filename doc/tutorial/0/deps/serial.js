@@ -1,5 +1,5 @@
-let lg = require("./log.js");
-lg.LVL = lg.levels.WARN;
+const lg = require("./log.js");
+lg.lvl = lg.levels.warn;
 
 let block = (ms) => {
   let d = new Date();
@@ -18,4 +18,3 @@ module.exports = {
  },
  enc: (obj) => {}
 }
-
