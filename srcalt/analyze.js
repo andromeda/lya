@@ -13,26 +13,16 @@
 // module-returns: exports, module.exports
 
 
+module.exports = {
+    analyze,
+};
+
 
 const fs = require('fs');
 const vm = require('vm');
 const config = require('./config.js');
-const {
-    coerceString,
-    shallowMerge,
-} = require('./shared.js');
-
-if (require.main === module) {
-    analyze(fs.readFileSync(process.stdin.fd));
-} else {
-    module.exports = {
-        analyze,
-    };
-}
-
-function test(name, f) {
-    require.main === module && console.log(`${f() ? 'PASS' : 'FAIL'} ${name}`);
-}
+const { coerceString } = require('./string.js');
+const { assert, test } = require('./test.js');
 
 function analyze(entry, state) {
     const code = coerceString(entry);
@@ -94,8 +84,9 @@ function stepOut(requireLevel, name) {
     }
 }
 
-test('stepOut: only decrement when not referencing a native module.',
-     () => stepOut(1, 'fs') === 1 && stepOut(1, './fs.js') === 0)
+test(module, () =>
+     assert(stepOut(1, 'fs') === 1 && stepOut(1, './fs.js') === 0,
+            'stepOut: only decrement when not referencing a native module.'))
 
 function createMockGlobal(state) {
     const {
@@ -459,7 +450,7 @@ function createProxySetHandler(env, typeClass) {
 function createProxyHasHandler(env, typeClass) {
     return function(target, prop) {
         const {
-            moduleName
+            moduleName,
             methodNames,
             conf: {
                 hooks: {
