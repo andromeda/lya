@@ -221,7 +221,7 @@ const exportProxyHandler = (env) => ({
 
         env.conf.hooks.onCallPost(info);
 
-        return info.result;        
+        return info.result;
     },
     get: (target, name, receiver) => {
     },
@@ -240,7 +240,7 @@ function createGlobalProxy(env) {
             },
         },
     } = env;
-    
+
     if (!elementOf(include, 'user-globals')) {
         return global;
     }
@@ -342,7 +342,7 @@ const computePrologue = (function () {
                 defaultNames,
             } = env;
 
-            const declaration = enableWith ? 'let' : 'var';            
+            const declaration = enableWith ? 'let' : 'var';
 
             let prologue = '';
 
@@ -404,7 +404,7 @@ function wrapModuleInputs(env, obj, count)  {
     } else {
         localCopy = obj[count];
     }
-    
+
     methodNames.set(localCopy, moduleInputNames[count]);
     objectPath.set(localCopy, moduleName[requireLevel]);
 
@@ -535,7 +535,7 @@ function createProxyHasHandler(env, typeClass) {
                 candidateModule.set(prop, currentName);
                 globalNames.set(prop, prop);
             }
-            
+
             onHas({
                 target,
                 prop,
@@ -595,7 +595,7 @@ function createProxyApplyHandler(env, typeClass) {
             declareModule: currentName,
             typeClass,
         };
-        
+
         if (nameToStore) {
             const newTarget = onCallPre(info);
             if (newTarget) {
