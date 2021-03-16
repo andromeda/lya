@@ -6,8 +6,8 @@ const { assert, test } = require('./test.js');
 const { failTo, withCatch } = require('./control.js');
 const fs = require('fs');
 
-function coerceString(variant) {
-    if (fs.existsSync(variant)) {
+function coerceString(variant, { allowFileRead } = {}) {
+    if (allowFileRead && fs.existsSync(variant)) {
         return fs.readFileSync(variant).toString();
     } else if (typeof failTo(false, () => variant.toString) === 'function') {
         return variant.toString();
