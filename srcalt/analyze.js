@@ -421,7 +421,10 @@ function wrapModuleInputs(env, obj, count)  {
 
 
 function createSafetyValve(env) {
-    return coerceMap(['toString', 'valueOf', 'prototype', 'name', 'children'], () => true);
+    return coerceMap(['toString', 'valueOf', 'prototype', 'name', 'children'], {
+        weak: false,
+        makeValue: () => true,
+    });
 }
 
 function createProxyHandlerObject(env, typeClass) {
