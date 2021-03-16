@@ -104,31 +104,32 @@ test(module, () => {
 
 function createEnvironment({ initialContext, hooks, context, vm }) {
     const env = {
-        conf: {
-            hooks: config.configureHooks(hooks),
-            context: config.configureVmContext(context),
-            vm: config.configureVm(vm),
-        },
-        defaultNames: require('./default-names.json'),
-        moduleName: [],
-        requireLevel: 0,
-        results: {},
-        objectName: new WeakMap(),
-        objectPath: new WeakMap(),
-        methodNames: new WeakMap(),
-        storePureFunctions: new WeakMap(),
-        globalNames: new Map(),
-        withProxy: new WeakMap(),
-        passedOver: new Map(),
-        clonedFunctions: new Map(),
         candidateGlobs: new Set(),
         candidateModule: new Map(),
-        getObjectInfo: getObjectInfo.bind(null, env),
-        counters: {
-            totals: 0,
-            objects: 0,
-            functions: 0,
+        clonedFunctions: new Map(),
+        conf: {
+            context: config.configureVmContext(context),
+            hooks: config.configureHooks(hooks),
+            vm: config.configureVm(vm),
         },
+        counters: {
+            functions: 0,
+            objects: 0,
+            totals: 0,
+        },
+        defaultNames: require('./default-names.json'),
+        getObjectInfo: getObjectInfo.bind(null, env),
+        globalNames: new Map(),
+        initialContext,
+        methodNames: new WeakMap(),
+        moduleName: [],
+        objectName: new WeakMap(),
+        objectPath: new WeakMap(),
+        passedOver: new Map(),
+        requireLevel: 0,
+        results: {},
+        storePureFunctions: new WeakMap(),
+        withProxy: new WeakMap(),
     };
 
     return env;
