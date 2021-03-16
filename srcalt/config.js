@@ -1,3 +1,10 @@
+const fs   = require('fs');
+const path = require('path');
+
+const { noop, identity } = require('./functions.js');
+const { assert, test } = require('./test.js');
+
+
 module.exports = {
     preset: findPresets(path.join(__dirname, 'analysis')),
 
@@ -49,12 +56,6 @@ module.exports = {
 };
 
 
-const fs   = require('fs');
-const path = require('path');
-
-const { noop, identity } = require('./functions.js');
-const { assert, test } = require('./test.js');
-
 
 // Assumption: The directory used in this function contains trusted code.
 function findPresets(presetDirectory, output = {}) {
@@ -95,6 +96,6 @@ function inTermsOf(defaults) {
 }
 
 test(module, ({ equal }) => {
-    assert(equal(inTermsOf({ a: 1, b: 2, c: 3 })({ d: 4, c: 1 }), { a: 1, b: 2 c: 1, d: 4 })
+    assert(equal(inTermsOf({ a: 1, b: 2, c: 3 })({ d: 4, c: 1 }), { a: 1, b: 2, c: 1, d: 4 }),
            'Merge options onto prescribed defaults');
 });
