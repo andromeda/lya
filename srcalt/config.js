@@ -28,8 +28,8 @@ module.exports = {
             wasm: true,
         },
     }),
-    
-    defaults: {
+
+    configureLya: inTermsOf({
         inputString: false,
         printCode: false,
         depth: 3,
@@ -52,7 +52,7 @@ module.exports = {
             include: false,
             excludes: [],
         },
-    },    
+    }),
 };
 
 
