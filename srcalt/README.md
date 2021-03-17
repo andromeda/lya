@@ -4,9 +4,11 @@ This implementation improves on the last in the following ways:
   This eliminates Lya's destructive changes to the global object, and
   removes the need to require Lya in advance of other code.
 
-* Allows imperative hooks, but a functional front-end. This way, Lya
-  runs purely in terms of arguments. This allows an analysis to run
-  Lya recursively, and adjust its results in more nuanced ways.
+* Allows state mutation for performance, but a functional front-end
+  for predictability. This way, Lya runs purely in terms of arguments
+  without sacrificing the speed gains from using mutable state. This
+  allows an analysis to run Lya recursively, and adjust its results in
+  more nuanced ways.
 
 * Moves responsibility for creating mutable state (`env`) to the user.
   This is key for accumulating results from recursive use of Lya, and
