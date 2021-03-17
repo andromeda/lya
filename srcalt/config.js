@@ -3,6 +3,7 @@ const path = require('path');
 
 const { noop, identity } = require('./functions.js');
 const { assert, test } = require('./test.js');
+const { merge } = require('./container-type.js');
 
 
 module.exports = {
@@ -91,10 +92,42 @@ test(() => {
 // This forces defaults to be specified in advance
 // such that no existence checks are needed later.
 function inTermsOf(defaults) {
-    return (overrides) => Object.assign(defaults, overrides || {});
+    return (overrides) => merge(defaults, overrides || {});
 }
 
 test(({ equal }) => {
-    assert(equal(inTermsOf({ a: 1, b: 2, c: 3 })({ d: 4, c: 1 }), { a: 1, b: 2, c: 1, d: 4 }),
-           'Merge options onto prescribed defaults');
+    const defaults = {
+        a: {
+            b: {
+                c: 3,
+            },
+            x: [1, 2, 3],
+        },
+    };
+
+    const overrides = {
+        a: {
+            b: {
+                c: { d: 4 },
+                e: 5,
+            },
+            x: [4, 5, 6],
+        },
+        f: 6,
+    };
+
+    const expected = {
+        a: {
+            b: {
+                c: { d: 4 },
+                e: 5,
+            },
+            x: [1, 2, 3, 4, 5, 6],
+        },
+        f: 6,
+    };
+
+
+    assert(equal(inTermsOf(defaults)(overrides), expected),
+           'Deeply merge options onto prescribed defaults');
 });

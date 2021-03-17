@@ -2,12 +2,23 @@ module.exports = {
     coerceMap,
     elementOf,
     setIntersection,
+    merge,
     shallowMerge: (a, b) => Object.assign({}, a, b),
 };
 
 const { assert, equal, test } = require('./test.js');
 const { identity } = require('./functions.js');
+const deepmerge = require('deepmerge');
 
+function merge(...args) {
+    if (args.length === 1) {
+        return args[0];
+    } else if (args.length === 2) {
+        return deepmerge(args[0], args[1]);
+    } else {
+        return deepmerge.all(args);
+    }
+}
 
 
 // Use this for existential checks in collection types, because there

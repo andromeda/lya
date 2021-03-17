@@ -74,6 +74,7 @@
   "homepage": "https://github.com/andromeda/lya",
   "dependencies": {
     "arg": "^4.1.3",
+    "deepmerge": "^4.2.2",
     "fast-deep-equal": "^3.1.3"
   },
   "devDependencies": {
