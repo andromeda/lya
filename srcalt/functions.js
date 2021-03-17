@@ -4,7 +4,7 @@ module.exports = {
     cloneFunction,
 };
 
-const { test } = require('./test.js');
+const { assertDeepEqual, assert, equal, test } = require('./test.js');
 
 function identity(v) {
     return v;
@@ -29,7 +29,7 @@ function cloneFunction(f, name) {
     return _f;
 }
 
-test(({ assert }) => {
+test(() => {
     assert(noop() === undefined,
            'Do nothing.')
 
@@ -39,4 +39,18 @@ test(({ assert }) => {
     const clone = cloneFunction(identity);
     assert(clone !== identity && clone(clone) === clone,
            'Create new function references');
+});
+
+
+function createUnaryCodomainSubset(args, f) {
+    return args.reduce(
+        (reduction, arg) =>
+            Object.assign(reduction, { [arg]: f(arg) }), {});
+}
+
+test(() => {
+    assertDeepEqual(
+        createUnaryCodomainSubset([1, 2, 3], (v) => v * 2),
+        { 1: 2, 2: 4, 3: 6 },
+        'Create object mapping domain elements to codomain elements for unary functions');
 });
