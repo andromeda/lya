@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 
-// A front-end for Node.js' vm module where one object holds all
-// configuration.
+// A front-end for Node.js' vm module such that one object acts as a
+// JS virtual machine state.
 
 
 module.exports = {
@@ -14,33 +14,35 @@ const vm = require('vm');
 const { coerceString } = require('./string.js');
 const { assert, test } = require('./test.js');
 
-function analyze({
-    entry,
-    initialContext,
-    conf: {
-        context: contextConfig,
-        vm: vmConfig
-    } = {}
-} = {}) {
-    const code = coerceString(entry, { allowFileRead: true });
-    const context = vm.createContext(initialContext, contextConfig);
-    const value = vm.runInContext(code, context, vmConfig);
+// Called for its effect
+function analyze(env) {
+    const {
+        entry,
+        context: contextVariant,
+        conf,
+    } = env || {};
 
-    return {
-        context,
-        value,
-    };
+    const {
+        context: contextConfig,
+        vm: vmConfig,
+    } = conf || {};
+
+    const code = coerceString(entry, { allowFileRead: true });
+
+    env.context = vm.isContext(contextVariant)
+        ? contextVariant
+        : vm.createContext(contextVariant, contextConfig);
+
+    env.value = vm.runInContext(code, env.context, vmConfig);
+
+    return env;
 }
 
 // Simple use
 test(module, () => {
     const options = {
         entry: 'x = process.exit(x)',
-        conf: {
-            context: undefined,
-            vm: undefined,
-        },
-        initialContext: {
+        context: {
             x: 0,
             process: {
                 exit: (v) => v + 10,
@@ -48,18 +50,16 @@ test(module, () => {
         },
     };
 
-    const { context, value } = analyze(options);
+    const ref = analyze(options);
 
-    assert(context.x === 10, 'JS affects context object');
-    assert(options.initialContext.x === context.x, 'JS affects original context, too');
-    assert(value === 10, 'Evaluate to last statement or expression.');
+    assert(ref === options, 'Operate on the input argument');
+    assert(ref.context.x === 10, 'JS affects context object');
+    assert(ref.value === 10, 'Evaluate to last statement or expression.');
 
-    const { context: context2, value: value2 } = analyze(options);
+    analyze(options);
 
-    assert(context2.x === 20 &&
-           options.initialContext.x === context2.x &&
-           context2.x === value2,
-           'Reuse context to, in effect, merge results');
+    assert(ref.context.x === 20 && ref.context.x === ref.value,
+           'Reuse context');
 });
 
 
@@ -68,11 +68,7 @@ test(module, () => {
     const options = {
         // Expression ultimately means: 2 * 8 + -1 => 14
         entry: 'x = eval("2 * eval(`8 + eval(\'x\')`)")',
-        conf: {
-            context: undefined,
-            vm: undefined,
-        },
-        initialContext: {
+        context: {
             eval: (entry) => {
                 // Base case is to reference only the global variable.
                 if (entry === 'x') {
@@ -84,8 +80,8 @@ test(module, () => {
         },
     };
 
-    const { context, value } = analyze(options);
+    analyze(options);
 
-    assert(context.x === 14 && context.x === value,
+    assert(options.context.x === 14 && options.context.x === options.value,
            'Recursively analyze via eval()');
 });
