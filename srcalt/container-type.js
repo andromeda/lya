@@ -25,7 +25,7 @@ function elementOf(variant, element) {
 }
 
 
-test(module, () => {
+test(() => {
     const elements = [1, 2, 3];
     const lastElement = elements[elements.length - 1];
     const notPresent = 4;
@@ -69,7 +69,7 @@ function coerceMap(iterable, { weak, makeKey = identity, makeValue = noop }) {
 
 }
 
-test(module, () => {
+test(() => {
     const actual = coerceMap(['a', 'b', 'c'], {
         weak: false,
         makeValue: (s) => s.toUpperCase(),
@@ -92,7 +92,7 @@ function filterObject(obj, keep) {
         .reduce((reduction, [k,v]) => Object.assign(reduction, { [k]: v }), {});
 }
 
-test(module, () => {
+test(() => {
     assert(equal(filterObject({ a: 1, b: 2, c: 3, d: 4 }, ([k, v]) => v < 3), { a: 1, b: 2 }),
            'Filter objects by keys')
 });
@@ -110,7 +110,7 @@ function setIntersection (a, b) {
     return intersection;
 };
 
-test(module, () => {
+test(() => {
     assert(equal(setIntersection(new Set([1,2,3,4,5]), new Set([9,8,7,6,5,4])), new Set([4,5])),
            'Find set intersection')
 });

@@ -37,15 +37,15 @@ function equal(a, b) {
     return fastDeepEqual(a, b);
 }
 
-function test(m, f) {
-    if (m === true || require.main === m || process.env.LYA_TEST === '1') {
+function test(f) {
+    if (process.env.LYA_TEST === '1') {
         // Injecting test library allows user to select which tests
         // get which bindings.
         f(module.exports);
     }
 }
 
-test(module, ({ assert: _assert, allege: _allege }) => {
+test(({ assert: _assert, allege: _allege }) => {
     assert(assert === _assert && allege === _allege,
            'Inject core library functions');
 

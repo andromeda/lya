@@ -39,7 +39,7 @@ function withHandlers(specs, f) {
     }
 }
 
-test(module, () => {
+test(() => {
     assert(failTo(1, () => raise(2)) === 1,
            'Represent any thrown value as another value');
 

@@ -18,7 +18,7 @@ function coerceString(variant, { allowFileRead } = {}) {
     }
 }
 
-test(module, () => {
+test(() => {
     assert(coerceString("I'm still me") === "I'm still me",
            'Coercing a string is like using the identity function');
 

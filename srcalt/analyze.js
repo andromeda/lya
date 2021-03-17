@@ -39,7 +39,7 @@ function analyze(env) {
 }
 
 // Simple use
-test(module, () => {
+test(() => {
     const options = {
         entry: 'x = process.exit(x)',
         context: {
@@ -64,7 +64,7 @@ test(module, () => {
 
 
 // Recursive eval example
-test(module, () => {
+test(() => {
     const options = {
         // Expression ultimately means: 2 * 8 + -1 => 14
         entry: 'x = eval("2 * eval(`8 + eval(\'x\')`)")',

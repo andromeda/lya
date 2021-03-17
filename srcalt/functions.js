@@ -29,7 +29,7 @@ function cloneFunction(f, name) {
     return _f;
 }
 
-test(module, ({ assert }) => {
+test(({ assert }) => {
     assert(noop() === undefined,
            'Do nothing.')
 

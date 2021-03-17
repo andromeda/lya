@@ -83,7 +83,7 @@ function makePresetName(completePath) {
         .toUpperCase();
 }
 
-test(module, () => {
+test(() => {
     assert(makePresetName('/a/b/c/my-file-tis__of-th3e') === 'MY_FILE_TIS_OF_TH3E',
            'Compute user-facing present names');
 });
@@ -95,7 +95,7 @@ function inTermsOf(defaults) {
     return (overrides) => Object.assign(defaults, overrides || {});
 }
 
-test(module, ({ equal }) => {
+test(({ equal }) => {
     assert(equal(inTermsOf({ a: 1, b: 2, c: 3 })({ d: 4, c: 1 }), { a: 1, b: 2, c: 1, d: 4 }),
            'Merge options onto prescribed defaults');
 });
