@@ -10,17 +10,6 @@ module.exports = {
 
     configureVmContext: inTermsOf({}),
 
-    configureHooks: inTermsOf({
-        onCallPre: noop,
-        onCallPost: noop,
-        onHas: noop,
-        onExit: noop,
-        onRead: noop,
-        onImport: noop,
-        onWrite: noop,
-        sourceTransform: identity,
-    }),
-
     configureVm: inTermsOf({
         // Allow eval and wasm
         codeGeneration: {
@@ -43,6 +32,16 @@ module.exports = {
                 'module-returns',
             ],
             excludes: [],
+        },
+        hooks: {
+            onCallPre: noop,
+            onCallPost: noop,
+            onHas: noop,
+            onExit: noop,
+            onRead: noop,
+            onImport: noop,
+            onWrite: noop,
+            sourceTransform: identity,
         },
         modules: {
             include: null,
