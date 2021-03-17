@@ -17,6 +17,7 @@ Benefits:
 
 module.exports = {
     assert,
+    assertDeepEqual,
     allege,
     equal,
     test,
@@ -27,6 +28,19 @@ const fastDeepEqual = require('fast-deep-equal/es6');
 function assert(bool, message = '') {
     allege(bool, message);
     if (!bool) throw new Error('Assertion failed.');
+}
+
+function assertDeepEqual(actual, expected, message = '') {
+    const bool = equal(actual, expected);
+    allege(bool, message);
+
+    if (!bool) {
+        throw new Error(
+            `Expected deep equality\n` +
+            `expected: ${JSON.stringify(expected, null, 4)}\n\n` +
+            `actual: ${JSON.stringify(actual, null, 4)}\n`
+        );
+    }
 }
 
 function allege(bool, message = '') {
