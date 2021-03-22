@@ -22,8 +22,7 @@ const universalGlobal = new Function('return this')();
 
 // Called for its effect
 function analyze(env) {
-    const { entry, conf } = env || {};
-    const { vm: vmConfig } = conf || {};
+    const { entry } = env;
     const code = coerceString(entry, { allowFileRead: true });
 
     try {
@@ -31,7 +30,7 @@ function analyze(env) {
         // from runInContext, but paper theses prefer to reason about
         // a context that already exists for built-in references on
         // the C++ side of things.
-        env.value = vm.runInThisContext(code, vmConfig);
+        env.value = vm.runInThisContext(code, env);
     } catch (e) {
         env.value = e;
     }
