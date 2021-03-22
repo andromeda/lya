@@ -1,12 +1,13 @@
 module.exports = {
     coerceMap,
     elementOf,
+    isObject,
     setIntersection,
     merge,
     shallowMerge: (a, b) => Object.assign({}, a, b),
 };
 
-const { assert, equal, test } = require('./test.js');
+const { assertDeepEqual, assert, equal, test } = require('./test.js');
 const { identity } = require('./functions.js');
 const deepmerge = require('deepmerge');
 
@@ -19,6 +20,22 @@ function merge(...args) {
         return deepmerge.all(args);
     }
 }
+
+
+function isObject(v) {
+    return (
+        !Array.isArray(v) &&
+        typeof v === 'object' &&
+        Boolean(v)
+    );
+}
+
+test(() => {
+    assert(isObject({}), 'Trivially detect the empty object');
+    assert(isObject({a:null}), 'Trivially detect a non-empty object');
+    assert(!isObject(null), 'Do not mistake null for more useful objects');
+    assert(!isObject([]), 'Do not mistake arrays for more useful objects');
+});
 
 
 // Use this for existential checks in collection types, because there
