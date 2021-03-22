@@ -3,7 +3,6 @@
 // A front-end for Node.js' vm module such that one object acts as a
 // JS virtual machine state.
 
-
 module.exports = {
     analyze,
 };
@@ -14,30 +13,27 @@ const vm = require('vm');
 const { coerceString } = require('./string.js');
 const { assert, test } = require('./test.js');
 const { noop } = require('./functions.js');
+const { callWithOwnValues } = require('./container-type.js');
+
+
+// A pattern for obtaining the global object regardless of the JS
+// runtime used.
+const universalGlobal = new Function('return this')();
 
 // Called for its effect
 function analyze(env) {
-    const {
-        entry,
-        conf,
-        pre,
-    } = env || {};
-
+    const { entry, conf } = env || {};
     const { vm: vmConfig } = conf || {};
-
-    // A pattern for obtaining the global object regardless of the JS
-    // runtime used.
-    const g = new Function('return this')();
-
-    const restore = (pre || noop)(g) || noop;
     const code = coerceString(entry, { allowFileRead: true });
 
     try {
+        // runInThisContext would not introduce behavioral difference
+        // from runInContext, but paper theses prefer to reason about
+        // a context that already exists for built-in references on
+        // the C++ side of things.
         env.value = vm.runInThisContext(code, vmConfig);
     } catch (e) {
         env.value = e;
-    } finally {
-        restore();
     }
 
     return env;
@@ -45,70 +41,50 @@ function analyze(env) {
 
 // Simple use
 test(() => {
-    let _g;
+    const g = universalGlobal;
+    const exit = v => v + 10;
 
-    const options = {
-        entry: 'x = process.exit(x)',
-        pre: (g) => {
-            _g = g;
+    callWithOwnValues(g, { x: 8, process: Object.assign({}, process, { exit }) }, () => {
+        const options = {
+            entry: 'x = process.exit(x)',
+        };
 
-            if (!_g.x) _g.x = 8;
+        const ref = analyze(options);
 
-            const original = _g.process.exit;
+        assert(typeof g === 'object', 'Capture global');
+        assert(ref === options, 'Operate on the input argument');
+        assert(g.x === 18, 'JS affects context object');
+        assert(ref.value === 18, 'Evaluate to last statement or expression.');
 
-            _g.process.exit = (v) => {
-                return v + 10;
-            };
+        analyze(options);
 
-            return () => {
-                _g.process.exit = original;
-            };
-        },
-    };
-
-    const ref = analyze(options);
-
-    assert(typeof _g === 'object', 'Capture global');
-    assert(ref === options, 'Operate on the input argument');
-    assert(_g.x === 18, 'JS affects context object');
-    assert(ref.value === 18, 'Evaluate to last statement or expression.');
-
-    analyze(options);
-
-    assert(_g.x === 28 && _g.x === ref.value,
-           'Reuse context');
+        assert(g.x === 28 && g.x === ref.value,
+               'Reuse context');
+    });
 });
 
 
 // Recursive eval example
 test(() => {
-    let _g;
+    const g = universalGlobal;
 
     const options = {
         // Expression ultimately means: 2 * 8 + -1 => 14
         entry: 'x = eval("2 * eval(`8 + eval(\'x\')`)")',
-        pre: (g) => {
-            _g = g;
-
-            const original = g.eval;
-
-            g.eval = function (entry) {
-                // Base case is to reference only the global variable.
-                if (entry === 'x') {
-                    return -1;
-                } else {
-                    return analyze(Object.assign({}, options, { entry })).value;
-                }
-            };
-
-            return () => {
-                g.eval = original;
-            };
-        },
     };
 
-    analyze(options);
+    const eval = function eval(entry) {
+        // Base case is to reference only the global variable.
+        if (entry === 'x') {
+            return -1;
+        } else {
+            return analyze(Object.assign({}, options, { entry })).value;
+        }
+    };
 
-    assert(_g.x === 14 && _g.x === options.value,
-           'Recursively analyze via eval()');
+    callWithOwnValues(g, { x: -1, eval }, () => {
+        analyze(options);
+        assert(g.x === 14 && g.x === options.value,
+               'Recursively analyze via eval()')
+    });
 });
