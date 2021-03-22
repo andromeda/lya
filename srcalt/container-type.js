@@ -1,5 +1,8 @@
 module.exports = {
-    buildObjectPatch,
+    callWithOwnValues,
+    callWithRedefinedOwnProperty,
+    callWithRedefinedOwnPropertyValue,
+    deepClone,
     coerceMap,
     elementOf,
     isObject,
@@ -39,62 +42,158 @@ test(() => {
 });
 
 
-function buildObjectPatch(target, diff) {
-    const output = {};
-    const names = Object.getOwnPropertyNames(diff);
-
-    for (const n of names) {
-        output[n] = (isObject(diff[n]) && isObject(target[n]))
-            ? buildObjectPatch(target[n], diff[n])
-            : target[n];
+function callWithRedefinedOwnProperty(obj, name, desc, f) {
+    // Check explicitly against false, because undefined is possible.
+    if (desc.configurable === false) {
+        throw new Error(
+            'callWithRedefinedProperty cannot be used ' +
+            'to set any property as unconfigurable.');
     }
 
-    return output;
+    const original = Object.getOwnPropertyDescriptor(obj, name);
+
+    const restore = () => {
+        if (original) {
+            Object.defineProperty(obj, name, original);
+        } else {
+            delete obj[name];
+        }
+    };
+
+    try {
+        Object.defineProperty(obj, name, desc);
+        const result = f(obj);
+        restore();
+        return result;
+    } catch (e) {
+        restore();
+        throw e;
+    }
+}
+
+
+function callWithRedefinedOwnPropertyValue(obj, name, value, f) {
+    const desc = Object.getOwnPropertyDescriptor(obj, name);
+
+    if (desc) {
+        if (!('value' in desc)) {
+            throw new Error(
+                'callWithRedefinedOwnPropertyValue: ' +
+                    `Cannot redefine value ${value} for \`${name}\` ` +
+                    'on object where property does not hold a value.')
+        }
+
+        desc.value = value;
+    }
+
+    const override = desc || {
+        configurable: true,
+        writable: true,
+        enumerable: true,
+        value,
+    };
+
+    return callWithRedefinedOwnProperty(obj, name, override, f);
+}
+
+
+test(() => {
+    const nested = { x: 1 };
+    const mutable = { a: nested };
+
+    callWithRedefinedOwnPropertyValue(mutable, 'a', 3, (o) => {
+        assert(mutable === o,
+              'Pass along mutated object reference');
+
+        assert(mutable.a === 3,
+              'Redefine property value in context of callback');
+    });
+
+    assert(mutable.a === nested,
+           'Restore original property once control leaves callback');
+});
+
+
+function callWithOwnValues(obj, diff, f) {
+    return (
+        Object
+            .keys(diff)
+            .reduce((reduction, key) => {
+                return (o) =>
+                    callWithRedefinedOwnPropertyValue(o, key, diff[key], reduction);
+            }, f)(obj)
+    );
+}
+
+
+test(() => {
+    const mutable = { a: 1, b: 2, c: 3 };
+    const patch = { a: 4, b: 5, c: 6, d: 7 };
+
+    callWithOwnValues(mutable, patch, (o) => {
+        assert(mutable === o,
+               'Pass along mutated object reference');
+
+        assertDeepEqual(o, patch,
+                        'Redefine many own property values in context of callback');
+    });
+
+    assertDeepEqual(mutable, { a: 1, b: 2, c: 3 },
+                    'Restore many own properties once control leaves callback');
+});
+
+
+const nonObjectTypes = new Set([
+    'undefined',
+    'boolean',
+    'number',
+    'symbol',
+    'function',
+    'string',
+    'number',
+]);
+
+
+function deepClone(variant) {
+    if (nonObjectTypes.has(typeof variant) || variant === null) {
+        return variant;
+    } else if (Array.isArray(variant)) {
+        return variant.slice(0);
+    } else {
+        const obj = variant;
+        const output = {};
+        const names = Object.getOwnPropertyNames(obj);
+
+        for (const name of names) {
+            const desc = Object.getOwnPropertyDescriptor(obj, name);
+
+            if (desc.value && typeof desc.value === 'object' && desc.enumerable) {
+                desc.value = deepClone(obj[name]);
+            }
+
+            Object.defineProperty(output, name, desc);
+        }
+
+        return output;
+    }
 }
 
 test(() => {
-    const kingdom = {
-        animals: {
-            tiger: {
-                age: 5,
-            },
-            lion: {
-                age: 8,
-            },
-        },
-        plants: {
-            pine: {
-                age: 73,
-            },
-            cactus: {
-                age: 18,
-            },
-        },
-    };
+    const mutable = { 1: { 2: { 3: { x: 4 } } } };
+    const clone = deepClone(mutable);
 
-    const selection = {
-        plants: {
-            pine: {
-                age: false,
-            },
-        },
-    };
+    assertDeepEqual(mutable, clone,
+                    'Deep clone objects');
 
-    const expectedPatch = {
-        plants: {
-            pine: {
-                age: 73,
-            },
-        },
-    };
-
-
-    assertDeepEqual(buildObjectPatch(kingdom, kingdom), kingdom,
-                    'Build objects patches to match their source');
-
-    assertDeepEqual(buildObjectPatch(kingdom, selection), expectedPatch,
-                    'Build object patches to fill in selected values');
+    assert(clone !== mutable &&
+           clone[1] !== mutable[1] &&
+           clone[1][2] !== mutable[1][2] &&
+           clone[1][2][3] !== mutable[1][2][3] &&
+           clone[1][2][3].x === mutable[1][2][3].x,
+           'Do not preserve references in deep clones')
 });
+
+
 
 
 // Use this for existential checks in collection types, because there
@@ -119,7 +218,7 @@ test(() => {
     const set = new Set(elements);
     const map = new Map(elements.map((v) => [v,v]));
     const generator = function* () { yield* elements };
-    
+
     assert(!elementOf(null, lastElement) && !elementOf(undefined, lastElement),
           'Find no element in a false-y value');
 
