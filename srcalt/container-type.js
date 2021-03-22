@@ -1,4 +1,5 @@
 module.exports = {
+    buildObjectPatch,
     coerceMap,
     elementOf,
     isObject,
@@ -35,6 +36,64 @@ test(() => {
     assert(isObject({a:null}), 'Trivially detect a non-empty object');
     assert(!isObject(null), 'Do not mistake null for more useful objects');
     assert(!isObject([]), 'Do not mistake arrays for more useful objects');
+});
+
+
+function buildObjectPatch(target, diff) {
+    const output = {};
+    const names = Object.getOwnPropertyNames(diff);
+
+    for (const n of names) {
+        output[n] = (isObject(diff[n]) && isObject(target[n]))
+            ? buildObjectPatch(target[n], diff[n])
+            : target[n];
+    }
+
+    return output;
+}
+
+test(() => {
+    const kingdom = {
+        animals: {
+            tiger: {
+                age: 5,
+            },
+            lion: {
+                age: 8,
+            },
+        },
+        plants: {
+            pine: {
+                age: 73,
+            },
+            cactus: {
+                age: 18,
+            },
+        },
+    };
+
+    const selection = {
+        plants: {
+            pine: {
+                age: false,
+            },
+        },
+    };
+
+    const expectedPatch = {
+        plants: {
+            pine: {
+                age: 73,
+            },
+        },
+    };
+
+
+    assertDeepEqual(buildObjectPatch(kingdom, kingdom), kingdom,
+                    'Build objects patches to match their source');
+
+    assertDeepEqual(buildObjectPatch(kingdom, selection), expectedPatch,
+                    'Build object patches to fill in selected values');
 });
 
 
