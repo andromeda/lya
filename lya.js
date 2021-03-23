@@ -10,6 +10,7 @@ const fs = require('fs');
 const path = require('path');
 const arg = require('arg');
 const pkg = require('./package.json');
+const { analyze } = require('./src/analyze.js');
 const { preset, configureLya } = require('./src/config.js');
 
 /* eslint-disable max-len */
@@ -235,8 +236,5 @@ if (args['--only-prologue']) {
   process.exit(0);
 }
 
-const env = lya.createLyaState({
-    analysis: filePath,
-});
-
-analyze(env);
+const env = lya.createLyaState(require, conf);
+lya.callWithLya(env, (require) => require(filePath))
