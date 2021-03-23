@@ -8,9 +8,8 @@ const fs = require('fs');
 const path = require('path');
 const arg = require('arg');
 const pkg = require('./package.json');
-const lya = require('./src/core.js');
-const conf = require('./src/utils/config.js').settings;
-const preset = require('./src/utils/config.js').preset;
+const lya = require('./srcalt/analyze-module.js');
+const { preset, configureLya } = require('./srcalt/config.js');
 
 /* eslint-disable max-len */
 const h = `Analyze JavaScript programs dynamically, to extract information or enforce invariants.
@@ -77,6 +76,8 @@ lya <fl> [hpVvvv] [a=<a.js>] [d=<n>] [{module, context, prop}-{include, exclude}
 const help = () => {
   console.log(h);
 };
+
+const conf = configureLya({});
 
 const splitAdd = (a, separator, join) => {
   const comb = a.split(separator);
@@ -233,5 +234,7 @@ if (args['--only-prologue']) {
   process.exit(0);
 }
 
-lya.configRequire(require, conf);
-require(filePath);
+const env = lya.createLyaState(conf);
+const requireExt = lya.createLyaRequireProxy(env, require);
+
+requireExt(filePath);
