@@ -16,74 +16,74 @@ Benefits:
 */
 
 module.exports = {
-    assert,
-    assertDeepEqual,
-    allege,
-    equal,
-    test,
+  assert,
+  assertDeepEqual,
+  allege,
+  equal,
+  test,
 };
 
 const fastDeepEqual = require('fast-deep-equal/es6');
 
 function assert(bool, message = '') {
-    allege(bool, message);
-    if (!bool) throw new Error('Assertion failed.');
+  allege(bool, message);
+  if (!bool) throw new Error('Assertion failed.');
 }
 
 function assertDeepEqual(actual, expected, message = '') {
-    const bool = equal(actual, expected);
-    allege(bool, message);
+  const bool = equal(actual, expected);
+  allege(bool, message);
 
-    if (!bool) {
-        throw new Error(
-            `Expected deep equality\n` +
+  if (!bool) {
+    throw new Error(
+        `Expected deep equality\n` +
             `expected: ${JSON.stringify(expected, null, 4)}\n\n` +
             `actual: ${JSON.stringify(actual, null, 4)}\n`
-        );
-    }
+    );
+  }
 }
 
 function allege(bool, message = '') {
-    console.log(`${bool ? 'PASS' : 'FAIL'}: ${message || '<no message set>'}`);
+  console.log(`${bool ? 'PASS' : 'FAIL'}: ${message || '<no message set>'}`);
 }
 
 function equal(a, b) {
-    return fastDeepEqual(a, b);
+  return fastDeepEqual(a, b);
 }
 
 function test(f) {
-    if (process.env.LYA_TEST === '1') {
-        // Injecting test library allows user to select which tests
-        // get which bindings.
-        f(module.exports);
-    }
+  if (process.env.LYA_TEST === '1') {
+    // Injecting test library allows user to select which tests
+    // get which bindings.
+    f(module.exports);
+  }
 }
 
-test(({ assert: _assert, allege: _allege }) => {
-    assert(assert === _assert && allege === _allege,
-           'Inject core library functions');
+test(({assert: _assert, allege: _allege}) => {
+  assert(assert === _assert && allege === _allege,
+      'Inject core library functions');
 
-    assert(true, 'I\'ve been used!');
-    allege(false, 'Allegations do not halt tests when false.');
+  assert(true, 'I\'ve been used!');
+  allege(false, 'Allegations do not halt tests when false.');
 
-    assert(equal({a: 1, b: {c: 3}},  {a: 1, b: {c: 3}}),
-           'Deeply compare objects');
+  assert(equal({a: 1, b: {c: 3}}, {a: 1, b: {c: 3}}),
+      'Deeply compare objects');
 
-    assert(equal([1, [2], [[3]]], [1, [2], [[3]]]),
-           'Deeply compare arrays');
+  assert(equal([1, [2], [[3]]], [1, [2], [[3]]]),
+      'Deeply compare arrays');
 
-    assert(equal(new Map([[1, 2], ['key', {a: {b: {c: [['deep']]}}}]]),
-                 new Map([[1, 2], ['key', {a: {b: {c: [['deep']]}}}]])),
-           'Deeply compare maps');
+  assert(equal(new Map([[1, 2], ['key', {a: {b: {c: [['deep']]}}}]]),
+      new Map([[1, 2], ['key', {a: {b: {c: [['deep']]}}}]])),
+  'Deeply compare maps');
 
-    // Deep comparison does not appear to work for sets.
-    assert(equal(new Set([1]), new Set([1])),
-           'Shallow compare sets');
+  // Deep comparison does not appear to work for sets.
+  assert(equal(new Set([1]), new Set([1])),
+      'Shallow compare sets');
 
-    try {
-        assert(false);
-        console.log('You should not see this message.');
-    } catch (e) {
-        console.log('Failed assertion changed control flow. Test library works fine.');
-    }
+  try {
+    assert(false);
+    console.log('You should not see this message.');
+  } catch (e) {
+    console.log('Failed assertion changed control flow. Test library works fine.');
+  }
 });
