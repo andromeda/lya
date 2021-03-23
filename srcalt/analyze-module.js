@@ -29,7 +29,7 @@ const vm = require('vm');
 const { analyze } = require('./analyze.js');
 const { assert, assertDeepEqual, test } = require('./test.js');
 const { identity } = require('./functions.js');
-const { elementOf } = require('./container-type.js');
+const { coerceMap, elementOf } = require('./container-type.js');
 const config = require('./config.js');
 
 
@@ -102,12 +102,13 @@ function createLyaRequireProxy(env, requireFunction) {
     
     maybeAddProxy(env, requireFunction, { apply });
 
-    return env.proxies.get(requireFunction);
+    return env.proxies.get(requireFunction).proxy;
 }
 
 
 // Creates an object suitable for use in createLyaRequireProxy().
-function createLyaState(entry, {
+function createLyaState({
+    analysis: entry,
     context: contextConfig,
     vm: vmConfig,
     lya: lyaConfig,
