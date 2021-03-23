@@ -1,10 +1,26 @@
 module.exports = {
     identity,
+    lets,
     noop,
     cloneFunction,
 };
 
 const { assertDeepEqual, assert, equal, test } = require('./test.js');
+
+// Lisp-like syntactic sugar for introducing values to new scopes.
+// This can ease reading for IIFEs where the argument follows a long
+// function definition.
+//
+// Avoid using the spread operator here. That adds a performance
+// penalty for something that is plenty flexible already.
+function lets(a, f) {
+    return f(a);
+}
+
+test(() =>
+     lets([1, 2, {c: 3}], ([a, b, {c}]) =>
+          assert(a === 1 && b === 2 && c === 3,
+                 'Bind values using lets()')))
 
 function identity(v) {
     return v;
