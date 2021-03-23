@@ -9,19 +9,17 @@ const { merge } = require('./container-type.js');
 module.exports = {
     preset: findPresets(path.join(__dirname, 'analysis')),
 
-    configureVmContext: inTermsOf({}),
-
-    configureVm: inTermsOf({
-        // Allow eval and wasm
-        codeGeneration: {
-            strings: true,
-            wasm: true,
-        },
-    }),
-
     configureLya: inTermsOf({
         inputString: false,
         printCode: false,
+        vmConfig: {
+        },
+        vmContextConfig: {
+            codeGeneration: {
+                strings: true,
+                wasm: true,
+            },
+        },
         depth: 3,
         enableWith: false,
         context: {
