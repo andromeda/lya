@@ -1,5 +1,9 @@
 This implementation improves on the last in the following ways:
 
+* Builds around `vm.runInContext`, as opposed to `vm.runInThisContext`.
+  This eliminates Lya's destructive changes to the global object, and
+  removes the need to require Lya in advance of other code.
+
 * Allows state mutation for performance, but a functional front-end
   for predictability. This way, Lya runs purely in terms of arguments
   without sacrificing the speed gains from using mutable state. This
