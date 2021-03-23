@@ -23,61 +23,14 @@ module.exports = {
 ///////////////////////////////////////////////////////////////////////////////
 // Implementation
 
-const Module = require('module');
 const vm = require('vm');
 
 const { analyze } = require('./analyze.js');
 const { assert, assertDeepEqual, test } = require('./test.js');
 const { identity } = require('./functions.js');
 const { coerceMap, elementOf } = require('./container-type.js');
+const { callWithModuleOverride } = require('./module-override.js');
 const config = require('./config.js');
-
-
-// Constants
-
-const IDENTIFIER_CLASSIFICATIONS = {
-    // e.g. global.x, x
-    USER_GLOBALS: 'user-globals',
-
-    // e.g. console, setImmediate
-    // TODO: Rename to builtin-globals?
-    NODE_GLOBALS: 'node-globals',
-
-    // e.g. exports, require, module, __filename, __dirname
-    MODULE_LOCALS: 'module-locals',
-
-    // e.g. exports, module.exports
-    MODULE_RETURNS: 'module-returns',
-};
-
-const NATIVE_MODULES = Object.keys(process.binding('natives'));
-
-const NEGLIGIBLE_EXPORT_TYPES = [
-    'boolean',
-    'symbol',
-    'number',
-    'string',
-];
-
-const COMMONJS_MODULE_IDENTIFIERS = [
-    'exports',
-    'require',
-    'module',
-    '__filename',
-    '__dirname',
-];
-
-
-const INJECTED_GLOBAL_IDENTIFIER = 'localGlobal';
-const INJECTED_WITH_GLOBAL_IDENTIFIER = 'withGlobal';
-
-// We need a CommonJS superset
-const EXTENDED_COMMONJS_MODULE_IDENTIFIERS =
-      COMMONJS_MODULE_IDENTIFIERS.concat([
-          INJECTED_GLOBAL_IDENTIFIER,
-          INJECTED_WITH_GLOBAL_IDENTIFIER,
-      ]);
-
 
 
 
@@ -106,7 +59,10 @@ function createLyaRequireProxy(env, requireFunction) {
 }
 
 
-// Creates an object suitable for use in createLyaRequireProxy().
+// Creates an object suitable for use in createLyaRequireProxy().  The
+// user is responsible for passing the state object because that
+// simplifies recursive use of Lya. Meaning that if a hook calls Lya,
+// it can reuse the state object.
 function createLyaState({
     analysis: entry,
     context: contextConfig,
@@ -145,239 +101,6 @@ function createLyaState({
 }
 
 
-///////////////////////////////////////////////////////////////////////////////
-// Module level API adjustments
-
-function getGlobalNames(globals) {
-    return Object
-        .keys(globals)
-        .reduce((reduction, key) =>
-                reduction.concat(globals[key]), [])
-        .sort(); // <-- for determinism
-}
-
-test(() => {
-    const names = getGlobalNames({
-        es: [
-            'Array',
-            'BigInt'
-        ],
-        node: [
-            'console',
-            'process'
-        ],
-    })
-    
-    assertDeepEqual(names, ['Array', 'BigInt', 'console', 'process'],
-                   'Extract global identifiers from dataset');
-});
-
-
-///////////////////////////////////////////////////////////////////////////////
-// Module level API adjustments
-//
-// We need to replace CommonJS with a superset including two extra
-// module bindings.
-//
-// localGlobal - A source of global [1] variables that are injected into module context.
-// withGlobal  - An object suitable for use in an injected `with () {}`.
-//
-// Whether the module code is injected into `with` affects how mocked global
-// bindings appear to the module. Without `with`, all declarations are hoisted
-// using `var`.
-//
-// [1]: https://i.imgflip.com/52qtcn.jpg
-
-
-const originalWrap = Module.wrap;
-const originalRequire = Module.prototype.require;
-const originalFilename = Module._resolveFilename;
-const originalLoad = Module._load;
-
-
-// Functions returned by this module use a cached wrapper.
-// If you want to use a different `enableWith` configuration, then
-// call overrideModuleWrap() with different property values.
-//
-// Limitation: User code cannot shadow injected identifiers using `let`.
-// This is a problem because users are normally able to shadow global
-// variables.
-//
-function overrideModuleWrap(env) {
-    const { modules, sourceTransform, defaultNames } = env;
-    const { enableWith = false } = modules || {};
-    const { globals = [] } = defaultNames || {};
-    
-    const declarator = enableWith ? 'let' : 'var';
-    const transform = sourceTransform || identity;
-
-    const declarations = (
-        getGlobalNames(globals)
-            .reduce((reduction, name) =>
-                    `${declarator} ${name} = ${INJECTED_GLOBAL_IDENTIFIER}["${name}"];\n${reduction}`,
-                    ''));
-
-    const parameterList = EXTENDED_COMMONJS_MODULE_IDENTIFIERS.join(',');
-
-    // The `null` acts like a "blank" to fill in.
-    const lines = (enableWith)
-          ? [
-              `(function (${parameterList}) {`,
-              `  with (${INJECTED_WITH_GLOBAL_IDENTIFIER}) {`,
-              null,
-              '  }',
-              '})',
-          ]
-          : [
-              `(function (${parameterList}) {`,
-              null,
-              '})',
-          ];
-
-
-    return (script) => {
-        env.originalScript = originalWrap(script);
-        const transformed = transform(script, env.currentModuleRequest);
-
-        // || fills in the blank.
-        return lines.map((l) => l || (declarations + transformed)).join('\n');
-    };
-};
-
-test(() => {    
-    const check = (scenario, { env, script, expected }) => {
-        const wrapped = overrideModuleWrap(env)(script);
-        const lines = wrapped.split('\n');
-        let moduleBodyLines;
-
-        if (env.modules.enableWith) {
-            const pattern = `with \\(${INJECTED_WITH_GLOBAL_IDENTIFIER}\\)`;
-            const re = new RegExp(pattern);
-            
-            assert(re.test(lines[1]),
-                   `${scenario}: Wrap module with 'with {}'`);
-
-            moduleBodyLines = lines.slice(2, -2);
-        } else {
-            moduleBodyLines = lines.slice(1, -1);
-        }
-
-        const actual = moduleBodyLines.join('\n');
-
-        assert(actual === expected, scenario);
-    }
-
-    check('Apply sourceTransform hook', {
-        env: {
-            currentModuleRequest: 'foo',
-            modules: {
-                enableWith: false,
-            },
-            sourceTransform: (src, moduleId) => {
-                assert('foo' === moduleId,
-                       `Pass env.currentModuleRequest to sourceTransform()`);
-                return src.replace('1', '2');
-            },
-        },
-        script: 'console.log(1 + 2)',
-        expected: 'console.log(2 + 2)',
-    });
-
-
-    check('Inject mock globals', {
-        env: {
-            defaultNames: {
-                globals: {
-                    es: [
-                        "Array",
-                    ],
-                },
-            },
-            modules: {
-                enableWith: true,
-            },
-        },
-        script: 'void 0',
-        expected: `let Array = ${INJECTED_GLOBAL_IDENTIFIER}["Array"];\nvoid 0`,
-    });
-});
-
-
-function callWithModuleOverride(env, f) {
-    const {
-        modules: {
-            include,
-            exclude,
-            enableWith,
-        },
-        moduleName,
-        sourceTransform,
-        objectName,
-        onImport,
-        requireLevel,
-        results,
-    } = env;
-
-    
-    const _load = function(...args) {
-        const name = args[0];
-        const path = Module._resolveFilename.call(this, ...args);
-
-        onImport({
-            caller: moduleName[requireLevel],
-            callee: path,
-            name: name,
-        });
-
-        return Module._load(...args);
-    };    
-
-    const _require = function (...args) {
-        if (moduleName[0] === undefined) {
-            moduleName[0] = this.filename;
-            results[moduleName[0]] = {};
-        }
-
-        const importName = env.currentModuleRequest = args[0];
-
-        // We might not return exactly this. Since Lya
-        // monitors inter-module activity, we may return
-        // the proxy instead.
-        const actualModuleExports = require(...args);
-        const moduleExportType = typeof moduleExports;
-
-        const moduleIncluded = elementOf(include, moduleName[requireLevel]);
-        const moduleExcluded = elementOf(exclude, moduleName[requireLevel]);
-        const exportsKnown = objectName.has(actualModuleExports);
-        const exportsNegligible = elementOf(NEGLIGIBLE_EXPORT_TYPES, moduleExportType);
-        const shouldUseProxy = (
-            exportsKnown || elementOf(include, 'module-returns')
-        );
-
-        objectName.set(
-            actualModuleExports,
-            (type === 'function' && actualModuleExports.name !== '')
-                ? 'require(\'' + importName + '\').' + actualModuleExports.name
-                : 'require(\'' + importName + '\')');
-
-        if ((!moduleIncluded || moduleExcluded) || (!exportsNegligible && !exportsKnown)) {
-            env.requireLevel = reduceLevel(importName);
-        }
-
-        return shouldUseProxy
-            ? maybeAddProxy(actualModuleExports, exportHandler)
-            : actualModuleExports;
-    };
-
-    return callWithOwnValues(Module, {
-        wrap: overrideModuleWrap(env),
-        prototype: Object.assign({}, Module.prototype, {
-            require: _require,
-        }),
-        _resolveFilename,
-        _load,
-    }, f);
-}
 
 function callWithVmOverride(env, f) {
     const originalRun = vm.runInThisContext;
@@ -446,23 +169,6 @@ function callWithAllOverrides(env, f) {
     }, f)({});    
 }
 
-
-
-function stepOut(env, name) {
-    if (env.requireLevel > 0 && !elementOf(NATIVE_MODULES, name)) {
-        --env.requireLevel;
-    }
-}
-
-test(() => {
-    const env = { requireLevel: 1 };
-
-    stepOut(env, 'fs');
-
-    assert(env.requireLevel === 1,
-           'stepOut: only decrement when not referencing a native module.')
-
-})
 
 
 const getObjectInfo = (env, obj) => ({
