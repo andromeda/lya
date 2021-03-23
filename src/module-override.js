@@ -31,10 +31,7 @@ const {assert, assertDeepEqual, test} = require('./test.js');
 
 const {
   COMMONJS_MODULE_IDENTIFIERS,
-  EXTENDED_COMMONJS_MODULE_IDENTIFIERS,
   IDENTIFIER_CLASSIFICATIONS,
-  INJECTED_GLOBAL_IDENTIFIER,
-  INJECTED_WITH_GLOBAL_IDENTIFIER,
   NATIVE_MODULES,
   NEGLIGIBLE_EXPORT_TYPES,
 } = require('./constants.js');
@@ -82,13 +79,17 @@ test(() => {
       'bar.js',
       'baz.js',
     ],
-    onImport: ({caller, callee, name}) => {
-      assert(name === './analyze-module.js' &&
-                   caller == 'baz.js' &&
-                   path.isAbsolute(callee),
-      'onImport hook monitors Module._load');
+    config: {
+      hooks: {
+        onImport: ({caller, callee, name}) => {
+          assert(name === './module-override.js' &&
+                 caller == 'baz.js' &&
+                 path.isAbsolute(callee),
+                 'onImport hook monitors Module._load');
+        },
+      },
     },
-  })('./analyze-module.js');
+  })('./module-override.js');
 });
 
 
@@ -205,8 +206,12 @@ function createModuleExportProxyApplyHandler(env) {
       objectName,
       moduleName,
       requireLevel,
-      onCallPre,
-      onCallPost,
+      config: {
+        hooks: {
+          onCallPre,
+          onCallPost,
+        },
+      },
     } = env;
 
     const info = {
@@ -227,6 +232,54 @@ function createModuleExportProxyApplyHandler(env) {
     return info.result;
   };
 }
+
+test(() => {
+  const junkThis = {};
+
+  const onCallPre = ({
+      target,
+      thisArg,
+      argumentsList,
+      typeClass,
+  }) => {
+    assert(target === foo,
+           'Give correct target to module.exports apply proxy');
+    assert(thisArg === junkThis,
+           'Give correct `this` to module.exports apply proxy');
+    assert(typeClass === IDENTIFIER_CLASSIFICATIONS.MODULE_RETURNS,
+           'Label hooked info as returned from a module');
+    assertDeepEqual(Array.from(argumentsList), [9, 8, 7],
+                   'Forward arguments');
+  };
+
+
+  const onCallPost = ({ argumentsList, result }) => {
+    assert(result === foo.apply(null, argumentsList),
+           'Give correct result to onCallPost');
+  };
+
+  const env = {
+    objectName: new Map([]),
+    moduleName: [],
+    requireLevel: 0,
+    config: {
+      hooks: {
+        onCallPre,
+        onCallPost,
+      },
+    },
+  };
+
+  function foo(a, b, c) {
+    return a * b * c;
+  }
+
+  const proxy = new Proxy(foo, {
+    apply: createModuleExportProxyApplyHandler(env),
+  });
+
+  proxy.apply(junkThis, [9, 8, 7]);
+});
 
 
 function createModuleExportProxyGetHandler(env) {
@@ -265,16 +318,16 @@ function createModuleExportProxyGetHandler(env) {
 
     const mayAnalyze = (
       exportType !== 'undefined' &&
-            currentValue != null &&
-            typeof name === 'string' &&
-            (!(currentValue instanceof RegExp))
+        currentValue != null &&
+        typeof name === 'string' &&
+        (!(currentValue instanceof RegExp))
     );
 
     const literalScenario = (
       mayAnalyze &&
-            exportType === 'number' ||
-            exportType === 'boolean' ||
-            exportType === 'string'
+        exportType === 'number' ||
+        exportType === 'boolean' ||
+        exportType === 'string'
     );
 
     const functionScenario = (
@@ -344,7 +397,11 @@ function createModuleExportProxySetHandler(env) {
       objectName,
       moduleName,
       requireLevel,
-      onWrite,
+      config: {
+        hooks: {
+          onWrite,
+        },
+      },
     } = env;
 
     if (typeof name !== 'symbol') {
