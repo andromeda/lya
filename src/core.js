@@ -17,6 +17,7 @@ Maintainers:
 module.exports = {
     createLyaState,
     createLyaRequireProxy,
+    callWithLya,
 };
 
 
@@ -28,8 +29,11 @@ const vm = require('vm');
 const { analyze } = require('./analyze.js');
 const { assert, assertDeepEqual, test } = require('./test.js');
 const { identity } = require('./functions.js');
-const { coerceMap, elementOf } = require('./container-type.js');
+const { callWithOwnValues, coerceMap, elementOf } = require('./container-type.js');
 const { callWithModuleOverride } = require('./module-override.js');
+const { maybeAddProxy, createProxyApplyHandler } = require('./proxy.js');
+const { IDENTIFIER_CLASSIFICATIONS } = require('./constants.js');
+
 const config = require('./config.js');
 
 const universalGlobal = new Function('return this')();
@@ -38,90 +42,72 @@ const universalGlobal = new Function('return this')();
 ///////////////////////////////////////////////////////////////////////////////
 // High-level API
 
-function lya(options, requireFunction, cb) {
-    const {
-        analysis,
-    } = options;
-
-    return callWithVmOverride(env, () => {
-        const requireAlt = createLyaRequireProxy(env, requireFunction);
-        requireAlt(analysis);
-        cb();
-    });
-}
-
 
 // We start an analysis using the module resolver. This means that
 // when a require() function is used, it will override shared APIs
 // and change how required code behaves.
-function createLyaRequireProxy(env, requireFunction) {
-    // Monitor applications.
-    const baseApply = createProxyApplyHandler(
-        env, IDENTIFIER_CLASSIFICATIONS.MODULE_LOCALS);
+function createLyaRequireProxy(env) {
+    return maybeAddProxy(env, env.require, {
+        apply: createProxyApplyHandler(env, IDENTIFIER_CLASSIFICATIONS.MODULE_LOCALS),
+    });
+}
 
-    // Make it so that calls evaluate under an adjusted global API.
-    // Adds invariant: The user cannot concurrently execute code that
-    // assumes these overrides have not been applied.
-    const apply = function (...args) {
-        return callWithAllOverrides(env, () => baseApply(...args));
+
+// Creates an object used to collect facts from the runtime.
+function createLyaState(userRequire, config) {
+    return {
+        candidateGlobs: new Set(),
+        candidateModule: new Map(),
+        clonedFunctions: new Map(),
+        config,
+        context: createGlobalProxy(),
+        defaultNames: require('./default-names.json'),
+        globalNames: new Map(),
+
+        // The last unresolved module name used as an argument to require()
+        // in the analyzed program. Used to trace dependency relationships.
+        currentModuleRequest: null,
+
+        methodNames: new WeakMap(),
+        moduleName: [],
+        objectName: new WeakMap(),
+        objectPath: new WeakMap(),
+        passedOver: new Map(),
+        proxies: new Map(),
+        objectPath: new WeakMap(),
+        require: userRequire,
+        requireLevel: 0,
+        results: {},
+        safetyValve: createSafetyValve(),
+        storePureFunctions: new WeakMap(),
+        withProxy: new WeakMap(),
     };
-    
-    maybeAddProxy(env, requireFunction, { apply });
-
-    return env.proxies.get(requireFunction).proxy;
 }
 
 
-// Creates an object suitable for use in createLyaRequireProxy().  The
-// user is responsible for passing the state object because that
-// simplifies recursive use of Lya. Meaning that if a hook calls Lya,
-// it can reuse the state object.
-function createLyaState({
-    analysis: entry,
-    context: contextConfig,
-    vm: vmConfig,
-    lya: lyaConfig,
-}) {
-    return Object.assign(
-        config.configureVmContext(contextConfig),
-        config.configureVm(vmConfig),
-        config.configureLya(lyaConfig),
-        {
-            candidateGlobs: new Set(),
-            candidateModule: new Map(),
-            clonedFunctions: new Map(),
-            defaultNames: require('./default-names.json'),
-            entry,
-            globalNames: new Map(),
-
-            // The last unresolved module name used as an argument to require()
-            // in the analyzed program. Used to trace dependency relationships.
-            currentModuleRequest: null,
-
-            methodNames: new WeakMap(),
-            moduleName: [],
-            objectName: new WeakMap(),
-            objectPath: new WeakMap(),
-            passedOver: new Map(),
-            proxies: new Map(),
-            objectPath: new WeakMap(),
-            requireLevel: 0,
-            results: {},
-            safetyValve: createSafetyValve(),
-            storePureFunctions: new WeakMap(),
-            withProxy: new WeakMap(),
-        });
+function createGlobalProxy() {
+    return {
+    };
 }
 
 
+function callWithVmOverride(env, f) {
+    return callWithOwnValues(vm, {
+        runInThisContext: function runInThisContext(code, options) {
+            return vm.runInContext(code, env.context, options);
+        },
+    }, f);
+}
 
-function callWithAllOverrides(env, f) {
+
+function callWithLya(env, f) {
     const overrides = [
         callWithModuleOverride,
         callWithVmOverride,
     ];
 
-    return overrides.reduce((cb, override) => () => override(env, cb), f)();
+    return overrides.reduce((cb, override) => () => override(env, cb),
+                            () => f(createLyaRequireProxy(env)))();
 }
 
 
@@ -161,7 +147,10 @@ function createGlobalVariable(env, name) {
         }
 
         env.stopLoops = new WeakMap();
-        const proxyObj = proxyWrap(context[name], createHandler('node-globals'), name, depth);
+        const proxyObj = proxyWrap(context[name],
+                                   createHandler('node-globals'),
+                                   name,
+                                   depth);
 
         if (name !== 'Infinity' && name !== 'NaN') {
             objectPath.set(proxyObj, moduleName[requireLevel]);

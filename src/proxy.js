@@ -12,13 +12,13 @@ module.exports = {
     maybeAddProxy,
 };
 
-
+const { elementOf } = require('./container-type.js');
 
 // Like new Proxy(), except the instance is tracked in Lya state.
 function maybeAddProxy(env, obj, handler) {
-    let proxy;
+    let proxy = env.proxies.get(obj);
     
-    if (!elementOf(env.safetyValve, env.methodNames.get(obj))) {
+    if (!proxy && !elementOf(env.safetyValve, env.methodNames.get(obj))) {
         proxy = new Proxy(obj, handler);
 
         env.proxies.set(obj, {
@@ -166,10 +166,21 @@ function createProxyConstructHandler(env, typeClass) {
 function createProxyApplyHandler(env, typeClass) {
     return function(target, thisArg, argumentsList) {
         let result;
+
+        const {
+            methodNames,
+            moduleName,
+            objectPath,
+            objectName,
+            onCallPre,
+            onCallPost,
+            requireLevel,
+        } = env;
+
         const currentName = objectPath.get(target);
         const birthplace = objectName.has(target) ? objectName.get(target) : null;
         const birthName = birthplace + '.' + target.name;
-        const currentModule = moduleName[env.requireLevel];
+        const currentModule = moduleName[requireLevel];
         const origReqModuleName = argumentsList[0];
 
         const nameToStore =

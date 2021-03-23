@@ -1,16 +1,5 @@
 // Responsible for overriding the behavior of require('module') while
 // control remains in a callback.
-//
-// Motivation: We need to extend CommonJS with two module-level bindings:
-//
-// localGlobal - A source of global [1] variables from outside the VM.
-// withGlobal  - An object suitable for use in an injected `with () {}`.
-//
-// Whether the module code is injected into `with` affects how mocked global
-// bindings appear to the module. Without `with`, all declarations are hoisted
-// using `var`.
-//
-// [1]: https://i.imgflip.com/52qtcn.jpg
 
 module.exports = {
     callWithModuleOverride,
@@ -18,20 +7,19 @@ module.exports = {
 
 
 function callWithModuleOverride(env, f) {
-    return callWithOwnValues(Module, {
+    return callWithOwnValues(Module.prototype, {
+        require: overrideModuleRequirePrototype(env),
+    }, () => callWithOwnValues(Module, {
         wrap: overrideModuleWrap(env),
-        prototype: Object.assign({}, Module.prototype, {
-            require: overrideModuleRequirePrototype(env),
-        }),
         _load: overrideModuleLoad(env),
-    }, f);
+    }, f));
 }
 
 
 
 const Module = require('module');
 
-const { elementOf } = require('./container-type.js');
+const { callWithOwnValues, elementOf } = require('./container-type.js');
 const { identity } = require('./functions.js');
 const { assert, assertDeepEqual, test } = require('./test.js');
 
