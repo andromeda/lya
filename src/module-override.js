@@ -56,106 +56,9 @@ const {
 //
 const originalWrap = Module.wrap;
 
-function overrideModuleWrap(env) {
-    const { modules, sourceTransform, defaultNames } = env;
-    const { enableWith = false } = modules || {};
-    const { globals = [] } = defaultNames || {};
-
-    const declarator = enableWith ? 'let' : 'var';
-    const transform = sourceTransform || identity;
-
-    const declarations = (
-        getGlobalNames(globals)
-            .reduce((reduction, name) =>
-                    `${declarator} ${name} = ${INJECTED_GLOBAL_IDENTIFIER}["${name}"];\n${reduction}`,
-                    ''));
-
-    const parameterList = EXTENDED_COMMONJS_MODULE_IDENTIFIERS.join(',');
-
-    // The `null` acts like a "blank" to fill in.
-    const lines = (enableWith)
-          ? [
-              `(function (${parameterList}) {`,
-              `  with (${INJECTED_WITH_GLOBAL_IDENTIFIER}) {`,
-              null,
-              '  }',
-              '})',
-          ]
-          : [
-              `(function (${parameterList}) {`,
-              null,
-              '})',
-          ];
-
-
-    return (script) => {
-        env.originalScript = originalWrap(script);
-        const transformed = transform(script, env.currentModuleRequest);
-
-        // || fills in the blank.
-        return lines.map((l) => l || (declarations + transformed)).join('\n');
-    };
+function overrideModuleWrap(transform = identity) {
+    return (script) => originalWrap(transform(script, env.currentModuleRequest));
 };
-
-
-test(() => {
-    const check = (scenario, { env, script, expected }) => {
-        const wrapped = overrideModuleWrap(env)(script);
-        const lines = wrapped.split('\n');
-        let moduleBodyLines;
-
-        if (env.modules.enableWith) {
-            const pattern = `with \\(${INJECTED_WITH_GLOBAL_IDENTIFIER}\\)`;
-            const re = new RegExp(pattern);
-
-            assert(re.test(lines[1]),
-                   `${scenario}: Wrap module with 'with {}'`);
-
-            moduleBodyLines = lines.slice(2, -2);
-        } else {
-            moduleBodyLines = lines.slice(1, -1);
-        }
-
-        const actual = moduleBodyLines.join('\n');
-
-        assert(actual === expected, scenario);
-    }
-
-    check('Apply sourceTransform hook', {
-        env: {
-            currentModuleRequest: 'foo',
-            modules: {
-                enableWith: false,
-            },
-            sourceTransform: (src, moduleId) => {
-                assert('foo' === moduleId,
-                       `Pass env.currentModuleRequest to sourceTransform()`);
-                return src.replace('1', '2');
-            },
-        },
-        script: 'console.log(1 + 2)',
-        expected: 'console.log(2 + 2)',
-    });
-
-
-    check('Inject mock globals', {
-        env: {
-            defaultNames: {
-                globals: {
-                    es: [
-                        "Array",
-                    ],
-                },
-            },
-            modules: {
-                enableWith: true,
-            },
-        },
-        script: 'void 0',
-        expected: `let Array = ${INJECTED_GLOBAL_IDENTIFIER}["Array"];\nvoid 0`,
-    });
-});
-
 
 //
 // TODO: Clarify why we hook into _load(). Because require() might
@@ -316,7 +219,7 @@ function createModuleExportProxyApplyHandler(env) {
             nameToStore: objectName.get(target),
             currentModule: moduleName[requireLevel],
             declareModule: moduleName[requireLevel],
-            typeClass: 'module-returns',
+            typeClass: IDENTIFIER_CLASSIFICATIONS.MODULE_RETURNS,
         };
 
         onCallPre(info);

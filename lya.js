@@ -1,15 +1,16 @@
 #!/usr/bin/env node
 
+const lya = require('./src/core.js');
+
 if (require.main !== module) {
-  return require('./src/core.js');
+  return lya;
 }
 
 const fs = require('fs');
 const path = require('path');
 const arg = require('arg');
 const pkg = require('./package.json');
-const lya = require('./srcalt/analyze-module.js');
-const { preset, configureLya } = require('./srcalt/config.js');
+const { preset, configureLya } = require('./src/config.js');
 
 /* eslint-disable max-len */
 const h = `Analyze JavaScript programs dynamically, to extract information or enforce invariants.
@@ -234,7 +235,8 @@ if (args['--only-prologue']) {
   process.exit(0);
 }
 
-const env = lya.createLyaState(conf);
-const requireExt = lya.createLyaRequireProxy(env, require);
+const env = lya.createLyaState({
+    analysis: filePath,
+});
 
-requireExt(filePath);
+analyze(env);

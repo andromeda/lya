@@ -13,6 +13,7 @@ const vm = require('vm');
 const { coerceString } = require('./string.js');
 const { assert, test } = require('./test.js');
 
+
 // Called for its effect
 function analyze(env) {
     const {
