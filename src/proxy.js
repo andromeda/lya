@@ -13,6 +13,7 @@ module.exports = {
 };
 
 const {elementOf} = require('./container-type.js');
+const {withCatch} = require('./control.js');
 
 // Like new Proxy(), except the instance is tracked in Lya state.
 function maybeAddProxy(env, obj, handler) {
@@ -76,7 +77,7 @@ function createProxySetHandler(env, typeClass) {
       globalNames,
       objectPath,
       methodNames,
-      conf: {
+      config: {
         hooks: {
           onWrite,
         },
@@ -117,7 +118,11 @@ function createProxyHasHandler(env, typeClass) {
       globalNames,
       moduleName,
       methodNames,
-      onHas,
+      config: {
+        hooks: {
+          onHas,
+        },
+      },
     } = env;
 
     const currentName = moduleName[env.requireLevel];
@@ -172,9 +177,13 @@ function createProxyApplyHandler(env, typeClass) {
       moduleName,
       objectPath,
       objectName,
-      onCallPre,
-      onCallPost,
       requireLevel,
+      config: {
+        hooks: {
+          onCallPre,
+          onCallPost,
+        },
+      },
     } = env;
 
     const currentName = objectPath.get(target);

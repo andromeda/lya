@@ -7,12 +7,19 @@ module.exports = {
 
 
 function callWithModuleOverride(env, f) {
-  return callWithOwnValues(Module.prototype, {
-    require: overrideModuleRequirePrototype(env),
-  }, () => callWithOwnValues(Module, {
-    wrap: overrideModuleWrap(env),
-    _load: overrideModuleLoad(env),
-  }, f));
+    const prototypePatch = {
+        require: overrideModuleRequirePrototype(env),
+    };
+
+    const moduleApiPatch = {
+        wrap: overrideModuleWrap(env),
+        _load: overrideModuleLoad(env),
+    };
+
+    // Module.prototype is non-configurable, so we modify it in a
+    // separate descriptor override.
+    return callWithOwnValues(Module.prototype, prototypePatch,
+                             () => callWithOwnValues(Module, moduleApiPatch, f));
 }
 
 
@@ -54,7 +61,7 @@ const originalLoad = Module._load;
 
 function overrideModuleLoad(env) {
   return function _load(...args) {
-    env.onImport({
+    env.config.hooks.onImport({
       caller: env.moduleName[env.requireLevel],
       callee: Module._resolveFilename.call(this, ...args),
       name: args[0],
@@ -91,8 +98,15 @@ function overrideModuleRequirePrototype(env) {
   return function require(...args) {
     const {
       results,
+      requireLevel,
       moduleName,
       objectName,
+      config: {
+        modules: {
+          include,
+          exclude,
+        },
+      },
     } = env;
 
     if (moduleName[0] === undefined) {
@@ -118,7 +132,7 @@ function overrideModuleRequirePrototype(env) {
 
     objectName.set(
         actualModuleExports,
-            (type === 'function' && actualModuleExports.name !== '') ?
+            (moduleExportType === 'function' && actualModuleExports.name !== '') ?
                 'require(\'' + importName + '\').' + actualModuleExports.name :
                 'require(\'' + importName + '\')');
 
