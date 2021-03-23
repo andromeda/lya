@@ -60,7 +60,7 @@ function overrideModuleWrap(env) {
     const { modules, sourceTransform, defaultNames } = env;
     const { enableWith = false } = modules || {};
     const { globals = [] } = defaultNames || {};
-    
+
     const declarator = enableWith ? 'let' : 'var';
     const transform = sourceTransform || identity;
 
@@ -98,7 +98,7 @@ function overrideModuleWrap(env) {
 };
 
 
-test(() => {    
+test(() => {
     const check = (scenario, { env, script, expected }) => {
         const wrapped = overrideModuleWrap(env)(script);
         const lines = wrapped.split('\n');
@@ -107,7 +107,7 @@ test(() => {
         if (env.modules.enableWith) {
             const pattern = `with \\(${INJECTED_WITH_GLOBAL_IDENTIFIER}\\)`;
             const re = new RegExp(pattern);
-            
+
             assert(re.test(lines[1]),
                    `${scenario}: Wrap module with 'with {}'`);
 
@@ -205,7 +205,7 @@ function overrideModuleRequirePrototype(env) {
             moduleName,
             objectName,
         } = env;
-        
+
         if (moduleName[0] === undefined) {
             moduleName[0] = this.filename;
             results[moduleName[0]] = {};
@@ -241,7 +241,7 @@ function overrideModuleRequirePrototype(env) {
         if (shouldUseProxy) {
             maybeAddProxy(env, actualModuleExports, exportHandler)
             return env.proxies.get(actualModuleExports).proxy;
-        } else { 
+        } else {
             return actualModuleExports;
         }
     };
@@ -283,7 +283,182 @@ test(() => {
             'process'
         ],
     })
-    
+
     assertDeepEqual(names, ['Array', 'BigInt', 'console', 'process'],
                    'Extract global identifiers from dataset');
 });
+
+
+function createModuleExportProxyHandler(env) {
+    return {
+        apply: createModuleExportProxyApplyHandler(env),
+        get: createModuleExportProxyGetHandler(env),
+        set: createModuleExportProxySetHandler(env),
+    };
+}
+
+
+function createModuleExportProxyApplyHandler(env) {
+    return function apply(target, thisArg, argumentsList) {
+        const {
+            objectName,
+            moduleName,
+            requireLevel,
+            onCallPre,
+            onCallPost,
+        } = env;
+
+        const info = {
+            target,
+            thisArg,
+            argumentsList,
+            name: target.name,
+            nameToStore: objectName.get(target),
+            currentModule: moduleName[requireLevel],
+            declareModule: moduleName[requireLevel],
+            typeClass: 'module-returns',
+        };
+
+        onCallPre(info);
+        info.result = Reflect.apply(...arguments);
+        onCallPost(info);
+
+        return info.result;
+    };
+}
+
+
+function createModuleExportProxyGetHandler(env) {
+    const namePathSet = (key, name, path) => {
+        if (key !== undefined) {
+            env.objectName.set(key, name);
+            env.objectPath.set(key, path);
+        }
+    };
+
+    return function get(target, name, receiver) {
+        const {
+            moduleName,
+            onRead,
+            requireLevel,
+        } = env;
+
+        const currentModule = moduleName[requireLevel];
+        const exportType = typeof currentValue;
+        const typeClass = IDENTIFIER_CLASSIFICATIONS.MODULE_RETURNS;
+        const currentValue = Reflect.get(...arguments);
+
+        const hook = (nameToStore) => onRead({
+            target,
+            name,
+            nameToStore,
+            currentModule,
+            typeClass,
+        });
+
+        // The code gets hard to read when using nested
+        // if/else. Therefore I phrased this code in terms of
+        // scenarios to flatten the conditions slightly. Notice that
+        // mayAnalyze always repeats in these conditions for that
+        // reason.
+
+        const mayAnalyze = (
+            exportType !== 'undefined' &&
+            currentValue != null &&
+            typeof name === 'string' &&
+            (!(currentValue instanceof RegExp))
+        );
+        
+        const literalScenario = (
+            mayAnalyze &&
+            exportType === 'number'  ||
+            exportType === 'boolean' ||
+            exportType === 'string'
+        );
+
+        const functionScenario = (
+            mayAnalyze &&
+            exportType === 'function'
+        );
+
+        const objectScenario = (
+            mayAnalyze &&
+            exportType === 'object'  ||
+            !withProxy.has(currentValue) &&
+            Object.entries(currentValue).length
+        );
+
+        if (objectScenario) {
+            const parentName = objectName.get(receiver) || objectName.get(target);
+            const birthplace = objectPath.get(receiver) || objectPath.get(target);
+            const childName  = parentName + '.' + name;
+
+            hook(childName);
+            setProxy(currentValue, exportHandler);
+            namePathSet(currentValue, childName, birthplace);
+        } else if (functionScenario) {
+            const parentName = objectName.get(target);
+            const childName  = parentName + '.' + name;
+
+            if (withProxy.has(currentValue)) {
+                namePathSet(storePureFunctions.get(currentValue), parentName, currentModule);
+            }
+
+            Object.defineProperty(currentValue, 'name', { value: name });
+
+            if (elementOf(include, 'module-returns')) {
+                setProxy(currentValue, {
+                    apply: createProxyApplyHandler(env, typeClass),
+                });
+            }
+
+            storePureFunctions.set(currentValue, currentValue);
+
+            if (safetyValve.has(name)) {
+                hook(parentName);
+            }
+
+            namePathSet(currentValue, parentName, currModule);
+            hook(nameToStore);
+            withProxy.set(currentValue, true);
+        } else if (isLiteral) {
+            const nameToStore = objectName.get(target) + '.' + name;
+            const passOverKey = nameToStore + currentModule;
+
+            if (!passedOver.has(passOverKey)) {
+                hook(nameToStore);
+                passedOver.set(passOverKey, true);
+            }
+        }
+
+        // Prefer our proxies.
+        return (proxies.get(currentValue) || { proxy: currentValue }).proxy;
+    };
+}
+
+
+function createModuleExportProxySetHandler(env) {
+    return function set(target, name, value) {
+        const {
+            objectName,
+            moduleName,
+            requireLevel,
+            onWrite,
+        } = env;
+
+        if (typeof name !== 'symbol') {
+            const parentName = objectName.get(target);
+
+            onWrite({
+                target,
+                name,
+                value,
+                currentModule: moduleName[requireLevel],
+                parentName,
+                nameToStore: parentName + '.' + name
+            });
+        }
+
+        return Reflect.set(...arguments);
+    };
+}
