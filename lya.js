@@ -10,8 +10,7 @@ const fs = require('fs');
 const path = require('path');
 const arg = require('arg');
 const pkg = require('./package.json');
-const { analyze } = require('./src/analyze.js');
-const { preset, configureLya } = require('./src/config.js');
+const { preset, inTermsOf, configureLya } = require('./src/config.js');
 
 /* eslint-disable max-len */
 const h = `Analyze JavaScript programs dynamically, to extract information or enforce invariants.
@@ -236,5 +235,24 @@ if (args['--only-prologue']) {
   process.exit(0);
 }
 
-const env = lya.createLyaState(require, conf);
-lya.callWithLya(env, (require) => require(filePath))
+
+const env = require(conf.analysis)(lya);
+
+// Override options from CLI where applicable.
+env.config = inTermsOf(env.config)(conf);
+
+lya.callWithLya(env, (require) => require(filePath));
+
+const stringifiedResults = JSON.stringify(env.results, null, 2);
+
+if (conf.SAVE_RESULTS) {
+    fs.writeFileSync(env.conf.SAVE_RESULTS, stringifiedResults, 'utf-8');
+}
+if (conf.print) {
+    console.log(stringifiedResults);
+}
+if (conf.reportTime) {
+  const timerEnd = process.hrtime(env.config.timerStart);
+  const timeMillis = convert(timerEnd).millis;
+  console.log(timeMillis, 'Time');
+}
