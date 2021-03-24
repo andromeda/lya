@@ -127,8 +127,9 @@ function main(conf) {
 
   // Force options from CLI where applicable.
   env.config = inTermsOf(env.config)(conf);
+  env.config.require = require;
 
-  lya.callWithLya(env, (require) => require(filePath));
+  lya.callWithLya(env, (require) => require(conf.inputFile));
 }
 
 function collectArguments() {
@@ -241,6 +242,8 @@ function collectArguments() {
     console.log(conf)
     process.exit(0);
   }
+
+  conf.inputFile = filePath;
 
   return conf;
 }
