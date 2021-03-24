@@ -9,6 +9,8 @@ const {merge} = require('./container-type.js');
 module.exports = {
   preset: findPresets(path.join(__dirname, 'analysis')),
 
+  inTermsOf,
+
   configureLya: inTermsOf({
     inputString: false,
     printCode: false,
