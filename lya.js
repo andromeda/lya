@@ -157,6 +157,10 @@ function collectArguments() {
     conf.depth = args['--depth'];
   }
 
+  if (args['--verbosity']) {
+    conf.verbosity = args['--verbosity'];
+  }
+
   if (args['--analysis']) {
     let p = args['--analysis'].replace('-', '_').toUpperCase();
     if (Object.keys(preset).includes(p)) {
