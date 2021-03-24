@@ -30,9 +30,11 @@ module.exports = (lya) => {
                        info.nameToStore, ['r', 'x']);
   };
 
-  Object.assign(env.config.hooks, {
-    onCallPre,
-    onConstruct,
+  env = lya.createLyaState({
+    hooks: {
+      onCallPre,
+      onConstruct,
+    },
   });
 
   return env;

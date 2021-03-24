@@ -2,17 +2,15 @@ const pattern = /require[(](.*)[)]/;
 const fs = require('fs');
 
 module.exports = (lya) => {
-  const env = lya.createLyaState();
-
-  Object.assign(env.config.hooks, {
-    onRead,
-    onCallPre,
-    onWrite,
-    onConstruct,
-    onExit,
+  return lya.createLyaState({
+    hooks: {
+      onRead,
+      onCallPre,
+      onWrite,
+      onConstruct,
+      onExit,
+    },
   });
-  
-  return env;
 };
 
 // @storedCalls it is a table that contains all the analysis data

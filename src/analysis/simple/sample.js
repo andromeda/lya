@@ -1,6 +1,3 @@
-// The local env variable
-// let env;
-
 // This hook is called each time we import a module
 // and lets the developer have access to the source code
 // source <~ the source code of the imported module
@@ -43,17 +40,18 @@ const onHas = (info) => {
 const onExit = () => {
 };
 
-module.exports = (e) => {
-//  env = e;
-  return {
-    sourceTransform: sourceTransform,
-    onImport: onImport,
-    onRead: onRead,
-    onCallPre: onCallPre,
-    onCallPost: onCallPost,
-    onWrite: onWrite,
-    onConstruct: onConstruct,
-    onHas: onHas,
-    onExit: onExit,
-  };
+module.exports = (lya) => {
+  return lya.createLyaState({
+    hooks: {
+      sourceTransform,
+      onImport,
+      onRead,
+      onCallPre,
+      onCallPost,
+      onWrite,
+      onConstruct,
+      onHas,
+      onExit,
+    },
+  });
 };

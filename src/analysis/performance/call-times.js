@@ -1,7 +1,7 @@
 const fs = require('fs');
 
 module.exports = (lya) => {
-  const env = lya.createLyaState();
+  let env;
   const storeTime = new Map();
 
   // Array to store the time of the modules
@@ -44,11 +44,11 @@ module.exports = (lya) => {
     }
   };
 
-
-  Object.assign(env.config.hooks, {
-    onCallPre,
-    onCallPost,
-    onExit,
+  env = lya.createLyaState({
+    hooks: {
+      onCallPre,
+      onCallPost,
+    },
   });
 
   return env;

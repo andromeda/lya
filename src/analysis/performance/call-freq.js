@@ -1,7 +1,7 @@
 const fs = require('fs');
 
 module.exports = (lya) => {
-  const env = lya.createLyaState();
+  let env;
 
   // @storedCalls it is a table that contains all the analysis data
   // @truename the name of the current function, object etc that we want to add to
@@ -23,10 +23,12 @@ module.exports = (lya) => {
       updateAnalysisData(env.results[currentName], name);
     }
   };
-  
-  Object.assign(env.config.hooks, {
-    onCallPre,
-    onExit,
+
+  env = lya.createLyaState({
+    hooks: {
+      onCallPre,
+      onExit,
+    },
   });
   
   return env;

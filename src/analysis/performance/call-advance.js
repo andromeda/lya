@@ -1,8 +1,7 @@
 const fs = require('fs');
 
-
 module.exports = (lya) => {
-  const env = lya.createLyaState();
+  let env;
 
   const storeTime = new Map();
   const window = 2;
@@ -34,7 +33,7 @@ module.exports = (lya) => {
   const onCallPre = (info) => {
     storeTime.set(info.target, process.hrtime());
   };
-  
+
   // Store time results in a table keeping them within a certain window
   const storeResult = (module, name, storeTime, oldTime) => {
     if (env.results[module][name] === undefined) {
@@ -72,10 +71,12 @@ module.exports = (lya) => {
     }
   };
 
-  Object.assign(env.config.hooks, {
-    onCallPre,
-    onCallPost,    
+  env = lya.createLyaState({
+    hooks: {
+      onCallPre,
+      onCallPost,
+    },
   });
-  
+
   return env;
 };

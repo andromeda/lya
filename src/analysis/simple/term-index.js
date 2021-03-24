@@ -22,7 +22,7 @@ const stopWords = [
   'don', 'should', 'now'];
 
 module.exports = (lya) => {
-  const env = lya.createLyaState();
+  let env;
 
   let numDocs = 0;
   // map of terms to docs containing a term -- FIXME? explain
@@ -85,9 +85,11 @@ module.exports = (lya) => {
   };
 
 
-  Object.assign(env.config.hooks, {
-    sourceTransform,
-    onExit,
+  env = lya.createLyaState({
+    hooks: {
+      sourceTransform,
+      onExit,
+    },
   });
 
   return env;

@@ -1,16 +1,7 @@
-const fs = require('fs');
 const chalk = require('chalk');
 
 module.exports = (lya) => {
-  const env = lya.createLyaState();
-
-  // Change the time parameters
-  const convert = (hrtime) => {
-    const nanos = (hrtime[0] * 1e9) + hrtime[1];
-    const millis = nanos / 1e6;
-    const secs = nanos / 1e9;
-    return {secs: secs, millis: millis, nanos: nanos};
-  };
+  let env;
 
   // onCallPre <~ is called before the execution of a function
   const onCallPre = (info) => {
@@ -38,9 +29,11 @@ module.exports = (lya) => {
     // NOTE: And the other hook here
   };
 
-  Object.assign(env.config.hooks, {
-    onCallPre,
-    onCallPost,
+  env = lya.createLyaState({
+    hooks: {
+      onCallPre,
+      onCallPost,
+    },
   });
 
   return env;

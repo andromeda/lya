@@ -1,7 +1,5 @@
-const fs = require('fs');
-
 module.exports = (lya) => {
-  const env = lya.createLyaState();
+  let env;
   const inputStore = [];
 
   const updateAnalysisData = (storedCalls, truename, inputType, outputType) => {
@@ -39,10 +37,11 @@ module.exports = (lya) => {
                        outputType);
   };
 
-  Object.assign(env.config.hooks, {
-    onCallPre,
-    onCallPost,
-    onExit,
+  env = lya.createLyaState({
+    hooks: {
+      onCallPre,
+      onCallPost,
+    },
   });
 
   return env;

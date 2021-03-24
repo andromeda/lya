@@ -1,6 +1,5 @@
-module.exports = (lya) => {
-  const env = lya.createLyaState();
-  let groundTruth;
+module.exports = (lya, userConfig = {}) => {
+  let env, groundTruth;
 
   // We need to get the path of the main module in order to find dynamic json
   const getAnalysisData = () => {
@@ -66,20 +65,17 @@ module.exports = (lya) => {
     }
   };
 
-  const onExit = () => {
-  };
-
   
-  groundTruth = env.config.rules
-    ? require(env.config.rules)
+  groundTruth = userConfig.rules
+    ? require(userConfig.rules)
     : getAnalysisData();
 
-  Object.assign(env.config, {
-    onRead,
-    onCallPre,
-    onWrite,
-    onExit,
+  return lya.createLyaState({
+    hooks: {
+      onRead,
+      onCallPre,
+      onWrite,
+      onConstruct,
+    },
   });
-
-  return e;
 };

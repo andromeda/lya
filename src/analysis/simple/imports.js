@@ -1,14 +1,14 @@
 module.exports = (lya) => {
-  const env = lya.createLyaState();
+  let env = lya.createLyaState({
+    hooks: {
+      onImport: (info) => {
+        if (!env.results[info.caller]) {
+          env.results[info.caller] = [];
+        }
 
-  Object.assign(env.config.hooks, {
-    onImport: (info) => {
-      if (!env.results[info.caller]) {
-        env.results[info.caller] = [];
-      }
-      
-      env.results[info.caller].push(info.callee);
-    },
+        env.results[info.caller].push(info.callee);
+      },
+    }
   });
 
   return env;

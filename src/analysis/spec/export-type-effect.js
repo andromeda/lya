@@ -1,7 +1,5 @@
-const fs = require('fs');
-
 module.exports = (lya) => {
-  const env = lya.createLyaState();
+  let env;
 
   const types = [];
   const accessTable = [];
@@ -68,11 +66,13 @@ module.exports = (lya) => {
     currentFunction.pop();
   };
 
-  Object.assign(env.config.hooks, {
-    onCallPre,
-    onCallPost,
-    onRead,
-    onWrite,
+  env = lya.createLyaState({
+    hooks: {
+      onCallPre,
+      onCallPost,
+      onRead,
+      onWrite,
+    },
   });
 
   return env;

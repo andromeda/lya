@@ -6,11 +6,9 @@
 // https://stackoverflow.com/a/3577901
 
 module.exports = (lya) => {
-  const env = lya.createLyaState();
-
-  Object.assign(env.config.hooks, {
-    sourceTransform: (src) => src.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, ''),
+  return lya.createLyaState({
+    hooks: {
+      sourceTransform: (src) => src.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, ''),
+    }
   });
-
-  return env;
 };
