@@ -1,11 +1,13 @@
 module.exports = {
   createReferenceMetadataStore,
+  getDeclaringModule,
   getOPath,
   setName,
   setParent,
 };
 
 const {assert, assertDeepEqual, test} = require('./test.js');
+const Module = require('module');
 
 function createReferenceMetadataStore() {
   const M = new WeakMap();
@@ -47,6 +49,15 @@ function getOPath(metadata, ref) {
   }
 }
 
+function getDeclaringModule(metadata, ref) {
+  if (!ref) {
+    return;
+  } else if (ref instanceof Module) {
+    return ref;
+  } else {
+    return getDeclaringModule(metadata, metadata.get(ref).parent);
+  }
+}
 
 
 test(() => {
