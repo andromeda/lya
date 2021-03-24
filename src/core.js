@@ -30,6 +30,7 @@ const {callWithVmOverride} = require('./vm-override.js');
 const {maybeAddProxy, createProxyApplyHandler} = require('./proxy.js');
 const {IDENTIFIER_CLASSIFICATIONS} = require('./constants.js');
 const {createReferenceMetadataStore} = require('./metadata.js');
+const { configureLya } = require('./config.js');
 
 // /////////////////////////////////////////////////////////////////////////////
 // High-level API
@@ -39,7 +40,7 @@ const {createReferenceMetadataStore} = require('./metadata.js');
 function createLyaState(userRequire, config) {
   return {
     // Contains hooks, policy info, and other user-specific goodies.
-    config,
+    config: configureLya(config),
 
     // Contains metadata collected for references as they are found.
     metadata: createReferenceMetadataStore(),
