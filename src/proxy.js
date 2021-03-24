@@ -15,17 +15,13 @@ module.exports = {
 const {elementOf} = require('./container-type.js');
 const {withCatch} = require('./control.js');
 
-// Like new Proxy(), except the instance is tracked in Lya state.
+// Like new Proxy(), except the instance is tracked.
 function maybeAddProxy(env, obj, handler) {
-  let proxy = env.proxies.get(obj);
+  let { proxy } = env.metadata.get(obj);
 
-  if (!proxy && !elementOf(env.safetyValve, env.methodNames.get(obj))) {
+  if (!proxy) {
     proxy = new Proxy(obj, handler);
-
-    env.proxies.set(obj, {
-      proxy,
-      type: typeof obj,
-    });
+    setMetadata(obj, { proxy });
   }
 
   return proxy;
@@ -45,28 +41,37 @@ function createProxyHandlerObject(env, typeClass) {
 
 function createProxyGetHandler(env, typeClass) {
   return function(target, name) {
+    const {
+      metadata: {
+        get,
+      },
+      config: {
+        hooks: {
+          onRead,
+        },
+      },
+    } = env;
+
     const nameToStore = (
-            env.globalNames.has(name) ?
-                env.globalNames.get(name) :
-                (env.globalNames.has(target[name]) ?
-                   env.globalNames.get(target[name]) :
-                   (env.methodNames.has(target[name]) ?
-                      env.methodNames.get(target[name]) :
-                      (env.methodNames.has(target) ?
-                         env.methodNames.get(target) :
-                         null))));
+      get(global[name]).name ||
+      get(target[name]).name ||
+      get(target).name ||
+      null
+    );
 
     if (nameToStore && name) {
-      env.onRead({
+      onRead({
         target,
         name,
         nameToStore,
-        currentModule: env.objectPath.get(target),
+        currentModule: getOPath(get, target),
         typeClass,
       });
     }
 
-    return Reflect.get(...arguments);
+    const currentValue = Reflect.get(...arguments);
+
+    return currentValue;
   };
 }
 
@@ -74,9 +79,7 @@ function createProxyGetHandler(env, typeClass) {
 function createProxySetHandler(env, typeClass) {
   return function(target, name, value) {
     const {
-      globalNames,
-      objectPath,
-      methodNames,
+      metadata,
       config: {
         hooks: {
           onWrite,
@@ -84,14 +87,10 @@ function createProxySetHandler(env, typeClass) {
       },
     } = env;
 
-    const currentModule = objectPath.get(target);
+    const { parent, module } = metadata.get(target);
+    const { name } = metadata.get(parent);
 
-    if (methodNames.has(target)) {
-      const parentName = methodNames.get(target);
-      const nameToStore = globalNames.has(name) ?
-                  globalNames.get(name) :
-                  parentName + '.' + name;
-
+    if (name) {
       hookCheck(onWrite, {
         target,
         name,
@@ -126,23 +125,16 @@ function createProxyHasHandler(env, typeClass) {
     } = env;
 
     const currentName = moduleName[env.requireLevel];
-    const parentObject = methodNames.get(target);
+    const { parent } = metadata.get(target);
     const result = Reflect.has(...arguments);
-    const nameToStore = parentObject + '.' + prop.toString();
+    const nameToStore = parent + '.' + prop.toString();
 
-    if (parentObject === 'global' && !result && prop !== 'localGlobal') {
-      candidateGlobs.add(prop);
-
-      if (!candidateModule.has(prop)) {
-        candidateModule.set(prop, currentName);
-        globalNames.set(prop, prop);
-      }
-
+    if (parentObject === global && !result) {
       onHas({
         target,
         prop,
         currentName,
-        nameToStore,
+        nameToStore: getOPath(parent) + '.' + prop.toString(),
       });
     }
 

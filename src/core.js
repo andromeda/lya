@@ -20,83 +20,50 @@ module.exports = {
 // /////////////////////////////////////////////////////////////////////////////
 // Implementation
 
-const vm = require('vm');
-
 const {analyze} = require('./analyze.js');
 const {assert, assertDeepEqual, test} = require('./test.js');
 const {identity} = require('./functions.js');
 const {callWithOwnValues, coerceMap, elementOf} = require('./container-type.js');
 const {callWithModuleOverride} = require('./module-override.js');
+const {callWithVmOverride} = require('./vm-override.js');
 const {maybeAddProxy, createProxyApplyHandler} = require('./proxy.js');
 const {IDENTIFIER_CLASSIFICATIONS} = require('./constants.js');
-
-const config = require('./config.js');
-
-const universalGlobal = new Function('return this')();
-
+const {createReferenceMetadataStore} = require('./metadata.js');
 
 // /////////////////////////////////////////////////////////////////////////////
 // High-level API
 
 
-// We start an analysis using the module resolver. This means that
-// when a require() function is used, it will override shared APIs
-// and change how required code behaves.
-function createLyaRequireProxy(env) {
-  return maybeAddProxy(env, env.require, {
-    apply: createProxyApplyHandler(env, IDENTIFIER_CLASSIFICATIONS.MODULE_LOCALS),
-  });
-}
-
-
 // Creates an object used to collect facts from the runtime.
 function createLyaState(userRequire, config) {
   return {
-    candidateGlobs: new Set(),
-    candidateModule: new Map(),
-    clonedFunctions: new Map(),
+    // Contains hooks, policy info, and other user-specific goodies.
     config,
-    context: createGlobalProxy(),
-    defaultNames: require('./default-names.json'),
-    globalNames: new Map(),
 
-    // The last unresolved module name used as an argument to require()
-    // in the analyzed program. Used to trace dependency relationships.
-    currentModuleRequest: null,
+    // Contains metadata collected for references as they are found.
+    metadata: createReferenceMetadataStore(),
 
-    methodNames: new WeakMap(),
-    moduleName: [],
-    objectName: new WeakMap(),
-    objectPath: new WeakMap(),
-    passedOver: new Map(),
-    proxies: new Map(),
-    objectPath: new WeakMap(),
+    // Use to indirectly trigger analysis via 'vm' module.
     require: userRequire,
+
+    // Track dependency relationships
+    currentModuleRequest: null,
+    moduleName: [],
     requireLevel: 0,
+
+    // For collecting user-defined data.
     results: {},
-    safetyValve: createSafetyValve(),
-    storePureFunctions: new WeakMap(),
-    withProxy: new WeakMap(),
   };
-}
-
-
-function createGlobalProxy() {
-  return {
-  };
-}
-
-
-function callWithVmOverride(env, f) {
-  return callWithOwnValues(vm, {
-    runInThisContext: function runInThisContext(code, options) {
-      return vm.runInContext(code, env.context, options);
-    },
-  }, f);
 }
 
 
 function callWithLya(env, f) {
+  // You can place any functions of the same signature as this one here.
+  // Each function mutates the global scope, or a module's exports,
+  // runs a callback, and then restores the original state.
+  //
+  // All such functions are centralized here so that users can avoid
+  // concurrent execution of code that would conflict with callWithLya.
   const overrides = [
     callWithModuleOverride,
     callWithVmOverride,
@@ -107,106 +74,10 @@ function callWithLya(env, f) {
 }
 
 
-const getObjectInfo = (env, obj) => ({
-  // TODO: Simplify
-  name: (env.objectName.has(obj) ?
-           env.objectName.get(obj) :
-           (env.methodNames.has(obj) ?
-              env.methodNames.get(obj) :
-              (env.globalNames.has(obj.name) ?
-                 env.globalNames.get(obj.name) :
-                 (obj.name ?
-                    obj.name :
-                    null)))),
-  path: env.objectPath.has(obj) ?
-        env.objectPath.get(obj) :
-        null,
-});
-
-
-function createGlobalVariable(env, name) {
-  const {
-    objectPath,
-    moduleName,
-    requireLevel,
-    context,
-    include,
-    depth,
-  } = env;
-
-  if (context[name] !== undefined) {
-    if (!elementOf(include, 'node-globals')) {
-      return universalGlobal[name];
-    }
-
-    env.stopLoops = new WeakMap();
-    const proxyObj = proxyWrap(context[name],
-        createHandler('node-globals'),
-        name,
-        depth);
-
-    if (name !== 'Infinity' && name !== 'NaN') {
-      objectPath.set(proxyObj, moduleName[requireLevel]);
-    }
-
-    return proxyObj;
-  }
-}
-
-
-function cloneFunctions(globalDefaultNames) {
-  return Object
-      .keys(globalDefaultNames)
-      .reduce((names, k) => names.concat(globals[k]), [])
-      .filter((e) => (typeof global[e] === 'function' && e !== 'Promise'))
-      .reduce((assoc, e) => assoc.set(e, cloneFunction(global[e], e)), new Map());
-}
-
-
-// require, __dirname, __filename
-function wrapModuleInputs(env, obj, count) {
-  const {
-    inputString,
-    context: {
-      include,
-    },
-    methodNames,
-    objectPath,
-    moduleInputNames,
-    moduleName,
-    requireLevel,
-  } = env;
-
-  const type = typeof obj[count];
-  let localCopy;
-
-  if (type === 'string') {
-    if (inputString) {
-      // eslint-disable-next-line no-new-wrappers
-      localCopy = new String(obj[count]);
-    } else {
-      return obj[count];
-    }
-  } else {
-    localCopy = obj[count];
-  }
-
-  methodNames.set(localCopy, moduleInputNames[count]);
-  objectPath.set(localCopy, moduleName[requireLevel]);
-
-  if (!elementOf(include, 'module-locals')) {
-    return localCopy;
-  }
-
-  return maybeAddProxy(
-      localCopy,
-      filterObject(createHandler('module-locals'), ['apply', 'get', 'set']));
-}
-
-
-function createSafetyValve() {
-  return coerceMap(['toString', 'valueOf', 'prototype', 'name', 'children'], {
-    weak: false,
-    makeValue: () => true,
+// We start an analysis using the module resolver because we'll want
+// relative paths, etc. to function as CommonJS expects.
+function createLyaRequireProxy(env) {
+  return maybeAddProxy(env, env.require, {
+    apply: createProxyApplyHandler(env, IDENTIFIER_CLASSIFICATIONS.MODULE_LOCALS),
   });
 }

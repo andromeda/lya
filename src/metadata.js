@@ -1,5 +1,8 @@
 module.exports = {
   createReferenceMetadataStore,
+  getOPath,
+  setName,
+  setParent,
 };
 
 const {assert, assertDeepEqual, test} = require('./test.js');
@@ -25,13 +28,20 @@ function createReferenceMetadataStore() {
   };  
 }
 
+function setParent(metadata, child, parent) {
+  metadata.set(child, { parent });
+}
 
-function getOPath(get, ref) {
-  const { parent, name } = get(ref);
+function setName(metadata, object, name) {
+  metadata.set(object, { name });
+}
+
+function getOPath(metadata, ref) {
+  const { parent, name } = metadata.get(ref);
   const displayName = name || '';
   
   if (parent) {
-    return getOPath(get, parent) + '.' + displayName;
+    return getOPath(metadata, parent) + '.' + displayName;
   } else {
     return displayName;
   }
