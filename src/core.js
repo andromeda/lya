@@ -1,8 +1,10 @@
 // Programatically monitor module-level interactions.
 
+const state = require('./state.js');
+
 module.exports = {
   callWithLya,
-  createLyaState: require('./state.js').createLyaState,
+  createLyaState: state.createLyaState,
   preset: require('./config.js').preset,
 };
 
@@ -80,7 +82,12 @@ function createLyaRequireProxy(env) {
     throw new Error('env.config.require is not a function.');
   }
 
+  const baseApply = createProxyApplyHandler(env, IDENTIFIER_CLASSIFICATIONS.MODULE_LOCALS);
+
   return maybeAddProxy(env, env.config.require, {
-    apply: createProxyApplyHandler(env, IDENTIFIER_CLASSIFICATIONS.MODULE_LOCALS),
+    apply: function () {
+      state.setCurrentModule(env, require.main);
+      return baseApply(...arguments);
+    },
   });
 }
