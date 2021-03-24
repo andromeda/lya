@@ -14,6 +14,7 @@ Programatically monitor module-level interactions.
 module.exports = {
   createLyaState,
   callWithLya,
+  preset: require('./config.js').preset,
 };
 
 
