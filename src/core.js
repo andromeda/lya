@@ -1,5 +1,6 @@
 // Programatically monitor module-level interactions.
 
+const fs = require('fs');
 const state = require('./state.js');
 
 module.exports = {

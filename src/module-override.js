@@ -28,6 +28,12 @@ const Module = require('module');
 const {callWithOwnValues, elementOf} = require('./container-type.js');
 const {identity} = require('./functions.js');
 const {assert, assertDeepEqual, test} = require('./test.js');
+const {
+  createProxyApplyHandler,
+  createProxyGetHandler,
+  createProxySetHandler,
+  maybeAddProxy,
+} = require('./proxy.js');
 
 const {
   COMMONJS_MODULE_IDENTIFIERS,
@@ -46,8 +52,9 @@ const {
 //
 const originalWrap = Module.wrap;
 
-function overrideModuleWrap(transform = identity) {
-  return (script) => originalWrap(transform(script, env.currentModuleRequest));
+function overrideModuleWrap(env) {
+  return (script) => originalWrap(env.config.hooks.sourceTransform,
+                                  env.currentModuleRequest);
 }
 
 
