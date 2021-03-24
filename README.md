@@ -59,12 +59,14 @@ const lya = require("@andromeda/lya");
 const createState = require(lya.preset.ON_OFF);
 
 const env = createState(lya);
-env.saveResults = require("path").join(__dirname, "dynamic.json");
+
+env.config.saveResults = require("path").join(__dirname, "dynamic.json");
+env.config.require = require;
 
 lya.callWithLya(env, (require) => require("./main.js"));
 ```
 
-The configuration above first configures running the `ON_OFF` analysis, and saves the results in `./dynamic.json`. `callWithLya` calls a callback in the context an overridden Node API and `require` function, such that a module given to it will be analyzed from there.
+The configuration above first configures running the `ON_OFF` analysis, and saves the results in `./dynamic.json`. `callWithLya` calls a callback in the context an overridden Node API and `require` function.
 
 Since the callback runs in a modified environment, do not run other code concurrently with that callback. By the time control leaves `callWithLya`, the environment will be restored.
 
