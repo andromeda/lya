@@ -15,7 +15,7 @@ lya <fl> [hpVvvv] [a=<a.js>] [d=<n>] [{module, context, prop}-{include, exclude}
 
   <fl>                        File to start analysis from (i.e., program entry point).
 
-  -h,   --help:               Output (this) help 
+  -h,   --help:               Output (this) help
   -V    --version:            Output version information
   -v, vv, vvv, --verbosity:   Add (multiple) verbosity levels
 
@@ -26,7 +26,7 @@ lya <fl> [hpVvvv] [a=<a.js>] [d=<n>] [{module, context, prop}-{include, exclude}
   -p,   --print [<out, err>]: Stream to output results (defaults to file)
   -o,   --only-prologue:      Print only the config prologue
   -w,   --enable-with	      Enable with functionality
-  
+
   --module-exclude <m>:       Comma-separated list of module IDs (absolute fs paths) to be excluded from the analysis
   --module-include <m>:       Comma-separated list of module IDs (absolute fs paths) to be included (assumes module-exclude='*')
   --context-exclude <c>:      Comma-separated context starting points to exclude from tracking (for contexts, see below)
@@ -39,7 +39,7 @@ lya <fl> [hpVvvv] [a=<a.js>] [d=<n>] [{module, context, prop}-{include, exclude}
 
   * module-locals, m:         Module-local names such as 'require'
   * node-globals, n:          All Node.js-related globals, such as 'console' and 'process'
-  * es-globals, e:            All EcmaScript 6 globals names such Math.sin or 
+  * es-globals, e:            All EcmaScript 6 globals names such Math.sin or
   * user-globals, g:          User-defined globals accessed with a 'global' prefix, e.g., 'global.y = 3'
   * with-globals, w:          User-defined globals accessed without a prefix, e.g., 'y = 3' (expensive to track)
 
