@@ -47,7 +47,7 @@ function createProxyHandlerObject(env, typeClass) {
 
 
 function createProxyGetHandler(env, typeClass) {
-  return function(target, name) {
+  return function get(target, name) {
     const {
       metadata,
       config: {
@@ -82,7 +82,7 @@ function createProxyGetHandler(env, typeClass) {
 
 
 function createProxySetHandler(env, typeClass) {
-  return function(target, name, value) {
+  return function set(target, name, value) {
     const {
       metadata,
       config: {
@@ -116,7 +116,7 @@ function createProxySetHandler(env, typeClass) {
 
 
 function createProxyHasHandler(env, typeClass) {
-  return function(target, prop) {
+  return function has(target, prop) {
     const {
       candidateGlobs,
       globalNames,
@@ -150,12 +150,22 @@ function createProxyHasHandler(env, typeClass) {
 
 
 function createProxyConstructHandler(env, typeClass) {
-  return function(target, args) {
+  return function construct(target, args) {
+    const {
+      requireLevel,
+      moduleName,
+      config: {
+        hooks: {
+          onConstruct,
+        },
+      },
+    } = env;
+
     if (target.name !== 'Proxy') {
       onConstruct({
         target,
         args,
-        currentName: env.moduleName[env.requireLevel],
+        currentName: moduleName[requireLevel],
         nameToStore: target.name,
       });
     }
@@ -167,9 +177,7 @@ function createProxyConstructHandler(env, typeClass) {
 
 
 function createProxyApplyHandler(env, typeClass) {
-  return function(target, thisArg, argumentsList) {
-    let result;
-
+  return function apply(target, thisArg, argumentsList) {
     const {
       requireLevel,
       moduleName,
