@@ -3,6 +3,8 @@ module.exports = {
 };
 
 const vm = require('vm');
+const path = require('path');
+
 const {assert, test} = require('./test.js');
 const {maybeAddProxy, createProxyHandlerObject} = require('./proxy.js');
 const {callWithOwnValues} = require('./container-type.js');
@@ -19,10 +21,17 @@ function callWithVmOverride(env, f) {
       if (!env.context) {
         const handler = createProxyHandlerObject(
           env, IDENTIFIER_CLASSIFICATIONS.NODE_GLOBALS);
+
         env.context = vm.createContext(maybeAddProxy(env, global, handler));
+
+        env.metadata.set(env.context, {
+          parent: null,
+          name: 'global',
+        });
       }
 
       const commonJsFunction = vm.runInContext(code, env.context, options);
+
       env.metadata.set(commonJsFunction, { parent: env.context });
 
       return maybeAddProxy(env, commonJsFunction, { apply: createCommonJsApply(env) });
@@ -67,21 +76,28 @@ function createCommonJsApply(env) {
 }
 
 test(() => {
+  const fs = require('fs');
   const original = vm.runInThisContext;
+  const { createLyaState } = require('./state.js');
+  const env = createLyaState();  
+  const dummy = './_test.js';
 
-  const env = {
-  };
+  fs.writeFileSync(dummy, 'x = "Hi"', { flag: 'w+' });
 
-  callWithVmOverride(env, () => {
-    assert(vm.runInThisContext !== original,
-           'Override vm.runInThisContext');
+  try {
+    callWithVmOverride(env, () => {
+      assert(vm.runInThisContext !== original,
+             'Override vm.runInThisContext');
 
-    assert(env.context === undefined,
-           'Start with no global.');
+      assert(env.context === undefined,
+             'Start with no global.');
 
-    require('./dummy.js');
+      require(dummy);
 
-    assert(env.context instanceof Proxy,
-           'Install Proxy as global object.');
-  });
+      assert(env.context,
+             'Install global object.');
+    });
+  } finally {
+    fs.unlinkSync(dummy);
+  }
 });

@@ -2,6 +2,7 @@ module.exports = {
   createReferenceMetadataStore,
   getDeclaringModule,
   getOPath,
+  inferParent,
   setName,
   setParent,
 };
@@ -28,6 +29,16 @@ function createReferenceMetadataStore() {
     get,
     set,
   };  
+}
+
+function inferParent(env, child) {
+  const { parent } = env.metadata.get(child);
+
+  if (!parent) {
+    env.metadata.set(child, { parent: env.context });
+  }
+
+  return env.metadata.get(child).parent;
 }
 
 function setParent(metadata, child, parent) {

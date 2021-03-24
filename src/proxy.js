@@ -17,6 +17,7 @@ const {withCatch} = require('./control.js');
 const {assert, assertDeepEqual, test} = require('./test.js');
 const {
   createReferenceMetadataStore,
+  inferParent,
   getDeclaringModule,
   getOPath,
 } = require('./metadata.js');
@@ -35,7 +36,7 @@ function maybeAddProxy(env, obj, handler) {
       // exception to avoid writing a bunch of defensive checks.
       // Since the same TypeError is raised for either argument, we at
       // least need to be sure that the handler wasn't the issue.
-      if (e instanceof TypeError && handler !== null && typeof handler === 'object') {
+      if (e instanceof TypeError && isHandlerObject(handler)) {
         return undefined;
       }
 
@@ -54,6 +55,20 @@ function maybeAddProxy(env, obj, handler) {
   }
 
   return proxy;
+}
+
+const HANDLER_KEYS = new Set(['get', 'has', 'set', 'apply', 'construct']);
+
+function isHandlerObject(v) {
+  try {
+    return Object
+      .keys(v)
+      .every((k) => (
+        HANDLER_KEYS.has(k) &&
+          typeof v[k] === 'function'))
+  } catch (e) {
+    return false;
+  }
 }
 
 
@@ -115,6 +130,8 @@ function createProxySetHandler(env, typeClass) {
   return function set(target, name, value) {
     const {
       metadata,
+      context,
+      currentModule,
       config: {
         hooks: {
           onWrite,
@@ -122,7 +139,7 @@ function createProxySetHandler(env, typeClass) {
       },
     } = env;
 
-    const { parent, module } = metadata.get(target);
+    const parent = inferParent(env, target);
     const { name: parentName } = metadata.get(parent);
 
     if (name) {
@@ -132,15 +149,8 @@ function createProxySetHandler(env, typeClass) {
         value,
         currentModule,
         parentName,
-        nameToStore,
+        nameToStore: '',
       });
-
-      if (parentName === 'global' || typeof value === 'number') {
-        const {declaredNames = []} = metadata.get(global);
-        metadata.set(global, {
-          declaredNames: declaredNames.concat([nameToStore])
-        });
-      }
     }
 
     return Reflect.set(...arguments);
@@ -151,6 +161,7 @@ function createProxySetHandler(env, typeClass) {
 function createProxyHasHandler(env, typeClass) {
   return function has(target, prop) {
     const {
+      context,
       currentModule,
       metadata,
       config: {
@@ -161,11 +172,11 @@ function createProxyHasHandler(env, typeClass) {
     } = env;
 
     const { name: currentName } = metadata.get(currentModule);
-    const { parent } = metadata.get(target);
+    const parent = inferParent(env, target);
     const result = Reflect.has(...arguments);
     const nameToStore = getOPath(metadata, parent) + '.' + prop.toString();
 
-    if (parentObject === global && !result) {
+    if (parentObject === context && !result) {
       onHas({
         target,
         prop,
@@ -277,7 +288,7 @@ test(() => {
            'Capture the function name')
     assert(nameToStore === 'M.alias',
            'Capture the analysis-specific alias of the function');
-    assert(currentModule === 'bar',
+    assert(currentModule === 'M',
            'Capture the module ID');
     assert(declareModule === 'M',
            'Capture the declaring module');
