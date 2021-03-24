@@ -21,6 +21,7 @@ const {
   inferParent,
   getDeclaringModule,
   getOPath,
+  registerReference,
   setCurrentModule,
 } = require('./state.js');
 
@@ -118,14 +119,15 @@ function createProxyGetHandler(env, typeClass) {
       });
 
       // TODO: Select typeclass dynamically
-      const handler = createProxyHandlerObject('lazy');
+      const handler = createProxyHandlerObject(env, 'lazy');
+      
       maybeAddProxy(env, currentValue, handler);
     }
 
     onRead({
       target,
       name,
-      nameToStore: getOPath(metadata, currentValue),
+      nameToStore: getOPath(env, currentValue),
       currentModule: metadata.get(currentModule).name,
       typeClass,
     });
@@ -250,6 +252,8 @@ function createProxyApplyHandler(env, typeClass) {
     } = env;
 
     log.push({ handler: 'apply', target, thisArg, argumentsList });
+
+    registerReference(env, target);
 
     const nameToStore = getOPath(env, target);
 

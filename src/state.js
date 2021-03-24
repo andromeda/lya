@@ -9,6 +9,7 @@ module.exports = {
   setCurrentModule,
   getDeclaringModule,
   getOPath,
+  registerReference,
 };
 
 const {configureLya} = require('./config.js');
@@ -59,6 +60,7 @@ function inferName(env, variant) {
 function registerReference(env, variant) {
   env.metadata.set(variant, {
     name: inferName(env, variant),
+    parent: env.currentModule || env.context || global,
   });
 }
 
