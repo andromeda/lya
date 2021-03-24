@@ -4,10 +4,13 @@
 
 // also try google closure compiler
 // https://stackoverflow.com/a/3577901
-const sourceTransform = (src) => src.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '');
 
-module.exports = () => {
-  return {
-    sourceTransform: sourceTransform,
-  };
+module.exports = (lya) => {
+  const env = lya.createLyaState();
+
+  Object.assign(env.config.hooks, {
+    sourceTransform: (src) => src.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, ''),
+  });
+
+  return env;
 };

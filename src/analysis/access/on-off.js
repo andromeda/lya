@@ -1,6 +1,19 @@
-let env;
 const pattern = /require[(](.*)[)]/;
 const fs = require('fs');
+
+module.exports = (lya) => {
+  const env = lya.createLyaState();
+
+  Object.assign(env.config.hooks, {
+    onRead,
+    onCallPre,
+    onWrite,
+    onConstruct,
+    onExit,
+  });
+  
+  return env;
+};
 
 // @storedCalls it is a table that contains all the analysis data
 // @truename the name of the current function, object etc that we want to add to
@@ -70,22 +83,4 @@ const onExit = (intersection, candidateModule) => {
     updateAnalysisData(env.analysisResult[currentName],
         name, ['w']);
   }
-  if (env.conf.SAVE_RESULTS) {
-    fs.writeFileSync(env.conf.SAVE_RESULTS,
-        JSON.stringify(env.analysisResult, null, 2), 'utf-8');
-  }
-  if (env.conf.print) {
-    console.log(JSON.stringify(env.analysisResult, null, 2));
-  }
-};
-
-module.exports = (e) => {
-  env = e;
-  return {
-    onRead: onRead,
-    onCallPre: onCallPre,
-    onWrite: onWrite,
-    onConstruct: onConstruct,
-    onExit: onExit,
-  };
 };

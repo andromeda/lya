@@ -20,73 +20,75 @@ const stopWords = [
   'few', 'more', 'most', 'other', 'some', 'such', 'no', 'nor', 'not', 'only',
   'own', 'same', 'so', 'than', 'too', 'very', 's', 't', 'can', 'will', 'just',
   'don', 'should', 'now'];
-// const allTerms = {};
-let numDocs = 0;
-// map of terms to docs containing a term -- FIXME? explain
-// const dted = {};
-// map from docs to tf
-const docs = {};
-const TF = {}; // t -> d -> tf
-const IDF = {}; // t -> d -> idf
-const Z = {}; // t -> z
-// let env;
-let TFIDF;
-let doc;
 
-const normalize = (word) => word.toLowerCase().replace(/[^\w]/g, '');
-const tokenize = (doc) => doc.match(/\w+/g);
-const noStop = (e) => !stopWords.includes(e);
-const freq = (acc, e, _, arr) => {
-  const len = arr.length;
-  return Object.assign(acc, {[e]: (e in acc)? acc[e] + (1 / len) : (1 / len)});
-};
-const tf = (str) => tokenize(str).map(normalize).
-    filter(noStop).reduce(freq, {});
-const idf = (numDocs, dted) => Math.log(numDocs / (1 + dted)) / Math.log(10);
+module.exports = (lya) => {
+  const env = lya.createLyaState();
 
-const sourceTransform = (src, id) => {
-  numDocs++;
-  const terms = tf(src);
-  docs[id] = terms;
-  for (const term in terms) {
-    if (Object.prototype.hasOwnProperty.call(terms, term)) {
-      // calculate TF
-      if (TF[term]) {
-        TF[term][id] = terms[term];
-      } else {
-        TF[term] = {[id]: terms[term]};
-      }
+  let numDocs = 0;
+  // map of terms to docs containing a term -- FIXME? explain
+  // const dted = {};
+  // map from docs to tf
+  const docs = {};
+  const TF = {}; // t -> d -> tf
+  const IDF = {}; // t -> d -> idf
+  const Z = {}; // t -> z
+  let TFIDF;
+  let doc;
 
-      // calculate Z
-      Z[term] = Z[term]? Z[term] + 1 : 1;
+  const normalize = (word) => word.toLowerCase().replace(/[^\w]/g, '');
+  const tokenize = (doc) => doc.match(/\w+/g);
+  const noStop = (e) => !stopWords.includes(e);
+  const freq = (acc, e, _, arr) => {
+    const len = arr.length;
+    return Object.assign(acc, {[e]: (e in acc)? acc[e] + (1 / len) : (1 / len)});
+  };
+  const tf = (str) => tokenize(str).map(normalize).
+        filter(noStop).reduce(freq, {});
+  const idf = (numDocs, dted) => Math.log(numDocs / (1 + dted)) / Math.log(10);
 
-      // calculate IDF
-      if (IDF[term]) {
-        for (const doc in IDF[term]) {
-          if (Object.prototype.hasOwnProperty.call(IDF[term], doc)) {
-            IDF[term][doc] = idf(numDocs, Z[term]);
-            TFIDF[term][doc] = TF[term][id] * IDF[term][doc];
-          }
+  const sourceTransform = (src, id) => {
+    numDocs++;
+    const terms = tf(src);
+    docs[id] = terms;
+    for (const term in terms) {
+      if (Object.prototype.hasOwnProperty.call(terms, term)) {
+        // calculate TF
+        if (TF[term]) {
+          TF[term][id] = terms[term];
+        } else {
+          TF[term] = {[id]: terms[term]};
         }
-      } else {
-        IDF[term] = {[id]: idf(numDocs, Z[term])};
-        TFIDF[term] = {[id]: TF[term][id] * IDF[term][doc]};
+
+        // calculate Z
+        Z[term] = Z[term]? Z[term] + 1 : 1;
+
+        // calculate IDF
+        if (IDF[term]) {
+          for (const doc in IDF[term]) {
+            if (Object.prototype.hasOwnProperty.call(IDF[term], doc)) {
+              IDF[term][doc] = idf(numDocs, Z[term]);
+              TFIDF[term][doc] = TF[term][id] * IDF[term][doc];
+            }
+          }
+        } else {
+          IDF[term] = {[id]: idf(numDocs, Z[term])};
+          TFIDF[term] = {[id]: TF[term][id] * IDF[term][doc]};
+        }
       }
     }
-  }
-  // return the original source
-  return src;
-};
-
-const onExit = (intersection, candidateModule) => {
-  // let obj = sortByIDF();
-  console.log(TFIDF);
-};
-
-module.exports = (e) => {
-  // env = e;
-  return {
-    sourceTransform: sourceTransform,
-    onExit: onExit,
+    // return the original source
+    return src;
   };
+
+  const onExit = (intersection, candidateModule) => {
+    console.log(TFIDF);
+  };
+
+
+  Object.assign(env.config.hooks, {
+    sourceTransform,
+    onExit,
+  });
+
+  return env;
 };
