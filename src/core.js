@@ -54,7 +54,9 @@ function callWithLya(env, f) {
       saveResults,
       print,
       reportTime,
+      verbosity,
     },
+    log,
   } = env;
 
   const stringifiedResults = JSON.stringify(results, null, 2);
@@ -65,6 +67,18 @@ function callWithLya(env, f) {
 
   if (print) {
     console.log(stringifiedResults);
+
+    if (verbosity > 0) {
+      for (const entry of log) {
+        if (verbosity === 1) {
+          console.log('lya: %s:',
+                      entry.handler,
+                      state.inferName(env, entry.target));
+        } else {
+          console.log('lya:', entry);
+        }
+      }
+    }
   }
 
   if (reportTime) {

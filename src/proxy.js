@@ -95,7 +95,10 @@ function createProxyGetHandler(env, typeClass) {
           onRead,
         },
       },
+      log,
     } = env;
+
+    log.push({ handler: 'get', target, name });
 
     const currentValue = Reflect.get(...arguments);
     const maybeMetadata = metadata.get(currentValue, () => false);
@@ -145,7 +148,10 @@ function createProxySetHandler(env, typeClass) {
           onWrite,
         },
       },
+      log,
     } = env;
+
+    log.push({ handler: 'set', target, name, value });
 
     const parent = inferParent(env, target);
     const { name: parentName } = metadata.get(parent);
@@ -177,7 +183,10 @@ function createProxyHasHandler(env, typeClass) {
           onHas,
         },
       },
+      log,
     } = env;
+
+    log.push({ handler: 'has', target, prop });
 
     const { name: currentName, parent } = metadata.get(currentModule);
     const result = Reflect.has(...arguments);
@@ -206,7 +215,10 @@ function createProxyConstructHandler(env, typeClass) {
           onConstruct,
         },
       },
+      log,
     } = env;
+
+    log.push({ handler: 'construct', target, args });
 
     if (target !== Proxy) {
       onConstruct({
@@ -234,7 +246,10 @@ function createProxyApplyHandler(env, typeClass) {
           onCallPost,
         },
       },
+      log,
     } = env;
+
+    log.push({ handler: 'apply', target, thisArg, argumentsList });
 
     const nameToStore = getOPath(env, target);
 

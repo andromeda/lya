@@ -4,6 +4,7 @@
 
 module.exports = {
   createLyaState,
+  inferName,
   registerModule,
   setCurrentModule,
   getDeclaringModule,
@@ -31,6 +32,9 @@ function createLyaState(...configs) {
 
     // For collecting user-defined data.
     results: {},
+
+    // For tracing proxy activity
+    log: [],
   };
 }
 
