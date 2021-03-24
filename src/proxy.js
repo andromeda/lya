@@ -14,6 +14,13 @@ module.exports = {
 
 const {elementOf} = require('./container-type.js');
 const {withCatch} = require('./control.js');
+const {assert, assertDeepEqual, test} = require('./test.js');
+const {
+  createReferenceMetadataStore,
+  getDeclaringModule,
+  getOPath,
+} = require('./metadata.js');
+
 
 // Like new Proxy(), except the instance is tracked.
 function maybeAddProxy(env, obj, handler) {
@@ -21,7 +28,7 @@ function maybeAddProxy(env, obj, handler) {
 
   if (!proxy) {
     proxy = new Proxy(obj, handler);
-    setMetadata(obj, { proxy });
+    env.metadata.set(obj, { proxy });
   }
 
   return proxy;
@@ -42,9 +49,7 @@ function createProxyHandlerObject(env, typeClass) {
 function createProxyGetHandler(env, typeClass) {
   return function(target, name) {
     const {
-      metadata: {
-        get,
-      },
+      metadata,
       config: {
         hooks: {
           onRead,
@@ -53,9 +58,9 @@ function createProxyGetHandler(env, typeClass) {
     } = env;
 
     const nameToStore = (
-      get(global[name]).name ||
-      get(target[name]).name ||
-      get(target).name ||
+      metadata.get(global[name]).name ||
+      metadata.get(target[name]).name ||
+      metadata.get(target).name ||
       null
     );
 
@@ -64,7 +69,7 @@ function createProxyGetHandler(env, typeClass) {
         target,
         name,
         nameToStore,
-        currentModule: getOPath(get, target),
+        currentModule: getOPath(metadata, target),
         typeClass,
       });
     }
@@ -117,6 +122,7 @@ function createProxyHasHandler(env, typeClass) {
       globalNames,
       moduleName,
       methodNames,
+      metadata,
       config: {
         hooks: {
           onHas,
@@ -134,7 +140,7 @@ function createProxyHasHandler(env, typeClass) {
         target,
         prop,
         currentName,
-        nameToStore: getOPath(parent) + '.' + prop.toString(),
+        nameToStore: getOPath(metadata, parent) + '.' + prop.toString(),
       });
     }
 
@@ -165,11 +171,9 @@ function createProxyApplyHandler(env, typeClass) {
     let result;
 
     const {
-      methodNames,
-      moduleName,
-      objectPath,
-      objectName,
       requireLevel,
+      moduleName,
+      metadata,
       config: {
         hooks: {
           onCallPre,
@@ -178,18 +182,8 @@ function createProxyApplyHandler(env, typeClass) {
       },
     } = env;
 
-    const currentName = objectPath.get(target);
-    const birthplace = objectName.has(target) ? objectName.get(target) : null;
-    const birthName = birthplace + '.' + target.name;
+    const nameToStore = getOPath(metadata, target);
     const currentModule = moduleName[requireLevel];
-    const origReqModuleName = argumentsList[0];
-
-    const nameToStore =
-              (target.name === 'require') ? 'require(\'' +
-              origReqModuleName + '\')' :
-              methodNames.has(target) ? methodNames.get(target) :
-              (birthplace && (currentModule === currentName)) ? birthName :
-              null;
 
     const info = {
       target,
@@ -198,15 +192,14 @@ function createProxyApplyHandler(env, typeClass) {
       name: target.name,
       nameToStore,
       currentModule,
-      declareModule: currentName,
+      declareModule: getOPath(metadata, getDeclaringModule(metadata, target)),
       typeClass,
     };
 
-    if (nameToStore) {
-      const newTarget = onCallPre(info);
-      if (newTarget) {
-        info.target = target = newTarget;
-      }
+    const newTarget = onCallPre(info);
+
+    if (newTarget) {
+      info.target = target = newTarget;
     }
 
     // In case the target is not a pure function Reflect doesnt work
@@ -214,10 +207,88 @@ function createProxyApplyHandler(env, typeClass) {
     info.result = withCatch(() => target(...argumentsList),
         () => Reflect.apply(...arguments));
 
-    if (nameToStore) {
-      onCallPost(info);
-    }
+    onCallPost(info);
 
-    return result;
+    return info.result;
   };
 }
+
+test(() => {
+  let preCalled, postCalled;
+  const junkThis = {};
+
+  function proxyTarget(a, b, c) {
+    return a * b * c;
+  }
+
+  const onCallPre = ({
+    target,
+    thisArg,
+    argumentsList,
+    name,
+    nameToStore,
+    currentModule,
+    declareModule,
+    typeClass,
+  }) => {
+    preCalled = true;
+    assert(target === proxyTarget,
+           'Apply the right function');
+    assert(thisArg === junkThis,
+           'Capture the right value of `this`');
+    assertDeepEqual(Array.from(argumentsList), [6, 7, 8],
+                    'Capture the right arguments');
+    assert(name === 'proxyTarget',
+           'Capture the function name')
+    assert(nameToStore === 'M.alias',
+           'Capture the analysis-specific alias of the function');
+    assert(currentModule === 'bar',
+           'Capture the module ID');
+    assert(declareModule === 'M',
+           'Capture the declaring module');
+    assert(typeClass === 'T',
+           'Forward typeClass');
+  }
+
+  const onCallPost = ({
+    result,
+  }) => {
+    postCalled = true;
+
+    assert(result === (6 * 7 * 8),
+           'Report the functions result');
+  }
+
+  const metadata = createReferenceMetadataStore();
+
+  metadata.set(module, {
+    name: 'M',
+  });
+
+  metadata.set(proxyTarget, {
+    parent: module,
+    name: 'alias',
+  });
+
+  const env = {
+    requireLevel: 1,
+    moduleName: ['foo', 'bar'],
+    metadata,
+    config: {
+      hooks: {
+        onCallPre,
+        onCallPost,
+      },
+    },
+  };
+
+  const apply = createProxyApplyHandler(env, 'T');
+  const proxy = new Proxy(proxyTarget, { apply });
+  const returned = proxy.apply(junkThis, [6, 7, 8]);
+
+  assert(preCalled && postCalled,
+        'Call onCallPre and onCallPost hooks');
+
+  assert(returned === (6 * 7 * 8),
+         'Forward the functions result');
+});

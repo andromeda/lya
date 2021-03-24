@@ -61,7 +61,8 @@ function getDeclaringModule(metadata, ref) {
 
 
 test(() => {
-  const { get, set } = createReferenceMetadataStore();
+  const metadata = createReferenceMetadataStore();
+  const { get, set } = metadata;
 
   const [A, B, C] = [{}, [], {}];
 
@@ -77,8 +78,8 @@ test(() => {
   set(B, { name: 'b', parent: C });
   set(C, { name: 'c', parent: null });
 
-  assert(getOPath(get, A) === 'c.b.a' &&
-         getOPath(get, B) === 'c.b' &&
-         getOPath(get, C) === 'c',
+  assert(getOPath(metadata, A) === 'c.b.a' &&
+         getOPath(metadata, B) === 'c.b' &&
+         getOPath(metadata, C) === 'c',
          'Trace object paths through metadata');
 });
