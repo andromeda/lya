@@ -129,22 +129,6 @@ function main(conf) {
   env.config = inTermsOf(env.config)(conf);
 
   lya.callWithLya(env, (require) => require(filePath));
-
-  const stringifiedResults = JSON.stringify(env.results, null, 2);
-
-  if (conf.SAVE_RESULTS) {
-    fs.writeFileSync(env.conf.SAVE_RESULTS, stringifiedResults, 'utf-8');
-  }
-
-  if (conf.print) {
-    console.log(stringifiedResults);
-  }
-
-  if (conf.reportTime) {
-    const timerEnd = process.hrtime(env.config.timerStart);
-    const timeMillis = convert(timerEnd).millis;
-    console.log(timeMillis, 'Time');
-  }
 }
 
 function collectArguments() {
@@ -192,7 +176,7 @@ function collectArguments() {
   }
 
   if (args['--file']) {
-    conf.SAVE_RESULTS = path.join(process.cwd(), args['--file']);
+    conf.saveResults = path.join(process.cwd(), args['--file']);
     // TODO this should be the same if loading results
   }
 

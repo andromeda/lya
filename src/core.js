@@ -69,8 +69,34 @@ function callWithLya(env, f) {
     callWithVmOverride,
   ];
 
-  return overrides.reduce((cb, override) => () => override(env, cb),
-      () => f(createLyaRequireProxy(env)))();
+  const callbackResult = (
+    overrides.reduce((cb, override) => () => override(env, cb),
+                     () => {
+                       env.timerStart = process.hrtime();
+
+                       return f(createLyaRequireProxy(env));
+                     })
+  );
+
+  const { results, config: { saveResults, print, reportTime } } = env;
+
+  const stringifiedResults = JSON.stringify(results, null, 2);
+
+  if (saveResults) {
+    fs.writeFileSync(saveResults, stringifiedResults, 'utf-8');
+  }
+
+  if (print) {
+    console.log(stringifiedResults);
+  }
+
+  if (reportTime) {
+    env.timerEnd = process.hrtime(env.timerStart);
+    const timeMillis = convert(env.timerEnd).millis;
+    console.log(timeMillis, 'Time');
+  }
+
+  return callbackResult;
 }
 
 
