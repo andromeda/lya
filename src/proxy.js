@@ -15,12 +15,14 @@ module.exports = {
 const {elementOf} = require('./container-type.js');
 const {withCatch} = require('./control.js');
 const {assert, assertDeepEqual, test} = require('./test.js');
+const {createReferenceMetadataStore} = require('./metadata.js');
 const {
-  createReferenceMetadataStore,
+  createLyaState,
   inferParent,
   getDeclaringModule,
   getOPath,
-} = require('./metadata.js');
+  setCurrentModule,
+} = require('./state.js');
 
 
 // Like new Proxy(), except construction is conditional, and any
@@ -229,7 +231,7 @@ function createProxyApplyHandler(env, typeClass) {
       },
     } = env;
 
-    const nameToStore = getOPath(metadata, target);
+    const nameToStore = getOPath(env, target);
 
     const info = {
       target,
@@ -238,7 +240,7 @@ function createProxyApplyHandler(env, typeClass) {
       name: target.name,
       nameToStore,
       currentModule: metadata.get(currentModule).name,
-      declareModule: getOPath(metadata, getDeclaringModule(metadata, target)),
+      declareModule: getOPath(env, getDeclaringModule(env, target)),
       typeClass,
     };
 
@@ -286,11 +288,11 @@ test(() => {
                     'Capture the right arguments');
     assert(name === 'proxyTarget',
            'Capture the function name')
-    assert(nameToStore === 'M.alias',
+    assert(nameToStore === '.M.alias',
            'Capture the analysis-specific alias of the function');
     assert(currentModule === 'M',
            'Capture the module ID');
-    assert(declareModule === 'M',
+    assert(declareModule === '.M',
            'Capture the declaring module');
     assert(typeClass === 'T',
            'Forward typeClass');
@@ -305,27 +307,24 @@ test(() => {
            'Report the functions result');
   }
 
-  const metadata = createReferenceMetadataStore();
+  const env = createLyaState({
+    hooks: {
+      onCallPre,
+      onCallPost,
+    },
+  });
 
-  metadata.set(module, {
+  setCurrentModule(env, module);
+
+  env.metadata.set(module, {
     name: 'M',
   });
 
-  metadata.set(proxyTarget, {
+  env.metadata.set(proxyTarget, {
     parent: module,
     name: 'alias',
   });
 
-  const env = {
-    currentModule: module,
-    metadata,
-    config: {
-      hooks: {
-        onCallPre,
-        onCallPost,
-      },
-    },
-  };
 
   const apply = createProxyApplyHandler(env, 'T');
   const proxy = new Proxy(proxyTarget, { apply });
