@@ -1,16 +1,13 @@
 /*
-Uses analyze.js to monitor module-level interactions.
+Programatically monitor module-level interactions.
 
-  const env = createLyaState(...);
-  const req = createLyaRequireProxy(env, require);
-
-Maintainers:
-
-  - Code is imperative for performance reasons. You can understand and
-    protect invariants using callWith* functions and unit tests.
+  - State is managed with imperative code for performance reasons. You
+    can understand and protect invariants using callWith* functions
+    and unit tests.
 
   - Try to remember to make every function do one thing. If a function
-    returns a value AND has a side-effect... that's two things.
+    returns a value AND has a side-effect unrelated to producing that
+    value... that's two things.
 */
 
 
