@@ -1,3 +1,6 @@
+// Override the built-in 'vm' module such that we can monitor
+// interactions with CommonJS.
+
 module.exports = {
   callWithVmOverride,
 };
@@ -15,20 +18,7 @@ const {IDENTIFIER_CLASSIFICATIONS} = require('./constants.js');
 function callWithVmOverride(env, f) {
   return callWithOwnValues(vm, {
     runInThisContext: function runInThisContext(code, options) {
-      // We base the VM context on the same proxy of the Node.js
-      // global object so that we can monitor global interactions
-      // without messing with how CommonJS works.
-      if (!env.context) {
-        const handler = createProxyHandlerObject(
-          env, IDENTIFIER_CLASSIFICATIONS.NODE_GLOBALS);
-
-        env.context = vm.createContext(maybeAddProxy(env, global, handler));
-
-        env.metadata.set(env.context, {
-          parent: null,
-          name: 'global',
-        });
-      }
+      if (!env.context) installMockGlobal(env);
 
       const commonJsFunction = vm.runInContext(code, env.context, options);
 
@@ -37,6 +27,21 @@ function callWithVmOverride(env, f) {
       return maybeAddProxy(env, commonJsFunction, { apply: createCommonJsApply(env) });
     },
   }, f);
+}
+
+// We base the VM context on the same proxy of the Node.js global
+// object. That way we can monitor global interactions without messing
+// with how CommonJS works.
+function installMockGlobal(env) {
+  const handler = createProxyHandlerObject(
+    env, IDENTIFIER_CLASSIFICATIONS.NODE_GLOBALS);
+
+  env.context = vm.createContext(maybeAddProxy(env, global, handler));
+
+  env.metadata.set(env.context, {
+    parent: null,
+    name: 'global',
+  });
 }
 
 
