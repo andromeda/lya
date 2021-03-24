@@ -133,7 +133,7 @@ function main(conf) {
 }
 
 function collectArguments() {
-  const conf = configureLya({});
+  const conf = {};
 
   let args;
   try {
