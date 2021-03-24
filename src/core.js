@@ -30,10 +30,7 @@ const {callWithVmOverride} = require('./vm-override.js');
 const {maybeAddProxy, createProxyApplyHandler} = require('./proxy.js');
 const {IDENTIFIER_CLASSIFICATIONS} = require('./constants.js');
 const {createReferenceMetadataStore} = require('./metadata.js');
-const { configureLya } = require('./config.js');
-
-// /////////////////////////////////////////////////////////////////////////////
-// High-level API
+const {configureLya} = require('./config.js');
 
 
 // Creates an object used to collect facts from the runtime.
@@ -59,27 +56,30 @@ function createLyaState(userRequire, config) {
 }
 
 
+// You can place any functions of the same signature as this one here.
+// Each function mutates the global scope, or a module's exports,
+// runs a callback, and then restores the original state.
+//
+// All such functions are centralized here so that users can avoid
+// concurrent execution of code that would conflict with callWithLya.
+const overrides = [
+  callWithModuleOverride,
+  callWithVmOverride,
+];
+
+
 function callWithLya(env, f) {
-  // You can place any functions of the same signature as this one here.
-  // Each function mutates the global scope, or a module's exports,
-  // runs a callback, and then restores the original state.
-  //
-  // All such functions are centralized here so that users can avoid
-  // concurrent execution of code that would conflict with callWithLya.
-  const overrides = [
-    callWithModuleOverride,
-    callWithVmOverride,
-  ];
+  const startAnalysis = () => {
+    env.timerStart = process.hrtime();
+    return f(createLyaRequireProxy(env));
+  };
 
   const callbackResult = (
     overrides.reduce((cb, override) => () => override(env, cb),
-                     () => {
-                       env.timerStart = process.hrtime();
-
-                       return f(createLyaRequireProxy(env));
-                     })
+                     startAnalysis)()
   );
 
+  // Post-processing
   const { results, config: { saveResults, print, reportTime } } = env;
 
   const stringifiedResults = JSON.stringify(results, null, 2);
