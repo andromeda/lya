@@ -52,22 +52,22 @@ docker start -i "name of xxxxx"
 
 #### How to Use Lya?
 
-Then, add lya _as  a first import at the top-level  file_ in your project—that
-is,  almost always  Lya  has to  be  the first  package to  be  loaded. One  can
-configure  several parameters,  including  use  any of  the  predefined list  of
-analyses. For example:
+One can configure several parameters, including use any of the predefined list of analyses. For example:
 
 ```JavaScript
-let lya = require("@andromeda/lya");
-let conf = {
-  analysis: lya.preset.ON_OFF,
-  saveResults: require("path").join(__dirname, "dynamic.json"),
-};
-lya.configRequire(require, conf);
-require("./main.js");
+const lya = require("@andromeda/lya");
+const createState = require(lya.preset.ON_OFF);
+
+const env = createState(lya);
+env.saveResults = require("path").join(__dirname, "dynamic.json");
+
+lya.callWithLya(env, (require) => require("./main.js"));
 ```
 
-The configuration above first configures running the `ON_OFF` analysis, and saves the results in `./dynamic.json`. 
+The configuration above first configures running the `ON_OFF` analysis, and saves the results in `./dynamic.json`. `callWithLya` calls a callback in the context an overridden Node API and `require` function, such that a module given to it will be analyzed from there.
+
+Since the callback runs in a modified environment, do not run other code concurrently with that callback. By the time control leaves `callWithLya`, the environment will be restored.
+
 For more configuration options and details, see the [configuration docs](./doc/config.md).
 
 #### How to Create a New  Analysis?
