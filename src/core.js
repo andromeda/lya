@@ -13,7 +13,6 @@ Programatically monitor module-level interactions.
 
 module.exports = {
   createLyaState,
-  createLyaRequireProxy,
   callWithLya,
 };
 
