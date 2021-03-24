@@ -50,6 +50,7 @@ function overrideModuleWrap(transform = identity) {
   return (script) => originalWrap(transform(script, env.currentModuleRequest));
 }
 
+
 //
 // TODO: Clarify why we hook into _load(). Because require() might
 // have a cache hit?
@@ -95,13 +96,28 @@ test(() => {
 
 const originalProtoRequire = Module.prototype.require;
 
+
+function createModuleExportProxyHandler(env) {
+  const typeClass = IDENTIFIER_CLASSIFICATIONS.MODULE_RETURNS;
+
+  return {
+    apply: createProxyApplyHandler(env, typeClass),
+    get: createProxyGetHandler(env, typeClass),
+    set: createProxySetHandler(env, typeClass),
+  };
+}
+
+// This is the flip side of a coin, and the other side of that coin is
+// vm.runInThisContext. When a module under analysis calls its
+// require() function, it will come here. We pass control to our
+// overridden vm.runInThisContext by using the original require() for
+// the module, and then intercept the module's exports here.
 function overrideModuleRequirePrototype(env) {
   return function require(...args) {
     const {
       results,
-      requireLevel,
-      moduleName,
-      objectName,
+      metadata,
+      currentModule,
       config: {
         modules: {
           include,
@@ -109,11 +125,6 @@ function overrideModuleRequirePrototype(env) {
         },
       },
     } = env;
-
-    if (moduleName[0] === undefined) {
-      moduleName[0] = this.filename;
-      results[moduleName[0]] = {};
-    }
 
     const importName = env.currentModuleRequest = args[0];
 
@@ -123,47 +134,39 @@ function overrideModuleRequirePrototype(env) {
     const actualModuleExports = originalProtoRequire.apply(this, args);
     const moduleExportType = typeof moduleExports;
 
-    const moduleIncluded = elementOf(include, moduleName[requireLevel]);
-    const moduleExcluded = elementOf(exclude, moduleName[requireLevel]);
-    const exportsKnown = objectName.has(actualModuleExports);
+    // By this point, the vm.runInThisContext override had a chance to
+    // inspect the CommonJS arguments. We can leverage the data to
+    // initialize a results onject for the user.
+    const { name: currentModuleName } = metadata.get(currentModule);
+    results[currentModuleName] = results[currentModuleName] || {};
+
+    const moduleIncluded = elementOf(include, currentModuleName);
+    const moduleExcluded = elementOf(exclude, currentModuleName);
+    const exportsKnown = metadata.get(actualModuleExports).name;
     const exportsNegligible = elementOf(NEGLIGIBLE_EXPORT_TYPES, moduleExportType);
     const shouldUseProxy = (
-      exportsKnown || elementOf(include, 'module-returns')
+      exportsKnown ||
+      elementOf(include, IDENTIFIER_CLASSIFICATIONS.MODULE_RETURNS)
     );
 
-    objectName.set(
-        actualModuleExports,
-            (moduleExportType === 'function' && actualModuleExports.name !== '') ?
-                'require(\'' + importName + '\').' + actualModuleExports.name :
-                'require(\'' + importName + '\')');
+    const baseExportsName = `require('${importName}')`;
 
-    if ((!moduleIncluded || moduleExcluded) ||
-            (!exportsNegligible && !exportsKnown)) {
-      reduceLevel(env, importName);
-    }
+    metadata.set(actualModuleExports, {
+      parent: currentModule,
+      name: (moduleExportType === 'function' && actualModuleExports.name !== '')
+        ? baseExportsName + '.' + actualModuleExports.name
+        : baseExportsName
+    });
 
     if (shouldUseProxy) {
-      maybeAddProxy(env, actualModuleExports, exportHandler);
-      return env.proxies.get(actualModuleExports).proxy;
+      return maybeAddProxy(env,
+                           actualModuleExports,
+                           createModuleExportProxyHandler(env));
     } else {
       return actualModuleExports;
     }
   };
 }
-
-
-function reduceLevel(env, name) {
-  if (env.requireLevel > 0 && !elementOf(NATIVE_MODULES, name)) {
-    --env.requireLevel;
-  }
-}
-
-test(() => {
-  const env = {requireLevel: 1};
-  reduceLevel(env, 'fs');
-  assert(env.requireLevel === 1,
-      'stepOut: only decrement when not referencing a native module.');
-});
 
 
 function getGlobalNames(globals) {
@@ -189,234 +192,3 @@ test(() => {
   assertDeepEqual(names, ['Array', 'BigInt', 'console', 'process'],
       'Extract global identifiers from dataset');
 });
-
-
-function createModuleExportProxyHandler(env) {
-  return {
-    apply: createModuleExportProxyApplyHandler(env),
-    get: createModuleExportProxyGetHandler(env),
-    set: createModuleExportProxySetHandler(env),
-  };
-}
-
-
-function createModuleExportProxyApplyHandler(env) {
-  return function apply(target, thisArg, argumentsList) {
-    const {
-      objectName,
-      moduleName,
-      requireLevel,
-      config: {
-        hooks: {
-          onCallPre,
-          onCallPost,
-        },
-      },
-    } = env;
-
-    const info = {
-      target,
-      thisArg,
-      argumentsList,
-      name: target.name,
-      nameToStore: objectName.get(target),
-      currentModule: moduleName[requireLevel],
-      declareModule: moduleName[requireLevel],
-      typeClass: IDENTIFIER_CLASSIFICATIONS.MODULE_RETURNS,
-    };
-
-    onCallPre(info);
-    info.result = Reflect.apply(...arguments);
-    onCallPost(info);
-
-    return info.result;
-  };
-}
-
-test(() => {
-  const junkThis = {};
-
-  const onCallPre = ({
-      target,
-      thisArg,
-      argumentsList,
-      typeClass,
-  }) => {
-    assert(target === foo,
-           'Give correct target to module.exports apply proxy');
-    assert(thisArg === junkThis,
-           'Give correct `this` to module.exports apply proxy');
-    assert(typeClass === IDENTIFIER_CLASSIFICATIONS.MODULE_RETURNS,
-           'Label hooked info as returned from a module');
-    assertDeepEqual(Array.from(argumentsList), [9, 8, 7],
-                   'Forward arguments');
-  };
-
-
-  const onCallPost = ({ argumentsList, result }) => {
-    assert(result === foo.apply(null, argumentsList),
-           'Give correct result to onCallPost');
-  };
-
-  const env = {
-    objectName: new Map([]),
-    moduleName: [],
-    requireLevel: 0,
-    config: {
-      hooks: {
-        onCallPre,
-        onCallPost,
-      },
-    },
-  };
-
-  function foo(a, b, c) {
-    return a * b * c;
-  }
-
-  const proxy = new Proxy(foo, {
-    apply: createModuleExportProxyApplyHandler(env),
-  });
-
-  proxy.apply(junkThis, [9, 8, 7]);
-});
-
-
-function createModuleExportProxyGetHandler(env) {
-  const namePathSet = (key, name, path) => {
-    if (key !== undefined) {
-      env.objectName.set(key, name);
-      env.objectPath.set(key, path);
-    }
-  };
-
-  return function get(target, name, receiver) {
-    const {
-      moduleName,
-      onRead,
-      requireLevel,
-    } = env;
-
-    const currentModule = moduleName[requireLevel];
-    const exportType = typeof currentValue;
-    const typeClass = IDENTIFIER_CLASSIFICATIONS.MODULE_RETURNS;
-    const currentValue = Reflect.get(...arguments);
-
-    const hook = (nameToStore) => onRead({
-      target,
-      name,
-      nameToStore,
-      currentModule,
-      typeClass,
-    });
-
-    // The code gets hard to read when using nested
-    // if/else. Therefore I phrased this code in terms of
-    // scenarios to flatten the conditions slightly. Notice that
-    // mayAnalyze always repeats in these conditions for that
-    // reason.
-
-    const mayAnalyze = (
-      exportType !== 'undefined' &&
-        currentValue != null &&
-        typeof name === 'string' &&
-        (!(currentValue instanceof RegExp))
-    );
-
-    const literalScenario = (
-      mayAnalyze &&
-        exportType === 'number' ||
-        exportType === 'boolean' ||
-        exportType === 'string'
-    );
-
-    const functionScenario = (
-      mayAnalyze &&
-            exportType === 'function'
-    );
-
-    const objectScenario = (
-      mayAnalyze &&
-            exportType === 'object' ||
-            !withProxy.has(currentValue) &&
-            Object.entries(currentValue).length
-    );
-
-    if (objectScenario) {
-      const parentName = objectName.get(receiver) || objectName.get(target);
-      const birthplace = objectPath.get(receiver) || objectPath.get(target);
-      const childName = parentName + '.' + name;
-
-      hook(childName);
-      setProxy(currentValue, exportHandler);
-      namePathSet(currentValue, childName, birthplace);
-    } else if (functionScenario) {
-      const parentName = objectName.get(target);
-      const childName = parentName + '.' + name;
-
-      if (withProxy.has(currentValue)) {
-        namePathSet(storePureFunctions.get(currentValue), parentName, currentModule);
-      }
-
-      Object.defineProperty(currentValue, 'name', {value: name});
-
-      if (elementOf(include, 'module-returns')) {
-        setProxy(currentValue, {
-          apply: createProxyApplyHandler(env, typeClass),
-        });
-      }
-
-      storePureFunctions.set(currentValue, currentValue);
-
-      if (safetyValve.has(name)) {
-        hook(parentName);
-      }
-
-      namePathSet(currentValue, parentName, currModule);
-      hook(nameToStore);
-      withProxy.set(currentValue, true);
-    } else if (isLiteral) {
-      const nameToStore = objectName.get(target) + '.' + name;
-      const passOverKey = nameToStore + currentModule;
-
-      if (!passedOver.has(passOverKey)) {
-        hook(nameToStore);
-        passedOver.set(passOverKey, true);
-      }
-    }
-
-    // Prefer our proxies.
-    return (proxies.get(currentValue) || {proxy: currentValue}).proxy;
-  };
-}
-
-
-function createModuleExportProxySetHandler(env) {
-  return function set(target, name, value) {
-    const {
-      objectName,
-      moduleName,
-      requireLevel,
-      config: {
-        hooks: {
-          onWrite,
-        },
-      },
-    } = env;
-
-    if (typeof name !== 'symbol') {
-      const parentName = objectName.get(target);
-
-      onWrite({
-        target,
-        name,
-        value,
-        currentModule: moduleName[requireLevel],
-        parentName,
-        nameToStore: parentName + '.' + name,
-      });
-    }
-
-    return Reflect.set(...arguments);
-  };
-}

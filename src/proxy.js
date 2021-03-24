@@ -22,13 +22,35 @@ const {
 } = require('./metadata.js');
 
 
-// Like new Proxy(), except the instance is tracked.
+// Like new Proxy(), except construction is conditional, and any
+// created instances are tracked.
 function maybeAddProxy(env, obj, handler) {
-  let { proxy } = env.metadata.get(obj);
+  let { proxy, name } = env.metadata.get(obj);
 
   if (!proxy) {
-    proxy = new Proxy(obj, handler);
+    try {
+      proxy = new Proxy(obj, handler);
+    } catch (e) {
+      // Proxy() already knows what it wants, so we can use an
+      // exception to avoid writing a bunch of defensive checks.
+      // Since the same TypeError is raised for either argument, we at
+      // least need to be sure that the handler wasn't the issue.
+      if (e instanceof TypeError && handler !== null && typeof handler === 'object') {
+        return undefined;
+      }
+
+      throw e;
+    }
+
     env.metadata.set(obj, { proxy });
+
+    // Unless we can afford it, do not track the object referenced by
+    // the proxy here.  It would prevent the garbage collector from
+    // collecting the underlying WeakMap key.
+    env.metadata.set(proxy, {
+      // Convention: '*' means 'Proxy'
+      name: name ? name + '*' : name,
+    });
   }
 
   return proxy;
@@ -49,6 +71,7 @@ function createProxyHandlerObject(env, typeClass) {
 function createProxyGetHandler(env, typeClass) {
   return function get(target, name) {
     const {
+      currentModule,
       metadata,
       config: {
         hooks: {
@@ -57,26 +80,33 @@ function createProxyGetHandler(env, typeClass) {
       },
     } = env;
 
-    const nameToStore = (
-      metadata.get(global[name]).name ||
-      metadata.get(target[name]).name ||
-      metadata.get(target).name ||
-      null
-    );
-
-    if (nameToStore && name) {
-      onRead({
-        target,
-        name,
-        nameToStore,
-        currentModule: getOPath(metadata, target),
-        typeClass,
-      });
-    }
-
+    const maybeMetadata = metadata.get(target[name]);
     const currentValue = Reflect.get(...arguments);
 
-    return currentValue;
+    // Lazily create proxies to extend scope of monitoring.
+    if (!maybeMetadata) {
+      metadata.set(currentValue, {
+        parent: target,
+        name,
+      });
+
+      // TODO: Select typeclass dynamically
+      const handler = createProxyHandlerObject('lazy');
+      maybeAddProxy(env, currentValue, handler);
+    }
+
+    const { proxy } = metadata.get(target[name]);
+
+    onRead({
+      target,
+      name,
+      nameToStore: getOPath(metadata, target[name]),
+      currentModule: metadata.get(currentModule).name,
+      typeClass,
+    });
+
+    // As implied, the proxy might not have been created.
+    return proxy || currentValue;
   };
 }
 
@@ -93,10 +123,10 @@ function createProxySetHandler(env, typeClass) {
     } = env;
 
     const { parent, module } = metadata.get(target);
-    const { name } = metadata.get(parent);
+    const { name: parentName } = metadata.get(parent);
 
     if (name) {
-      hookCheck(onWrite, {
+      onWrite({
         target,
         name,
         value,
@@ -106,7 +136,10 @@ function createProxySetHandler(env, typeClass) {
       });
 
       if (parentName === 'global' || typeof value === 'number') {
-        globalNames.set(name, nameToStore);
+        const {declaredNames = []} = metadata.get(global);
+        metadata.set(global, {
+          declaredNames: declaredNames.concat([nameToStore])
+        });
       }
     }
 
@@ -118,10 +151,7 @@ function createProxySetHandler(env, typeClass) {
 function createProxyHasHandler(env, typeClass) {
   return function has(target, prop) {
     const {
-      candidateGlobs,
-      globalNames,
-      moduleName,
-      methodNames,
+      currentModule,
       metadata,
       config: {
         hooks: {
@@ -130,17 +160,17 @@ function createProxyHasHandler(env, typeClass) {
       },
     } = env;
 
-    const currentName = moduleName[env.requireLevel];
+    const { name: currentName } = metadata.get(currentModule);
     const { parent } = metadata.get(target);
     const result = Reflect.has(...arguments);
-    const nameToStore = parent + '.' + prop.toString();
+    const nameToStore = getOPath(metadata, parent) + '.' + prop.toString();
 
     if (parentObject === global && !result) {
       onHas({
         target,
         prop,
         currentName,
-        nameToStore: getOPath(metadata, parent) + '.' + prop.toString(),
+        nameToStore,
       });
     }
 
@@ -152,8 +182,7 @@ function createProxyHasHandler(env, typeClass) {
 function createProxyConstructHandler(env, typeClass) {
   return function construct(target, args) {
     const {
-      requireLevel,
-      moduleName,
+      currentModule,
       config: {
         hooks: {
           onConstruct,
@@ -161,11 +190,11 @@ function createProxyConstructHandler(env, typeClass) {
       },
     } = env;
 
-    if (target.name !== 'Proxy') {
+    if (target !== Proxy) {
       onConstruct({
         target,
         args,
-        currentName: moduleName[requireLevel],
+        currentName: metadata.get(currentModule).name,
         nameToStore: target.name,
       });
     }
@@ -179,8 +208,7 @@ function createProxyConstructHandler(env, typeClass) {
 function createProxyApplyHandler(env, typeClass) {
   return function apply(target, thisArg, argumentsList) {
     const {
-      requireLevel,
-      moduleName,
+      currentModule,
       metadata,
       config: {
         hooks: {
@@ -191,7 +219,6 @@ function createProxyApplyHandler(env, typeClass) {
     } = env;
 
     const nameToStore = getOPath(metadata, target);
-    const currentModule = moduleName[requireLevel];
 
     const info = {
       target,
@@ -199,7 +226,7 @@ function createProxyApplyHandler(env, typeClass) {
       argumentsList,
       name: target.name,
       nameToStore,
-      currentModule,
+      currentModule: metadata.get(currentModule).name,
       declareModule: getOPath(metadata, getDeclaringModule(metadata, target)),
       typeClass,
     };
@@ -279,8 +306,7 @@ test(() => {
   });
 
   const env = {
-    requireLevel: 1,
-    moduleName: ['foo', 'bar'],
+    currentModule: module,
     metadata,
     config: {
       hooks: {
