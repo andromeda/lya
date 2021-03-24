@@ -2,6 +2,7 @@
 
 module.exports = {
   failTo,
+  raise,
   withHandlers,
   withCatch,
 };
