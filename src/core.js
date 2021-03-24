@@ -1,19 +1,8 @@
-/*
-Programatically monitor module-level interactions.
-
-  - State is managed with imperative code for performance reasons. You
-    can understand and protect invariants using callWith* functions
-    and unit tests.
-
-  - Try to remember to make every function do one thing. If a function
-    returns a value AND has a side-effect unrelated to producing that
-    value... that's two things.
-*/
-
+// Programatically monitor module-level interactions.
 
 module.exports = {
-  createLyaState,
   callWithLya,
+  createLyaState: require('./state.js').createLyaState,
   preset: require('./config.js').preset,
 };
 
@@ -24,33 +13,11 @@ module.exports = {
 const {analyze} = require('./analyze.js');
 const {assert, assertDeepEqual, test} = require('./test.js');
 const {identity} = require('./functions.js');
-const {callWithOwnValues, coerceMap, elementOf} = require('./container-type.js');
+const {callWithOwnValues, elementOf} = require('./container-type.js');
 const {callWithModuleOverride} = require('./module-override.js');
 const {callWithVmOverride} = require('./vm-override.js');
 const {maybeAddProxy, createProxyApplyHandler} = require('./proxy.js');
 const {IDENTIFIER_CLASSIFICATIONS} = require('./constants.js');
-const {createReferenceMetadataStore} = require('./metadata.js');
-const {configureLya, inTermsOf} = require('./config.js');
-
-
-// Creates an object used to collect facts from the runtime.
-function createLyaState(...configs) {
-  return {
-    // Contains hooks, policy info, and other user-specific goodies.
-    config: configureLya(...configs),
-
-    // Contains metadata collected for references as they are found.
-    metadata: createReferenceMetadataStore(),
-
-    // Track dependency relationships
-    currentModuleRequest: null,
-    moduleName: [],
-    requireLevel: 0,
-
-    // For collecting user-defined data.
-    results: {},
-  };
-}
 
 
 // You can place any functions of the same signature as this one here.
