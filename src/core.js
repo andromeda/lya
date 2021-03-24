@@ -87,6 +87,7 @@ function createLyaRequireProxy(env) {
   return maybeAddProxy(env, env.config.require, {
     apply: function () {
       state.setCurrentModule(env, require.main);
+      env.metadata.set(env.config.require, { parent: require.main });
       return baseApply(...arguments);
     },
   });
