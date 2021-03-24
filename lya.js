@@ -2,10 +2,6 @@
 
 const lya = require('./src/core.js');
 
-if (require.main !== module) {
-  return lya;
-}
-
 const fs = require('fs');
 const path = require('path');
 const arg = require('arg');
@@ -78,8 +74,6 @@ const help = () => {
   console.log(h);
 };
 
-const conf = configureLya({});
-
 const splitAdd = (a, separator, join) => {
   const comb = a.split(separator);
   const value = [];
@@ -127,89 +121,118 @@ const template = {
   '-w': '--enable-with',
 };
 
-let args;
-try {
-  args = arg(template);
-} catch (e) {
-  console.log(e.message);
-  process.exit();
-}
 
-if (args['--help']) {
-  help();
-  process.exit();
-}
+function main(conf) {
+  const env = require(conf.analysis)(lya);
 
-if (args['--version']) {
-  console.log('v' + pkg.version); // + " (commit: 8799cd1)");
-  process.exit();
-}
+  // Override options from CLI where applicable.
+  env.config = inTermsOf(env.config)(conf);
 
-if (args['--depth']) {
-  conf.depth = args['--depth'];
-}
+  lya.callWithLya(env, (require) => require(filePath));
 
-if (args['--analysis']) {
-  let p = args['--analysis'].replace('-', '_').toUpperCase();
-  if (Object.keys(preset).includes(p)) {
-    conf.analysis = preset[p];
-  } else {
-    if (args['--analysis'].startsWith('/')) {
-      conf.analysis = path.resolve(args['--analysis']);
-      // console.log(conf.analysis)
-    } else {
-      conf.analysis = path.join(process.cwd(), args['--analysis']);
-      // console.log(conf.analysis)
-    }
+  const stringifiedResults = JSON.stringify(env.results, null, 2);
+
+  if (conf.SAVE_RESULTS) {
+    fs.writeFileSync(env.conf.SAVE_RESULTS, stringifiedResults, 'utf-8');
+  }
+
+  if (conf.print) {
+    console.log(stringifiedResults);
+  }
+
+  if (conf.reportTime) {
+    const timerEnd = process.hrtime(env.config.timerStart);
+    const timeMillis = convert(timerEnd).millis;
+    console.log(timeMillis, 'Time');
   }
 }
 
-if (args['--print']) {
-  conf.print = args['--print'];
-}
+function collectArguments() {
+  const conf = configureLya({});
 
-if (args['--file']) {
-  conf.SAVE_RESULTS = path.join(process.cwd(), args['--file']);
-  // TODO this should be the same if loading results
-}
+  let args;
+  try {
+    args = arg(template);
+  } catch (e) {
+    console.log(e.message);
+    process.exit();
+  }
 
-if (args['--rules']) {
-  conf.rules = path.join(process.cwd(), args['--rules']);
-  // TODO this should be the same if loading results
-}
+  if (args['--help']) {
+    help();
+    process.exit();
+  }
 
-if (args['--module-include']) {
-  conf.modules.include = splitAdd(args['--module-include'], ',', true);
-}
+  if (args['--version']) {
+    console.log('v' + pkg.version); // + " (commit: 8799cd1)");
+    process.exit();
+  }
 
-if (args['--module-exclude']) {
-  conf.modules.excludes = splitAdd(args['--module-exclude'], ',', true);
-}
+  if (args['--depth']) {
+    conf.depth = args['--depth'];
+  }
 
-if (args['--context-include']) {
-  conf.context.include = splitAdd(args['--context-include'], ',', false);
-}
-
-if (args['--context-exclude']) {
-  const excl = splitAdd(args['--context-exclude'], ',', false);
-  conf.context.include = conf.context.include.filter((name) => {
-    if (excl.indexOf(name)) {
-      return name;
+  if (args['--analysis']) {
+    let p = args['--analysis'].replace('-', '_').toUpperCase();
+    if (Object.keys(preset).includes(p)) {
+      conf.analysis = preset[p];
+    } else {
+      if (args['--analysis'].startsWith('/')) {
+        conf.analysis = path.resolve(args['--analysis']);
+        // console.log(conf.analysis)
+      } else {
+        conf.analysis = path.join(process.cwd(), args['--analysis']);
+        // console.log(conf.analysis)
+      }
     }
-  });
-  console.log(conf.context.excludes);
-}
+  }
 
-if (args['--prop-exclude']) {
-  conf.fields.excludes = splitAdd(args['--prop-exclude'], ',', false);
-}
+  if (args['--print']) {
+    conf.print = args['--print'];
+  }
 
-if (args['--prop-include']) {
-  conf.fields.include = splitAdd(args['--prop-include'], ',', false);
-}
+  if (args['--file']) {
+    conf.SAVE_RESULTS = path.join(process.cwd(), args['--file']);
+    // TODO this should be the same if loading results
+  }
 
-let filePath;
-switch (args['_'].length) {
+  if (args['--rules']) {
+    conf.rules = path.join(process.cwd(), args['--rules']);
+    // TODO this should be the same if loading results
+  }
+
+  if (args['--module-include']) {
+    conf.modules.include = splitAdd(args['--module-include'], ',', true);
+  }
+
+  if (args['--module-exclude']) {
+    conf.modules.excludes = splitAdd(args['--module-exclude'], ',', true);
+  }
+
+  if (args['--context-include']) {
+    conf.context.include = splitAdd(args['--context-include'], ',', false);
+  }
+
+  if (args['--context-exclude']) {
+    const excl = splitAdd(args['--context-exclude'], ',', false);
+    conf.context.include = conf.context.include.filter((name) => {
+      if (excl.indexOf(name)) {
+        return name;
+      }
+    });
+    console.log(conf.context.excludes);
+  }
+
+  if (args['--prop-exclude']) {
+    conf.fields.excludes = splitAdd(args['--prop-exclude'], ',', false);
+  }
+
+  if (args['--prop-include']) {
+    conf.fields.include = splitAdd(args['--prop-include'], ',', false);
+  }
+
+  let filePath;
+  switch (args['_'].length) {
   case 0:
     console.log('You must specify a file name');
     process.exit(-1);
@@ -223,36 +246,24 @@ switch (args['_'].length) {
   default:
     console.log('Too many ``extra\'\' parameters: ' + args['_'].join(', '));
     process.exit(-1);
+  }
+
+  if (args['--enable-with']) {
+    conf.enableWith = true;
+  }
+
+  // print prologue
+  if (args['--only-prologue']) {
+    console.log(conf)
+    process.exit(0);
+  }
+
+  return conf;
 }
 
-if (args['--enable-with']) {
-  conf.enableWith = true;
-}
 
-// print prologue
-if (args['--only-prologue']) {
-  console.log(conf)
-  process.exit(0);
-}
-
-
-const env = require(conf.analysis)(lya);
-
-// Override options from CLI where applicable.
-env.config = inTermsOf(env.config)(conf);
-
-lya.callWithLya(env, (require) => require(filePath));
-
-const stringifiedResults = JSON.stringify(env.results, null, 2);
-
-if (conf.SAVE_RESULTS) {
-    fs.writeFileSync(env.conf.SAVE_RESULTS, stringifiedResults, 'utf-8');
-}
-if (conf.print) {
-    console.log(stringifiedResults);
-}
-if (conf.reportTime) {
-  const timerEnd = process.hrtime(env.config.timerStart);
-  const timeMillis = convert(timerEnd).millis;
-  console.log(timeMillis, 'Time');
+if (require.main === module) {
+  main(collectArguments());
+} else {
+  return lya;
 }
