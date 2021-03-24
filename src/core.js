@@ -30,20 +30,17 @@ const {callWithVmOverride} = require('./vm-override.js');
 const {maybeAddProxy, createProxyApplyHandler} = require('./proxy.js');
 const {IDENTIFIER_CLASSIFICATIONS} = require('./constants.js');
 const {createReferenceMetadataStore} = require('./metadata.js');
-const {configureLya} = require('./config.js');
+const {configureLya, inTermsOf} = require('./config.js');
 
 
 // Creates an object used to collect facts from the runtime.
-function createLyaState(userRequire, config) {
+function createLyaState(...configs) {
   return {
     // Contains hooks, policy info, and other user-specific goodies.
-    config: configureLya(config),
+    config: configureLya(...configs),
 
     // Contains metadata collected for references as they are found.
     metadata: createReferenceMetadataStore(),
-
-    // Use to indirectly trigger analysis via 'vm' module.
-    require: userRequire,
 
     // Track dependency relationships
     currentModuleRequest: null,
@@ -67,6 +64,7 @@ const overrides = [
   callWithVmOverride,
 ];
 
+const hrTimeToMs = (hrtime) => (hrtime[0] * 1e9) + hrtime[1] / 1e6;
 
 function callWithLya(env, f) {
   const startAnalysis = () => {
@@ -80,7 +78,14 @@ function callWithLya(env, f) {
   );
 
   // Post-processing
-  const { results, config: { saveResults, print, reportTime } } = env;
+  const {
+    results,
+    config: {
+      saveResults,
+      print,
+      reportTime,
+    },
+  } = env;
 
   const stringifiedResults = JSON.stringify(results, null, 2);
 
@@ -94,8 +99,7 @@ function callWithLya(env, f) {
 
   if (reportTime) {
     env.timerEnd = process.hrtime(env.timerStart);
-    const timeMillis = convert(env.timerEnd).millis;
-    console.log(timeMillis, 'Time');
+    console.log('Time %sms', hrTimeToMs(env.timerEnd));
   }
 
   return callbackResult;
@@ -105,7 +109,11 @@ function callWithLya(env, f) {
 // We start an analysis using the module resolver because we'll want
 // relative paths, etc. to function as CommonJS expects.
 function createLyaRequireProxy(env) {
-  return maybeAddProxy(env, env.require, {
+  if (typeof env.config.require !== 'function') {
+    throw new Error('env.config.require is not a function.');
+  }
+
+  return maybeAddProxy(env, env.config.require, {
     apply: createProxyApplyHandler(env, IDENTIFIER_CLASSIFICATIONS.MODULE_LOCALS),
   });
 }

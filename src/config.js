@@ -91,7 +91,10 @@ test(() => {
 // This forces defaults to be specified in advance
 // such that no existence checks are needed later.
 function inTermsOf(defaults) {
-  return (overrides) => merge(defaults, overrides || {});
+  return (...overrides) =>
+    overrides.reduce((reduction, override) =>
+                     merge(reduction, override || {}),
+                     defaults);
 }
 
 test(({equal}) => {
