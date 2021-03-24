@@ -11,6 +11,7 @@ module.exports = {
 };
 
 const {configureLya} = require('./config.js');
+const {failAs} = require('./control.js');
 const {createReferenceMetadataStore} = require('./metadata.js');
 const {test, assert, assertDeepEqual} = require('./test.js');
 const Module = require('module');
@@ -34,17 +35,44 @@ function createLyaState(...configs) {
 }
 
 
-function registerModule(env, module) {
-  env.metadata.set(module, {
-    name: module.filename,
-    parent: env.context || global,
+function inferName(env, variant) {
+  const type = typeof variant;
+
+  const { name } = env.metadata.get(variant, () => {
+    if (variant instanceof Module) {
+      return module.filename;
+    } else if (type === 'function') {
+      return variant.name;
+    }
+
+    return {
+      name: failAs('', () => variant.toString())
+    };
+  });
+
+  return name;
+}
+
+
+function registerReference(env, variant) {
+  env.metadata.set(variant, {
+    name: inferName(env, variant),
   });
 }
 
 
+function registerModule(env, module) {
+  env.metadata.set(module, {
+    parent: env.context || global,
+  });
+
+  registerReference(env, module);
+}
+
+
 function setCurrentModule(env, module) {
-  registerModule(env, module);
   env.currentModule = module;
+  registerModule(env, module);
 }
 
 

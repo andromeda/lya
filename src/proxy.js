@@ -97,11 +97,18 @@ function createProxyGetHandler(env, typeClass) {
       },
     } = env;
 
-    const maybeMetadata = metadata.get(target[name]);
     const currentValue = Reflect.get(...arguments);
+    const maybeMetadata = metadata.get(currentValue, () => false);
+
+    // Failure to procure metadata means that the object is not worth
+    // tracking (literals, undefined)
+    if (!maybeMetadata) return currentValue;
+
+    registerReference(env, currentValue);
+    const { proxy } = metadata.get(currentValue);
 
     // Lazily create proxies to extend scope of monitoring.
-    if (!maybeMetadata) {
+    if (!proxy) {
       metadata.set(currentValue, {
         parent: target,
         name,
@@ -112,18 +119,17 @@ function createProxyGetHandler(env, typeClass) {
       maybeAddProxy(env, currentValue, handler);
     }
 
-    const { proxy } = metadata.get(target[name]);
-
     onRead({
       target,
       name,
-      nameToStore: getOPath(metadata, target[name]),
+      nameToStore: getOPath(metadata, currentValue),
       currentModule: metadata.get(currentModule).name,
       typeClass,
     });
 
-    // As implied, the proxy might not have been created.
-    return proxy || currentValue;
+    // The proxy still might not have been created.
+    // Prefer it only if the environment wants it to exist.
+    return metadata.get(currentValue).proxy || currentValue;
   };
 }
 
@@ -173,8 +179,7 @@ function createProxyHasHandler(env, typeClass) {
       },
     } = env;
 
-    const { name: currentName } = metadata.get(currentModule);
-    const parent = inferParent(env, target);
+    const { name: currentName, parent } = metadata.get(currentModule);
     const result = Reflect.has(...arguments);
     const nameToStore = getOPath(metadata, parent) + '.' + prop.toString();
 
