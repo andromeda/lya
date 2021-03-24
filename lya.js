@@ -123,9 +123,9 @@ const template = {
 
 
 function main(conf) {
-  const env = require(conf.analysis)(lya);
+  const env = require(conf.analysis)(lya, conf);
 
-  // Override options from CLI where applicable.
+  // Force options from CLI where applicable.
   env.config = inTermsOf(env.config)(conf);
 
   lya.callWithLya(env, (require) => require(filePath));
