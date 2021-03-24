@@ -12,6 +12,7 @@ const {assert, test} = require('./test.js');
 const {maybeAddProxy, createProxyHandlerObject} = require('./proxy.js');
 const {callWithOwnValues} = require('./container-type.js');
 const {IDENTIFIER_CLASSIFICATIONS} = require('./constants.js');
+const {setCurrentModule} = require('./state.js');
 
 // require() calls runInThisContext() as a side-effect. Take that
 // chance to inject a smart proxy of the global object.
@@ -55,7 +56,7 @@ function createCommonJsApply(env) {
     const [exports, require, module, __filename, __dirname] = A;
     const moduleId = path.resolve(__dirname, __filename);
 
-    env.currentModule = module;
+    setCurrentModule(env, module);
 
     env.metadata.set(exports, {
       parent: module,
@@ -65,11 +66,6 @@ function createCommonJsApply(env) {
     env.metadata.set(require, {
       parent: module,
       name: 'require',
-    });
-
-    env.metadata.set(module, {
-      parent: global,
-      name: moduleId,
     });
 
     A[0] = wrap(exports);
@@ -84,7 +80,7 @@ test(() => {
   const fs = require('fs');
   const original = vm.runInThisContext;
   const { createLyaState } = require('./state.js');
-  const env = createLyaState();  
+  const env = createLyaState();
   const dummy = './_test.js';
 
   fs.writeFileSync(dummy, 'x = "Hi"', { flag: 'w+' });

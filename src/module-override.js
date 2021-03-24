@@ -60,7 +60,7 @@ const originalLoad = Module._load;
 function overrideModuleLoad(env) {
   return function _load(...args) {
     env.config.hooks.onImport({
-      caller: env.moduleName[env.requireLevel],
+      caller: env.metadata.get(env.currentModule).name,
       callee: Module._resolveFilename.call(this, ...args),
       name: args[0],
     });
@@ -133,12 +133,7 @@ function overrideModuleRequirePrototype(env) {
     // the proxy instead.
     const actualModuleExports = originalProtoRequire.apply(this, args);
     const moduleExportType = typeof moduleExports;
-
-    // By this point, the vm.runInThisContext override had a chance to
-    // inspect the CommonJS arguments. We can leverage the data to
-    // initialize a results onject for the user.
     const { name: currentModuleName } = metadata.get(currentModule);
-    results[currentModuleName] = results[currentModuleName] || {};
 
     const moduleIncluded = elementOf(include, currentModuleName);
     const moduleExcluded = elementOf(exclude, currentModuleName);

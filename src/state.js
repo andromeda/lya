@@ -38,19 +38,17 @@ function createLyaState(...configs) {
 function inferName(env, variant) {
   const type = typeof variant;
 
-  const { name } = env.metadata.get(variant, () => {
-    if (variant instanceof Module) {
-      return module.filename;
-    } else if (type === 'function') {
-      return variant.name;
-    }
+  const { name } = env.metadata.get(variant, () => ({
+    name: failAs(false, () => variant.toString())
+  }));
 
-    return {
-      name: failAs('', () => variant.toString())
-    };
-  });
-
-  return name;
+  if (name) {
+    return name;
+  } else if (variant instanceof Module) {
+    return Module._resolveFilename(variant.filename);
+  } else if (type === 'function') {
+    return variant.name;
+  }
 }
 
 
@@ -62,11 +60,13 @@ function registerReference(env, variant) {
 
 
 function registerModule(env, module) {
+  registerReference(env, module);
   env.metadata.set(module, {
     parent: env.context || global,
   });
 
-  registerReference(env, module);
+  const { name } = env.metadata.get(module);
+  env.results[name] = env.results[name] || {};
 }
 
 
