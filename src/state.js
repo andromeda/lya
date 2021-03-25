@@ -10,6 +10,7 @@ module.exports = {
   getDeclaringModule,
   getOPath,
   registerReference,
+  getModuleRelativeOPath,
 };
 
 const {configureLya} = require('./config.js');
@@ -60,7 +61,12 @@ function inferName(env, variant) {
 function registerReference(env, variant) {
   env.metadata.set(variant, {
     name: inferName(env, variant),
-    parent: env.currentModule || env.context || global,
+    parent: (
+      env.metadata.get(variant, () => ({ parent: false })).parent ||
+        env.currentModule ||
+        env.context ||
+        global
+    ),
   });
 }
 
@@ -93,6 +99,16 @@ function getOPath(env, ref) {
   }
 }
 
+function getModuleRelativeOPath(env, ref) {
+  const { parent, name } = env.metadata.get(ref);
+  const displayName = name || '';
+
+  if (!parent || parent instanceof Module) {
+    return displayName;
+  } else {
+    return getModuleRelativeOPath(env, parent) + '.' + displayName;
+  }
+}
 
 function getDeclaringModule(env, ref) {
   if (!ref) {

@@ -23,6 +23,7 @@ const {
   getOPath,
   registerReference,
   setCurrentModule,
+  getModuleRelativeOPath,
 } = require('./state.js');
 
 
@@ -109,25 +110,25 @@ function createProxyGetHandler(env, typeClass) {
     if (!maybeMetadata) return currentValue;
 
     registerReference(env, currentValue);
+    metadata.set(currentValue, {
+      parent: (target === env.context || target === global)
+        ? currentModule
+        : target,
+      name,
+    });
+
     const { proxy } = metadata.get(currentValue);
 
     // Lazily create proxies to extend scope of monitoring.
     if (!proxy) {
-      metadata.set(currentValue, {
-        parent: target,
-        name,
-      });
-
       // TODO: Select typeclass dynamically
-      const handler = createProxyHandlerObject(env, 'lazy');
-      
-      maybeAddProxy(env, currentValue, handler);
+      maybeAddProxy(env, currentValue, createProxyHandlerObject(env, 'lazy'));
     }
 
     onRead({
       target,
       name,
-      nameToStore: getOPath(env, currentValue),
+      nameToStore: getModuleRelativeOPath(env, currentValue),
       currentModule: metadata.get(currentModule).name,
       typeClass,
     });
@@ -192,7 +193,7 @@ function createProxyHasHandler(env, typeClass) {
 
     const { name: currentName, parent } = metadata.get(currentModule);
     const result = Reflect.has(...arguments);
-    const nameToStore = getOPath(metadata, parent) + '.' + prop.toString();
+    const nameToStore = getModuleRelativeOPath(metadata, parent) + '.' + prop.toString();
 
     if (parentObject === context && !result) {
       onHas({
@@ -255,7 +256,8 @@ function createProxyApplyHandler(env, typeClass) {
 
     registerReference(env, target);
 
-    const nameToStore = getOPath(env, target);
+    const nameToStore = getModuleRelativeOPath(env, target);
+    const declareModule = getDeclaringModule(env, target);
 
     const info = {
       target,
@@ -264,7 +266,7 @@ function createProxyApplyHandler(env, typeClass) {
       name: target.name,
       nameToStore,
       currentModule: metadata.get(currentModule).name,
-      declareModule: getOPath(env, getDeclaringModule(env, target)),
+      declareModule: metadata.get(declareModule).name,
       typeClass,
     };
 
