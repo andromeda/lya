@@ -19,19 +19,19 @@ function analyze(env) {
   const {
     entry,
     context: contextVariant,
-    conf,
+    config,
   } = env || {};
 
   const {
-    context: contextConfig,
-    vm: vmConfig,
-  } = conf || {};
+    vmContextConfig,
+    vmConfig,
+  } = config || {};
 
   const code = coerceString(entry, {allowFileRead: true});
 
   env.context = vm.isContext(contextVariant) ?
         contextVariant :
-        vm.createContext(contextVariant, contextConfig);
+        vm.createContext(contextVariant, vmContextConfig);
 
   env.value = vm.runInContext(code, env.context, vmConfig);
 

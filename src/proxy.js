@@ -314,11 +314,11 @@ test(() => {
                     'Capture the right arguments');
     assert(name === 'proxyTarget',
            'Capture the function name')
-    assert(nameToStore === '.M.alias',
+    assert(nameToStore === 'alias',
            'Capture the analysis-specific alias of the function');
     assert(currentModule === 'M',
            'Capture the module ID');
-    assert(declareModule === '.M',
+    assert(declareModule === 'M',
            'Capture the declaring module');
     assert(typeClass === 'T',
            'Forward typeClass');
