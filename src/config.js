@@ -11,6 +11,8 @@ module.exports = {
 
   inTermsOf,
 
+  makePresetName,
+
   configureLya: inTermsOf({
     inputString: false,
     printCode: false,

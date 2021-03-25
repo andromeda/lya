@@ -6,7 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const arg = require('arg');
 const pkg = require('./package.json');
-const { preset, inTermsOf, configureLya } = require('./src/config.js');
+const { makePresetName, preset, inTermsOf, configureLya } = require('./src/config.js');
 
 /* eslint-disable max-len */
 const h = `Analyze JavaScript programs dynamically, to extract information or enforce invariants.
@@ -162,7 +162,7 @@ function collectArguments() {
   }
 
   if (args['--analysis']) {
-    let p = args['--analysis'].replace('-', '_').toUpperCase();
+    let p = makePresetName(args['--analysis']);
     if (Object.keys(preset).includes(p)) {
       conf.analysis = preset[p];
     } else {
