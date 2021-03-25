@@ -36,11 +36,11 @@ module.exports = (lya) => {
     }
 
     if (timeCapsule[level+1]) {
-      env.analysisResult[info.currentModule][info.nameToStore] = thisTime -
+      env.results[info.currentModule][info.nameToStore] = thisTime -
         timeCapsule[level+1];
       timeCapsule[level+1] = 0;
     } else {
-      env.analysisResult[info.currentModule][info.nameToStore] = thisTime;
+      env.results[info.currentModule][info.nameToStore] = thisTime;
     }
   };
 

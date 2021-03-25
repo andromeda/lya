@@ -25,7 +25,7 @@ module.exports = (lya) => {
   // onCallPost <~ Is call after every execution of a function
   const onCallPost = (info) => {
     types[info.nameToStore].push(info.result ? typeof info.result : 'no output');
-    updateAnalysisData(env.analysisResult[info.currentModule], info.nameToStore,
+    updateAnalysisData(env.results[info.currentModule], info.nameToStore,
                        types[info.nameToStore]);
   };
 

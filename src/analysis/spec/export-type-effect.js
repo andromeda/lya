@@ -61,7 +61,7 @@ module.exports = (lya) => {
     }
     types[info.nameToStore].push(info.result ? typeof info.result : 'no output');
     const values = accessTable[currentFunction[currentFunction.length-1]];
-    updateAnalysisData(env.analysisResult[info.currentModule], info.nameToStore,
+    updateAnalysisData(env.results[info.currentModule], info.nameToStore,
                        types[info.nameToStore], values);
     currentFunction.pop();
   };
