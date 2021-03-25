@@ -75,7 +75,6 @@ module.exports = (lya, userConfig = {}) => {
       onRead,
       onCallPre,
       onWrite,
-      onConstruct,
     },
   });
 };
