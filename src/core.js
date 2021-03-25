@@ -2,8 +2,10 @@
 
 const fs = require('fs');
 const state = require('./state.js');
+const {analyze} = require('./analyze.js');
 
 module.exports = {
+  analyze,
   callWithLya,
   createLyaState: state.createLyaState,
   preset: require('./config.js').preset,
@@ -13,7 +15,6 @@ module.exports = {
 // /////////////////////////////////////////////////////////////////////////////
 // Implementation
 
-const {analyze} = require('./analyze.js');
 const {assert, assertDeepEqual, test} = require('./test.js');
 const {identity} = require('./functions.js');
 const {callWithOwnValues, elementOf} = require('./container-type.js');
