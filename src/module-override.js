@@ -53,8 +53,19 @@ const {
 const originalWrap = Module.wrap;
 
 function overrideModuleWrap(env) {
-  return (script) => originalWrap(env.config.hooks.sourceTransform(script),
-                                  env.currentModuleRequest);
+  return function wrap(script) {
+    const {
+      config: {
+        hooks: {
+          sourceTransform,
+        },
+      },
+      currentModuleRequest,
+      metadata,
+    } = env;
+
+    return originalWrap(sourceTransform(script, currentModuleRequest));
+  };
 }
 
 
