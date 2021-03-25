@@ -2,11 +2,11 @@ module.exports = (lya) => {
   let env = lya.createLyaState({
     hooks: {
       onImport: (info) => {
-        if (!env.results[info.caller]) {
-          env.results[info.caller] = [];
+        if (!env.results[info.caller].deps) {
+          env.results[info.caller].deps = [];
         }
 
-        env.results[info.caller].push(info.callee);
+        env.results[info.caller].deps.push(info.callee);
       },
     }
   });
