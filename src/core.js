@@ -35,7 +35,6 @@ const overrides = [
   callWithVmOverride,
 ];
 
-const hrTimeToMs = (hrtime) => (hrtime[0] * 1e9) + hrtime[1] / 1e6;
 
 function callWithLya(env, f) {
   const startAnalysis = () => {
@@ -48,44 +47,7 @@ function callWithLya(env, f) {
                      startAnalysis)()
   );
 
-  // Post-processing
-  const {
-    results,
-    config: {
-      saveResults,
-      print,
-      reportTime,
-      verbosity,
-    },
-    log,
-  } = env;
-
-  const stringifiedResults = JSON.stringify(results, null, 2);
-
-  if (saveResults) {
-    fs.writeFileSync(saveResults, stringifiedResults, 'utf-8');
-  }
-
-  if (print) {
-    console.log(stringifiedResults);
-
-    if (verbosity > 0) {
-      for (const entry of log) {
-        if (verbosity === 1) {
-          console.log('lya: %s:',
-                      entry.handler,
-                      state.inferName(env, entry.target));
-        } else {
-          console.log('lya:', entry);
-        }
-      }
-    }
-  }
-
-  if (reportTime) {
-    env.timerEnd = process.hrtime(env.timerStart);
-    console.log('Time %sms', hrTimeToMs(env.timerEnd));
-  }
+  postprocess(env, callbackResult);
 
   return callbackResult;
 }
@@ -108,3 +70,44 @@ function createLyaRequireProxy(env) {
     },
   });
 }
+
+const hrTimeToMs = (hrtime) => (hrtime[0] * 1e9) + hrtime[1] / 1e6;
+
+function postprocess(env, callbackResult) {
+  // Post-processing
+  const {
+    results,
+    config: {
+      print,
+      reportTime,
+      saveResults,
+      verbosity,
+      hooks: {
+        onExit,
+      },
+    },
+    log,
+  } = env;
+
+  const stringifiedResults = JSON.stringify(results, null, 2);
+
+  onExit(env, {
+    value: callbackResult,
+    saveIfAble: () => {
+      if (saveResults) {
+        fs.writeFileSync(saveResults, stringifiedResults, 'utf-8');
+      }
+    },
+    printIfAble: () => {
+      if (print) {
+        console.log(stringifiedResults);
+      }
+    },
+    reportTimeIfAble: () => {
+      if (reportTime) {
+        env.timerEnd = process.hrtime(env.timerStart);
+        console.log('Time %sms', hrTimeToMs(env.timerEnd));
+      }
+    },
+  })
+};
