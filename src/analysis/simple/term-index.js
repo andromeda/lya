@@ -50,47 +50,39 @@ module.exports = (lya) => {
     numDocs++;
     const terms = tf(src);
     docs[id] = terms;
-    for (const term in terms) {
-      if (Object.prototype.hasOwnProperty.call(terms, term)) {
-        // calculate TF
-        if (TF[term]) {
-          TF[term][id] = terms[term];
-        } else {
-          TF[term] = {[id]: terms[term]};
-        }
+    for (const term of Object.keys(terms)) {
+      // calculate TF
+      if (TF[term]) {
+        TF[term][id] = terms[term];
+      } else {
+        TF[term] = {[id]: terms[term]};
+      }
 
-        // calculate Z
-        Z[term] = Z[term]? Z[term] + 1 : 1;
+      // calculate Z
+      Z[term] = Z[term]? Z[term] + 1 : 1;
 
-        // calculate IDF
-        if (IDF[term]) {
-          for (const doc in IDF[term]) {
-            if (Object.prototype.hasOwnProperty.call(IDF[term], doc)) {
-              IDF[term][doc] = idf(numDocs, Z[term]);
-              TFIDF[term][doc] = TF[term][id] * IDF[term][doc];
-            }
-          }
-        } else {
-          IDF[term] = {[id]: idf(numDocs, Z[term])};
-          TFIDF[term] = {[id]: TF[term][id] * IDF[term][doc]};
+      // calculate IDF
+      if (IDF[term]) {
+        for (const doc of Object.keys(IDF[term])) {
+          IDF[term][doc] = idf(numDocs, Z[term]);
+          TFIDF[term][doc] = TF[term][id] * IDF[term][doc];
         }
+      } else {
+        IDF[term] = {[id]: idf(numDocs, Z[term])};
+        TFIDF[term] = {[id]: TF[term][id] * IDF[term][doc]};
       }
     }
     // return the original source
     return src;
   };
 
-  const onExit = (intersection, candidateModule) => {
-    console.log(TFIDF);
-  };
-
-
   env = lya.createLyaState({
     hooks: {
       sourceTransform,
-      onExit,
     },
   });
+
+  TFIDF = env.results.TFIDF = {};
 
   return env;
 };
