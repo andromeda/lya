@@ -37,8 +37,14 @@ module.exports = (lya) => {
                        outputType);
   };
 
+  const onExit = (env, { saveIfAble, printIfAble }) => {
+    saveIfAble();
+    printIfAble();
+  };
+  
   env = lya.createLyaState({
     hooks: {
+      onExit,
       onCallPre,
       onCallPost,
     },

@@ -4,6 +4,10 @@ module.exports = (lya) => {
       onCallPre: (info) => {
         env.results[info.currentModule][info.nameToStore] = 'function';
       },
+      onExit: (env, { saveIfAble, printIfAble }) => {
+        saveIfAble();
+        printIfAble();
+      },
     },
   });
 

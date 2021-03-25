@@ -34,6 +34,11 @@ module.exports = (lya) => {
     storeTime.set(info.target, process.hrtime());
   };
 
+  const onExit = (env, { saveIfAble, printIfAble }) => {
+    saveIfAble();
+    printIfAble();
+  }
+  
   // Store time results in a table keeping them within a certain window
   const storeResult = (module, name, storeTime, oldTime) => {
     if (env.results[module][name] === undefined) {
@@ -75,6 +80,7 @@ module.exports = (lya) => {
     hooks: {
       onCallPre,
       onCallPost,
+      onExit,
     },
   });
 

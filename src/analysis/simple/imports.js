@@ -8,6 +8,10 @@ module.exports = (lya) => {
 
         env.results[info.caller].deps.push(info.callee);
       },
+      onExit: (env, { saveIfAble, printIfAble }) => {
+        saveIfAble();
+        printIfAble();
+      },
     }
   });
 

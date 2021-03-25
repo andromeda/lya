@@ -66,12 +66,19 @@ module.exports = (lya) => {
     currentFunction.pop();
   };
 
+  const onExit = (env, { saveIfAble, printIfAble }) => {
+    saveIfAble();
+    printIfAble();
+  };
+
+  
   env = lya.createLyaState({
     hooks: {
       onCallPre,
       onCallPost,
       onRead,
       onWrite,
+      onExit,
     },
   });
 

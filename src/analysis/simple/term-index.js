@@ -46,6 +46,10 @@ module.exports = (lya) => {
         filter(noStop).reduce(freq, {});
   const idf = (numDocs, dted) => Math.log(numDocs / (1 + dted)) / Math.log(10);
 
+  const onExit = (env, { printIfAble }) => {
+    printIfAble();
+  };
+  
   const sourceTransform = (src, id) => {
     numDocs++;
     const terms = tf(src);
@@ -79,6 +83,7 @@ module.exports = (lya) => {
   env = lya.createLyaState({
     hooks: {
       sourceTransform,
+      onExit,
     },
   });
 

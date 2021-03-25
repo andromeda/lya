@@ -29,6 +29,11 @@ module.exports = (lya) => {
                        types[info.nameToStore]);
   };
 
+  const onExit = (env, { saveIfAble, printIfAble }) => {
+    saveIfAble();
+    printIfAble();
+  };
+  
   env = lya.createLyaState({
     context: {
       include: ['module-returns'],
@@ -36,6 +41,7 @@ module.exports = (lya) => {
     hooks: {
       onCallPre,
       onCallPost,
+      onExit,
     }
   });
 

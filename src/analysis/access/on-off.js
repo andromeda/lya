@@ -64,13 +64,17 @@ module.exports = (lya) => {
                        info.nameToStore);
   };
 
-  // onExit (toSave == place to save the result) --maybe make it module-local?
-  const onExit = (intersection, candidateModule) => {
+  const onExit = (env, { saveIfAble, printIfAble }) => {
+    /*
     for (const name of intersection) {
       const currentName = candidateModule.get(name);
-      updateAnalysisData(env.results[currentName],
+      updateAnalysisData(env.analysisResult[currentName],
                          name, ['w']);
     }
+    */
+
+    saveIfAble();
+    printIfAble();
   };
 
   env = lya.createLyaState({

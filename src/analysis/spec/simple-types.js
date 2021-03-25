@@ -29,10 +29,16 @@ module.exports = (lya) => {
     // NOTE: And the other hook here
   };
 
+  const onExit = (env, { saveIfAble, reportTimeIfAble }) => {
+    saveIfAble();
+    reportTimeIfAble();
+  };
+
   env = lya.createLyaState({
     hooks: {
       onCallPre,
       onCallPost,
+      onExit,
     },
   });
 
