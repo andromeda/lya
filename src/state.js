@@ -54,7 +54,7 @@ function inferName(env, variant) {
   if (name) {
     return name;
   } else if (variant instanceof Module) {
-    return Module._resolveFilename(variant.filename);
+    return `require('${Module._resolveFilename(variant.filename)}')`;
   } else if (type === 'function') {
     return variant.name;
   }
@@ -103,13 +103,17 @@ function getOPath(env, ref) {
 }
 
 function getModuleRelativeOPath(env, ref) {
-  const { parent, name } = env.metadata.get(ref);
-  const displayName = name || '';
-
-  if (!parent || parent instanceof Module) {
-    return displayName;
+  if (!ref) {
+    return '';
   } else {
-    return getModuleRelativeOPath(env, parent) + '.' + displayName;
+    const { parent, name } = env.metadata.get(ref);
+    const displayName = name || '';
+
+    if (ref instanceof Module) {
+      return displayName;
+    } else {
+      return getModuleRelativeOPath(env, parent) + '.' + displayName;
+    }
   }
 }
 

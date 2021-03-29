@@ -175,7 +175,7 @@ function createProxySetHandler(env, typeClass) {
         target,
         name,
         value,
-        currentModule,
+        currentModule: metadata.get(currentModule).name,
         parentName,
         nameToStore,
       });
