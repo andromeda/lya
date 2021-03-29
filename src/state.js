@@ -16,7 +16,7 @@ module.exports = {
 const {configureLya} = require('./config.js');
 const {failAs} = require('./control.js');
 const {createReferenceMetadataStore} = require('./metadata.js');
-const {test, assert, assertDeepEqual} = require('./test.js');
+const {test, assert} = require('./test.js');
 const Module = require('module');
 
 // Creates an object used to collect facts from the runtime.

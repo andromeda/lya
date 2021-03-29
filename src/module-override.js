@@ -26,7 +26,6 @@ function callWithModuleOverride(env, f) {
 const Module = require('module');
 
 const {callWithOwnValues, elementOf} = require('./container-type.js');
-const {identity} = require('./functions.js');
 const {assert, assertDeepEqual, test} = require('./test.js');
 const {
   createProxyApplyHandler,
@@ -36,9 +35,7 @@ const {
 } = require('./proxy.js');
 
 const {
-  COMMONJS_MODULE_IDENTIFIERS,
   IDENTIFIER_CLASSIFICATIONS,
-  NATIVE_MODULES,
   NEGLIGIBLE_EXPORT_TYPES,
 } = require('./constants.js');
 
@@ -61,7 +58,6 @@ function overrideModuleWrap(env) {
         },
       },
       currentModuleRequest,
-      metadata,
     } = env;
 
     return originalWrap(sourceTransform(script, currentModuleRequest));
@@ -133,7 +129,6 @@ function createModuleExportProxyHandler(env) {
 function overrideModuleRequirePrototype(env) {
   return function require(...args) {
     const {
-      results,
       metadata,
       currentModule,
       config: {
@@ -153,6 +148,8 @@ function overrideModuleRequirePrototype(env) {
     const moduleExportType = typeof moduleExports;
     const { name: currentModuleName } = metadata.get(currentModule);
 
+    // TODO: Use these variables
+    /* eslint-disable no-unused-vars */
     const moduleIncluded = elementOf(include, currentModuleName);
     const moduleExcluded = elementOf(exclude, currentModuleName);
     const exportsKnown = metadata.get(actualModuleExports).name;
@@ -161,6 +158,7 @@ function overrideModuleRequirePrototype(env) {
       exportsKnown ||
       elementOf(include, IDENTIFIER_CLASSIFICATIONS.MODULE_RETURNS)
     );
+    /* eslint-enable no-unused-vars */
 
     const baseExportsName = `require('${importName}')`;
 

@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+
 // This hook is called each time we import a module
 // and lets the developer have access to the source code
 // source <~ the source code of the imported module
@@ -39,6 +41,9 @@ const onHas = (info) => {
 // Choose what to do when the execution of program ends
 const onExit = () => {
 };
+
+/* eslint-enable no-unused-vars */
+
 
 module.exports = (lya) => {
   return lya.createLyaState({

@@ -12,15 +12,11 @@ module.exports = {
   maybeAddProxy,
 };
 
-const {elementOf} = require('./container-type.js');
 const {withCatch} = require('./control.js');
 const {assert, assertDeepEqual, test} = require('./test.js');
-const {createReferenceMetadataStore} = require('./metadata.js');
 const {
   createLyaState,
-  inferParent,
   getDeclaringModule,
-  getOPath,
   registerReference,
   setCurrentModule,
   getModuleRelativeOPath,
@@ -29,7 +25,7 @@ const {
 
 // Like new Proxy(), except construction is conditional, and any
 // created instances are tracked.
-function maybeAddProxy(env, obj, handler, typeClass) {
+function maybeAddProxy(env, obj, handler) {
   let { proxy, name } = env.metadata.get(obj);
 
   if (!proxy) {
@@ -144,11 +140,11 @@ function createProxyGetHandler(env, typeClass) {
 }
 
 
+/* eslint-disable-next-line no-unused-vars */
 function createProxySetHandler(env, typeClass) {
   return function set(target, name, value) {
     const {
       metadata,
-      context,
       currentModule,
       config: {
         hooks: {
@@ -190,6 +186,7 @@ function createProxySetHandler(env, typeClass) {
 }
 
 
+/* eslint-disable-next-line no-unused-vars */
 function createProxyHasHandler(env, typeClass) {
   return function has(target, prop) {
     const {
@@ -210,7 +207,7 @@ function createProxyHasHandler(env, typeClass) {
     const result = Reflect.has(...arguments);
     const nameToStore = getModuleRelativeOPath(metadata, parent) + '.' + prop.toString();
 
-    if (parentObject === context && !result) {
+    if (parent === context && !result) {
       onHas({
         target,
         prop,
@@ -224,10 +221,12 @@ function createProxyHasHandler(env, typeClass) {
 }
 
 
+/* eslint-disable-next-line no-unused-vars */
 function createProxyConstructHandler(env, typeClass) {
   return function construct(target, args) {
     const {
       currentModule,
+      metadata,
       config: {
         hooks: {
           onConstruct,

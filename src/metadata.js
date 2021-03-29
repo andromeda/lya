@@ -2,7 +2,7 @@ module.exports = {
   createReferenceMetadataStore,
 };
 
-const {assert, assertDeepEqual, test} = require('./test.js');
+const {assert, test} = require('./test.js');
 const {raise} = require('./control.js');
 
 function createReferenceMetadataStore() {

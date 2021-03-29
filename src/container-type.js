@@ -12,7 +12,7 @@ module.exports = {
 };
 
 const {assertDeepEqual, assert, equal, test} = require('./test.js');
-const {identity} = require('./functions.js');
+const {identity, noop} = require('./functions.js');
 const deepmerge = require('deepmerge');
 
 function merge(...args) {
@@ -277,7 +277,7 @@ function filterObject(obj, keep) {
 }
 
 test(() => {
-  assert(equal(filterObject({a: 1, b: 2, c: 3, d: 4}, ([k, v]) => v < 3), {a: 1, b: 2}),
+  assert(equal(filterObject({a: 1, b: 2, c: 3, d: 4}, ([, v]) => v < 3), {a: 1, b: 2}),
       'Filter objects by keys');
 });
 

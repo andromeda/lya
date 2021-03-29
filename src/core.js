@@ -17,9 +17,7 @@ module.exports = {
 const fs = require('fs');
 const vm = require('vm');
 const {coerceString} = require('./string.js');
-const {assert, assertDeepEqual, test} = require('./test.js');
-const {identity} = require('./functions.js');
-const {callWithOwnValues, elementOf} = require('./container-type.js');
+const {assert, test} = require('./test.js');
 const {callWithModuleOverride} = require('./module-override.js');
 const {callWithVmOverride} = require('./vm-override.js');
 const {maybeAddProxy, createProxyApplyHandler} = require('./proxy.js');
@@ -83,12 +81,10 @@ function postprocess(env, callbackResult) {
       print,
       reportTime,
       saveResults,
-      verbosity,
       hooks: {
         onExit,
       },
     },
-    log,
   } = env;
 
   const stringifiedResults = JSON.stringify(results, null, 2);
@@ -112,7 +108,7 @@ function postprocess(env, callbackResult) {
       }
     },
   })
-};
+}
 
 
 

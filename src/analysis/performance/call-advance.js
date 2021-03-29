@@ -1,5 +1,3 @@
-const fs = require('fs');
-
 module.exports = (lya) => {
   let env;
 
@@ -35,6 +33,7 @@ module.exports = (lya) => {
   };
 
   const onExit = (env, { saveIfAble, printIfAble }) => {
+    env.results = normalResult(env.results);
     saveIfAble();
     printIfAble();
   }

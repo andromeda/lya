@@ -1,19 +1,9 @@
-const fs = require('fs');
-
 module.exports = (lya) => {
   let env;
   const storeTime = new Map();
 
   // Array to store the time of the modules
   const timeCapsule = {};
-
-  // Change the time parameters
-  const convert = (hrtime) => {
-    const nanos = (hrtime[0] * 1e9) + hrtime[1];
-    const millis = nanos / 1e6;
-    const secs = nanos / 1e9;
-    return {secs: secs, millis: millis, nanos: nanos};
-  };
 
   // Normalize all values (seconds and to microseconds)
   const toMillis = (a, b) => (a * 1e9 + b) * 1e-6;

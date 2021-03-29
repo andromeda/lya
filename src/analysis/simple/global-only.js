@@ -31,6 +31,7 @@ module.exports = (lya) => {
     hooks: {
       onCallPre,
       onConstruct,
+      onExit,
     },
   });
 

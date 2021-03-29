@@ -70,11 +70,13 @@ module.exports = (lya, userConfig = {}) => {
     ? require(userConfig.rules)
     : getAnalysisData();
 
-  return lya.createLyaState({
+  env = lya.createLyaState({
     hooks: {
       onRead,
       onCallPre,
       onWrite,
     },
   });
+
+  return env;
 };

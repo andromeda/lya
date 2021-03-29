@@ -5,7 +5,7 @@ module.exports = {
   cloneFunction,
 };
 
-const {assertDeepEqual, assert, equal, test} = require('./test.js');
+const {assertDeepEqual, assert, test} = require('./test.js');
 
 // Lisp-like syntactic sugar for introducing values to new scopes.
 // This can ease reading for IIFEs where the argument follows a long
