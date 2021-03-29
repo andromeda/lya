@@ -32,6 +32,9 @@ function createLyaState(...configs) {
     currentModuleRequest: null,
     currentModule: null,
 
+    // For counting proxied object types.
+    counters: { total: 0 },
+
     // For collecting user-defined data.
     results: {},
 

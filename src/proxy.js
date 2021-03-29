@@ -29,12 +29,16 @@ const {
 
 // Like new Proxy(), except construction is conditional, and any
 // created instances are tracked.
-function maybeAddProxy(env, obj, handler) {
+function maybeAddProxy(env, obj, handler, typeClass) {
   let { proxy, name } = env.metadata.get(obj);
 
   if (!proxy) {
     try {
       proxy = new Proxy(obj, handler);
+
+      const type = typeof obj;
+      env.counters[type] = (env.counters[type] || 0) + 1;
+      ++env.counters.total;
     } catch (e) {
       // Proxy() already knows what it wants, so we can use an
       // exception to avoid writing a bunch of defensive checks.
