@@ -156,8 +156,10 @@ function createProxySetHandler(env, typeClass) {
 
     log.push({ handler: 'set', target, name, value });
 
-    const parent = inferParent(env, target);
+    registerReference(env, target);
+    const { parent } = metadata.get(target);
     const { name: parentName } = metadata.get(parent);
+    const nameToStore = getModuleRelativeOPath(env, parent) + '.' + name;
 
     if (name) {
       onWrite({
@@ -166,7 +168,7 @@ function createProxySetHandler(env, typeClass) {
         value,
         currentModule,
         parentName,
-        nameToStore: '',
+        nameToStore,
       });
     }
 
