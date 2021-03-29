@@ -17,8 +17,7 @@
   },
   "eslintConfig": {
     "extends": [
-      "eslint:recommended",
-      "google"
+      "eslint:recommended"
     ],
     "parserOptions": {
       "ecmaVersion": 6
