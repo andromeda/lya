@@ -158,6 +158,15 @@ function createProxySetHandler(env, typeClass) {
       log,
     } = env;
 
+    // When this flag appears, it means then Lya updated the global
+    // object proxy's circular reference.  This happens only once per
+    // environment, and is not relevant for an analysis. This is why
+    // we noop for this case.
+    if ('_noop_set' in env) {
+      delete env._noop_set;
+      return;
+    }
+
     log.push({ handler: 'set', target, name, value });
 
     registerReference(env, target);

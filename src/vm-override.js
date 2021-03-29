@@ -37,7 +37,14 @@ function installMockGlobal(env) {
   const handler = createProxyHandlerObject(
     env, IDENTIFIER_CLASSIFICATIONS.NODE_GLOBALS);
 
-  env.context = vm.createContext(maybeAddProxy(env, global, handler));
+  const proxy = maybeAddProxy(env, global, handler);
+  env.context = vm.createContext(proxy);
+
+  // Captures operations prefixed with 'global.*' like `global.x = 1;
+  // This triggers the proxy, so we use a flag to ignore this
+  // particular assignment for the hooks.
+  env._noop_set = true;
+  env.context.global = proxy;
 
   env.metadata.set(env.context, {
     parent: null,
