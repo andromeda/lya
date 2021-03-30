@@ -1,7 +1,5 @@
 module.exports = {
   callWithOwnValues,
-  callWithRedefinedOwnProperty,
-  callWithRedefinedOwnPropertyValue,
   deepClone,
   coerceMap,
   elementOf,
@@ -63,77 +61,6 @@ function callWithOwnPropertyValue(obj, name, value, f) {
     throw e;
   }
 }
-
-function callWithRedefinedOwnProperty(obj, name, desc, f) {
-  // Check explicitly against false, because undefined is possible.
-  if (desc.configurable === false) {
-    throw new Error(
-        'callWithRedefinedProperty cannot be used ' +
-            'to set any property as unconfigurable.');
-  }
-
-  const original = Object.getOwnPropertyDescriptor(obj, name);
-
-  const restore = () => {
-    if (original) {
-      Object.defineProperty(obj, name, original);
-    } else {
-      delete obj[name];
-    }
-  };
-
-  try {
-    Object.defineProperty(obj, name, desc);
-    const result = f(obj);
-    restore();
-    return result;
-  } catch (e) {
-    restore();
-    throw e;
-  }
-}
-
-
-function callWithRedefinedOwnPropertyValue(obj, name, value, f) {
-  const desc = Object.getOwnPropertyDescriptor(obj, name);
-
-  if (desc) {
-    if (!('value' in desc)) {
-      throw new Error(
-          'callWithRedefinedOwnPropertyValue: ' +
-                    `Cannot redefine value ${value} for \`${name}\` ` +
-                    'on object where property does not hold a value.');
-    }
-
-    desc.value = value;
-  }
-
-  const override = desc || {
-    configurable: true,
-    writable: true,
-    enumerable: true,
-    value,
-  };
-
-  return callWithRedefinedOwnProperty(obj, name, override, f);
-}
-
-
-test(() => {
-  const nested = {x: 1};
-  const mutable = {a: nested};
-
-  callWithRedefinedOwnPropertyValue(mutable, 'a', 3, (o) => {
-    assert(mutable === o,
-        'Pass along mutated object reference');
-
-    assert(mutable.a === 3,
-        'Redefine property value in context of callback');
-  });
-
-  assert(mutable.a === nested,
-      'Restore original property once control leaves callback');
-});
 
 
 function callWithOwnValues(obj, diff, f) {
