@@ -41,6 +41,28 @@ test(() => {
   assert(!isObject([]), 'Do not mistake arrays for more useful objects');
 });
 
+function callWithOwnPropertyValue(obj, name, value, f) {
+  const defined = Object.getOwnPropertyDescriptor(obj, name);
+  const original = obj[name];
+
+  const restore = () => {
+    if (defined) {
+      obj[name] = original;
+    } else {
+      delete obj[name];
+    }
+  };
+
+  try {
+    obj[name] = value;
+    const result = f(obj);
+    restore();
+    return result;
+  } catch (e) {
+    restore();
+    throw e;
+  }
+}
 
 function callWithRedefinedOwnProperty(obj, name, desc, f) {
   // Check explicitly against false, because undefined is possible.
@@ -120,7 +142,7 @@ function callWithOwnValues(obj, diff, f) {
         .keys(diff)
         .reduce((reduction, key) => {
           return (o) =>
-            callWithRedefinedOwnPropertyValue(o, key, diff[key], reduction);
+            callWithOwnPropertyValue(o, key, diff[key], reduction);
         }, f)(obj)
   );
 }
