@@ -216,15 +216,3 @@ test(() => {
   'Allow user-defined values for keys');
 });
 
-
-function filterObject(obj, keep) {
-  return Object
-      .entries(obj)
-      .filter(keep)
-      .reduce((reduction, [k, v]) => Object.assign(reduction, {[k]: v}), {});
-}
-
-test(() => {
-  assert(equal(filterObject({a: 1, b: 2, c: 3, d: 4}, ([, v]) => v < 3), {a: 1, b: 2}),
-      'Filter objects by keys');
-});
