@@ -12,6 +12,7 @@ module.exports = {
   maybeAddProxy,
 };
 
+const {withCatch} = require('./control.js');
 const {assert, assertDeepEqual, test} = require('./test.js');
 const {
   createLyaState,
