@@ -128,46 +128,27 @@ function createModuleExportProxyHandler(env) {
 // the module, and then intercept the module's exports here.
 function overrideModuleRequirePrototype(env) {
   return function require(...args) {
-    const {
-      metadata,
-      currentModule,
-      config: {
-        modules: {
-          include,
-          exclude,
-        },
-      },
-    } = env;
-
+    const { metadata, currentModule } = env;
     const importName = env.currentModuleRequest = args[0];
 
     // We might not return exactly this. Since Lya
     // monitors inter-module activity, we may return
     // the proxy instead.
     const actualModuleExports = originalProtoRequire.apply(this, args);
-    const moduleExportType = typeof moduleExports;
-    const { name: currentModuleName } = metadata.get(currentModule);
-
-    // TODO: Use these variables
-    /* eslint-disable no-unused-vars */
-    const moduleIncluded = elementOf(include, currentModuleName);
-    const moduleExcluded = elementOf(exclude, currentModuleName);
-    const exportsKnown = metadata.get(actualModuleExports).name;
-    const exportsNegligible = elementOf(NEGLIGIBLE_EXPORT_TYPES, moduleExportType);
-    const shouldUseProxy = (
-      exportsKnown ||
-      elementOf(include, IDENTIFIER_CLASSIFICATIONS.MODULE_RETURNS)
-    );
-    /* eslint-enable no-unused-vars */
-
     const baseExportsName = `require('${importName}')`;
 
-    metadata.set(actualModuleExports, {
-      parent: currentModule,
-      name: (moduleExportType === 'function' && actualModuleExports.name !== '')
-        ? baseExportsName + '.' + actualModuleExports.name
-        : baseExportsName
-    });
+    const {proxyIsCompatible, shouldUseProxy} = analyzeModuleExports(env, actualModuleExports);
+
+    if (proxyIsCompatible) {
+      // Use .toString() in function case because the function name may be a Symbol(),
+      // and implicit string coercions on Symbols makes Node raise a TypeError.
+      metadata.set(actualModuleExports, {
+        parent: currentModule,
+        name: (typeof actualModuleExports === 'function' && actualModuleExports.name !== '')
+          ? baseExportsName + '.' + actualModuleExports.name.toString()
+          : baseExportsName
+      });
+    }
 
     if (shouldUseProxy) {
       return maybeAddProxy(env,
@@ -176,6 +157,50 @@ function overrideModuleRequirePrototype(env) {
     } else {
       return actualModuleExports;
     }
+  };
+}
+
+// Returns facts about our ability to work with an exported value.
+function analyzeModuleExports(env, moduleExports) {
+  const {
+    metadata,
+    currentModule,
+    config: {
+      modules: {
+        include,
+        exclude,
+      },
+    },
+  } = env;
+
+  const moduleExportType = typeof moduleExports;
+  const { name: currentModuleName } = metadata.get(currentModule);
+
+  const moduleIncluded = elementOf(include, currentModuleName);
+  const moduleExcluded = elementOf(exclude, currentModuleName);
+
+  const weDidntProxyIt = !metadata.get(moduleExports,
+                                       () => ({ name: false })).name;
+
+  const proxyIsCompatible = !elementOf(NEGLIGIBLE_EXPORT_TYPES, moduleExportType);
+
+  const userWantsAProxy = (
+    elementOf(include, IDENTIFIER_CLASSIFICATIONS.MODULE_RETURNS) &&
+    (moduleIncluded || !moduleExcluded)
+  );
+
+  const shouldUseProxy = (
+    proxyIsCompatible &&
+    weDidntProxyIt &&
+    userWantsAProxy
+  );
+
+  return {
+    moduleIncluded,
+    proxyIsCompatible,
+    shouldUseProxy,
+    userWantsAProxy,
+    weDidntProxyIt,
   };
 }
 

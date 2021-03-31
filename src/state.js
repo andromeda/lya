@@ -54,9 +54,11 @@ function inferName(env, variant) {
   if (name) {
     return name;
   } else if (variant instanceof Module) {
-    return `require('${Module._resolveFilename(variant.filename)}')`;
+    return Module._resolveFilename(variant.filename);
   } else if (type === 'function') {
-    return variant.name;
+    // Use .toString() because the function name may be a Symbol(),
+    // which can lead to TypeErrors on implicit string coercion.
+    return variant.name.toString();
   }
 }
 
@@ -112,7 +114,7 @@ function getModuleRelativeOPath(env, ref) {
     if (ref instanceof Module) {
       return displayName;
     } else {
-      return getModuleRelativeOPath(env, parent) + '.' + displayName;
+      return getModuleRelativeOPath(env, parent) + '.' + displayName.toString();
     }
   }
 }

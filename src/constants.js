@@ -20,6 +20,7 @@ const NEGLIGIBLE_EXPORT_TYPES = [
   'symbol',
   'number',
   'string',
+  'undefined',
 ];
 
 const COMMONJS_MODULE_IDENTIFIERS = [
