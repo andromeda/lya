@@ -385,6 +385,7 @@ const PROXY_PROPERTY_NAME_BLACKLIST = new Set([
   'name',
   'prototype',
   'valueOf',
+  'toString',
 ]);
 
 function shouldProxyTarget(target, name) {
@@ -398,13 +399,8 @@ function shouldProxyTarget(target, name) {
   // context of our proxies. They are hard to predict in terms of
   // property descriptors, so we make manual exceptions.
   const breaksWhenProxied = (
-
-    // Function.prototype.toString requires `typeof this === 'function'`,
-    // and onCallPre's target override logic might interfere with that.
-    (typeof target === 'function' && name === 'toString') ||
-
-    // This is more of a "I don't care about the details, just don't bother"
-    PROXY_PROPERTY_NAME_BLACKLIST.has(name)
+    PROXY_PROPERTY_NAME_BLACKLIST.has(name) ||
+    name in global
   );
 
   return (
