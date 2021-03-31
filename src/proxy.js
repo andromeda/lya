@@ -213,7 +213,7 @@ function createProxyHasHandler(env, typeClass) {
 
     const { name: currentName, parent } = metadata.get(currentModule);
     const result = Reflect.has(...arguments);
-    const nameToStore = getModuleRelativeOPath(metadata, parent) + '.' + prop.toString();
+    const nameToStore = getModuleRelativeOPath(env, parent) + '.' + prop.toString();
 
     if (parent === context && !result) {
       onHas({
