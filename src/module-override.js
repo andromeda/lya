@@ -60,7 +60,11 @@ function overrideModuleWrap(env) {
       currentModuleRequest,
     } = env;
 
-    return originalWrap(sourceTransform(script, currentModuleRequest));
+    // Some input code uses shebangs. Comment them out instead of
+    // deleting them, for transparency reasons.
+    const noShebang = script.replace(/^\s*#!/, '//#!');
+
+    return originalWrap(sourceTransform(noShebang, currentModuleRequest));
   };
 }
 
