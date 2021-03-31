@@ -118,9 +118,10 @@ function createProxyGetHandler(env, typeClass) {
     });
 
     const { proxy } = metadata.get(currentValue);
+    const shouldCreateProxy = shouldProxyTarget(target, name);
 
     // Lazily create proxies to extend scope of monitoring.
-    if (!proxy) {
+    if (!proxy && shouldCreateProxy) {
       // TODO: Select typeclass dynamically
       maybeAddProxy(env, currentValue, createProxyHandlerObject(env, 'lazy'));
     }
@@ -133,17 +134,9 @@ function createProxyGetHandler(env, typeClass) {
       typeClass,
     });
 
-    const desc = Object.getOwnPropertyDescriptor(target, name);
-
-    // Node.js raises an error when a Proxy hides the true value of
-    // non-configurable, and non-writable properties.
-    if (desc && !desc.configurable && !desc.writable) {
-      return currentValue;
-    } else {
-      // The proxy still might not have been created.
-      // Prefer it only if the environment wants it to exist.
-      return metadata.get(currentValue).proxy || currentValue;
-    }
+    // A proxy might not have been created due to above reasoning, but
+    // prefer it if it's available.
+    return metadata.get(currentValue, () => ({proxy: false})).proxy || currentValue;
   };
 }
 
@@ -295,13 +288,13 @@ function createProxyApplyHandler(env, typeClass) {
     const newTarget = onCallPre(info);
 
     if (newTarget) {
-      info.target = target = newTarget;
+      info.target = target = arguments[0] = newTarget;
     }
 
     // In case the target is not a pure function Reflect doesnt work
     // for example: in native modules
     info.result = withCatch(() => target(...argumentsList),
-        () => Reflect.apply(...arguments));
+                            () => Reflect.apply(...arguments));
 
     onCallPost(info);
 
@@ -384,3 +377,38 @@ test(() => {
   assert(returned === (6 * 7 * 8),
          'Forward the functions result');
 });
+
+
+
+const PROXY_PROPERTY_NAME_BLACKLIST = new Set([
+  'children',
+  'name',
+  'prototype',
+  'valueOf',
+]);
+
+function shouldProxyTarget(target, name) {
+  const desc = Object.getOwnPropertyDescriptor(target, name);
+
+  // Node.js raises an error when a Proxy hides the true value of
+  // non-configurable, and non-writable properties.
+  const nodeExpectsActualValue = (desc && !desc.configurable && !desc.writable);
+
+  // Some properties are defined such that they cannot run in the
+  // context of our proxies. They are hard to predict in terms of
+  // property descriptors, so we make manual exceptions.
+  const breaksWhenProxied = (
+
+    // Function.prototype.toString requires `typeof this === 'function'`,
+    // and onCallPre's target override logic might interfere with that.
+    (typeof target === 'function' && name === 'toString') ||
+
+    // This is more of a "I don't care about the details, just don't bother"
+    PROXY_PROPERTY_NAME_BLACKLIST.has(name)
+  );
+
+  return (
+    !nodeExpectsActualValue &&
+    !breaksWhenProxied
+  );
+}
