@@ -25,7 +25,6 @@ lya <fl> [hpVvvv] [a=<a.js>] [d=<n>] [{module, context, prop}-{include, exclude}
   -r,   --rules <b.json>:     File/path to enforcement file
   -p,   --print [<out, err>]: Stream to output results (defaults to file)
   -o,   --only-prologue:      Print only the config prologue
-  -w,   --enable-with	      Enable with functionality
 
   --module-exclude <m>:       Comma-separated list of module IDs (absolute fs paths) to be excluded from the analysis
   --module-include <m>:       Comma-separated list of module IDs (absolute fs paths) to be included (assumes module-exclude='*')
@@ -41,7 +40,6 @@ lya <fl> [hpVvvv] [a=<a.js>] [d=<n>] [{module, context, prop}-{include, exclude}
   * node-globals, n:          All Node.js-related globals, such as 'console' and 'process'
   * es-globals, e:            All EcmaScript 6 globals names such Math.sin or
   * user-globals, g:          User-defined globals accessed with a 'global' prefix, e.g., 'global.y = 3'
-  * with-globals, w:          User-defined globals accessed without a prefix, e.g., 'y = 3' (expensive to track)
 
   Analyses can be one of the build-in options below, or any absolute file-system path pointing to a user-defined analysis.
   Each analysis reads/writes invariants from/to a file, whose path defaults to "./lya.json" but can be overwritten via  '-f <f>'.
@@ -98,7 +96,6 @@ const template = {
   '--file': String,
   '--rules': String,
   '--only-prologue': Boolean,
-  '--enable-with': Boolean,
 
   '--module-exclude': String,
   '--module-include': String,
@@ -118,7 +115,6 @@ const template = {
   '-f': '--file',
   '-r': '--rules',
   '-o': '--only-prologue',
-  '-w': '--enable-with',
 };
 
 
@@ -235,10 +231,6 @@ function collectArguments() {
   default:
     console.log('Too many ``extra\'\' parameters: ' + args['_'].join(', '));
     process.exit(-1);
-  }
-
-  if (args['--enable-with']) {
-    conf.enableWith = true;
   }
 
   // print prologue
