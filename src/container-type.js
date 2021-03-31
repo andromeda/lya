@@ -4,7 +4,6 @@ module.exports = {
   coerceMap,
   elementOf,
   isObject,
-  setIntersection,
   merge,
   shallowMerge: (a, b) => Object.assign({}, a, b),
 };
@@ -228,22 +227,4 @@ function filterObject(obj, keep) {
 test(() => {
   assert(equal(filterObject({a: 1, b: 2, c: 3, d: 4}, ([, v]) => v < 3), {a: 1, b: 2}),
       'Filter objects by keys');
-});
-
-
-function setIntersection(a, b) {
-  const intersection = new Set();
-
-  for (const element of b) {
-    if (a.has(element)) {
-      intersection.add(element);
-    }
-  }
-
-  return intersection;
-}
-
-test(() => {
-  assert(equal(setIntersection(new Set([1, 2, 3, 4, 5]), new Set([9, 8, 7, 6, 5, 4])), new Set([4, 5])),
-      'Find set intersection');
 });
