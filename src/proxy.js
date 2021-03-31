@@ -224,7 +224,7 @@ function createProxyHasHandler(env, typeClass) {
 
 /* eslint-disable-next-line no-unused-vars */
 function createProxyConstructHandler(env, typeClass) {
-  return function construct(target, args) {
+  return function construct(target, args, newTarget) {
     const {
       currentModule,
       metadata,
@@ -247,8 +247,7 @@ function createProxyConstructHandler(env, typeClass) {
       });
     }
 
-    // eslint-disable-next-line new-cap
-    return new target(...args);
+    return Reflect.construct(target, args, newTarget);
   };
 }
 
@@ -291,10 +290,7 @@ function createProxyApplyHandler(env, typeClass) {
       info.target = target = arguments[0] = newTarget;
     }
 
-    // In case the target is not a pure function Reflect doesnt work
-    // for example: in native modules
-    info.result = withCatch(() => target(...argumentsList),
-                            () => Reflect.apply(...arguments));
+    info.result = Reflect.apply(...arguments);
 
     onCallPost(info);
 
