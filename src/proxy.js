@@ -133,9 +133,17 @@ function createProxyGetHandler(env, typeClass) {
       typeClass,
     });
 
-    // The proxy still might not have been created.
-    // Prefer it only if the environment wants it to exist.
-    return metadata.get(currentValue).proxy || currentValue;
+    const desc = Object.getOwnPropertyDescriptor(target, name);
+
+    // Node.js raises an error when a Proxy hides the true value of
+    // non-configurable, and non-writable properties.
+    if (desc && !desc.configurable && !desc.writable) {
+      return currentValue;
+    } else {
+      // The proxy still might not have been created.
+      // Prefer it only if the environment wants it to exist.
+      return metadata.get(currentValue).proxy || currentValue;
+    }
   };
 }
 
