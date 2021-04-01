@@ -19,7 +19,9 @@ const {
   getDeclaringModule,
   registerReference,
   setCurrentModule,
+  getReferenceDepth,
   getModuleRelativeOPath,
+  inScopeOfAnalysis,
 } = require('./state.js');
 
 
@@ -118,7 +120,8 @@ function createProxyGetHandler(env, typeClass) {
     });
 
     const { proxy } = metadata.get(currentValue);
-    const shouldCreateProxy = shouldProxyTarget(target, name);
+    const shouldCreateProxy = shouldProxyTarget(
+      env, typeClass, getReferenceDepth(env, currentValue), target, name);
 
     // Lazily create proxies to extend scope of monitoring.
     if (!proxy && shouldCreateProxy) {
@@ -387,8 +390,22 @@ const PROXY_PROPERTY_NAME_BLACKLIST = new Set([
   'toString',
 ]);
 
-function shouldProxyTarget(target, name) {
+function shouldProxyTarget(env, typeClass, referenceDepth, target, name) {
+  const {
+    config: {
+      depth,
+      context,
+      fields,
+    },
+  } = env;
+
   const desc = Object.getOwnPropertyDescriptor(target, name);
+
+  const userWantsAProxy = (
+    referenceDepth <= depth &&
+    inScopeOfAnalysis(context, typeClass) &&
+    inScopeOfAnalysis(fields, name)
+  );
 
   // Node.js raises an error when a Proxy hides the true value of
   // non-configurable, and non-writable properties.
@@ -402,6 +419,7 @@ function shouldProxyTarget(target, name) {
   );
 
   return (
+    userWantsAProxy &&
     !nodeExpectsActualValue &&
     !breaksWhenProxied
   );

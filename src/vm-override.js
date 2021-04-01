@@ -12,7 +12,7 @@ const {assert, test} = require('./test.js');
 const {maybeAddProxy, createProxyHandlerObject} = require('./proxy.js');
 const {callWithOwnValues} = require('./container-type.js');
 const {IDENTIFIER_CLASSIFICATIONS} = require('./constants.js');
-const {setCurrentModule} = require('./state.js');
+const {setCurrentModule, inScopeOfAnalysis} = require('./state.js');
 
 // require() calls runInThisContext() as a side-effect. Take that
 // chance to inject a smart proxy of the global object.
@@ -81,9 +81,11 @@ function createCommonJsApply(env) {
       name: 'require',
     });
 
-    A[0] = wrap(exports);
-    A[1] = wrap(require);
-    A[2] = wrap(module);
+    if (inScopeOfAnalysis(env.config.module, moduleId)) {
+      A[0] = wrap(exports);
+      A[1] = wrap(require);
+      A[2] = wrap(module);
+    }
 
     return Reflect.apply(...arguments);
   }

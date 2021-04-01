@@ -10,12 +10,15 @@ module.exports = {
   getDeclaringModule,
   getOPath,
   registerReference,
+  getReferenceDepth,
   getModuleRelativeOPath,
+  inScopeOfAnalysis,
 };
 
 const {configureLya} = require('./config.js');
 const {failAs} = require('./control.js');
 const {createReferenceMetadataStore} = require('./metadata.js');
+const {elementOf} = require('./container-type.js');
 const {test, assert} = require('./test.js');
 const Module = require('module');
 
@@ -41,6 +44,10 @@ function createLyaState(...configs) {
     // For tracing proxy activity
     log: [],
   };
+}
+
+function inScopeOfAnalysis({include, exclude}, element) {
+  return elementOf(include, element) || !elementOf(exclude, element);
 }
 
 
@@ -129,6 +136,15 @@ function getDeclaringModule(env, ref) {
   }
 }
 
+
+function getReferenceDepth(env, ref) {
+  if (!ref) {
+    return 0;
+  } else {
+    const { parent } = env.metadata.get(ref);
+    return 1 + getReferenceDepth(env, parent);
+  }
+}
 
 test(() => {
   const env = createLyaState();
