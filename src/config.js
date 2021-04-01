@@ -34,7 +34,7 @@ module.exports = {
         'module-locals',
         'module-returns',
       ],
-      excludes: [],
+      exclude: [],
     },
     hooks: {
       onCallPre: noop,
@@ -47,12 +47,12 @@ module.exports = {
       sourceTransform: identity,
     },
     modules: {
-      include: null,
-      excludes: null,
+      include: [],
+      exclude: [],
     },
     fields: {
-      include: false,
-      excludes: [],
+      include: [],
+      exclude: [],
     },
   }),
 };

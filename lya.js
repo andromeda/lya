@@ -183,7 +183,7 @@ function collectArguments() {
   }
 
   if (args['--module-exclude']) {
-    conf.modules.excludes = splitCsvPaths(args['--module-exclude']);
+    conf.modules.exclude = splitCsvPaths(args['--module-exclude']);
   }
 
   if (args['--context-include']) {
@@ -191,17 +191,11 @@ function collectArguments() {
   }
 
   if (args['--context-exclude']) {
-    const excl = splitCsv(args['--context-exclude']);
-    conf.context.include = conf.context.include.filter((name) => {
-      if (excl.indexOf(name)) {
-        return name;
-      }
-    });
-    console.log(conf.context.excludes);
+    conf.context.exclude = splitCsv(args['--context-exclude']);
   }
 
   if (args['--prop-exclude']) {
-    conf.fields.excludes = splitCsv(args['--prop-exclude']);
+    conf.fields.exclude = splitCsv(args['--prop-exclude']);
   }
 
   if (args['--prop-include']) {
