@@ -18,6 +18,14 @@ master branch clean. In  the top level shell  directory, you can  run `npm
 test` — this  will run both the linter  and tests. To run only  the linter `npm
 run l`. Generally, you can always use a pre-commit hook.
 
+A word of caution: If you use a pre-commit hook, that implies that the
+linter will reflect on the code in your working directory, not
+necessarily the code that will be committed from Git's staging
+area. So if you see the linter pass when running `git commit`, double
+check that everything that makes your commit work is actually in that
+commit!
+
+
 ## Commit Messages
 
 Keep  the first  line  of the  commit  message  under 72  characters  — it's  a
