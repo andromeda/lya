@@ -72,16 +72,8 @@ const help = () => {
   console.log(h);
 };
 
-const splitAdd = (a, separator, join) => {
-  const comb = a.split(separator);
-  const value = [];
-  if (join) {
-    comb.forEach((m) => value.push(path.join(__dirname, m)));
-  } else {
-    comb.forEach((m) => value.push(m));
-  }
-  return value;
-};
+const splitCsv = (a) => a.split(',').map((s) => s.trim());
+const splitCsvPaths = (a) => splitCsv(a).map((s) => path.resolve(__dirname, s));
 
 // const { fstat } = require('fs');
 const template = {
@@ -177,29 +169,29 @@ function collectArguments() {
   }
 
   if (args['--file']) {
-    conf.saveResults = path.join(process.cwd(), args['--file']);
+    conf.saveResults = path.resolve(process.cwd(), args['--file']);
     // TODO this should be the same if loading results
   }
 
   if (args['--rules']) {
-    conf.rules = path.join(process.cwd(), args['--rules']);
+    conf.rules = path.resolve(process.cwd(), args['--rules']);
     // TODO this should be the same if loading results
   }
 
   if (args['--module-include']) {
-    conf.modules.include = splitAdd(args['--module-include'], ',', true);
+    conf.modules.include = splitCsvPaths(args['--module-include']);
   }
 
   if (args['--module-exclude']) {
-    conf.modules.excludes = splitAdd(args['--module-exclude'], ',', true);
+    conf.modules.excludes = splitCsvPaths(args['--module-exclude']);
   }
 
   if (args['--context-include']) {
-    conf.context.include = splitAdd(args['--context-include'], ',', false);
+    conf.context.include = splitCsv(args['--context-include']);
   }
 
   if (args['--context-exclude']) {
-    const excl = splitAdd(args['--context-exclude'], ',', false);
+    const excl = splitCsv(args['--context-exclude']);
     conf.context.include = conf.context.include.filter((name) => {
       if (excl.indexOf(name)) {
         return name;
@@ -209,11 +201,11 @@ function collectArguments() {
   }
 
   if (args['--prop-exclude']) {
-    conf.fields.excludes = splitAdd(args['--prop-exclude'], ',', false);
+    conf.fields.excludes = splitCsv(args['--prop-exclude']);
   }
 
   if (args['--prop-include']) {
-    conf.fields.include = splitAdd(args['--prop-include'], ',', false);
+    conf.fields.include = splitCsv(args['--prop-include']);
   }
 
   let filePath;
