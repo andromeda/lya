@@ -81,7 +81,7 @@ function createCommonJsApply(env) {
       name: 'require',
     });
 
-    if (inScopeOfAnalysis(env.config.module, moduleId)) {
+    if (inScopeOfAnalysis(env.config.modules, moduleId)) {
       A[0] = wrap(exports);
       A[1] = wrap(require);
       A[2] = wrap(module);
