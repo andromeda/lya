@@ -127,9 +127,9 @@ function analyze(env) {
 
   const code = coerceString(entry, {allowFileRead: true});
 
-  env.context = vm.isContext(contextVariant) ?
-        contextVariant :
-        vm.createContext(contextVariant, vmContextConfig);
+  env.context = vm.isContext(contextVariant)
+    ? contextVariant
+    : vm.createContext(contextVariant, vmContextConfig);
 
   env.value = vm.runInContext(code, env.context, vmConfig);
 
