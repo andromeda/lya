@@ -58,6 +58,13 @@ function maybeAddProxy(env, obj, handler) {
       // Convention: '*' means 'Proxy'
       name: name ? name + '*' : name,
     });
+
+
+    env.config.hooks.onActivity({
+      topic: 'proxy',
+      name: name || '?',
+      proxy,
+    });
   }
 
   return proxy;
@@ -96,13 +103,17 @@ function createProxyGetHandler(env, typeClass) {
       metadata,
       config: {
         hooks: {
+          onActivity,
           onRead,
         },
       },
-      log,
     } = env;
 
-    log.push({ handler: 'get', target, name });
+    onActivity({
+      topic: 'get',
+      target,
+      name,
+    });
 
     const currentValue = Reflect.get(...arguments);
     const maybeMetadata = metadata.get(currentValue, () => false);
@@ -112,6 +123,7 @@ function createProxyGetHandler(env, typeClass) {
     if (!maybeMetadata) return currentValue;
 
     registerReference(env, currentValue);
+
     metadata.set(currentValue, {
       parent: (target === env.context || target === global)
         ? currentModule
@@ -152,11 +164,18 @@ function createProxySetHandler(env, typeClass) {
       currentModule,
       config: {
         hooks: {
+          onActivity,
           onWrite,
         },
       },
-      log,
     } = env;
+
+    onActivity({
+      topic: 'set',
+      target,
+      name,
+      value,
+    });
 
     // When this flag appears, it means then Lya updated the global
     // object proxy's circular reference.  This happens only once per
@@ -167,9 +186,8 @@ function createProxySetHandler(env, typeClass) {
       return;
     }
 
-    log.push({ handler: 'set', target, name, value });
-
     registerReference(env, target);
+
     const { parent } = metadata.get(target);
     const { name: parentName } = metadata.get(parent);
     const nameToStore = getModuleRelativeOPath(env, parent) + '.' + name;
@@ -199,13 +217,17 @@ function createProxyHasHandler(env, typeClass) {
       metadata,
       config: {
         hooks: {
+          onActivity,
           onHas,
         },
       },
-      log,
     } = env;
 
-    log.push({ handler: 'has', target, prop });
+    onActivity({
+      topic: 'has',
+      target,
+      prop,
+    });
 
     const { name: currentName, parent } = metadata.get(currentModule);
     const result = Reflect.has(...arguments);
@@ -234,12 +256,17 @@ function createProxyConstructHandler(env, typeClass) {
       config: {
         hooks: {
           onConstruct,
+          onActivity,
         },
       },
-      log,
     } = env;
 
-    log.push({ handler: 'construct', target, args });
+    onActivity({
+      topic: 'construct',
+      target,
+      args,
+      newTarget,
+    });
 
     if (target !== Proxy) {
       onConstruct({
@@ -264,12 +291,17 @@ function createProxyApplyHandler(env, typeClass) {
         hooks: {
           onCallPre,
           onCallPost,
+          onActivity,
         },
       },
-      log,
     } = env;
 
-    log.push({ handler: 'apply', target, thisArg, argumentsList });
+    onActivity({
+      topic: 'apply',
+      target,
+      thisArg,
+      argumentsList,
+    });
 
     registerReference(env, target);
 

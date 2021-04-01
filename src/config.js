@@ -40,6 +40,7 @@ module.exports = {
       onCallPre: noop,
       onCallPost: noop,
       onHas: noop,
+      onActivity: noop,
       onExit: noop,
       onRead: noop,
       onImport: noop,

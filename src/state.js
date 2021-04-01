@@ -40,16 +40,12 @@ function createLyaState(...configs) {
 
     // For collecting user-defined data.
     results: {},
-
-    // For tracing proxy activity
-    log: [],
   };
 }
 
 function inScopeOfAnalysis({include, exclude}, element) {
   return elementOf(include, element) || !elementOf(exclude, element);
 }
-
 
 function inferName(env, variant) {
   const type = typeof variant;
