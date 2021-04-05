@@ -7,7 +7,6 @@ module.exports = {
   inferName,
   registerModule,
   setCurrentModule,
-  getDeclaringModule,
   getOPath,
   registerReference,
   getReferenceDepth,
@@ -125,16 +124,6 @@ function getModuleRelativeOPath(env, ref) {
     } else {
       return getModuleRelativeOPath(env, parent) + '.' + displayName.toString();
     }
-  }
-}
-
-function getDeclaringModule(env, ref) {
-  if (!ref) {
-    return;
-  } else if (ref instanceof Module) {
-    return ref;
-  } else {
-    return getDeclaringModule(env, env.metadata.get(ref).parent);
   }
 }
 

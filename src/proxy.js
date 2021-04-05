@@ -16,7 +16,6 @@ const {withCatch} = require('./control.js');
 const {assert, assertDeepEqual, test} = require('./test.js');
 const {
   createLyaState,
-  getDeclaringModule,
   registerReference,
   setCurrentModule,
   getReferenceDepth,
@@ -125,9 +124,14 @@ function createProxyGetHandler(env, typeClass) {
     registerReference(env, target);
     registerReference(env, currentValue);
 
+    metadata.set(target, {
+      lastModuleSeen: currentModule,
+    });
+
     metadata.set(currentValue, {
       parent: target,
       name,
+      lastModuleSeen: currentModule,
     });
 
     const { proxy } = metadata.get(currentValue);
@@ -305,7 +309,7 @@ function createProxyApplyHandler(env, typeClass) {
     registerReference(env, target);
 
     const nameToStore = getModuleRelativeOPath(env, target);
-    const declareModule = getDeclaringModule(env, target);
+    const { lastModuleSeen } = metadata.get(target);
 
     const info = {
       target,
@@ -314,7 +318,7 @@ function createProxyApplyHandler(env, typeClass) {
       name: target.name,
       nameToStore,
       currentModule: metadata.get(currentModule).name,
-      declareModule: metadata.get(declareModule).name,
+      declareModule: lastModuleSeen && metadata.get(lastModuleSeen).name,
       typeClass,
     };
 
