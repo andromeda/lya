@@ -62,6 +62,12 @@ function inferName(env, variant) {
     // Use .toString() because the function name may be a Symbol(),
     // which can lead to TypeErrors on implicit string coercion.
     return variant.name.toString();
+  } else if (type === 'object' && variant !== null) {
+    for (const k of Object.getOwnPropertyNames(global)) {
+      if (global[k] === variant) {
+        return k;
+      }
+    }
   }
 }
 
