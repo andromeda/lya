@@ -208,7 +208,6 @@ function createProxySetHandler(env, typeClass) {
 function createProxyHasHandler(env, typeClass) {
   return function has(target, prop) {
     const {
-      context,
       currentModule,
       metadata,
       config: {
@@ -225,18 +224,16 @@ function createProxyHasHandler(env, typeClass) {
       prop,
     });
 
-    const { name: currentName, parent } = metadata.get(currentModule);
+    const { name: currentName } = metadata.get(currentModule);
     const result = Reflect.has(...arguments);
-    const nameToStore = getDotPath(env, parent) + '.' + prop.toString();
+    const nameToStore = getDotPath(env, target) + '.' + prop.toString();
 
-    if (parent === context && !result) {
-      onHas({
-        target,
-        prop,
-        currentName,
-        nameToStore,
-      });
-    }
+    onHas({
+      target,
+      prop,
+      currentName,
+      nameToStore,
+    });
 
     return result;
   };
