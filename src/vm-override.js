@@ -75,7 +75,7 @@ function createCommonJsApply(env) {
 
     env.metadata.set(exports, {
       parent: module,
-      name: `require(${moduleId})`,
+      name: `require('${moduleId}')`,
     });
 
     env.metadata.set(require, {
