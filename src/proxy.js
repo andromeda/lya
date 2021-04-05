@@ -19,7 +19,7 @@ const {
   registerReference,
   setCurrentModule,
   getReferenceDepth,
-  getModuleRelativeOPath,
+  getDotPath,
   inScopeOfAnalysis,
 } = require('./state.js');
 
@@ -123,15 +123,9 @@ function createProxyGetHandler(env, typeClass) {
 
     registerReference(env, target);
     registerReference(env, currentValue);
-
-    metadata.set(target, {
-      lastModuleSeen: currentModule,
-    });
-
     metadata.set(currentValue, {
       parent: target,
       name,
-      lastModuleSeen: currentModule,
     });
 
     const { proxy } = metadata.get(currentValue);
@@ -147,7 +141,7 @@ function createProxyGetHandler(env, typeClass) {
     onRead({
       target,
       name,
-      nameToStore: getModuleRelativeOPath(env, currentValue),
+      nameToStore: getDotPath(env, currentValue),
       currentModule: metadata.get(currentModule).name,
       typeClass,
     });
@@ -192,7 +186,7 @@ function createProxySetHandler(env, typeClass) {
     registerReference(env, target);
 
     const { parent } = metadata.get(target);
-    const nameToStore = getModuleRelativeOPath(env, target) + '.' + name.toString();
+    const nameToStore = getDotPath(env, target) + '.' + name.toString();
 
     if (name) {
       onWrite({
@@ -233,7 +227,7 @@ function createProxyHasHandler(env, typeClass) {
 
     const { name: currentName, parent } = metadata.get(currentModule);
     const result = Reflect.has(...arguments);
-    const nameToStore = getModuleRelativeOPath(env, parent) + '.' + prop.toString();
+    const nameToStore = getDotPath(env, parent) + '.' + prop.toString();
 
     if (parent === context && !result) {
       onHas({
@@ -307,8 +301,8 @@ function createProxyApplyHandler(env, typeClass) {
 
     registerReference(env, target);
 
-    const nameToStore = getModuleRelativeOPath(env, target);
-    const { lastModuleSeen } = metadata.get(target);
+    const nameToStore = getDotPath(env, target);
+    const { initialOccurringModule } = metadata.get(target);
 
     const info = {
       target,
@@ -317,7 +311,7 @@ function createProxyApplyHandler(env, typeClass) {
       name: target.name,
       nameToStore,
       currentModule: metadata.get(currentModule).name,
-      declareModule: lastModuleSeen && metadata.get(lastModuleSeen).name,
+      declareModule: initialOccurringModule && metadata.get(initialOccurringModule).name,
       typeClass,
     };
 

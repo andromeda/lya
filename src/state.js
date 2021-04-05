@@ -7,10 +7,9 @@ module.exports = {
   inferName,
   registerModule,
   setCurrentModule,
-  getOPath,
+  getDotPath,
   registerReference,
   getReferenceDepth,
-  getModuleRelativeOPath,
   inScopeOfAnalysis,
 };
 
@@ -74,11 +73,7 @@ function inferName(env, variant) {
 function registerReference(env, variant) {
   env.metadata.set(variant, {
     name: inferName(env, variant),
-    parent: env.metadata.get(variant, () => ({ parent: false })).parent || (
-      variant === env.currentModule
-        ? null
-        : env.currentModule
-    ),
+    initialOccurringModule: env.metadata.get(variant, () => ({ initialOccurringModule: false })).initialOccurringModule || env.currentModule,
   });
 }
 
@@ -101,29 +96,14 @@ function setCurrentModule(env, module) {
 }
 
 
-function getOPath(env, ref) {
+function getDotPath(env, ref) {
   const { parent, name } = env.metadata.get(ref);
-  const displayName = name || '';
+  const displayName = name.toString() || '';
 
   if (parent) {
-    return getOPath(env, parent) + '.' + displayName;
+    return getDotPath(env, parent) + '.' + displayName.toString();
   } else {
-    return displayName;
-  }
-}
-
-function getModuleRelativeOPath(env, ref) {
-  if (!ref) {
-    return '';
-  } else {
-    const { parent, name } = env.metadata.get(ref);
-    const displayName = name || '';
-
-    if (parent instanceof Module) {
-      return displayName.toString();
-    } else {
-      return getModuleRelativeOPath(env, parent) + '.' + displayName.toString();
-    }
+    return displayName.toString();
   }
 }
 
@@ -146,8 +126,8 @@ test(() => {
   set(B, { name: 'b', parent: C });
   set(C, { name: 'c', parent: null });
 
-  assert(getOPath(env, A) === 'c.b.a' &&
-         getOPath(env, B) === 'c.b' &&
-         getOPath(env, C) === 'c',
+  assert(getDotPath(env, A) === 'c.b.a' &&
+         getDotPath(env, B) === 'c.b' &&
+         getDotPath(env, C) === 'c',
          'Trace object paths through metadata');
 });
