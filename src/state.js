@@ -46,7 +46,7 @@ function inScopeOfAnalysis({include, exclude}, element) {
 }
 
 function getModuleName(module) {
-  return `require('${Module._resolveFilename(module.filename)}')`;
+  return Module._resolveFilename(module.filename);
 }
 
 function inferName(env, variant) {
@@ -87,6 +87,7 @@ function registerModule(env, module) {
 
   env.metadata.set(module, {
     name,
+    exportName: `require('${name}')`,
     parent: null,
   });
 
