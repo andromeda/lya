@@ -103,7 +103,7 @@ function setCurrentModule(env, module) {
 
 function getDotPath(env, ref) {
   const { parent, name } = env.metadata.get(ref);
-  const displayName = name.toString() || '';
+  const displayName = name || '';
 
   if (parent) {
     return getDotPath(env, parent) + '.' + displayName.toString();
