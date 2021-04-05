@@ -125,9 +125,9 @@ function createProxyGetHandler(env, typeClass) {
     registerReference(env, currentValue);
 
     metadata.set(currentValue, {
-      parent: (target === env.context || target === global)
-        ? currentModule
-        : target,
+      parent: metadata.get(target).name
+        ? target
+        : currentModule,
       name,
     });
 
