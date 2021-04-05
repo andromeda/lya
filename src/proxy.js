@@ -447,8 +447,7 @@ function shouldProxyTarget(env, typeClass, referenceDepth, target, name) {
   // context of our proxies. They are hard to predict in terms of
   // property descriptors, so we make manual exceptions.
   const breaksWhenProxied = (
-      PROXY_PROPERTY_NAME_BLACKLIST.has(name) ||
-      name in global
+      PROXY_PROPERTY_NAME_BLACKLIST.has(name)
   );
 
   return (
