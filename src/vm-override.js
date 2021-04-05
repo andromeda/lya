@@ -23,8 +23,6 @@ function callWithVmOverride(env, f) {
 
       const commonJsFunction = vm.runInContext(code, env.context, options);
 
-      env.metadata.set(commonJsFunction, { parent: env.context });
-
       return maybeAddProxy(env, commonJsFunction, { apply: createCommonJsApply(env) });
     },
   }, f);

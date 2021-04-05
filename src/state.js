@@ -69,23 +69,23 @@ function inferName(env, variant) {
 function registerReference(env, variant) {
   env.metadata.set(variant, {
     name: inferName(env, variant),
-    parent: (
-      env.metadata.get(variant, () => ({ parent: false })).parent ||
-        env.currentModule ||
-        env.context ||
-        global
+    parent: env.metadata.get(variant, () => ({ parent: false })).parent || (
+      variant === env.currentModule
+        ? null
+        : env.currentModule
     ),
   });
 }
 
 
 function registerModule(env, module) {
-  registerReference(env, module);
+  const name = Module._resolveFilename(module.filename);
+
   env.metadata.set(module, {
-    parent: env.context || global,
+    name,
+    parent: null,
   });
 
-  const { name } = env.metadata.get(module);
   env.results[name] = env.results[name] || {};
 }
 
