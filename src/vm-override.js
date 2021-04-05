@@ -37,19 +37,29 @@ function installMockGlobal(env) {
   const handler = createProxyHandlerObject(
     env, IDENTIFIER_CLASSIFICATIONS.NODE_GLOBALS);
 
-  const proxy = maybeAddProxy(env, global, handler);
-  env.context = vm.createContext(proxy);
+  const mockGlobal = Object.getOwnPropertyNames(global).reduce(
+    (mock, name) => {
+      return Object.assign(mock, {
+        [name]: (env.metadata.get(global[name], () => false))
+          ? maybeAddProxy(env, global[name], handler)
+          : global[name],
+      });
+    }, {});
+
+
+  // These need to be untainted in the inner context.
+  // eval needs lexical info, and `Function` is sensitive
+  // to the type of `this` for the sake of .toString()
+  delete mockGlobal.eval;
+  delete mockGlobal.Function;
+
+  env.context = vm.createContext(mockGlobal);
 
   // Captures operations prefixed with 'global.*' like `global.x = 1;
   // This triggers the proxy, so we use a flag to ignore this
   // particular assignment for the hooks.
   env._noop_set = true;
-  env.context.global = proxy;
-
-  env.metadata.set(env.context, {
-    parent: null,
-    name: 'global',
-  });
+  env.context.global = env.context;
 }
 
 
