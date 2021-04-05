@@ -52,11 +52,6 @@ function installMockGlobal(env) {
   delete mockGlobal.Function;
 
   env.context = vm.createContext(mockGlobal);
-
-  // Captures operations prefixed with 'global.*' like `global.x = 1;
-  // This triggers the proxy, so we use a flag to ignore this
-  // particular assignment for the hooks.
-  env._noop_set = true;
   env.context.global = env.context;
 }
 

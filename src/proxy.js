@@ -174,29 +174,22 @@ function createProxySetHandler(env, typeClass) {
       value,
     });
 
-    // When this flag appears, it means then Lya updated the global
-    // object proxy's circular reference.  This happens only once per
-    // environment, and is not relevant for an analysis. This is why
-    // we noop for this case.
-    if ('_noop_set' in env) {
-      delete env._noop_set;
-      return true;
-    }
+    if (target !== env.context) {
+      registerReference(env, target);
 
-    registerReference(env, target);
+      const { parent } = metadata.get(target);
+      const nameToStore = getDotPath(env, target) + '.' + name.toString();
 
-    const { parent } = metadata.get(target);
-    const nameToStore = getDotPath(env, target) + '.' + name.toString();
-
-    if (name) {
-      onWrite({
-        target,
-        name,
-        value,
-        currentModule: metadata.get(currentModule).name,
-        parentName: parent && metadata.get(parent).name,
-        nameToStore,
-      });
+      if (name) {
+        onWrite({
+          target,
+          name,
+          value,
+          currentModule: metadata.get(currentModule).name,
+          parentName: parent && metadata.get(parent).name,
+          nameToStore,
+        });
+      }
     }
 
     return Reflect.set(...arguments);
