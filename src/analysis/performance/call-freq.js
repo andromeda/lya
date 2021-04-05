@@ -16,14 +16,6 @@ module.exports = (lya) => {
 
   // onExit (toSave == place to save the result) --maybe make it module-local?
   const onExit = (env, { saveIfAble, printIfAble }) => {
-    /*
-    for (const name of intersection) {
-      const currentName = candidateModule.get(name);
-      updateAnalysisData(env.analysisResult[currentName],
-                         name);
-    }
-    */
-
     saveIfAble();
     printIfAble();
   };
