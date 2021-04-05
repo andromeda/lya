@@ -183,7 +183,7 @@ function createProxySetHandler(env, typeClass) {
     // we noop for this case.
     if ('_noop_set' in env) {
       delete env._noop_set;
-      return;
+      return true;
     }
 
     registerReference(env, target);
