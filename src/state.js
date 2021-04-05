@@ -115,7 +115,7 @@ function getModuleRelativeOPath(env, ref) {
     const displayName = name || '';
 
     if (parent instanceof Module) {
-      return displayName;
+      return displayName.toString();
     } else {
       return getModuleRelativeOPath(env, parent) + '.' + displayName.toString();
     }
