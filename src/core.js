@@ -33,6 +33,7 @@ const {IDENTIFIER_CLASSIFICATIONS} = require('./constants.js');
 const overrides = [
   callWithModuleOverride,
   callWithVmOverride,
+  callWithGlobalOverride,
 ];
 
 
@@ -111,6 +112,23 @@ function postprocess(env, callbackResult) {
 }
 
 
+
+function callWithGlobalOverride(env, f) {
+  const { eval: original } = global;
+
+  // Force new contexts to use their own builtin 'eval', preserving
+  // lexical information: https://github.com/nodejs/help/issues/3294
+  delete global.eval;
+
+  try {
+    const result = f();
+    global.eval = original;
+    return result;
+  } catch (e) {
+    global.eval = original;
+    throw e;
+  }
+}
 
 // Called for its effect
 function analyze(env) {

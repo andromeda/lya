@@ -37,13 +37,7 @@ function installMockGlobal(env) {
   const handler = createProxyHandlerObject(
     env, IDENTIFIER_CLASSIFICATIONS.NODE_GLOBALS);
 
-  // Force the new context to use its own builtin 'eval', preserving
-  // lexical information.
-  // https://github.com/nodejs/help/issues/3294
-  const shallowClone = Object.assign({}, global);
-  delete shallowClone.eval;
-
-  const proxy = maybeAddProxy(env, shallowClone, handler);
+  const proxy = maybeAddProxy(env, global, handler);
   env.context = vm.createContext(proxy);
 
   // Captures operations prefixed with 'global.*' like `global.x = 1;
