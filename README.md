@@ -58,10 +58,10 @@ One can configure several parameters, including use any of the predefined list o
 const lya = require("@andromeda/lya");
 const createState = require(lya.preset.ON_OFF);
 
-const env = createState(lya);
-
-env.config.saveResults = require("path").join(__dirname, "dynamic.json");
-env.config.require = require;
+const env = createState(lya, {
+  saveResults: require("path").join(__dirname, "dynamic.json"),
+  require,
+});
 
 lya.callWithLya(env, (require) => require("./main.js"));
 ```
