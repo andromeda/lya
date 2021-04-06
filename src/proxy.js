@@ -55,7 +55,7 @@ function maybeAddProxy(env, obj, handler) {
     // collecting the underlying WeakMap key.
     env.metadata.set(proxy, {
       // Convention: '*' means 'Proxy'
-      name: name ? name + '*' : name,
+      name: name ? name.toString() + '*' : (name || '').toString(),
     });
 
 
