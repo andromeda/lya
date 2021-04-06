@@ -50,6 +50,7 @@ function installMockGlobal(env) {
   // to the type of `this` for the sake of .toString()
   delete mockGlobal.eval;
   delete mockGlobal.Function;
+  delete mockGlobal.Error;
 
   env.context = vm.createContext(mockGlobal);
   env.context.global = env.context;
