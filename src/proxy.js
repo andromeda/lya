@@ -114,7 +114,11 @@ function createProxyGetHandler(env, typeClass) {
       name,
     });
 
-    const currentValue = Reflect.get(...arguments);
+    const availableValue = Reflect.get(...arguments);
+    const currentValue = (typeof availableValue === 'function' && availableValue.bind)
+          ? availableValue.bind(target)
+          : availableValue;
+
     const maybeMetadata = metadata.get(currentValue, () => false);
 
     // Failure to procure metadata means that the object is not worth
