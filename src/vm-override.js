@@ -63,6 +63,13 @@ function createCommonJsApply(env) {
   const wrap = (o) => maybeAddProxy(env, o, handler);
 
   return function apply(target, thisArg, A) {
+    // There's a corner case where Node passes a single argument
+    // with an internal binding. Not sure what it is, so I'm not
+    // going to mess with it.
+    if (A.length < 5) {
+      return Reflect.apply(...arguments);
+    }
+
     const [exports, require, module, __filename, __dirname] = A;
     const moduleId = path.resolve(__dirname, __filename);
 
