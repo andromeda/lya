@@ -7,6 +7,7 @@ module.exports = {
 
 const vm = require('vm');
 const path = require('path');
+const defaultNames = require('./default-names.json');
 
 const {assert, test} = require('./test.js');
 const {maybeAddProxy, createProxyHandlerObject} = require('./proxy.js');
@@ -35,8 +36,17 @@ function installMockGlobal(env) {
   const handler = createProxyHandlerObject(
     env, IDENTIFIER_CLASSIFICATIONS.NODE_GLOBALS);
 
+  const { globals: {es} } = defaultNames;
+  const blacklist = new Set(Array.from(es));
+
   const mockGlobal = Object.getOwnPropertyNames(global).reduce(
     (mock, name) => {
+      // These need to be untainted in the inner context
+      // because they are sensitive to lexical information.
+      if (blacklist.has(name)) {
+        return mock;
+      }
+
       return Object.assign(mock, {
         [name]: (env.metadata.get(global[name], () => false))
           ? maybeAddProxy(env, global[name], handler)
@@ -44,13 +54,6 @@ function installMockGlobal(env) {
       });
     }, {});
 
-
-  // These need to be untainted in the inner context.
-  // eval needs lexical info, and `Function` is sensitive
-  // to the type of `this` for the sake of .toString()
-  delete mockGlobal.eval;
-  delete mockGlobal.Function;
-  delete mockGlobal.Error;
 
   env.context = vm.createContext(mockGlobal);
   env.context.global = env.context;
