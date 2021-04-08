@@ -18,6 +18,7 @@ const {failAs} = require('./control.js');
 const {createReferenceMetadataStore} = require('./metadata.js');
 const {elementOf} = require('./container-type.js');
 const {test, assert} = require('./test.js');
+const path = require('path');
 const Module = require('module');
 
 // Creates an object used to collect facts from the runtime.
@@ -103,12 +104,19 @@ function setCurrentModule(env, module) {
 
 function getDotPath(env, ref) {
   const { parent, name } = env.metadata.get(ref);
-  const displayName = name || '';
+
+  const useableName = name ? name.toString() : '';
+
+  const displayName = (
+    path.isAbsolute(useableName)
+      ? `require('${useableName}')`
+      : useableName
+  );
 
   if (parent) {
-    return getDotPath(env, parent) + '.' + displayName.toString();
+    return getDotPath(env, parent) + '.' + displayName;
   } else {
-    return displayName.toString();
+    return displayName;
   }
 }
 
