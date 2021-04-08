@@ -211,8 +211,9 @@ test(() => {
   assert(actual instanceof Map,
       'Produce a Map by default');
 
-  assert(equal(Array.from(actual.entries()).sort(([[a], [b]]) => a.localeCompare(b)),
-      [['a', 'A'], ['b', 'B'], ['c', 'C']]),
-  'Allow user-defined values for keys');
+  assert(actual.get('a') === 'A' &&
+         actual.get('b') === 'B' &&
+         actual.get('c') === 'C',
+         'Allow user-defined values for keys');
 });
 
