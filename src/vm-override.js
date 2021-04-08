@@ -93,6 +93,7 @@ function createCommonJsApply(env) {
       A[0] = wrap(exports);
       A[1] = wrap(require);
       A[2] = wrap(module);
+      A[2].exports = A[0];
     }
 
     return Reflect.apply(...arguments);
