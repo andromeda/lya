@@ -39,6 +39,7 @@ module.exports = {
     hooks: {
       onCallPre: noop,
       onCallPost: noop,
+      onConstruct: noop,
       onHas: noop,
       onActivity: noop,
       onExit: noop,
