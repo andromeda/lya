@@ -43,7 +43,9 @@ function createLyaState(...configs) {
 }
 
 function inScopeOfAnalysis({include, exclude}, element) {
-  return elementOf(include, element) || !elementOf(exclude, element);
+  return include.length > 0
+    ? elementOf(include, element)
+    : !elementOf(exclude, element);
 }
 
 function getModuleName(module) {
