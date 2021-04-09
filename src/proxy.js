@@ -9,13 +9,15 @@ module.exports = {
   createProxyHandlerObject,
   createProxyHasHandler,
   createProxySetHandler,
+  createHookedRequireProxy,
   maybeAddProxy,
   maybeProxyProperty,
 };
 
+const Module = require('module');
 const {withCatch} = require('./control.js');
 const {assert, assertDeepEqual, test} = require('./test.js');
-const {classify} = require('./taxonomy.js');
+const {classify, IDENTIFIER_CLASSIFICATIONS} = require('./taxonomy.js');
 const {
   createLyaState,
   registerReference,
@@ -256,6 +258,42 @@ function createProxyConstructHandler(env, typeClass) {
     return Reflect.construct(target, args, newTarget);
   };
 }
+
+
+function createHookedRequireProxy(env, owningModule, require) {
+  const baseApply = createProxyApplyHandler(env, IDENTIFIER_CLASSIFICATIONS.MODULE_LOCALS);
+  const seen = new Set();
+
+  return maybeAddProxy(env, require, {
+    apply: function apply(target, thisArg, argumentsList) {
+      const {
+        config: {
+          hooks: {
+            onImport,
+          },
+        },
+      } = env;
+
+      const callee = (
+        Module._resolveFilename.call(owningModule, argumentsList[0])
+      );
+
+      // Fire once per edge in a dependency graph.
+      if (!seen.has(callee)) {
+        hook(env, onImport)({
+          caller: owningModule.filename,
+          callee,
+          name: argumentsList[0],
+        });
+
+        seen.add(callee);
+      }
+
+      return baseApply(target, thisArg, argumentsList);
+    },
+  });
+}
+
 
 
 function createProxyApplyHandler(env, typeClass) {

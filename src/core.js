@@ -22,6 +22,7 @@ const {
   createProxyApplyHandler,
   maybeAddProxy,
   maybeProxyProperty,
+  createHookedRequireProxy,
 } = require('./proxy.js');
 
 const {
@@ -206,15 +207,11 @@ function cjsApply(env, cjsFn, thisArg, cjsArgs) {
 
   const value = cjsFn.apply(thisArg, [
     exports,
-    maybeAddProxy(
-      env,
-      require,
-      createProxyHandlerObject(env, IDENTIFIER_CLASSIFICATIONS.NODE_MODULE_LOCALS)),
+    createHookedRequireProxy(env, module, require),
     module,
     __filename,
     __dirname,
   ]);
-
 
   module.exports = (userWantsAProxy)
     ? maybeProxyProperty(env, module, 'exports') || module.exports
