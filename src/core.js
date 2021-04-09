@@ -4,24 +4,29 @@ const state = require('./state.js');
 
 
 module.exports = {
-  analyze,
   callWithLya,
   createLyaState: state.createLyaState,
   preset: require('./config.js').preset,
 };
 
 
-// /////////////////////////////////////////////////////////////////////////////
-// Implementation
+///////////////////////////////////////////////////////////////////////////////
 
 const fs = require('fs');
-const vm = require('vm');
-const {coerceString} = require('./string.js');
-const {assert, test} = require('./test.js');
-const {callWithModuleOverride} = require('./module-override.js');
-const {callWithVmOverride} = require('./vm-override.js');
-const {maybeAddProxy, createProxyApplyHandler} = require('./proxy.js');
-const {IDENTIFIER_CLASSIFICATIONS} = require('./constants.js');
+const Module = require('module');
+
+const {callWithOwnValues} = require('./container-type.js');
+
+const {
+  createProxyHandlerObject,
+  createProxyApplyHandler,
+  maybeAddProxy,
+  maybeProxyProperty,
+} = require('./proxy.js');
+
+const {
+  IDENTIFIER_CLASSIFICATIONS,
+} = require('./taxonomy.js');
 
 
 // You can place any functions of the same signature as this one here.
@@ -32,7 +37,6 @@ const {IDENTIFIER_CLASSIFICATIONS} = require('./constants.js');
 // concurrent execution of code that would conflict with callWithLya.
 const overrides = [
   callWithModuleOverride,
-  callWithVmOverride,
   callWithGlobalOverride,
 ];
 
@@ -55,7 +59,7 @@ function callWithLya(env, f) {
 
 
 // We start an analysis using the module resolver because we'll want
-// relative paths, etc. to function as CommonJS expects.
+// relative paths, etc. to function normally.
 function createLyaRequireProxy(env) {
   if (typeof env.config.require !== 'function') {
     throw new Error('env.config.require is not a function.');
@@ -112,92 +116,98 @@ function postprocess(env, callbackResult) {
 }
 
 
-
 function callWithGlobalOverride(env, f) {
-  const { eval: original } = global;
-
-  // Force new contexts to use their own builtin 'eval', preserving
-  // lexical information: https://github.com/nodejs/help/issues/3294
-  delete global.eval;
-
   try {
-    const result = f();
-    global.eval = original;
-    return result;
+    global.__lya = {
+      cjsApply: cjsApply.bind(null, env),
+      globalProxy: maybeAddProxy(env, global, createProxyHandlerObject(env, 'node-globals')),
+    };
+    const r = f();
+    delete global.__lya;
+    return r;
   } catch (e) {
-    global.eval = original;
+    delete global.__lya;
     throw e;
   }
 }
 
-// Called for its effect
-function analyze(env) {
-  const {
-    entry,
-    context: contextVariant,
-    config,
-  } = env || {};
+/*
+A template for a CommonJS module that wraps another.  The intent is to
+control global- and module-level bindings (because hacking around
+vm.runIn* is a nightmare).
 
-  const {
-    vmContextConfig,
-    vmConfig,
-  } = config || {};
+Invariant: __lya exists in the global scope.
+*/
+const INSTRUMENTED_MODULE = `
+(function lya_inGlobalShadow(global, __this, __cjsApply, __cjsArgs) {
+$GLOBAL_SHADOWS
+  return __cjsApply($USER_CJS, __this, __cjsArgs);
+})(__lya.globalProxy, this, __lya.cjsApply, arguments);
+`;
 
-  const code = coerceString(entry, {allowFileRead: true});
-
-  env.context = vm.isContext(contextVariant)
-    ? contextVariant
-    : vm.createContext(contextVariant, vmContextConfig);
-
-  env.value = vm.runInContext(code, env.context, vmConfig);
-
-  return env;
+function callWithModuleOverride(env, f) {
+  return callWithOwnValues(Module, {wrap: overrideModuleWrap(env)}, f);
 }
 
-// Simple use
-test(() => {
-  const options = {
-    entry: 'x = process.exit(x)',
-    context: {
-      x: 0,
-      process: {
-        exit: (v) => v + 10,
-      },
-    },
+
+// The strings used to wrap modules are cached using a closure.  If
+// you want to use a different configuration, then call
+// overrideModuleWrap() with different property values.
+//
+const originalWrap = Module.wrap.bind(Module);
+
+function overrideModuleWrap(env) {
+  const { hooks: { sourceTransform }, fields } = env.config;
+
+  return function wrap(script) {
+    // Some input code uses shebangs. Comment them out instead of
+    // deleting them, for transparency reasons.
+    const noShebang = script.replace(/^\s*#!/, '//#!');
+
+    // Allow the user to replace the code, then wrap it normally.
+    const userTransform = sourceTransform(noShebang, null);
+
+    const wrapped = originalWrap(userTransform);
+
+    // We wrap the module again, such that Lya controls the outer
+    // module and therefore the user's module.
+    const out = originalWrap(
+      INSTRUMENTED_MODULE
+        .replace('$GLOBAL_SHADOWS',
+                 Object
+                 .getOwnPropertyNames(global)
+                 .filter((n) => n !== 'global' && state.inScopeOfAnalysis(fields, n))
+                 .map((n) => `  var ${n}=global['${n}'];`)
+                 .join('\n'))
+        .replace('$USER_CJS',
+                 wrapped[wrapped.length - 1] === ';' ? wrapped.slice(0, -1) : wrapped));
+
+    env.enableHooks = false;
+    return out;
   };
+}
 
-  const ref = analyze(options);
+// Applies a CommonJS module function. Lya takes this chance to hook
+// into inter-module activity.
+function cjsApply(env, cjsFn, thisArg, cjsArgs) {
+  const { config: { context, modules } } = env;
 
-  assert(ref === options, 'Operate on the input argument');
-  assert(ref.context.x === 10, 'JS affects context object');
-  assert(ref.value === 10, 'Evaluate to last statement or expression.');
+  // eslint-disable-next-line no-unused-vars
+  const [exports, require, module, __filename, __dirname] = cjsArgs;
 
-  analyze(options);
+  state.setCurrentModule(env, module);
 
-  assert(ref.context.x === 20 && ref.context.x === ref.value,
-      'Reuse context');
-});
+  const userWantsAProxy = (
+    state.inScopeOfAnalysis(context, IDENTIFIER_CLASSIFICATIONS.MODULE_RETURNS) &&
+    state.inScopeOfAnalysis(modules, env.currentModuleName)
+  );
 
+  env.enableHooks = true;
+  const value = cjsFn.apply(thisArg, cjsArgs);
 
-// Recursive eval example
-test(() => {
-  const options = {
-    // Expression ultimately means: 2 * 8 + -1 => 14
-    entry: 'x = eval("2 * eval(`8 + eval(\'x\')`)")',
-    context: {
-      eval: (entry) => {
-        // Base case is to reference only the global variable.
-        if (entry === 'x') {
-          return -1;
-        } else {
-          return analyze(Object.assign({}, options, {entry})).value;
-        }
-      },
-    },
-  };
+  module.exports = (userWantsAProxy)
+    ? maybeProxyProperty(env, module, 'exports') || module.exports
+    : module.exports;
 
-  analyze(options);
-
-  assert(options.context.x === 14 && options.context.x === options.value,
-      'Recursively analyze via eval()');
-});
+  return value;
+}

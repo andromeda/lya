@@ -2,6 +2,7 @@
 // We keep this in a separate module to avoid circular
 // dependencies involving core.js.
 
+
 module.exports = {
   createLyaState,
   inferName,
@@ -31,11 +32,13 @@ function createLyaState(...configs) {
     metadata: createReferenceMetadataStore(),
 
     // Track dependency relationships
-    currentModuleRequest: null,
     currentModule: null,
 
     // For counting proxied object types.
     counters: { total: 0 },
+
+    // Set to true to enable user-level monitoring
+    enableHooks: false,
 
     // For collecting user-defined data.
     results: {},

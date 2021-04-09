@@ -8,7 +8,7 @@ module.exports = {
   shallowMerge: (a, b) => Object.assign({}, a, b),
 };
 
-const {assertDeepEqual, assert, equal, test} = require('./test.js');
+const {assertDeepEqual, assert, test} = require('./test.js');
 const {identity, noop} = require('./functions.js');
 const deepmerge = require('deepmerge');
 
