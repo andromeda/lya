@@ -121,7 +121,11 @@ function callWithGlobalOverride(env, f) {
   try {
     global.__lya = {
       cjsApply: cjsApply.bind(null, env),
-      globalProxy: maybeAddProxy(env, global, createProxyHandlerObject(env, 'node-globals')),
+      globalProxy: maybeAddProxy(
+        env,
+        global,
+        createProxyHandlerObject(
+          env, IDENTIFIER_CLASSIFICATIONS.NODE_GLOBALS)),
     };
     const r = f();
     delete global.__lya;
