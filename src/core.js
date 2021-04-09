@@ -179,13 +179,15 @@ function overrideModuleWrap(env) {
     const out = originalWrap(
       INSTRUMENTED_MODULE
         .replace('$GLOBAL_SHADOWS',
-                 Object
+                 () => Object
                  .getOwnPropertyNames(global)
                  .filter((n) => n !== 'global' && state.inScopeOfAnalysis(fields, n))
                  .map((n) => `  var ${n}=global['${n}'];`)
                  .join('\n'))
         .replace('$USER_CJS',
-                 wrapped[wrapped.length - 1] === ';' ? wrapped.slice(0, -1) : wrapped));
+                 () => (wrapped[wrapped.length - 1] === ';'
+                        ? wrapped.slice(0, -1)
+                        : wrapped)));
 
     env.enableHooks = false;
     return out;
