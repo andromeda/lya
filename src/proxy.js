@@ -14,7 +14,6 @@ module.exports = {
   maybeProxyProperty,
 };
 
-const Module = require('module');
 const {withCatch} = require('./control.js');
 const {assert, assertDeepEqual, test} = require('./test.js');
 const {classify, IDENTIFIER_CLASSIFICATIONS} = require('./taxonomy.js');
@@ -275,7 +274,7 @@ function createHookedRequireProxy(env, owningModule, require) {
       } = env;
 
       const callee = (
-        Module._resolveFilename.call(owningModule, argumentsList[0])
+        require.resolve(argumentsList[0])
       );
 
       // Fire once per edge in a dependency graph.
