@@ -198,12 +198,23 @@ function cjsApply(env, cjsFn, thisArg, cjsArgs) {
   state.setCurrentModule(env, module);
 
   const userWantsAProxy = (
-    state.inScopeOfAnalysis(context, IDENTIFIER_CLASSIFICATIONS.MODULE_RETURNS) &&
+    state.inScopeOfAnalysis(context, IDENTIFIER_CLASSIFICATIONS.NODE_MODULE_LOCALS) &&
     state.inScopeOfAnalysis(modules, env.currentModuleName)
   );
 
   env.enableHooks = true;
-  const value = cjsFn.apply(thisArg, cjsArgs);
+
+  const value = cjsFn.apply(thisArg, [
+    exports,
+    maybeAddProxy(
+      env,
+      require,
+      createProxyHandlerObject(env, IDENTIFIER_CLASSIFICATIONS.NODE_MODULE_LOCALS)),
+    module,
+    __filename,
+    __dirname,
+  ]);
+
 
   module.exports = (userWantsAProxy)
     ? maybeProxyProperty(env, module, 'exports') || module.exports
