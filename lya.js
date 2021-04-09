@@ -121,7 +121,20 @@ function main(conf) {
 }
 
 function collectArguments() {
-  const conf = {};
+  const conf = {
+    context: {
+      include: [],
+      exclude: [],
+    },
+    modules: {
+      include: [],
+      exclude: [],
+    },
+    fields: {
+      include: [],
+      exclude: [],
+    },
+  };
 
   let args;
   try {
