@@ -1,6 +1,6 @@
 module.exports = (lya) => {
   let env;
-  const types = [];
+  const types = {};
 
   const updateAnalysisData = (storedCalls, truename, types) => {
     if (Object.prototype.hasOwnProperty.
