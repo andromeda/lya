@@ -2,9 +2,11 @@ const IDENTIFIER_CLASSIFICATIONS = {
   // e.g. global.x, x
   USER_GLOBALS: 'user-globals',
 
-  // e.g. console, setImmediate
-  // TODO: Rename to builtin-globals?
+  // e.g. console, process
   NODE_GLOBALS: 'node-globals',
+
+  // e.g. setImmediate, eval
+  ES_GLOBALS: 'es-globals',
 
   // e.g. exports, require, module, __filename, __dirname
   MODULE_LOCALS: 'module-locals',
