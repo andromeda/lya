@@ -24,7 +24,23 @@ function createReferenceMetadataStore() {
     Object.assign(get(obj), data);
   }
 
+  const compatible = (obj) => {
+    try {
+      get(obj);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  };
+
+  const setIfCompatible = (obj, data) => {
+    try { get(obj); } catch (e) { return; }
+    set(obj, data);
+  }
+
   return {
+    compatible,
+    setIfCompatible,
     get,
     set,
   };

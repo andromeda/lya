@@ -197,31 +197,42 @@ function overrideModuleWrap(env) {
 // Applies a CommonJS module function. Lya takes this chance to hook
 // into inter-module activity.
 function cjsApply(env, cjsFn, thisArg, cjsArgs) {
-  const { config: { context, modules } } = env;
+  const { config: { context, modules }, currentModule: priorModule } = env;
 
   // eslint-disable-next-line no-unused-vars
   const [exports, require, module, __filename, __dirname] = cjsArgs;
+  const typeClass = IDENTIFIER_CLASSIFICATIONS.NODE_MODULE_LOCALS;
+
+  env.enableHooks = false;
 
   state.setCurrentModule(env, module);
 
   const userWantsAProxy = (
-    state.inScopeOfAnalysis(context, IDENTIFIER_CLASSIFICATIONS.NODE_MODULE_LOCALS) &&
+    state.inScopeOfAnalysis(context, typeClass) &&
     state.inScopeOfAnalysis(modules, env.currentModuleName)
   );
 
-  env.enableHooks = true;
+  const moduleToPass = (userWantsAProxy)
+        ? maybeAddProxy(env, module, createProxyHandlerObject(env, typeClass))
+        : module;
 
-  const value = cjsFn.apply(thisArg, [
-    exports,
+  const argsToPass = [
+    moduleToPass.exports,
     createHookedRequireProxy(env, module, require),
-    module,
+    moduleToPass,
     __filename,
     __dirname,
-  ]);
+  ];
 
-  module.exports = (userWantsAProxy)
-    ? maybeProxyProperty(env, module, 'exports') || module.exports
-    : module.exports;
+  env.enableHooks = true;
+  const value = cjsFn.apply(thisArg, argsToPass);
+  env.enableHooks = false;
+
+  moduleToPass.exports = (userWantsAProxy)
+    ? maybeProxyProperty(env, moduleToPass, 'exports') || moduleToPass.exports
+    : moduleToPass.exports;
+
+  state.setCurrentModule(env, priorModule);
 
   return value;
 }

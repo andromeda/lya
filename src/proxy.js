@@ -164,7 +164,7 @@ function createProxyGetHandler(env, typeClass) {
       target,
       name,
       nameToStore: getDotPath(env, currentValue),
-      currentModule: metadata.get(currentModule).name,
+      currentModule: currentModule.filename,
       typeClass,
     });
 
@@ -188,23 +188,25 @@ function createProxySetHandler(env, typeClass) {
       },
     } = env;
 
+    const maybeMetadata = metadata.get(target, () => false);
+
     if (target === global && name === 'global') {
       console.log('lya: Ignoring global.global assignment');
       return true;
-    } else {
-      const { parent } = metadata.get(target);
+    } else if (maybeMetadata) {
+      const { parent } = maybeMetadata;
 
       hook(env, onWrite)({
         target,
         name,
         value,
-        currentModule: metadata.get(currentModule).name,
+        currentModule: currentModule.filename,
         parentName: parent && metadata.get(parent).name,
         nameToStore: getDotPath(env, target) + '.' + name.toString(),
       });
-
-      return Reflect.set(...arguments);
     }
+
+    return Reflect.set(...arguments);
   };
 }
 
@@ -214,7 +216,6 @@ function createProxyHasHandler(env, typeClass) {
   return function has(target, prop) {
     const {
       currentModule,
-      metadata,
       config: {
         hooks: {
           onHas,
@@ -225,7 +226,7 @@ function createProxyHasHandler(env, typeClass) {
     hook(env, onHas)({
       target,
       prop,
-      currentName: metadata.get(currentModule).name,
+      currentName: currentModule.filename,
       nameToStore: getDotPath(env, target) + '.' + prop.toString(),
     });
 
@@ -239,7 +240,6 @@ function createProxyConstructHandler(env, typeClass) {
   return function construct(target, args, newTarget) {
     const {
       currentModule,
-      metadata,
       config: {
         hooks: {
           onConstruct,
@@ -250,7 +250,7 @@ function createProxyConstructHandler(env, typeClass) {
     hook(env, onConstruct)({
       target,
       args,
-      currentName: metadata.get(currentModule).name,
+      currentName: currentModule.filename,
       nameToStore: target.name,
     });
 
@@ -271,6 +271,7 @@ function createHookedRequireProxy(env, owningModule, require) {
             onImport,
           },
         },
+        metadata,
       } = env;
 
       const callee = (
@@ -288,7 +289,15 @@ function createHookedRequireProxy(env, owningModule, require) {
         seen.add(callee);
       }
 
-      return baseApply(target, thisArg, argumentsList);
+      const exports = baseApply(target, thisArg, argumentsList);
+
+      metadata.setIfCompatible(exports, {
+        name: `require('${argumentsList[0]}')`,
+      });
+
+
+
+      return exports;
     },
   });
 }
@@ -319,7 +328,7 @@ function createProxyApplyHandler(env, typeClass) {
       argumentsList,
       name: target.name,
       nameToStore,
-      currentModule: metadata.get(currentModule).name,
+      currentModule: currentModule.filename,
       declareModule: initialOccurringModule && metadata.get(initialOccurringModule).name,
       typeClass,
     };

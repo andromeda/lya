@@ -50,10 +50,6 @@ function inScopeOfAnalysis({include, exclude}, element) {
     : !elementOf(exclude, element);
 }
 
-function getModuleName(module) {
-  return Module._resolveFilename(module.filename);
-}
-
 function inferName(env, variant) {
   const type = typeof variant;
 
@@ -64,7 +60,7 @@ function inferName(env, variant) {
   if (name) {
     return name;
   } else if (variant instanceof Module) {
-    return getModuleName(variant);
+    return 'module';
   } else if (type === 'function') {
     // Use .toString() because the function name may be a Symbol(),
     // which can lead to TypeErrors on implicit string coercion.
@@ -88,13 +84,12 @@ function registerReference(env, variant) {
 
 
 function registerModule(env, module) {
-  const name = getModuleName(module);
-
   env.metadata.set(module, {
-    name,
-    exportName: `require('${name}')`,
+    name: 'module',
     parent: null,
   });
+
+  const name = Module._resolveFilename(module.filename);
 
   env.results[name] = env.results[name] || {};
 }
