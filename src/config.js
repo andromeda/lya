@@ -4,7 +4,15 @@ const path = require('path');
 const {noop, identity} = require('./functions.js');
 const {assert, test} = require('./test.js');
 const {merge} = require('./container-type.js');
+const {IDENTIFIER_CLASSIFICATIONS} = require('./taxonomy.js');
 
+const {
+  USER_GLOBALS,
+  NODE_GLOBALS,
+  ES_GLOBALS,
+  OTHER_GLOBALS,
+  NODE_MODULE_LOCALS,
+} = IDENTIFIER_CLASSIFICATIONS;
 
 module.exports = {
   preset: findPresets(path.join(__dirname, 'analysis')),
@@ -28,11 +36,11 @@ module.exports = {
     enableWith: false,
     context: {
       include: [
-        'user-globals',
-        'es-globals',
-        'node-globals',
-        'module-locals',
-        'module-returns',
+        USER_GLOBALS,
+        NODE_GLOBALS,
+        ES_GLOBALS,
+        OTHER_GLOBALS,
+        NODE_MODULE_LOCALS,
       ],
       exclude: [],
     },
