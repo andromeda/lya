@@ -260,11 +260,7 @@ function createProxyApplyHandler(env, typeClass) {
       typeClass,
     };
 
-    const newTarget = hook(env, onCallPre)(info);
-
-    if (newTarget) {
-      info.target = target = newTarget;
-    }
+    info.target = target = hook(env, onCallPre)(info) || target;
 
     // Reflect.apply fails for some pure functions, e.g. in native modules
     info.result = withCatch(() => Reflect.apply(target, thisArg, argumentsList),
