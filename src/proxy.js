@@ -53,9 +53,7 @@ function equip(env, obj, handlerVariant, cb = (e, p) => { if (e) throw e; return
 // User hooks should not fire while Lya is instrumenting a module.
 function hook(env, f) {
   return function () {
-    if (!global.__lya) {
-      return f.apply(null, arguments);
-    }
+    return global.__lya || f.apply(null, arguments);
   };
 }
 
@@ -205,8 +203,8 @@ function createHookedRequireProxy(env, owningModule, require) {
 
       const exports = handler.apply(target, thisArg, argumentsList);
       return equip(env, exports, handler, (error, exportsToUse) =>
-        open(exportsToUse, (error, meta) => {
-          meta.exportName = `require('${argumentsList[0]}')`;
+        open(exports, (error, meta) => {
+          meta.name = `require('${argumentsList[0]}')`;
 
           return exportsToUse;
         }));
@@ -221,7 +219,15 @@ function createProxyApplyHandler(env, typeClass) {
     const { currentModule, open, config } = env;
     const { hooks: { onCallPre, onCallPost } } = config;
 
-    const { initialOccurringModule } = open(target, (e,m) => m);
+    const { initialOccurringModule } = open(target, (e, functionMetadata) => {
+      functionMetadata.initialOccurringModule = (
+        functionMetadata.initialOccurringModule || env.currentModule
+      );
+
+      functionMetadata.name = functionMetadata.name || inferReferenceName(target);
+
+      return functionMetadata;
+    });
 
     const info = {
       target,
@@ -230,7 +236,7 @@ function createProxyApplyHandler(env, typeClass) {
       name: target.name,
       nameToStore: getDotPath(env, target),
       currentModule: currentModule.filename,
-      declareModule: initialOccurringModule && initialOccurringModule.filename,
+      declareModule: initialOccurringModule.filename,
       typeClass,
     };
 

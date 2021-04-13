@@ -3,76 +3,60 @@ const pattern = /require[(](.*)[)]/;
 module.exports = (lya) => {
   let env;
 
-  // @storedCalls it is a table that contains all the analysis data
-  // @truename the name of the current function, object etc that we want to add to
-  // the table
-  const updateAnalysisData = (storedCalls, truename) => {
-    if (Object.prototype.hasOwnProperty.
-        call(storedCalls, truename) === false) {
-      storedCalls[truename] = true;
-    }
+  const {
+    IDENTIFIER_CLASSIFICATIONS: {
+      NODE_GLOBALS,
+      NODE_MODULE_LOCALS,
+    },
+  } = lya;
+
+  const updateAnalysisData = (resultKey, dotPath) => {
+    const storedCalls = env.results[resultKey];
+    if (!Object.prototype.hasOwnProperty.call(storedCalls, dotPath))
+      storedCalls[dotPath] = true;
   };
 
-  // Analyses provided by LYA.
-  // onRead <~ is called before every object is read
-  const onRead = (info) => {
-    if (info.nameToStore !== 'global') {
-      if (pattern.test(info.nameToStore)) {
-        updateAnalysisData(env.results[info.currentModule],
-                           info.nameToStore.match(pattern)[0]);
+  const onRead = ({ currentModule, nameToStore }) => {
+    if (nameToStore !== 'global') {
+      if (pattern.test(nameToStore)) {
+        updateAnalysisData(currentModule, nameToStore.match(pattern)[0]);
       } else {
-        updateAnalysisData(env.results[info.currentModule],
-                           info.nameToStore.split('.')[0]);
+        updateAnalysisData(currentModule, nameToStore.split('.')[0]);
       }
-      updateAnalysisData(env.results[info.currentModule],
-                         info.nameToStore);
+
+      updateAnalysisData(currentModule, nameToStore);
     }
   };
 
-  // onWrite <~ is called before every write of an object
   const onWrite = (info) => {
     if (info.parentName) {
-      updateAnalysisData(env.results[info.currentModule], info.parentName);
+      updateAnalysisData(info.currentModule, info.parentName);
     }
-    updateAnalysisData(env.results[info.currentModule], info.nameToStore);
+    updateAnalysisData(info.currentModule, info.nameToStore);
   };
 
-  // onCallPre <~ is called before the execution of a function
-  const onCallPre = (info) => {
-    if (info.typeClass === 'module-locals') {
-      updateAnalysisData(env.results[info.currentModule],
-                         'require');
-      updateAnalysisData(env.results[info.currentModule],
-                         info.nameToStore);
+  const onCallPre = ({ declareModule, typeClass, currentModule, nameToStore }) => {
+    if (typeClass === NODE_MODULE_LOCALS) {
+      updateAnalysisData(currentModule, 'require');
+      updateAnalysisData(currentModule, nameToStore);
     } else {
-      if (info.typeClass === 'node-globals') {
-        updateAnalysisData(env.results[info.declareModule],
-                           info.nameToStore.split('.')[0]);
+      if (typeClass === NODE_GLOBALS) {
+        updateAnalysisData(declareModule, nameToStore.split('.')[0]);
       }
-      updateAnalysisData(env.results[info.declareModule],
-                         info.nameToStore);
-      if (pattern.test(info.nameToStore)) {
-        updateAnalysisData(env.results[info.currentModule],
-                           info.nameToStore.match(pattern)[0]);
+
+      updateAnalysisData(declareModule, nameToStore);
+
+      if (pattern.test(nameToStore)) {
+        updateAnalysisData(currentModule, nameToStore.match(pattern)[0]);
       }
     }
   };
 
-  // onConstruct <~ Is call before every construct
   const onConstruct = (info) => {
-    updateAnalysisData(env.results[info.currentName],
-                       info.nameToStore);
+    updateAnalysisData(info.currentName, info.nameToStore);
   };
 
   const onExit = (env, { saveIfAble, printIfAble }) => {
-    /*
-    for (const name of intersection) {
-      const currentName = candidateModule.get(name);
-      updateAnalysisData(env.analysisResult[currentName],
-                         name, ['w']);
-    }
-    */
-
     saveIfAble();
     printIfAble();
   };
