@@ -105,7 +105,7 @@ function createProxyGetHandler(env, typeClass) {
         if (error) return val; // This captures literals, null, undefined, etc.
 
         valueMetadata.parent = target;
-        valueMetadata.name = valueMetadata.name || name;
+        valueMetadata.name = valueMetadata.name || name.toString();
         valueMetadata.initialOccurringModule = (
           valueMetadata.initialOccurringModule || env.currentModule
         );
