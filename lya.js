@@ -220,7 +220,7 @@ function collectArguments() {
     console.log('You must specify a file name');
     process.exit(-1);
   case 1:
-    filePath = process.cwd() + path.sep + args['_'][0];
+    filePath = path.resolve(process.cwd(), args['_'][0]);
     if (!fs.existsSync(filePath)) {
       console.log('File does not exist');
       process.exit(-1);
