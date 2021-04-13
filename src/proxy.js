@@ -122,9 +122,16 @@ function createProxyGetHandler(env, typeClass) {
         });
 
         // Lazily extend scope of monitoring.
-        return (shouldCreateProxy)
-          ? equip(env, val, createProxyHandlerObject(env, typeClass), (err, v) => v)
-          : val;
+        if (shouldCreateProxy) {
+          const handler = createProxyHandlerObject(
+            env, valueMetadata.parent === global
+              ? IDENTIFIER_CLASSIFICATIONS.NODE_GLOBALS
+              : null)
+
+          return equip(env, val, handler, (err, v) => v);
+        }
+
+        return val;
       });
     });
   });
