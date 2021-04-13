@@ -3,61 +3,43 @@ module.exports = {
 };
 
 const {assert, test} = require('./test.js');
-const {raise} = require('./control.js');
 
 function createReferenceMetadataStore() {
   const M = new WeakMap();
-
-  const get = (obj, fail = raise) => {
+  return (obj, cb) => {
+    // .set will fail if the key is incompatible.
     try {
-      if (!M.has(obj)) {
-        M.set(obj, { type: typeof obj });
-      }
-
-      return M.get(obj);
+      M.set(obj, M.get(obj) || {})
     } catch (e) {
-      return fail(e);
+      return cb(e, {}, obj);
     }
+
+    return cb(null, M.get(obj), obj);
   }
-
-  const set = (obj, data) => {
-    Object.assign(get(obj), data);
-  }
-
-  const compatible = (obj) => {
-    try {
-      get(obj);
-      return true;
-    } catch (e) {
-      return false;
-    }
-  };
-
-  const setIfCompatible = (obj, data) => {
-    try { get(obj); } catch (e) { return; }
-    set(obj, data);
-  }
-
-  return {
-    compatible,
-    setIfCompatible,
-    get,
-    set,
-  };
 }
 
 
 test(() => {
-  const metadata = createReferenceMetadataStore();
-  const { get, set } = metadata;
+  const open = createReferenceMetadataStore();
 
-  const [A, B, C] = [{}, [], {}];
+  const A = {};
+  const B = 1;
 
-  assert(get(A) === get(A),
-         'Allow by-reference identity');
+  function incompatible(e, meta, nonkey) {
+    assert(e instanceof Error, 'Pass Error to incompatible()');
+    assert(nonkey === B, 'Pass non-key to callback');
+    return nonkey;
+  }
+  
+  open(A, (e, m, k) => {
+    assert(e === null, 'Throw no error');
+    assert(k === A, 'Pass key to callback');
+    m.foo = B;
+  });
+  
+  assert(open(A, (e, {foo}) => foo) === B,
+         'Access data via mutation.');
 
-  set(A, { x: get(B), y: get(C) })
-
-  assert(get(A).x === get(B) && get(A).y === get(C),
-         'Store data using own enumerable properties.');
+  assert(open(B, incompatible) === B,
+         'Respond to incompatible keys');
 });

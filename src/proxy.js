@@ -10,91 +10,55 @@ module.exports = {
   createProxyHasHandler,
   createProxySetHandler,
   createHookedRequireProxy,
-  maybeAddProxy,
-  maybeProxyProperty,
+  equip,
 };
 
 const {withCatch} = require('./control.js');
 const {assert, assertDeepEqual, test} = require('./test.js');
-const {classify, IDENTIFIER_CLASSIFICATIONS} = require('./taxonomy.js');
+const {IDENTIFIER_CLASSIFICATIONS} = require('./taxonomy.js');
 const {
   createLyaState,
-  registerReference,
   setCurrentModule,
   getReferenceDepth,
   getDotPath,
+  inferReferenceName,
   inScopeOfAnalysis,
 } = require('./state.js');
 
 
-// Like new Proxy(), except construction is conditional, and any
-// created instances are tracked.
-function maybeAddProxy(env, obj, handler) {
-  let proxy, name;
+function equip(env, obj, handlerVariant, cb = (e, p) => { if (e) throw e; return p; }) {
+  const [error, { proxy: alreadyMade, name }] = env.open(obj, (e,m) => [e,m]);
 
-  try {
-    ({ proxy, name } = env.metadata.get(obj));
-  } catch (e) {
-    return undefined;
+  if (error) {
+    // Failure to get metadata reference implies incompatibility with
+    // Proxy. Reasoning being that if we can't collect data about it,
+    // then what is a proxy going to tell us?
+    return cb(null, obj);
+  } else if (alreadyMade) {
+    return cb(null, alreadyMade);
   }
 
-  if (!proxy) {
-    try {
-      proxy = new Proxy(obj, handler);
+  const proxy = new Proxy(obj,
+                          (typeof handlerVariant === 'string'
+                           ? createProxyHandlerObject(env, handlerVariant)
+                           : handlerVariant))
 
-      const type = typeof obj;
-      env.counters[type] = (env.counters[type] || 0) + 1;
-      ++env.counters.total;
-    } catch (e) {
-      // Proxy() already knows what it wants, so we can use an
-      // exception to avoid writing a bunch of defensive checks.
-      // Since the same TypeError is raised for either argument, we at
-      // least need to be sure that the handler wasn't the issue.
-      if (e instanceof TypeError && isHandlerObject(handler)) {
-        return undefined;
-      }
+  env.open(obj, (error, meta) => (meta.proxy = proxy));
+  env.open(proxy, (error, meta) => (meta.proxies = name));
 
-      throw e;
-    }
-
-    env.metadata.set(obj, { proxy });
-
-    // Unless we can afford it, do not track the object referenced by
-    // the proxy here.  It would prevent the garbage collector from
-    // collecting the underlying WeakMap key.
-    env.metadata.set(proxy, {
-      // Convention: '*' means 'Proxy'
-      name: name ? name.toString() + '*' : (name || '').toString(),
-    });
-  }
-
-  return proxy;
+  return cb(null, proxy);
 }
 
 
-// User hooks are unmonitored, lest they trigger proxies.
+// User hooks should not fire while Lya is instrumenting a module.
 function hook(env, f) {
   return function () {
-    if (env.enableHooks) {
+    if (!global.__lya) {
       return f.apply(null, arguments);
     }
   };
 }
 
-
-const HANDLER_KEYS = new Set(['get', 'has', 'set', 'apply', 'construct']);
-
-function isHandlerObject(v) {
-  try {
-    return Object
-      .keys(v)
-      .every((k) => (
-        HANDLER_KEYS.has(k) &&
-          typeof v[k] === 'function'))
-  } catch (e) {
-    return false;
-  }
-}
 
 const _cache = {};
 function createProxyHandlerObject(env, typeClass) {
@@ -115,113 +79,79 @@ function createProxyHandlerObject(env, typeClass) {
   return _cache[env][typeClass];
 }
 
-function maybeProxyProperty(env, obj, name) {
-  return obj[name] = (
-    maybeAddProxy(env, obj[name], createProxyHandlerObject(env, classify(name)))
-    || obj[name]
-  );
-}
-
 function createProxyGetHandler(env, typeClass) {
   return function get(target, name, receiver) {
-    const {
-      currentModule,
-      metadata,
-      config: {
-        hooks: {
-          onRead,
-        },
-      },
-    } = env;
+    const { currentModule, open, config: { hooks: { onRead } } } = env;
 
-    const currentValue = Reflect.get(target, name, receiver);
-    const maybeMetadata = metadata.get(currentValue, () => false);
+    const val = Reflect.get(target, name, receiver);
 
-    // Failure to procure metadata means that the object is not worth
-    // tracking (literals, undefined)
-    if (!maybeMetadata) return currentValue;
+    return open(target, function handleTargetMetadata(error, targetMetadata) {
+      if (error) throw error; // Exceptional case being: The target is an object, but we can't know about it?
 
-    // If a proxy is already created, use it.
-    if (maybeMetadata.proxy) return maybeMetadata.proxy;
+      targetMetadata.initialOccurringModule = (
+        targetMetadata.initialOccurringModule || env.currentModule
+      );
 
-    registerReference(env, target);
-    registerReference(env, currentValue);
-    metadata.set(currentValue, {
-      parent: target,
-      name,
+      targetMetadata.name = targetMetadata.name || inferReferenceName(target);
+
+      return open(val, function handleValueMetadata(error, valueMetadata) {
+        if (error) return val; // This captures literals, null, undefined, etc.
+
+        valueMetadata.parent = target;
+        valueMetadata.name = valueMetadata.name || name;
+        valueMetadata.initialOccurringModule = (
+          valueMetadata.initialOccurringModule || env.currentModule
+        );
+
+        const shouldCreateProxy = shouldProxyTarget(
+          env, typeClass, getReferenceDepth(env, val), target, name);
+
+        hook(env, onRead)({
+          target,
+          name,
+          nameToStore: getDotPath(env, target),
+          currentModule: currentModule.filename,
+          typeClass,
+        });
+
+        // Lazily extend scope of monitoring.
+        return (shouldCreateProxy)
+          ? equip(env, val, createProxyHandlerObject(env, typeClass), (err, v) => v)
+          : val;
+      });
     });
-
-    const shouldCreateProxy = shouldProxyTarget(
-      env, typeClass, getReferenceDepth(env, currentValue), target, name);
-
-    // Lazily create proxies to extend scope of monitoring.
-    if (shouldCreateProxy) {
-      // TODO: Select typeclass dynamically
-      maybeAddProxy(env, currentValue, createProxyHandlerObject(env, typeClass));
-    }
-
-    hook(env, onRead)({
-      target,
-      name,
-      nameToStore: getDotPath(env, currentValue),
-      currentModule: currentModule.filename,
-      typeClass,
-    });
-
-    // A proxy might not have been created due to above reasoning, but
-    // prefer it if it's available.
-    return metadata.get(currentValue, () => ({proxy: false})).proxy || currentValue;
-  };
+  }
 }
 
 
-/* eslint-disable-next-line no-unused-vars */
-function createProxySetHandler(env, typeClass) {
+function createProxySetHandler(env) {
   return function set(target, name, value) {
-    const {
-      metadata,
-      currentModule,
-      config: {
-        hooks: {
-          onWrite,
-        },
-      },
-    } = env;
-
-    const maybeMetadata = metadata.get(target, () => false);
+    const { open, currentModule, config: { hooks: { onWrite } } } = env;
 
     if (target === global && name === 'global') {
       console.log('lya: Ignoring global.global assignment');
       return true;
-    } else if (maybeMetadata) {
-      const { parent } = maybeMetadata;
+    }
 
+    return open(target, (error, meta) => {
       hook(env, onWrite)({
         target,
         name,
         value,
         currentModule: currentModule.filename,
-        parentName: parent && metadata.get(parent).name,
+        parentName: open(meta.parent, (e, m) => m.name),
         nameToStore: getDotPath(env, target) + '.' + name.toString(),
       });
-    }
 
-    return Reflect.set(...arguments);
+      return Reflect.set(target, name, value);
+    });
   };
 }
 
 
-/* eslint-disable-next-line no-unused-vars */
-function createProxyHasHandler(env, typeClass) {
+function createProxyHasHandler(env) {
   return function has(target, prop) {
-    const {
-      currentModule,
-      config: {
-        hooks: {
-          onHas,
-        },
-      },
-    } = env;
+    const { currentModule, config: { hooks: { onHas } } } = env;
 
     hook(env, onHas)({
       target,
@@ -235,23 +165,15 @@ function createProxyHasHandler(env, typeClass) {
 }
 
 
-/* eslint-disable-next-line no-unused-vars */
-function createProxyConstructHandler(env, typeClass) {
+function createProxyConstructHandler(env) {
   return function construct(target, args, newTarget) {
-    const {
-      currentModule,
-      config: {
-        hooks: {
-          onConstruct,
-        },
-      },
-    } = env;
+    const { currentModule, config: { hooks: { onConstruct } } } = env;
 
     hook(env, onConstruct)({
       target,
       args,
       currentName: currentModule.filename,
-      nameToStore: target.name,
+      nameToStore: getDotPath(env, target),
     });
 
     return Reflect.construct(target, args, newTarget);
@@ -260,23 +182,15 @@ function createProxyConstructHandler(env, typeClass) {
 
 
 function createHookedRequireProxy(env, owningModule, require) {
-  const baseApply = createProxyApplyHandler(env, IDENTIFIER_CLASSIFICATIONS.MODULE_LOCALS);
+  const typeClass = IDENTIFIER_CLASSIFICATIONS.MODULE_LOCALS;
+  const handler = createProxyHandlerObject(env, typeClass);
   const seen = new Set();
 
-  return maybeAddProxy(env, require, {
+  return equip(env, require, {
     apply: function apply(target, thisArg, argumentsList) {
-      const {
-        config: {
-          hooks: {
-            onImport,
-          },
-        },
-        metadata,
-      } = env;
+      const { config: { hooks: { onImport } }, open } = env;
 
-      const callee = (
-        require.resolve(argumentsList[0])
-      );
+      const callee = require.resolve(argumentsList[0]);
 
       // Fire once per edge in a dependency graph.
       if (!seen.has(callee)) {
@@ -289,15 +203,13 @@ function createHookedRequireProxy(env, owningModule, require) {
         seen.add(callee);
       }
 
-      const exports = baseApply(target, thisArg, argumentsList);
+      const exports = handler.apply(target, thisArg, argumentsList);
+      return equip(env, exports, handler, (error, exportsToUse) =>
+        open(exportsToUse, (error, meta) => {
+          meta.exportName = `require('${argumentsList[0]}')`;
 
-      metadata.setIfCompatible(exports, {
-        name: `require('${argumentsList[0]}')`,
-      });
-
-
-
-      return exports;
+          return exportsToUse;
+        }));
     },
   });
 }
@@ -306,43 +218,31 @@ function createHookedRequireProxy(env, owningModule, require) {
 
 function createProxyApplyHandler(env, typeClass) {
   return function apply(target, thisArg, argumentsList) {
-    const {
-      currentModule,
-      metadata,
-      config: {
-        hooks: {
-          onCallPre,
-          onCallPost,
-        },
-      },
-    } = env;
+    const { currentModule, open, config } = env;
+    const { hooks: { onCallPre, onCallPost } } = config;
 
-    registerReference(env, target);
-
-    const nameToStore = getDotPath(env, target);
-    const { initialOccurringModule } = metadata.get(target);
+    const { initialOccurringModule } = open(target, (e,m) => m);
 
     const info = {
       target,
       thisArg,
       argumentsList,
       name: target.name,
-      nameToStore,
+      nameToStore: getDotPath(env, target),
       currentModule: currentModule.filename,
-      declareModule: initialOccurringModule && metadata.get(initialOccurringModule).name,
+      declareModule: initialOccurringModule && initialOccurringModule.filename,
       typeClass,
     };
 
     const newTarget = hook(env, onCallPre)(info);
 
     if (newTarget) {
-      info.target = target = arguments[0] = newTarget;
+      info.target = target = newTarget;
     }
 
-    // In case the target is not a pure function Reflect doesnt work
-    // for example: in native modules
-    info.result = withCatch(() => target(...argumentsList),
-                            () => Reflect.apply(...arguments));
+    // Reflect.apply fails for some pure functions, e.g. in native modules
+    info.result = withCatch(() => Reflect.apply(target, thisArg, argumentsList),
+                            () => target.apply(thisArg, argumentsList));
 
     hook(env, onCallPost)(info);
 
@@ -351,6 +251,8 @@ function createProxyApplyHandler(env, typeClass) {
 }
 
 test(() => {
+  const Module = require('module');
+
   let preCalled, postCalled;
   const junkThis = {};
 
@@ -377,11 +279,11 @@ test(() => {
                     'Capture the right arguments');
     assert(name === 'proxyTarget',
            'Capture the function name')
-    assert(nameToStore === 'M.alias',
+    assert(nameToStore === 'alias',
            'Capture the analysis-specific alias of the function');
-    assert(currentModule === 'M',
+    assert(currentModule === Module._resolveFilename(module.filename),
            'Capture the module ID');
-    assert(declareModule === 'M',
+    assert(declareModule === 'D',
            'Capture the declaring module');
     assert(typeClass === 'T',
            'Forward typeClass');
@@ -405,45 +307,26 @@ test(() => {
 
   setCurrentModule(env, module);
 
-  env.metadata.set(module, {
-    name: 'M',
-  });
-
-  env.metadata.set(proxyTarget, {
-    parent: module,
+  env.open(proxyTarget, (e,m) => Object.assign(m, {
     name: 'alias',
+    initialOccurringModule: { filename: 'D' },
+  }));
+
+  equip(env, proxyTarget, 'T', (error, proxy) => {
+    const returned = proxy.apply(junkThis, [6, 7, 8]);
+
+    assert(preCalled && postCalled,
+           'Call onCallPre and onCallPost hooks');
+
+    assert(returned === (6 * 7 * 8),
+           'Forward the functions result');
   });
-
-  const apply = createProxyApplyHandler(env, 'T');
-  const proxy = new Proxy(proxyTarget, { apply });
-  const returned = proxy.apply(junkThis, [6, 7, 8]);
-
-  assert(preCalled && postCalled,
-        'Call onCallPre and onCallPost hooks');
-
-  assert(returned === (6 * 7 * 8),
-         'Forward the functions result');
 });
 
 
 
-const PROXY_PROPERTY_NAME_BLACKLIST = new Set([
-  'children',
-  'name',
-  'prototype',
-  'valueOf',
-  'toString',
-]);
-
 function shouldProxyTarget(env, typeClass, referenceDepth, target, name) {
-  const {
-    config: {
-      depth,
-      context,
-      fields,
-    },
-  } = env;
-
+  const { config: { depth, context, fields } } = env;
 
   const desc = Object.getOwnPropertyDescriptor(target, name);
 
@@ -460,9 +343,13 @@ function shouldProxyTarget(env, typeClass, referenceDepth, target, name) {
   // Some properties are defined such that they cannot run in the
   // context of our proxies. They are hard to predict in terms of
   // property descriptors, so we make manual exceptions.
-  const breaksWhenProxied = (
-      PROXY_PROPERTY_NAME_BLACKLIST.has(name)
-  );
+  const breaksWhenProxied = [
+    'children',
+    'name',
+    'prototype',
+    'valueOf',
+    'toString',
+  ].indexOf(name) > -1;
 
   return (
     userWantsAProxy &&

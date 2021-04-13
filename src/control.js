@@ -1,7 +1,6 @@
 // Abbreviates non-conventional changes in control flow.
 
 module.exports = {
-  dynamicBoundary,
   failTo,
   raise,
   withHandlers,
@@ -42,20 +41,6 @@ function withHandlers(specs, f) {
 }
 
 
-function dynamicBoundary(counts, key, f) {
-  return function () {
-    try {
-      counts[key] = 1 + (counts[key] || 0);
-      const r = f.apply(this, arguments);
-      --counts[key];
-      return r;
-    } catch (e) {
-      --counts[key];
-      throw e;
-    }
-  }
-}
-
 test(() => {
   assert(failTo(1, () => raise(2)) === 1,
       'Represent any thrown value as another value');
@@ -81,10 +66,4 @@ test(() => {
   assert(withHandlers([[() => true, () => 'caught']],
       () => withHandlers(handlers, () => raise())) === 'caught',
   'Escalate uncaught values');
-
-  const counters = {};
-  const iterate = () => counters.N < 5 ? withBoundary() : counters.N;
-  const withBoundary = dynamicBoundary(counters, 'N', iterate);
-  assert(withBoundary() === 5 && counters.N === 0,
-         'dynamicBoundary helps track dynamic "depth" of function');
 });

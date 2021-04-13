@@ -5,17 +5,14 @@
 
 module.exports = {
   createLyaState,
-  inferName,
-  registerModule,
+  inferReferenceName,
   setCurrentModule,
   getDotPath,
-  registerReference,
   getReferenceDepth,
   inScopeOfAnalysis,
 };
 
 const {configureLya} = require('./config.js');
-const {failAs} = require('./control.js');
 const {createReferenceMetadataStore} = require('./metadata.js');
 const {elementOf} = require('./container-type.js');
 const {test, assert} = require('./test.js');
@@ -24,22 +21,16 @@ const Module = require('module');
 // Creates an object used to collect facts from the runtime.
 function createLyaState(...configs) {
   return {
-    // Contains hooks, policy info, and other user-specific goodies.
+    // Contains hooks, policy info, etc.
     config: configureLya(...configs),
 
-    // Contains metadata collected for references as they are found.
-    metadata: createReferenceMetadataStore(),
+    // Manages metadata for references
+    open: createReferenceMetadataStore(),
 
-    // Track dependency relationships
+    // Helps track dependency relationships
     currentModule: null,
 
-    // For counting proxied object types.
-    counters: { total: 0 },
-
-    // Set to true to enable user-level monitoring
-    enableHooks: false,
-
-    // For collecting user-defined data.
+    // User-defined
     results: {},
   };
 }
@@ -50,16 +41,10 @@ function inScopeOfAnalysis({include, exclude}, element) {
     : !elementOf(exclude, element);
 }
 
-function inferName(env, variant) {
+function inferReferenceName(variant) {
   const type = typeof variant;
 
-  const { name } = env.metadata.get(variant, () => ({
-    name: failAs(false, () => variant.toString())
-  }));
-
-  if (name) {
-    return name;
-  } else if (variant instanceof Module) {
+  if (variant instanceof Module) {
     return 'module';
   } else if (type === 'function') {
     // Use .toString() because the function name may be a Symbol(),
@@ -71,66 +56,49 @@ function inferName(env, variant) {
         return k;
       }
     }
+  } else if (variant) {
+    return variant.toString();
+  } else {
+    return '';
   }
-}
-
-
-function registerReference(env, variant) {
-  env.metadata.set(variant, {
-    name: inferName(env, variant),
-    initialOccurringModule: env.metadata.get(variant, () => ({ initialOccurringModule: false })).initialOccurringModule || env.currentModule,
-  });
-}
-
-
-function registerModule(env, module) {
-  env.metadata.set(module, {
-    name: 'module',
-    parent: null,
-  });
-
-  const name = Module._resolveFilename(module.filename);
-
-  env.results[name] = env.results[name] || {};
 }
 
 
 function setCurrentModule(env, module) {
   env.currentModule = module;
-  registerModule(env, module);
+  const name = Module._resolveFilename(module.filename);
+  env.results[name] = env.results[name] || {};
 }
 
 
 function getDotPath(env, ref) {
-  const { parent, name } = env.metadata.get(ref);
+  return env.open(ref, (error, { parent, name }) => {
+    if (error) throw error;
 
-  const displayName = name ? name.toString() : '';
-
-  if (parent && parent !== global && !(parent instanceof Module)) {
-    return getDotPath(env, parent) + '.' + displayName;
-  } else {
-    return displayName;
-  }
+    return (parent && parent !== global && !(parent instanceof Module))
+      ? getDotPath(env, parent) + '.' + name
+      : name;
+  });
 }
 
 
 function getReferenceDepth(env, ref) {
-  if (!ref) {
-    return 0;
-  } else {
-    const { parent } = env.metadata.get(ref);
-    return 1 + getReferenceDepth(env, parent);
-  }
+  return env.open(ref, (error, meta) => (
+    error
+      ? 0
+      : 1 + getReferenceDepth(env, meta.parent)));
 }
 
 test(() => {
   const env = createLyaState();
-  const { metadata: { set } } = env;
+  const { open } = env;
   const [A, B, C] = [{}, [], {}];
 
-  set(A, { name: 'a', parent: B });
-  set(B, { name: 'b', parent: C });
-  set(C, { name: 'c', parent: null });
+  const assign = data => (e, meta) => Object.assign(meta, data);
+
+  open(A, assign({ name: 'a', parent: B }))
+  open(B, assign({ name: 'b', parent: C }))
+  open(C, assign({ name: 'c', parent: null }))
 
   assert(getDotPath(env, A) === 'c.b.a' &&
          getDotPath(env, B) === 'c.b' &&
