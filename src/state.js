@@ -53,7 +53,9 @@ function inferReferenceName(variant) {
   } else if (type === 'object' && variant !== null) {
     for (const k of Object.getOwnPropertyNames(global)) {
       if (global[k] === variant) {
-        return k;
+        return k === 'globalThis'
+          ? 'global'
+          : k;
       }
     }
   } else if (variant) {
