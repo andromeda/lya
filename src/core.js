@@ -1,12 +1,14 @@
 // Programatically monitor module-level interactions.
 
 const state = require('./state.js');
+const {IDENTIFIER_CLASSIFICATIONS} = require('./taxonomy.js');
 
 
 module.exports = {
   callWithLya,
   createLyaState: state.createLyaState,
   preset: require('./config.js').preset,
+  IDENTIFIER_CLASSIFICATIONS,
 };
 
 
@@ -25,9 +27,6 @@ const {
   createHookedRequireProxy,
 } = require('./proxy.js');
 
-const {
-  IDENTIFIER_CLASSIFICATIONS,
-} = require('./taxonomy.js');
 
 
 // You can place any functions of the same signature as this one here.
