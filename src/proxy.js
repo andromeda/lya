@@ -116,7 +116,7 @@ function createProxyGetHandler(env, typeClass) {
         hook(env, onRead)({
           target,
           name,
-          nameToStore: getDotPath(env, target),
+          nameToStore: getDotPath(env, target) + '.' + valueMetadata.name,
           currentModule: currentModule.filename,
           typeClass,
         });
