@@ -191,7 +191,7 @@ function createProxyConstructHandler(env) {
 
 
 function createHookedRequireProxy(env, owningModule, require) {
-  const typeClass = IDENTIFIER_CLASSIFICATIONS.MODULE_LOCALS;
+  const typeClass = IDENTIFIER_CLASSIFICATIONS.CJS_EXPORTS;
   const handler = createProxyHandlerObject(env, typeClass);
   const seen = new Set();
 

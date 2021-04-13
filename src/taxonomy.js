@@ -2,7 +2,7 @@
 
 module.exports = {
   classify,
-  IDENTIFIER_CLASSIFICATIONS: Object.freeze({
+  IDENTIFIER_CLASSIFICATIONS: new Proxy({
     // e.g. global.x, x
     USER_GLOBALS: 'user-globals',
 
@@ -16,7 +16,17 @@ module.exports = {
     OTHER_GLOBALS: 'other-globals',
 
     // e.g. exports, require, module, __filename, __dirname
-    NODE_MODULE_LOCALS: 'node-module-locals',
+    CJS_ARGUMENTS: 'cjs-module-arguments',
+
+    // Just exports and module.exports
+    CJS_EXPORTS: 'cjs-module-exports',
+  }, {
+    get: (target, prop) => {
+      if (!target[prop])
+        throw new Error(`${prop} is not an identifier classification. Typo?`);
+      return target[prop];
+    },
+    set: () => false,
   })
 };
 
@@ -39,7 +49,7 @@ const lookup = [
   [new Set(globalsEs), I.ES_GLOBALS],
   [new Set(globalsNode), I.NODE_GLOBALS],
   [new Set(globalsOther), I.OTHER_GLOBALS],
-  [new Set(localsNode), I.NODE_MODULE_LOCALS],
+  [new Set(localsNode), I.CJS_ARGUMENTS],
 ];
 
 function classify(k) {

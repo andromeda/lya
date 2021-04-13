@@ -111,7 +111,7 @@ function cjsApply(env, cjsFn, thisArg, cjsArgs) {
 
   // eslint-disable-next-line no-unused-vars
   const [exports, require, module, __filename, __dirname] = cjsArgs;
-  const typeClass = IDENTIFIER_CLASSIFICATIONS.NODE_MODULE_LOCALS;
+  const typeClass = IDENTIFIER_CLASSIFICATIONS.CJS_ARGUMENTS;
 
   state.setCurrentModule(env, module);
 

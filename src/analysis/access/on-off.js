@@ -6,7 +6,7 @@ module.exports = (lya) => {
   const {
     IDENTIFIER_CLASSIFICATIONS: {
       NODE_GLOBALS,
-      NODE_MODULE_LOCALS,
+      CJS_EXPORTS,
     },
   } = lya;
 
@@ -36,7 +36,7 @@ module.exports = (lya) => {
   };
 
   const onCallPre = ({ declareModule, typeClass, currentModule, nameToStore }) => {
-    if (typeClass === NODE_MODULE_LOCALS) {
+    if (typeClass === CJS_EXPORTS) {
       updateAnalysisData(currentModule, 'require');
       updateAnalysisData(currentModule, nameToStore);
     } else {
