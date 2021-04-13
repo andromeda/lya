@@ -189,6 +189,8 @@ function createHookedRequireProxy(env, owningModule, require) {
       const { config: { hooks: { onImport } }, open } = env;
 
       const callee = require.resolve(argumentsList[0]);
+      const conventionalName = `require('${argumentsList[0]}')`;
+      open(require, (e, m) => { m.name = conventionalName });
 
       // Fire once per edge in a dependency graph.
       if (!seen.has(callee)) {
@@ -204,7 +206,7 @@ function createHookedRequireProxy(env, owningModule, require) {
       const exports = handler.apply(target, thisArg, argumentsList);
       return equip(env, exports, handler, (error, exportsToUse) =>
         open(exports, (error, meta) => {
-          meta.name = `require('${argumentsList[0]}')`;
+          meta.name = conventionalName;
 
           return exportsToUse;
         }));
