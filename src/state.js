@@ -66,8 +66,11 @@ function inferReferenceName(variant) {
 
 function setCurrentModule(env, module) {
   env.currentModule = module;
-  const name = Module._resolveFilename(module.filename);
-  env.results[name] = env.results[name] || {};
+
+  if (module) {
+    const name = Module._resolveFilename(module.filename);
+    env.results[name] = env.results[name] || {};
+  }
 }
 
 

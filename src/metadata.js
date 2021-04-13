@@ -15,7 +15,7 @@ function createReferenceMetadataStore() {
     }
 
     return cb(null, M.get(obj), obj);
-  }
+  };
 }
 
 

@@ -57,6 +57,15 @@ function hook(env, f) {
   };
 }
 
+// Proxies are only meaningful when modules are under analysis.
+function proxyBoundary(env, f) {
+  return function () {
+    return env.currentModule
+      ? f.apply(this, arguments)
+      : Reflect[f.name].apply(Reflect, arguments);
+  };
+}
+
 
 const _cache = {};
 function createProxyHandlerObject(env, typeClass) {
@@ -78,7 +87,7 @@ function createProxyHandlerObject(env, typeClass) {
 }
 
 function createProxyGetHandler(env, typeClass) {
-  return function get(target, name, receiver) {
+  return proxyBoundary(env, function get(target, name, receiver) {
     const { currentModule, open, config: { hooks: { onRead } } } = env;
 
     const val = Reflect.get(target, name, receiver);
@@ -118,12 +127,12 @@ function createProxyGetHandler(env, typeClass) {
           : val;
       });
     });
-  }
+  });
 }
 
 
 function createProxySetHandler(env) {
-  return function set(target, name, value) {
+  return proxyBoundary(env, function set(target, name, value) {
     const { open, currentModule, config: { hooks: { onWrite } } } = env;
 
     if (target === global && name === 'global') {
@@ -131,24 +140,26 @@ function createProxySetHandler(env) {
       return true;
     }
 
-    return open(target, (error, meta) => {
+    return open(target, (error, targetMetadata) => {
+      targetMetadata.name = targetMetadata.name || inferReferenceName(target);
+
       hook(env, onWrite)({
         target,
         name,
         value,
         currentModule: currentModule.filename,
-        parentName: open(meta.parent, (e, m) => m.name),
+        parentName: open(targetMetadata.parent, (e, m) => m.name),
         nameToStore: getDotPath(env, target) + '.' + name.toString(),
       });
 
       return Reflect.set(target, name, value);
     });
-  };
+  });
 }
 
 
 function createProxyHasHandler(env) {
-  return function has(target, prop) {
+  return proxyBoundary(env, function has(target, prop) {
     const { currentModule, config: { hooks: { onHas } } } = env;
 
     hook(env, onHas)({
@@ -159,12 +170,12 @@ function createProxyHasHandler(env) {
     });
 
     return Reflect.has(target, prop);
-  };
+  });
 }
 
 
 function createProxyConstructHandler(env) {
-  return function construct(target, args, newTarget) {
+  return proxyBoundary(env, function construct(target, args, newTarget) {
     const { currentModule, config: { hooks: { onConstruct } } } = env;
 
     hook(env, onConstruct)({
@@ -175,7 +186,7 @@ function createProxyConstructHandler(env) {
     });
 
     return Reflect.construct(target, args, newTarget);
-  };
+  });
 }
 
 
@@ -217,7 +228,7 @@ function createHookedRequireProxy(env, owningModule, require) {
 
 
 function createProxyApplyHandler(env, typeClass) {
-  return function apply(target, thisArg, argumentsList) {
+  return proxyBoundary(env, function apply(target, thisArg, argumentsList) {
     const { currentModule, open, config } = env;
     const { hooks: { onCallPre, onCallPost } } = config;
 
@@ -255,7 +266,7 @@ function createProxyApplyHandler(env, typeClass) {
     hook(env, onCallPost)(info);
 
     return info.result;
-  };
+  });
 }
 
 test(() => {

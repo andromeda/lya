@@ -17,41 +17,18 @@ module.exports = {
 const fs = require('fs');
 const Module = require('module');
 const { callWithOwnValues } = require('./container-type.js');
-const { createProxyHandlerObject, createHookedRequireProxy, equip } = require('./proxy.js');
+const { createHookedRequireProxy, equip } = require('./proxy.js');
 
 
 function callWithLya(env, f) {
   return callWithOwnValues(Module, { wrap: overrideModuleWrap(env) }, () => {
     env.timerStart = process.hrtime();
-    const result = f(createLyaRequireProxy(env));
+    const result = f();
     postprocess(env, result);
     return result;
   });
 }
 
-
-// We start an analysis using the module resolver because we'll want
-// relative paths, etc. to function normally.
-function createLyaRequireProxy(env) {
-  if (typeof env.config.require !== 'function') {
-    throw new Error('env.config.require is not a function.');
-  }
-
-  const { apply: baseApply } = createProxyHandlerObject(env, IDENTIFIER_CLASSIFICATIONS.MODULE_LOCALS);
-
-  const handler = {
-    apply: function apply() {
-      state.setCurrentModule(env, require.main);
-      env.open(env.config.require, (e,m) => (m.parent = require.main));
-      return baseApply.apply(this, arguments);
-    },
-  };
-
-  return equip(env, env.config.require, handler, (error, proxied) => {
-    if (error) throw error;
-    return proxied;
-  });
-}
 
 function postprocess(env, callbackResult) {
   // Post-processing
@@ -82,7 +59,7 @@ vm.runIn* is a nightmare).
 Invariant: __lya exists in the global scope.
 */
 const INSTRUMENTED_MODULE = `
-(function lya_inGlobalShadow(global, __this, __cjsApply, __cjsArgs) {
+(function inGlobalShadow(global, __this, __cjsApply, __cjsArgs) {
 $GLOBAL_SHADOWS
   return __cjsApply($USER_CJS, __this, __cjsArgs);
 })(__lya.globalProxy, this, __lya.cjsApply, arguments);
