@@ -6,14 +6,6 @@ const {assert, test} = require('./test.js');
 const {merge} = require('./container-type.js');
 const {IDENTIFIER_CLASSIFICATIONS} = require('./taxonomy.js');
 
-const {
-  USER_GLOBALS,
-  NODE_GLOBALS,
-  ES_GLOBALS,
-  OTHER_GLOBALS,
-  NODE_MODULE_LOCALS,
-} = IDENTIFIER_CLASSIFICATIONS;
-
 module.exports = {
   preset: findPresets(path.join(__dirname, 'analysis')),
 
@@ -35,13 +27,7 @@ module.exports = {
     depth: 3,
     enableWith: false,
     context: {
-      include: [
-        USER_GLOBALS,
-        NODE_GLOBALS,
-        ES_GLOBALS,
-        OTHER_GLOBALS,
-        NODE_MODULE_LOCALS,
-      ],
+      include: Object.keys(IDENTIFIER_CLASSIFICATIONS).map((k) => IDENTIFIER_CLASSIFICATIONS[k]),
       exclude: [],
     },
     hooks: {
