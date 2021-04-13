@@ -80,7 +80,7 @@ function getDotPath(env, ref) {
   return env.open(ref, (error, { parent, name }) => {
     if (error) throw error;
 
-    return (parent && parent !== global && !(parent instanceof Module))
+    return (parent && parent !== global && parent !== ref && !(parent instanceof Module))
       ? getDotPath(env, parent) + '.' + name
       : name;
   });
@@ -88,10 +88,11 @@ function getDotPath(env, ref) {
 
 
 function getReferenceDepth(env, ref) {
-  return env.open(ref, (error, meta) => (
-    error
-      ? 0
-      : 1 + getReferenceDepth(env, meta.parent)));
+  return env.open(ref, (error, meta) => {
+    if (error) return 0;
+    if (ref === meta.parent) return Infinity;
+    return 1 + getReferenceDepth(env, meta.parent);
+  })
 }
 
 test(() => {
