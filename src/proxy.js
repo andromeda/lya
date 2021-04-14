@@ -145,8 +145,6 @@ function createProxySetHandler(env) {
       return true;
     }
 
-    console.log('WRITE',name)
-
     return open(target, (error, targetMetadata) => {
       targetMetadata.name = targetMetadata.name || inferReferenceName(target);
 
