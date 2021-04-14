@@ -76,7 +76,6 @@ const help = () => {
 const splitCsv = (a) => a.split(',').map((s) => s.trim());
 const splitCsvPaths = (a) => splitCsv(a).map((s) => path.resolve(__dirname, s));
 
-// const { fstat } = require('fs');
 const template = {
   // Types
   '--help': Boolean,
