@@ -15,7 +15,7 @@ module.exports = {
 
   configureLya: inTermsOf({
     inputString: false,
-    printCode: false,
+    print: false,
     vmConfig: {
     },
     vmContextConfig: {
