@@ -10,6 +10,7 @@ module.exports = {
   getDotPath,
   getReferenceDepth,
   inScopeOfAnalysis,
+  buildAbbreviatedDotPath,
 };
 
 const {configureLya} = require('./config.js');
@@ -77,13 +78,19 @@ function setCurrentModule(env, module) {
 
 
 function getDotPath(env, ref) {
-  return env.open(ref, (error, { parent, name }) => {
+  return env.open(ref, (error, { parent, name, isGlobal }) => {
     if (error) throw error;
 
-    return (parent && parent !== global && parent !== ref && !(parent instanceof Module))
+    return (parent && parent !== global && parent !== ref && !isGlobal && !(parent instanceof Module))
       ? getDotPath(env, parent) + '.' + name
       : name;
   });
+}
+
+function buildAbbreviatedDotPath(env, ref, prop) {
+  const suffix = prop ? '.' + prop.toString() : '';
+
+  return (getDotPath(env, ref) + suffix).replace(/^global\./, '');
 }
 
 

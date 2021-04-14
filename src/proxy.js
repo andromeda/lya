@@ -20,7 +20,7 @@ const {
   createLyaState,
   setCurrentModule,
   getReferenceDepth,
-  getDotPath,
+  buildAbbreviatedDotPath,
   inferReferenceName,
   inScopeOfAnalysis,
 } = require('./state.js');
@@ -102,8 +102,6 @@ function createProxyGetHandler(env, typeClass) {
       targetMetadata.name = targetMetadata.name || inferReferenceName(target);
 
       return open(val, function handleValueMetadata(error, valueMetadata) {
-        if (error) return val; // This captures literals, null, undefined, etc.
-
         valueMetadata.parent = target;
         valueMetadata.name = valueMetadata.name || name.toString();
         valueMetadata.initialOccurringModule = (
@@ -116,7 +114,7 @@ function createProxyGetHandler(env, typeClass) {
         hook(env, onRead)({
           target,
           name,
-          nameToStore: getDotPath(env, target) + '.' + valueMetadata.name,
+          nameToStore: buildAbbreviatedDotPath(env, target, valueMetadata.name),
           currentModule: currentModule.filename,
           typeClass,
         });
@@ -147,6 +145,8 @@ function createProxySetHandler(env) {
       return true;
     }
 
+    console.log('WRITE',name)
+
     return open(target, (error, targetMetadata) => {
       targetMetadata.name = targetMetadata.name || inferReferenceName(target);
 
@@ -156,7 +156,7 @@ function createProxySetHandler(env) {
         value,
         currentModule: currentModule.filename,
         parentName: open(targetMetadata.parent, (e, m) => m.name),
-        nameToStore: getDotPath(env, target) + '.' + name.toString(),
+        nameToStore: buildAbbreviatedDotPath(env, target, name),
       });
 
       return Reflect.set(target, name, value);
@@ -167,16 +167,21 @@ function createProxySetHandler(env) {
 
 function createProxyHasHandler(env) {
   return proxyBoundary(env, function has(target, prop) {
-    const { currentModule, config: { hooks: { onHas } } } = env;
+    const { open, currentModule, config: { hooks: { onHas } } } = env;
+    const result = Reflect.has(target, prop);
 
-    hook(env, onHas)({
-      target,
-      prop,
-      currentName: currentModule.filename,
-      nameToStore: getDotPath(env, target) + '.' + prop.toString(),
+    return open(target, (error, targetMetadata) => {
+      targetMetadata.name = targetMetadata.name || inferReferenceName(target);
+
+      hook(env, onHas)({
+        target,
+        prop,
+        currentModule: currentModule.filename,
+        nameToStore: buildAbbreviatedDotPath(env, target, prop),
+      });
+
+      return result;
     });
-
-    return Reflect.has(target, prop);
   });
 }
 
@@ -188,8 +193,8 @@ function createProxyConstructHandler(env) {
     hook(env, onConstruct)({
       target,
       args,
-      currentName: currentModule.filename,
-      nameToStore: getDotPath(env, target),
+      currentModule: currentModule.filename,
+      nameToStore: buildAbbreviatedDotPath(env, target),
     });
 
     return Reflect.construct(target, args, newTarget);
@@ -254,7 +259,7 @@ function createProxyApplyHandler(env, typeClass) {
       thisArg,
       argumentsList,
       name: target.name,
-      nameToStore: getDotPath(env, target),
+      nameToStore: buildAbbreviatedDotPath(env, target),
       currentModule: currentModule.filename,
       declareModule: initialOccurringModule.filename,
       typeClass,
@@ -349,6 +354,9 @@ test(() => {
 
 function shouldProxyTarget(env, typeClass, referenceDepth, target, name) {
   const { config: { depth, context, fields } } = env;
+
+  if (target === global && name === 'global')
+    return true;
 
   const desc = Object.getOwnPropertyDescriptor(target, name);
 
