@@ -51,55 +51,38 @@ function postprocess(env, callbackResult) {
 }
 
 
-/*
-A template for a CommonJS module that wraps another.  The intent is to
-control global- and module-level bindings (because hacking around
-vm.runIn* is a nightmare).
 
-Invariant: __lya exists in the global scope.
-*/
-const INSTRUMENTED_MODULE = `
-(function inGlobalShadow(global, __this, __cjsApply, __cjsArgs) {
-$GLOBAL_SHADOWS
-  return __cjsApply($USER_CJS, __this, __cjsArgs);
-})(__lya.globalProxy, this, __lya.cjsApply, arguments);
-`;
-
-
-// The strings used to wrap modules are cached using a closure.  If
-// you want to use a different configuration, then call
-// overrideModuleWrap() with different property values.
-//
 const originalWrap = Module.wrap.bind(Module);
 
 function overrideModuleWrap(env) {
-  const { hooks: { sourceTransform }, fields } = env.config;
+  const { hooks: { sourceTransform }, fields, enableWith } = env.config;
 
   return function wrap(script) {
     const commentedOutShebang = script.replace(/^\s*#!/, '//#!');
     const userTransform = sourceTransform(commentedOutShebang, null);
-    const wrapped = originalWrap(userTransform);
+    const withWithWrap = enableWith ? `with (global) {\n${userTransform}\n}` : userTransform;
+    const wrapped = originalWrap(withWithWrap);
+    const cjsFunctionExpression = wrapped[wrapped.length - 1] === ';' ? wrapped.slice(0, -1) : wrapped;
 
-    // We wrap the module again, such that Lya controls the outer
-    // module and therefore the user's module.
-    const out = originalWrap(
-      INSTRUMENTED_MODULE
-        .replace('$GLOBAL_SHADOWS',
-                 () => Object
-                 .getOwnPropertyNames(global)
-                 .filter((n) => n !== 'global' && state.inScopeOfAnalysis(fields, n))
-                 .map((n) => `  var ${n}=global['${n}'];`)
-                 .join('\n'))
-        .replace('$USER_CJS',
-                 () => (wrapped[wrapped.length - 1] === ';'
-                        ? wrapped.slice(0, -1)
-                        : wrapped)));
-    
+    const globalShadows =
+          Object
+          .getOwnPropertyNames(global)
+          .filter((n) => n !== 'global' && state.inScopeOfAnalysis(fields, n))
+          .map((n) => `  var ${n}=global['${n}'];`)
+          .join('\n');
+
     global.__lya = {
       cjsApply: cjsApply.bind(null, env),
       globalProxy: equip(env, global, IDENTIFIER_CLASSIFICATIONS.NODE_GLOBALS, (e, p) => p),
     };
-    
+
+    const out = originalWrap([
+      `(function inGlobalShadow(global, __this, __cjsApply, __cjsArgs) {`,
+      globalShadows,
+      `  return __cjsApply(${cjsFunctionExpression}, __this, __cjsArgs);`,
+      `})(__lya.globalProxy, this, __lya.cjsApply, arguments);`,
+    ].join('\n'));
+
     return out;
   };
 }

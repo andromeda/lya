@@ -25,6 +25,7 @@ lya <fl> [hpVvvv] [a=<a.js>] [d=<n>] [{module, context, prop}-{include, exclude}
   -r,   --rules <b.json>:     File/path to enforcement file
   -p,   --print [<out, err>]: Stream to output results (defaults to file)
   -o,   --only-prologue:      Print only the config prologue
+  -w,   --with:               Disable 'with' functionality
 
   --module-exclude <m>:       Comma-separated list of module IDs (absolute fs paths) to be excluded from the analysis
   --module-include <m>:       Comma-separated list of module IDs (absolute fs paths) to be included (assumes module-exclude='*')
@@ -88,6 +89,7 @@ const template = {
   '--file': String,
   '--rules': String,
   '--only-prologue': Boolean,
+  '--enable-with': Boolean,
 
   '--module-exclude': String,
   '--module-include': String,
@@ -107,6 +109,7 @@ const template = {
   '-f': '--file',
   '-r': '--rules',
   '-o': '--only-prologue',
+  '-w': '--with',
 };
 
 
@@ -188,6 +191,10 @@ function collectArguments() {
   if (args['--rules']) {
     conf.rules = path.resolve(process.cwd(), args['--rules']);
     // TODO this should be the same if loading results
+  }
+
+  if (args['--with']) {
+    conf.enableWith = false;
   }
 
   if (args['--module-include']) {

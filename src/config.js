@@ -25,7 +25,7 @@ module.exports = {
       },
     },
     depth: 3,
-    enableWith: false,
+    enableWith: true,
     context: {
       include: Object.keys(IDENTIFIER_CLASSIFICATIONS).map((k) => IDENTIFIER_CLASSIFICATIONS[k]),
       exclude: [],
