@@ -102,7 +102,7 @@ function createProxyGetHandler(env, typeClass) {
       targetMetadata.name = targetMetadata.name || inferReferenceName(target);
 
       return open(val, function handleValueMetadata(error, valueMetadata) {
-        valueMetadata.parent = target;
+        valueMetadata.parent = val === target ? null : target;
         valueMetadata.name = valueMetadata.name || name.toString();
         valueMetadata.initialOccurringModule = (
           valueMetadata.initialOccurringModule || env.currentModule
