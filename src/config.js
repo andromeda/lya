@@ -16,14 +16,6 @@ module.exports = {
   configureLya: inTermsOf({
     inputString: false,
     print: false,
-    vmConfig: {
-    },
-    vmContextConfig: {
-      codeGeneration: {
-        strings: true,
-        wasm: true,
-      },
-    },
     depth: 3,
     enableWith: true,
     context: {
