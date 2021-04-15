@@ -15,7 +15,6 @@ module.exports = {
 
 const {configureLya} = require('./config.js');
 const {createReferenceMetadataStore} = require('./metadata.js');
-const {elementOf} = require('./container-type.js');
 const {test, assert} = require('./test.js');
 const Module = require('module');
 
@@ -38,8 +37,8 @@ function createLyaState(...configs) {
 
 function inScopeOfAnalysis({include, exclude}, element) {
   return include.length > 0
-    ? elementOf(include, element)
-    : !elementOf(exclude, element);
+    ? include.indexOf(element) > -1
+    : exclude.indexOf(element) === -1;
 }
 
 function inferReferenceName(variant) {
