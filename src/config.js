@@ -1,10 +1,12 @@
 const fs = require('fs');
 const path = require('path');
 
-const {noop, identity} = require('./functions.js');
 const {assert, test} = require('./test.js');
 const {merge} = require('./container-type.js');
 const {IDENTIFIER_CLASSIFICATIONS} = require('./taxonomy.js');
+
+const identity = v => v;
+const noop = () => {};
 
 module.exports = {
   preset: findPresets(path.join(__dirname, 'analysis')),
