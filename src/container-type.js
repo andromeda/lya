@@ -1,7 +1,6 @@
 module.exports = {
   callWithOwnValues,
   deepClone,
-  coerceMap,
   elementOf,
   isObject,
   merge,
@@ -9,7 +8,6 @@ module.exports = {
 };
 
 const {assertDeepEqual, assert, test} = require('./test.js');
-const {identity, noop} = require('./functions.js');
 const deepmerge = require('deepmerge');
 
 function merge(...args) {
@@ -194,26 +192,3 @@ test(() => {
   assert(!elementOf(map, notPresent),
       'Fail to find element in Map');
 });
-
-
-function coerceMap(iterable, {weak, makeKey = identity, makeValue = noop}) {
-  return Array.from(iterable).reduce((reduction, el) =>
-    (reduction.set(makeKey(el), makeValue(el)), reduction),
-  new (weak ? WeakMap : Map)());
-}
-
-test(() => {
-  const actual = coerceMap(['a', 'b', 'c'], {
-    weak: false,
-    makeValue: (s) => s.toUpperCase(),
-  });
-
-  assert(actual instanceof Map,
-      'Produce a Map by default');
-
-  assert(actual.get('a') === 'A' &&
-         actual.get('b') === 'B' &&
-         actual.get('c') === 'C',
-         'Allow user-defined values for keys');
-});
-
