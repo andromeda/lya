@@ -18,6 +18,9 @@ Benefits:
 module.exports = {
   assert,
   assertDeepEqual,
+  assertNoError,
+  assertError,
+  assertAnyError,
   allege,
   equal,
   test,
@@ -29,6 +32,29 @@ function assert(bool, message = '') {
   allege(bool, message);
   if (!bool) throw new Error('Assertion failed.');
 }
+
+function assertNoError(thunk, message) {
+  try {
+    thunk();
+    assert(true, message);
+  } catch (e) {
+    assert(false, message + '\n' + e.stack);
+  }
+}
+
+function assertError(isCorrectError, thunk, message) {
+  try {
+    thunk();
+    assert(false, message);
+  } catch (e) {
+    assert(isCorrectError(e), message);
+  }
+}
+
+function assertAnyError(thunk, message) {
+  assertError(() => true, thunk, message);
+}
+
 
 function assertDeepEqual(actual, expected, message = '') {
   const bool = equal(actual, expected);
