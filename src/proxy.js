@@ -67,23 +67,14 @@ function proxyBoundary(env, f) {
 }
 
 
-const _cache = {};
 function createProxyHandlerObject(env, typeClass) {
-  if (!_cache[env]) {
-    _cache[env] = {};
-  }
-
-  if (!_cache[env][typeClass]) {
-    _cache[env][typeClass] = {
-      get: createProxyGetHandler(env, typeClass),
-      has: createProxyHasHandler(env, typeClass),
-      set: createProxySetHandler(env, typeClass),
-      apply: createProxyApplyHandler(env, typeClass),
-      construct: createProxyConstructHandler(env, typeClass),
-    };
-  }
-
-  return _cache[env][typeClass];
+  return {
+    get: createProxyGetHandler(env, typeClass),
+    has: createProxyHasHandler(env, typeClass),
+    set: createProxySetHandler(env, typeClass),
+    apply: createProxyApplyHandler(env, typeClass),
+    construct: createProxyConstructHandler(env, typeClass),
+  };
 }
 
 function createProxyGetHandler(env, typeClass) {
