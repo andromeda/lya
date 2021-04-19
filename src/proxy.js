@@ -153,21 +153,77 @@ function createProxySetHandler(env) {
   });
 }
 
+const onReadFalsePositives = new Set(
+  Object.getOwnPropertyNames(global)
+        .concat(require('./default-names.json').locals.node));
 
-function createProxyHasHandler(env) {
+function createProxyHasHandler(env, typeClass) {
   return proxyBoundary(env, function has(target, prop) {
-    const { open, currentModule, config: { hooks: { onHas } } } = env;
+    const {
+      open,
+      currentModule,
+      config: {
+        enableWith,
+        hooks: {
+          onHas,
+          onWrite,
+        },
+      },
+      queue,
+    } = env;
+
     const result = Reflect.has(target, prop);
 
     return open(target, (error, targetMetadata) => {
       targetMetadata.name = targetMetadata.name || inferReferenceName(target);
+      const name = prop.toString()
+      const nameToStore = buildAbbreviatedDotPath(env, target, name);
 
       hook(env, onHas)({
         target,
         prop,
         currentModule: currentModule.filename,
-        nameToStore: buildAbbreviatedDotPath(env, target, prop),
+        nameToStore,
       });
+
+      // Special case: unprefixed global accesses are detected here if
+      // `enableWith` is on, but we cannot capture those using the
+      // set and get handlers.  Trigger onRead and onWrite if there are
+      // indicators of user-defined interactions with the global object.
+      if (enableWith && target === global) {
+        if (result && !onReadFalsePositives.has(name)) {
+          // The property exists in the global object, and does not
+          // appear to be a well-known identifier or stringified
+          // property name. Count it as a read.
+
+          // TODO: What should the receiver argument be?
+          createProxyGetHandler(env, typeClass)(target, prop);
+        } else if (name !== 'global') {
+          // The property is not in the global object yet.  We can't
+          // know at this point if the user intends to write to the
+          // global object. Defer drawing that conclusion until later
+          // in the analysis. If the property appears then, we know it
+          // was because of a write.
+          queue.push(() => {
+            const itShowedUp = Reflect.has(target, prop);
+
+            if (itShowedUp) {
+              open(target, (error, targetMetadata) => {
+                targetMetadata.name = targetMetadata.name || inferReferenceName(target);
+
+                hook(env, onWrite)({
+                  target,
+                  name: prop.toString(),
+                  value: target[prop],
+                  currentModule: currentModule.filename,
+                  parentName: open(targetMetadata.parent, (e, m) => m.name),
+                  nameToStore,
+                });
+              });
+            }
+          });
+        }
+      }
 
       return result;
     });

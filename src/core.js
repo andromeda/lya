@@ -123,6 +123,10 @@ function cjsApply(env, cjsFn, thisArg, cjsArgs) {
                 ]))
         : applyCommonJs(cjsArgs);
 
+  // Clear queue of deferred functions to handle any concerns that the
+  // hooks could not address immediately.
+  for (let q = env.queue.shift(); q; q = env.queue.shift()) q();
+
   state.setCurrentModule(env, priorModule);
 
   return value;
@@ -234,7 +238,7 @@ test(() => {
   const libModule = '/tmp/dependency.js';
   const relativePath = './_/../dependency.js';
 
-  fs.writeFileSync(libModule, 'global.u = 1; exports.a = 1');
+  fs.writeFileSync(libModule, 'global.u = 1; x = 9; exports.a = 1');
   fs.writeFileSync(mainModule, `module.exports = require('${relativePath}').a + global.u`);
 
   const logs = {
@@ -285,7 +289,11 @@ test(() => {
            mainWriteInfo.value === 2,
            'Detect write to main module.exports');
 
-    const [libGlobalWriteInfo, libExportWriteInfo] = logs[libModule].writes;
+    const [
+      libGlobalWriteInfo,
+      libExportWriteInfo,
+      libUnprefixedGlobalWriteInfo,
+    ] = logs[libModule].writes;
 
     assert(typeof libGlobalWriteInfo === 'object' &&
            libGlobalWriteInfo.name === 'u' &&
@@ -298,6 +306,12 @@ test(() => {
            libExportWriteInfo.nameToStore === 'exports.a' &&
            libExportWriteInfo.value === 1,
            'Detect write to dependency exports');
+
+    assert(typeof libUnprefixedGlobalWriteInfo === 'object' &&
+           libUnprefixedGlobalWriteInfo.name === 'x' &&
+           libUnprefixedGlobalWriteInfo.nameToStore === 'x' &&
+           libUnprefixedGlobalWriteInfo.value === 9,
+           'Detect unprefixed write to global `x`');
   });
 });
 

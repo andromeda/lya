@@ -32,6 +32,9 @@ function createLyaState(...configs) {
 
     // User-defined
     results: {},
+
+    // Deferred operations
+    queue: [],
   };
 }
 
