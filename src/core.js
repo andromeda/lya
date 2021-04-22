@@ -70,7 +70,11 @@ function overrideModuleWrap(env) {
     const globalShadows =
           Object
           .getOwnPropertyNames(global)
-          .filter((n) => n !== 'global' && state.inScopeOfAnalysis(fields, n))
+          .filter((n) => (
+              n !== 'global' &&
+              state.inScopeOfAnalysis(fields, n) &&
+              /^[_a-z][_0-9a-z]$/i.test(n)
+          ))
           .map((n) => `  var ${n}=global['${n}'];`)
           .join('\n');
 
