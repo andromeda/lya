@@ -53,7 +53,22 @@ function equip(env, obj, handlerVariant, cb = (e, p) => { if (e) throw e; return
 // User hooks should not fire while Lya is instrumenting a module.
 function hook(env, f) {
   return function () {
-    return global.__lya || f.apply(null, arguments);
+    const {nameToStore: name} = arguments[0];
+
+    const isWellKnown = (
+      typeof name === 'string' && (
+        name === 'module' ||
+        name === 'module.filename' ||
+        name === 'global' ||
+        name === 'global.global' ||
+        name.match(/Symbol\(/)
+      )
+    );
+
+    const instrumentationExists = Boolean(global.__lya);
+
+    if (!instrumentationExists && !isWellKnown)
+      return f.apply(null, arguments);
   };
 }
 
