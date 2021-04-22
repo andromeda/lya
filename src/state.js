@@ -80,10 +80,10 @@ function setCurrentModule(env, module) {
 
 
 function getDotPath(env, ref) {
-  return env.open(ref, (error, { parent, name, isGlobal }) => {
+  return env.open(ref, (error, { parent, name }) => {
     if (error) throw error;
 
-    return (parent && parent !== global && parent !== ref && !isGlobal && !(parent instanceof Module))
+    return (parent && parent !== ref && !(parent instanceof Module))
       ? getDotPath(env, parent) + '.' + name
       : name;
   });

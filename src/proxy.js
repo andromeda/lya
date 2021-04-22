@@ -192,13 +192,12 @@ function createProxyHasHandler(env, typeClass) {
     return open(target, (error, targetMetadata) => {
       targetMetadata.name = targetMetadata.name || inferReferenceName(target);
       const name = prop.toString()
-      const nameToStore = buildAbbreviatedDotPath(env, target, name);
 
       hook(env, onHas)({
         target,
         prop,
         currentModule: currentModule.filename,
-        nameToStore,
+        nameToStore: buildAbbreviatedDotPath(env, target, name),
       });
 
       // Special case: unprefixed global accesses are detected here if
@@ -213,7 +212,7 @@ function createProxyHasHandler(env, typeClass) {
 
           // TODO: What should the receiver argument be?
           createProxyGetHandler(env, typeClass)(target, prop);
-        } else if (name !== 'global') {
+        } else if (!result && name !== 'global') {
           // The property is not in the global object yet.  We can't
           // know at this point if the user intends to write to the
           // global object. Defer drawing that conclusion until later
@@ -225,14 +224,18 @@ function createProxyHasHandler(env, typeClass) {
             if (itShowedUp) {
               open(target, (error, targetMetadata) => {
                 targetMetadata.name = targetMetadata.name || inferReferenceName(target);
-
-                hook(env, onWrite)({
-                  target,
-                  name: prop.toString(),
-                  value: target[prop],
-                  currentModule: currentModule.filename,
-                  parentName: open(targetMetadata.parent, (e, m) => m.name),
-                  nameToStore,
+                const value = target[prop];
+                open(value, (error, valueMetadata) => {
+                  valueMetadata.name = valueMetadata.name || name;
+                  valueMetadata.parent = target;
+                  hook(env, onWrite)({
+                    target,
+                    name,
+                    value,
+                    currentModule: currentModule.filename,
+                    parentName: targetMetadata.name,
+                    nameToStore: name
+                  });
                 });
               });
             }
