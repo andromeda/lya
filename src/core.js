@@ -26,9 +26,13 @@ const { createHookedRequireProxy, equip } = require('./proxy.js');
 function callWithLya(env, f) {
   return callWithOwnValues(Module, { wrap: overrideModuleWrap(env) }, () => {
     env.timerStart = process.hrtime();
-    const result = f();
-    postprocess(env, result);
-    return result;
+    try {
+      const result = f();
+      postprocess(env, result);
+      return result;
+    } catch (e) {
+      env.config.hooks.onError(e);
+    }
   });
 }
 
