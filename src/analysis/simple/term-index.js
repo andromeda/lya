@@ -46,7 +46,7 @@ module.exports = (lya) => {
         filter(noStop).reduce(freq, {});
   const idf = (numDocs, dted) => Math.log(numDocs / (1 + dted)) / Math.log(10);
 
-  const onExit = (env, { printIfAble }) => {
+  const onExit = ({ printIfAble }) => {
     printIfAble();
   };
   

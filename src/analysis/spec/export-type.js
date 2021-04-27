@@ -29,7 +29,7 @@ module.exports = (lya) => {
                        types[info.nameToStore]);
   };
 
-  const onExit = (env, { saveIfAble, printIfAble }) => {
+  const onExit = ({ saveIfAble, printIfAble }) => {
     saveIfAble();
     printIfAble();
   };

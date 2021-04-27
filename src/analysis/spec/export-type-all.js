@@ -37,7 +37,7 @@ module.exports = (lya) => {
                        outputType);
   };
 
-  const onExit = (env, { saveIfAble, printIfAble }) => {
+  const onExit = ({ saveIfAble, printIfAble }) => {
     saveIfAble();
     printIfAble();
   };

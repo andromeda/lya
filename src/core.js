@@ -40,7 +40,7 @@ function postprocess(env, callbackResult) {
 
   const stringifiedResults = JSON.stringify(results, null, 2);
 
-  onExit(env, {
+  onExit({
     value: callbackResult,
     saveIfAble: () => saveResults && fs.writeFileSync(saveResults, stringifiedResults, 'utf-8'),
     printIfAble: () => print && console.log(stringifiedResults),

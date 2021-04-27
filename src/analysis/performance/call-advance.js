@@ -32,7 +32,7 @@ module.exports = (lya) => {
     storeTime.set(info.target, process.hrtime());
   };
 
-  const onExit = (env, { saveIfAble, printIfAble }) => {
+  const onExit = ({ saveIfAble, printIfAble }) => {
     env.results = normalResult(env.results);
     saveIfAble();
     printIfAble();

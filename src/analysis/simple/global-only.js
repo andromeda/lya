@@ -22,7 +22,7 @@ module.exports = (lya) => {
                        info.nameToStore, ['r', 'x']);
   };
 
-  const onExit = (env, { reportTimeIfAble, saveIfAble }) => {
+  const onExit = ({ reportTimeIfAble, saveIfAble }) => {
     reportTimeIfAble();
     saveIfAble();
   };

@@ -29,7 +29,7 @@ module.exports = (lya) => {
     // NOTE: And the other hook here
   };
 
-  const onExit = (env, { saveIfAble, reportTimeIfAble }) => {
+  const onExit = ({ saveIfAble, reportTimeIfAble }) => {
     saveIfAble();
     reportTimeIfAble();
   };

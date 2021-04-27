@@ -56,7 +56,7 @@ module.exports = (lya) => {
     updateAnalysisData(info.currentName, info.nameToStore);
   };
 
-  const onExit = (env, { saveIfAble, printIfAble }) => {
+  const onExit = ({ saveIfAble, printIfAble }) => {
     saveIfAble();
     printIfAble();
   };

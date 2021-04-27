@@ -66,7 +66,7 @@ module.exports = (lya) => {
     currentFunction.pop();
   };
 
-  const onExit = (env, { saveIfAble, printIfAble }) => {
+  const onExit = ({ saveIfAble, printIfAble }) => {
     saveIfAble();
     printIfAble();
   };

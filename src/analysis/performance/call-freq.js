@@ -15,7 +15,7 @@ module.exports = (lya) => {
   };
 
   // onExit (toSave == place to save the result) --maybe make it module-local?
-  const onExit = (env, { saveIfAble, printIfAble }) => {
+  const onExit = ({ saveIfAble, printIfAble }) => {
     saveIfAble();
     printIfAble();
   };
