@@ -21,6 +21,7 @@ const path = require('path');
 const Module = require('module');
 const { callWithOwnValues } = require('./container-type.js');
 const { createHookedRequireProxy, equip } = require('./proxy.js');
+const { ObjectGetOwnPropertyNames } = require('./shim.js');
 
 
 function callWithLya(env, f) {
@@ -72,8 +73,7 @@ function overrideModuleWrap(env) {
     const cjsFunctionExpression = wrapped[wrapped.length - 1] === ';' ? wrapped.slice(0, -1) : wrapped;
 
     const globalShadows =
-          Object
-          .getOwnPropertyNames(global)
+          ObjectGetOwnPropertyNames(global)
           .filter((n) => (
               n !== 'global' &&
               state.inScopeOfAnalysis(fields, n) &&

@@ -3,11 +3,18 @@ module.exports = {
   deepClone,
   isObject,
   merge,
-  shallowMerge: (a, b) => Object.assign({}, a, b),
+  shallowMerge: (a, b) => ObjectAssign({}, a, b),
 };
 
 const {assertDeepEqual, assert, test} = require('./test.js');
 const deepmerge = require('deepmerge');
+
+const {
+  ObjectAssign,
+  ObjectDefineProperty,
+  ObjectGetOwnPropertyNames,
+  ObjectGetOwnPropertyDescriptor,
+} = require('./shim.js');
 
 function merge(...args) {
   if (args.length === 1) {
@@ -36,7 +43,7 @@ test(() => {
 });
 
 function callWithOwnPropertyValue(obj, name, value, f) {
-  const defined = Object.getOwnPropertyDescriptor(obj, name);
+  const defined = ObjectGetOwnPropertyDescriptor(obj, name);
   const original = obj[name];
 
   const restore = () => {
@@ -107,16 +114,16 @@ function deepClone(variant) {
   } else {
     const obj = variant;
     const output = {};
-    const names = Object.getOwnPropertyNames(obj);
+    const names = ObjectGetOwnPropertyNames(obj);
 
     for (const name of names) {
-      const desc = Object.getOwnPropertyDescriptor(obj, name);
+      const desc = ObjectGetOwnPropertyDescriptor(obj, name);
 
       if (desc.value && typeof desc.value === 'object' && desc.enumerable) {
         desc.value = deepClone(obj[name]);
       }
 
-      Object.defineProperty(output, name, desc);
+      ObjectDefineProperty(output, name, desc);
     }
 
     return output;

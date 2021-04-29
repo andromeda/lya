@@ -25,6 +25,11 @@ const {
   inScopeOfAnalysis,
 } = require('./state.js');
 
+const {
+  ObjectAssign,
+  ObjectGetOwnPropertyNames,
+  ObjectGetOwnPropertyDescriptor
+} = require('./shim.js');
 
 function equip(env, obj, handlerVariant, cb = (e, p) => { if (e) throw e; return p; }) {
   const [error, { proxy: alreadyMade, name }] = env.open(obj, (e,m) => [e,m]);
@@ -174,8 +179,8 @@ function createProxySetHandler(env) {
 }
 
 const onReadFalsePositives = new Set(
-  Object.getOwnPropertyNames(global)
-        .concat(require('./default-names.json').locals.node));
+  ObjectGetOwnPropertyNames(global)
+    .concat(require('./default-names.json').locals.node));
 
 function createProxyHasHandler(env, typeClass) {
   return proxyBoundary(env, function has(target, prop) {
@@ -402,7 +407,7 @@ test(() => {
 
   setCurrentModule(env, module);
 
-  env.open(proxyTarget, (e,m) => Object.assign(m, {
+  env.open(proxyTarget, (e,m) => ObjectAssign(m, {
     name: 'alias',
     initialOccurringModule: { filename: 'D' },
   }));
@@ -426,7 +431,7 @@ function shouldProxyTarget(env, typeClass, referenceDepth, target, name) {
   if (target === global && name === 'global')
     return true;
 
-  const desc = Object.getOwnPropertyDescriptor(target, name);
+  const desc = ObjectGetOwnPropertyDescriptor(target, name);
 
   const userWantsAProxy = (
     referenceDepth <= depth &&

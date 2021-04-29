@@ -4,6 +4,7 @@ const path = require('path');
 const {assert, test} = require('./test.js');
 const {merge} = require('./container-type.js');
 const {IDENTIFIER_CLASSIFICATIONS} = require('./taxonomy.js');
+const {ObjectAssign,ObjectKeys} = require('./shim.js');
 
 const identity = v => v;
 const noop = () => {};
@@ -21,7 +22,7 @@ module.exports = {
     depth: 3,
     enableWith: true,
     context: {
-      include: Object.keys(IDENTIFIER_CLASSIFICATIONS).map((k) => IDENTIFIER_CLASSIFICATIONS[k]),
+      include: ObjectKeys(IDENTIFIER_CLASSIFICATIONS).map((k) => IDENTIFIER_CLASSIFICATIONS[k]),
       exclude: [],
     },
     hooks: {
@@ -61,7 +62,7 @@ function findPresets(presetDirectory, output = {}) {
         if (fs.lstatSync(completePath).isDirectory()) {
           return findPresets(completePath, reduction);
         } else {
-          return Object.assign(reduction, {
+          return ObjectAssign(reduction, {
             [makePresetName(completePath)]: completePath,
           });
         }

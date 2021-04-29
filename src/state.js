@@ -18,6 +18,11 @@ const {createReferenceMetadataStore} = require('./metadata.js');
 const {test, assert} = require('./test.js');
 const Module = require('module');
 
+const {
+  ObjectAssign,
+  ObjectGetOwnPropertyNames,
+} = require('./shim.js');
+
 // Creates an object used to collect facts from the runtime.
 function createLyaState(...configs) {
   return {
@@ -54,7 +59,7 @@ function inferReferenceName(variant) {
     // which can lead to TypeErrors on implicit string coercion.
     return variant.name.toString();
   } else if (type === 'object' && variant !== null) {
-    for (const k of Object.getOwnPropertyNames(global)) {
+    for (const k of ObjectGetOwnPropertyNames(global)) {
       if (global[k] === variant) {
         return k === 'globalThis'
           ? 'global'
@@ -109,7 +114,7 @@ test(() => {
   const { open } = env;
   const [A, B, C] = [{}, [], {}];
 
-  const assign = data => (e, meta) => Object.assign(meta, data);
+  const assign = data => (e, meta) => ObjectAssign(meta, data);
 
   open(A, assign({ name: 'a', parent: B }))
   open(B, assign({ name: 'b', parent: C }))
