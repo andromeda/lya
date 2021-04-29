@@ -34,6 +34,7 @@ module.exports = {
       onRead: noop,
       onImport: noop,
       onWrite: noop,
+      onProxy: noop,
       onError: (e) => { throw e; },
       sourceTransform: identity,
     },

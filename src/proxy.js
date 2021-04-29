@@ -46,6 +46,11 @@ function equip(env, obj, handlerVariant, cb = (e, p) => { if (e) throw e; return
   env.open(obj, (error, meta) => (meta.proxy = proxy));
   env.open(proxy, (error, meta) => (meta.proxies = name));
 
+  env.config.hooks.onProxy({
+    target: obj,
+    proxy,
+  });
+
   return cb(null, proxy);
 }
 
