@@ -85,16 +85,16 @@ function overrideModuleWrap(env) {
     global.__lya = {
       cjsApply: cjsApply.bind(null, env),
       globalProxy: equip(env, global, IDENTIFIER_CLASSIFICATIONS.NODE_GLOBALS, (e, p) => p),
+      enterModule: (module) => state.setCurrentModule(env, module),
     };
 
-    const out = originalWrap([
+    return originalWrap([
+      '__lya.enterModule(module);',
       `(function inGlobalShadow(global, __this, __cjsApply, __cjsArgs) {`,
       globalShadows,
       `  return __cjsApply(${cjsFunctionExpression}, __this, __cjsArgs);`,
       `})(__lya.globalProxy, this, __lya.cjsApply, arguments);`,
     ].join('\n'));
-
-    return out;
   };
 }
 
@@ -106,8 +106,6 @@ function cjsApply(env, cjsFn, thisArg, cjsArgs) {
   // eslint-disable-next-line no-unused-vars
   const [exports, require, module, __filename, __dirname] = cjsArgs;
   const typeClass = IDENTIFIER_CLASSIFICATIONS.CJS_ARGUMENTS;
-
-  state.setCurrentModule(env, module);
 
   const userWantsAProxy = (
     state.inScopeOfAnalysis(context, typeClass) &&
