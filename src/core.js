@@ -77,7 +77,7 @@ function overrideModuleWrap(env) {
           .filter((n) => (
               n !== 'global' &&
               state.inScopeOfAnalysis(fields, n) &&
-              /^[_a-z][_0-9a-z]$/i.test(n)
+              /^[_a-z][_0-9a-z]+$/i.test(n)
           ))
           .map((n) => `  var ${n}=global['${n}'];`)
           .join('\n');
