@@ -71,7 +71,8 @@ function hook(env, f) {
         name === 'module.filename' ||
         name === 'global' ||
         name === 'global.global' ||
-        name.match(/Symbol\(/)
+        name.match(/Symbol\(/) ||
+        name.match(/\.prototype$/)
       )
     );
 
