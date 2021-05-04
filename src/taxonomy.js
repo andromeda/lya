@@ -27,7 +27,8 @@ module.exports = {
       return target[prop];
     },
     set: () => false,
-  })
+  }),
+  globalNames: new Set(Object.getOwnPropertyNames(global)),
 };
 
 
@@ -55,6 +56,7 @@ const lookup = [
 function classify(k) {
   return (lookup.find(([set,]) => set.has(k)) || [])[1];
 }
+
 
 const { test, assert } = require('./test.js');
 

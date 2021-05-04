@@ -16,6 +16,7 @@ module.exports = {
 const {configureLya} = require('./config.js');
 const {createReferenceMetadataStore} = require('./metadata.js');
 const {test, assert} = require('./test.js');
+const {globalNames} = require('./taxonomy.js');
 const Module = require('module');
 
 const {
@@ -88,16 +89,21 @@ function getDotPath(env, ref) {
   return env.open(ref, (error, { parent, name }) => {
     if (error) throw error;
 
-    return (parent && parent !== ref && !(parent instanceof Module))
-      ? getDotPath(env, parent) + '.' + name
-      : name;
+    if (parent && parent !== ref && !(parent instanceof Module)) {
+      const dotpath = getDotPath(env, parent) + '.' + name;
+
+      return (parent === global && globalNames.has(name))
+        ? dotpath.replace(/^global\./, '')
+        : dotpath;
+    } else return name;
   });
 }
 
 function buildAbbreviatedDotPath(env, ref, prop) {
-  const suffix = prop ? '.' + prop.toString() : '';
-
-  return (getDotPath(env, ref) + suffix).replace(/^global\./, '');
+  const name = prop ? prop.toString() : '';
+  return (ref === global && globalNames.has(name))
+    ? name
+    : getDotPath(env, ref) + (name ? '.' + name : '');
 }
 
 

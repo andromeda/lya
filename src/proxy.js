@@ -15,7 +15,7 @@ module.exports = {
 
 const {withCatch} = require('./control.js');
 const {assert, assertDeepEqual, test} = require('./test.js');
-const {IDENTIFIER_CLASSIFICATIONS} = require('./taxonomy.js');
+const {IDENTIFIER_CLASSIFICATIONS, globalNames} = require('./taxonomy.js');
 const {
   createLyaState,
   setCurrentModule,
@@ -27,7 +27,6 @@ const {
 
 const {
   ObjectAssign,
-  ObjectGetOwnPropertyNames,
   ObjectGetOwnPropertyDescriptor
 } = require('./shim.js');
 
@@ -103,7 +102,9 @@ function createProxyHandlerObject(env, typeClass) {
   };
 }
 
-function createProxyGetHandler(env, typeClass) {
+function createProxyGetHandler(env, typeClass, {
+  overrideNameToStore = v => v,
+} = {}) {
   return proxyBoundary(env, function get(target, name, receiver) {
     const { currentModule, open, config: { hooks: { onRead } } } = env;
 
@@ -131,7 +132,8 @@ function createProxyGetHandler(env, typeClass) {
         hook(env, onRead)({
           target,
           name,
-          nameToStore: buildAbbreviatedDotPath(env, target, valueMetadata.name),
+          nameToStore: overrideNameToStore(
+            buildAbbreviatedDotPath(env, target, valueMetadata.name)),
           currentModule: currentModule.filename,
           typeClass,
         });
@@ -179,10 +181,6 @@ function createProxySetHandler(env) {
   });
 }
 
-const onReadFalsePositives = new Set(
-  ObjectGetOwnPropertyNames(global)
-    .concat(require('./default-names.json').locals.node));
-
 function createProxyHasHandler(env, typeClass) {
   return proxyBoundary(env, function has(target, prop) {
     const {
@@ -216,13 +214,15 @@ function createProxyHasHandler(env, typeClass) {
       // set and get handlers.  Trigger onRead and onWrite if there are
       // indicators of user-defined interactions with the global object.
       if (enableWith && target === global) {
-        if (result && !onReadFalsePositives.has(name)) {
+        if (result && !globalNames.has(name)) {
           // The property exists in the global object, and does not
           // appear to be a well-known identifier or stringified
           // property name. Count it as a read.
 
           // TODO: What should the receiver argument be?
-          createProxyGetHandler(env, typeClass)(target, prop);
+          createProxyGetHandler(env, typeClass, {
+            overrideNameToStore: v => v.replace(/^global\./, '')
+          })(target, prop);
         } else if (!result && name !== 'global') {
           // The property is not in the global object yet.  We can't
           // know at this point if the user intends to write to the
