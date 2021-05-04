@@ -179,10 +179,13 @@ function createProxySetHandler(env) {
 
       // Preserve metadata across assignments
       if (!error) {
-        open(target[name], (error, newMeta) =>
-             Object.assign(newMeta, meta, {
-               parent: target,
-             }));
+        open(target[name], (error, newMeta) => {
+          Object.assign(newMeta, meta, {parent: target});
+
+          // Blow away the old proxy. It will need to be recreated.
+          open(newMeta.proxy, (_, meta) => { delete meta.proxies });
+          delete newMeta.proxy;
+        });
       }
 
       return result;
