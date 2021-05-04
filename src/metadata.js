@@ -6,7 +6,7 @@ const {assert, test} = require('./test.js');
 
 function createReferenceMetadataStore() {
   const M = new WeakMap();
-  return (obj, cb) => {
+  return function openMetadata(obj, cb) {
     // .set will fail if the key is incompatible.
     try {
       M.set(obj, M.get(obj) || {})

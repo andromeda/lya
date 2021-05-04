@@ -62,7 +62,7 @@ function equip(env, obj, handlerVariant, cb = (e, p) => { if (e) throw e; return
 
 // User hooks should not fire while Lya is instrumenting a module.
 function hook(env, f) {
-  return function () {
+  return function hookBoundary() {
     const {nameToStore: name} = arguments[0];
 
     const isWellKnown = (
@@ -85,7 +85,7 @@ function hook(env, f) {
 
 // Proxies are only meaningful when modules are under analysis.
 function proxyBoundary(env, f) {
-  return function () {
+  return function proxyBoundary() {
     return env.currentModule
       ? f.apply(this, arguments)
       : Reflect[f.name].apply(Reflect, arguments);
