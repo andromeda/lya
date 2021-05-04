@@ -85,11 +85,9 @@ function overrideModuleWrap(env) {
     global.__lya = {
       cjsApply: cjsApply.bind(null, env),
       globalProxy: equip(env, global, IDENTIFIER_CLASSIFICATIONS.NODE_GLOBALS, (e, p) => p),
-      enterModule: (module) => state.setCurrentModule(env, module),
     };
 
     return originalWrap([
-      '__lya.enterModule(module);',
       `(function inGlobalShadow(global, __this, __cjsApply, __cjsArgs) {`,
       globalShadows,
       `  return __cjsApply(${cjsFunctionExpression}, __this, __cjsArgs);`,
@@ -115,6 +113,7 @@ function cjsApply(env, cjsFn, thisArg, cjsArgs) {
   const applyCommonJs = (args) => {
     // Hide from user code
     delete global.__lya;
+    state.setCurrentModule(env, module);
     return cjsFn.apply(thisArg, args);
   };
 
