@@ -11,6 +11,7 @@ module.exports = {
   getReferenceDepth,
   inScopeOfAnalysis,
   buildAbbreviatedDotPath,
+  findDeclaringModule,
 };
 
 const {configureLya} = require('./config.js');
@@ -74,6 +75,14 @@ function inferReferenceName(variant) {
   }
 }
 
+
+function findDeclaringModule(env, val, meta) {
+  if (!val || val instanceof Module) {
+    meta.initialOccurringModule = val || env.currentModule;
+  } else {
+    env.open(val, (error, { parent }) => findDeclaringModule(env, parent, meta));
+  }
+}
 
 function setCurrentModule(env, module) {
   env.currentModule = module;

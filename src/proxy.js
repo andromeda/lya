@@ -23,6 +23,7 @@ const {
   buildAbbreviatedDotPath,
   inferReferenceName,
   inScopeOfAnalysis,
+  findDeclaringModule,
 } = require('./state.js');
 
 const {
@@ -113,18 +114,14 @@ function createProxyGetHandler(env, typeClass, {
     return open(target, function handleTargetMetadata(error, targetMetadata) {
       if (error) throw error; // Exceptional case being: The target is an object, but we can't know about it?
 
-      targetMetadata.initialOccurringModule = (
-        targetMetadata.initialOccurringModule || env.currentModule
-      );
+      findDeclaringModule(env, target, targetMetadata);
 
       targetMetadata.name = targetMetadata.name || inferReferenceName(target);
 
       return open(val, function handleValueMetadata(error, valueMetadata) {
         valueMetadata.parent = val === target ? null : target;
         valueMetadata.name = valueMetadata.name || name.toString();
-        valueMetadata.initialOccurringModule = (
-          valueMetadata.initialOccurringModule || env.currentModule
-        );
+        valueMetadata.initialOccurringModule = targetMetadata.initialOccurringModule;
 
         const shouldCreateProxy = shouldProxyTarget(
           env, typeClass, getReferenceDepth(env, val), target, name);
@@ -164,8 +161,12 @@ function createProxySetHandler(env) {
       return true;
     }
 
-    return open(target, (error, targetMetadata) => {
+    const [error, meta] = open(target[name], (error, meta) => [error, meta]);
+
+    return open(target, (_, targetMetadata) => {
       targetMetadata.name = targetMetadata.name || inferReferenceName(target);
+
+      const result = Reflect.set(target, name, value);
 
       hook(env, onWrite)({
         target,
@@ -176,7 +177,15 @@ function createProxySetHandler(env) {
         nameToStore: buildAbbreviatedDotPath(env, target, name),
       });
 
-      return Reflect.set(target, name, value);
+      // Preserve metadata across assignments
+      if (!error) {
+        open(target[name], (error, newMeta) =>
+             Object.assign(newMeta, meta, {
+               parent: target,
+             }));
+      }
+
+      return result;
     });
   });
 }
@@ -221,7 +230,7 @@ function createProxyHasHandler(env, typeClass) {
 
           // TODO: What should the receiver argument be?
           createProxyGetHandler(env, typeClass, {
-            overrideNameToStore: v => v.replace(/^global\./, '')
+            overrideNameToStore: v => v.replace(/global\./g, '')
           })(target, prop);
         } else if (!result && name !== 'global') {
           // The property is not in the global object yet.  We can't
@@ -319,12 +328,8 @@ function createProxyApplyHandler(env, typeClass) {
     const { hooks: { onCallPre, onCallPost } } = config;
 
     const { initialOccurringModule } = open(target, (e, functionMetadata) => {
-      functionMetadata.initialOccurringModule = (
-        functionMetadata.initialOccurringModule || env.currentModule
-      );
-
+      findDeclaringModule(env, target, functionMetadata);
       functionMetadata.name = functionMetadata.name || inferReferenceName(target);
-
       return functionMetadata;
     });
 
