@@ -442,7 +442,7 @@ function shouldProxyTarget(env, typeClass, referenceDepth, target, name) {
 
   const userWantsAProxy = (
     referenceDepth <= depth &&
-    inScopeOfAnalysis(context, typeClass) &&
+    (!typeClass || inScopeOfAnalysis(context, typeClass)) &&
     inScopeOfAnalysis(fields, name)
   );
 
