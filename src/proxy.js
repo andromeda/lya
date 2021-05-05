@@ -67,12 +67,10 @@ function hook(env, f) {
 
     const isWellKnown = (
       typeof name === 'string' && (
-        name === 'module' ||
         name === 'module.filename' ||
         name === 'global' ||
         name === 'global.global' ||
-        name.match(/Symbol\(/) ||
-        name.match(/\.prototype$/)
+        name.match(/Symbol\(/)
       )
     );
 
