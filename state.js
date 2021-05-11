@@ -9,19 +9,15 @@ module.exports = {
   popModule,
   peekModule,
   findDeclaringModule,
+  getReferenceDepth,
 };
 
 const Module = require('module');
 
-const identity = v => v;
-const noop = () => {};
-const matchesAll = /(?:)/;
-
-
 // Creates an object used to collect facts from the runtime.
 function createLyaState() {
   return {
-    hook: noop,
+    hook: () => {},
 
     // Manages metadata for references
     open: createMetadataStore(),
@@ -56,7 +52,7 @@ function inferReferenceName(variant) {
     // which can lead to TypeErrors on implicit string coercion.
     return variant.name.toString();
   } else if (type === 'object' && variant !== null) {
-    for (const k of ObjectGetOwnPropertyNames(global)) {
+    for (const k of Object.getOwnPropertyNames(global)) {
       if (global[k] === variant) {
         return k;
       }
