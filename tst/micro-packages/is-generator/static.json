@@ -1,7 +1,0 @@
-{
-  "/home/grigorisntousakis/lya/core/tst/micro-packages/is-generator/_is-generator.js": {
-    "module": "r",
-    "module.exports": "rw",
-    "module.exports.fn": "w"
-  }
-}

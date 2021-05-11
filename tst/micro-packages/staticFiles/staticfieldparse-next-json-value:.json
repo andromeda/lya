@@ -1,8 +1,0 @@
-{
-  "/home/gntousakis/lya/core/tst/micro-packages/parse-next-json-value/_index.js": {
-    "module": "r",
-    "module.exports": "w",
-    "require": "rx",
-    "require('state-based-json-parser')": "irx"
-  }
-}

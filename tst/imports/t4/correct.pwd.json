@@ -1,9 +1,0 @@
-{
-  "PWD_REPLACE/generated.test": [
-    "PWD_REPLACE/main.js"
-  ],  
-  "PWD_REPLACE/main.js": [
-    "fs",
-    "path"
-  ]
-}

@@ -1,7 +1,0 @@
-{
-  "/home/grigorisntousakis/lya/core/tst/sec/serialize_js/poc.js": {
-    "require": "rx",
-    "require('./ser/lib/index.js')": "ir",
-    "require('./ser/lib/index.js').deserialize": "rx"
-  }
-}

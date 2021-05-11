@@ -1,9 +1,0 @@
-{
-  "/home/gntousakis/lya/core/tst/micro-packages/file-size/_index.js": {
-    "Math": "r",
-    "Math.log": "rx",
-    "Math.pow": "rx",
-    "module": "r",
-    "module.exports": "rw"
-  }
-}

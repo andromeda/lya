@@ -1,9 +1,0 @@
-{
-  "/home/gntousakis/lya/core/tst/micro-packages/is-number/_index.js": {
-    "Number": "r",
-    "Number.isFinite": "rx",
-    "isFinite": "rx",
-    "module": "r",
-    "module.exports": "w"
-  }
-}

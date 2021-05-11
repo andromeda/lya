@@ -1,7 +1,0 @@
-{
-  "/home/grigorisntousakis/lya/core/tst/sec/serialize-javascript/poc.js": {
-    "eval": "rx",
-    "require": "rx",
-    "require('./index.js')": "irx"
-  }
-}

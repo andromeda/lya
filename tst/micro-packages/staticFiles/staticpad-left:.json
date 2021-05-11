@@ -1,8 +1,0 @@
-{
-  "/home/gntousakis/lya/core/tst/micro-packages/pad-left/_index.js": {
-    "module": "r",
-    "module.exports": "w",
-    "require": "rx",
-    "require('repeat-string')": "irx"
-  }
-}

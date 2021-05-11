@@ -1,2 +1,0 @@
-Problem on exports.getFileName() results in the wrong directory after use with lya. Possible solution is to redirect the function to module.parent.filename.
-Example in bindings package.

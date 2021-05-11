@@ -1,7 +1,0 @@
-examples/
-test/
-.editorconfig
-.gitattributes
-.gitignore
-.travis.yml
-tags

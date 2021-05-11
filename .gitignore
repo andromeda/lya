@@ -1,14 +1,5 @@
 .*swp
 .idea
 node_modules/
-package-lock.json
-draft.aux
-draft.bbl
-draft.blg
-draft.log
-draft.out
-draft.pdf
-timetest.txt
 .DS_Store
 .nyc_output/
-core/tst/repos/debug/coverage/

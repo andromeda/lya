@@ -1,9 +1,0 @@
-{
-  "/home/gntousakis/lya/core/tst/micro-packages/node-slug/_slug.js": {
-    "RegExp": "rx",
-    "module": "r",
-    "module.exports": "rw",
-    "require": "rx",
-    "require('unicode/category/So')": "ir"
-  }
-}

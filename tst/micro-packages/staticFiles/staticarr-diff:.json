@@ -1,8 +1,0 @@
-{
-  "/home/gntousakis/lya/core/tst/micro-packages/arr-diff/_index.js": {
-    "Array": "r",
-    "Array.isArray": "rx",
-    "module": "r",
-    "module.exports": "w"
-  }
-}

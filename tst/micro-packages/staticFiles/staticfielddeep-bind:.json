@@ -1,9 +1,0 @@
-{
-  "/home/gntousakis/lya/core/tst/micro-packages/deep-bind/_index.js": {
-    "TypeError": "rx",
-    "module": "r",
-    "module.exports": "w",
-    "require": "rx",
-    "require('mixin-deep')": "irx"
-  }
-}

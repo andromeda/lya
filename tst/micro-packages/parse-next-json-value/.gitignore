@@ -1,5 +1,0 @@
-node_modules
-private
-.DS_Store
-.nyc_output
-*.swp

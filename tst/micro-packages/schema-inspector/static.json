@@ -1,8 +1,0 @@
-{
-  "/home/grigoriosntousakis/lya/core/tst/micro-packages/schema-inspector/_index.js": {
-    "module": "r",
-    "module.exports": "w",
-    "require": "rx",
-    "require('./lib/schema-inspector')": "ir"
-  }
-}

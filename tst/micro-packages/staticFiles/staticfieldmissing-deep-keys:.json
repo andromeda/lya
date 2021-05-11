@@ -1,9 +1,0 @@
-{
-  "/home/gntousakis/lya/core/tst/micro-packages/missing-deep-keys/_index.js": {
-    "module": "r",
-    "module.exports": "w",
-    "require": "rx",
-    "require('deep-keys')": "irx",
-    "require('lodash.difference')": "irx"
-  }
-}
