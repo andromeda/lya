@@ -9,6 +9,9 @@
     "fix": "./node_modules/eslint/bin/eslint.js --fix .",
     "test": "node lya.test.js"
   },
+  "bin": {
+    "lya": "./index.js"
+  },
   "pre-commit": [
     "lint"
   ],
