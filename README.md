@@ -1,88 +1,151 @@
-## Library-oriented Dynamic Program Analysis for JavaScript
+## Lya: Library-oriented Dynamic Analysis for Node.js Programs
 
 Mailing lists: [Commits](lya-commits@googlegroups.com) | [Discussion](lya-discuss@googlegroups.com)
 
-## What's Lya?
+Lya is a coarse-grained dynamic analysis framework for Node.js. Use
+Lya to identify and address vulnerabilities, bottlenecks, and errors.
 
-Lya is a coarse-grained dynamic analysis framework that bolts onto a conventional production runtime as a library.
-Coarse-grained means that analyses with less detail than conventional frameworks but operates at a much lower overhead—enabling always-on operation on production environments.
-Despite operating at a coarser-than-typical granularity, it still allows for useful analyses.
-Examples include identifying security vulnerabilities, highlighting performance bottlenecks, and applying corrective actions.
+“Coarse-grained” means that Lya limits analyses code to a lower level
+of detail than alternatives—reducing overhead.
 
-## Who should be interested?
 
-Programmers  interested  in  Lya  fall   under  two  categories.  The  first  is
-programmers who want to  use one of the available analyses  to gain insight into
-their  application.  These  can  install  and configure  Lya  with  an  existing
-analysis—for more information see [how to use lya](#how-to-use-Lya) below.
+## How to Use Lya
 
-The second  is programmers who want  to write their own  analyses, achievable by
-providing a few methods and parameters; in our experience, powerful analyses can
-be expressed in only  a few lines of code—for more info, see  [how to write an
-analysis](#how-to-write-an-analysis) below.
+Lya hooks into CommonJS, so you start an analysis using `require` while
+Lya is active. Everything else is done using JavaScript functions as
+hooks.
 
-## Installation
-
-Lya runs with __Node v8.9.4__ (**FIXME: Add multiple versions to test on CI server**). You can use [nvm (macOS/Linux)](https://github.com/nvm-sh/nvm#installation) 
-to switch Node versions between different projects.
-
-### Option 1: Npm
-```Shell
-npm i @andromeda/lya --save-dev
-```
-
-If you want to install globally, so as to analyzing any program or library in the system, replace `--save-dev` with `-g`.
-
-### Option 2: From source
-```Shell 
-git clone https://github.com/andromeda/lya/
-cd lya
-npm install
-```
-
-### Option 3: From docker image
-```Shell
-docker pull xxxxx
-docker start -i "name of xxxxx"
-```
-
-**FIXME**
-
-## Quick Start
-
-#### How to Use Lya?
-
-One can configure several parameters, including use any of the predefined list of analyses. For example:
+The simplest program uses only the [`onReady`][] hook.
 
 ```JavaScript
-const lya = require("@andromeda/lya");
-const createState = require(lya.preset.ON_OFF);
+const { callWithLya } = require("@andromeda/lya");
 
-const env = createState(lya, {
-  saveResults: require("path").join(__dirname, "dynamic.json"),
-  require,
+callWithLya({
+    onReady: () => require("./analyze-me.js"),
 });
-
-lya.callWithLya(env, (require) => require("./main.js"));
 ```
 
-The configuration above first configures running the `ON_OFF` analysis, and saves the results in `./dynamic.json`. `callWithLya` calls a callback in the context an overridden Node API and `require` function.
+So as long as control remains in `onReady`, all `require` functions
+will dynamically-rewrite code before running it in the current V8
+Context. The rewritten code calls your hooks in advance of the
+program's actual behavior.
 
-Since the callback runs in a modified environment, do not run other code concurrently with that callback. By the time control leaves `callWithLya`, the environment will be restored.
 
-For more configuration options and details, see the [configuration docs](./doc/config.md).
+## How to use Hooks
 
-#### How to Create a New  Analysis?
+Each hook stands alone, but may be called with some of the same
+information.  Pick the ones you need.
 
-Lya expects the  developer of a new  analysis to provide a few  methods that Lya
-will hook  across all modules. It  supports several methods, but  a useful analysis
-can be written with any subset of them. Example methods include `sourceTransform`, `onImport`, and `onRead`.
-Their details are provided in [doc](./doc/dev.md).
+### `onReady`
 
-## Docs
+```
+onReady() -> Any
+```
 
-* [ICFP Tutorial Material](./doc/tutorial/)
-* [Configuring and Using Lya](./doc/config.md)
-* [Developing Analyses](./doc/dev.md)
-* [Contributing](./doc/contrib.md)
+Fires exactly once for every application of `callWithLya`. While
+control is in `onReady`, the Node.js `Module.wrap` function is
+overridden. Any other modules `require`d within the extent of
+`onReady` time will have their source code rewritten.
 
+### `onApply`
+
+```
+onApply(original : Function, context : {
+    module: Module,
+    identifier: String | null,
+    args: Array,
+})
+```
+
+Arguments:
+
+* `original`: A thunk constructed by Lya, wrapping the original call
+  to the given function. Calling `original` will execute the
+  original function as the author intended.
+
+* `context`: An object clarifying the nature of the call.
+  * `module`: The `module` object lexically containing where the hook was fired.
+  * `identifier`: The string form of an identifier as it appears in
+  source code, or `null` if an identifier cannot be determined. Useful
+  for monitoring interactions with objects that have many possible
+  names (e.g. If an operations targets `Object`, then `identifier`
+  might be `"constructor"` if the original source refers to `Object`
+  by that name)
+  
+Let's consider `onApply`. Let's assume this definition for a
+JavaScript file called `ctor.js`:
+
+```
+function onApply(continue, { module, identifier }) {
+    console.log(module.id);
+    console.log(identifier);
+    return continue();
+}
+
+function onReady() {
+    require('./ctor.js');
+}
+
+callWithLya({ onApply, onReady });
+```
+
+`ctor.js` contains the following.
+
+```
+const x = constructor();
+```
+
+In this example, Lya will replace `constructor()` with something like this:
+
+```javascript
+__833848.onApply(function () {
+    return constructor();
+}, { identifier: "constructor", module, ... })
+```
+
+The program output would be
+
+```
+constructor
+`/path/to/ctor.js
+```
+
+Notice that the configuration is injected into the code using a
+cryptographically-random identifier to mitigate the risk of collisions
+with code in the analysis subject. The reference is not visible on the
+global object.
+
+Capturing the identifier is important because `constructor.name ===
+'Object'` in Node.js, and we may wish to distinguish between
+operations that specifically target `Object`, and operations that
+specifically target `constructor`. This makes Lya work with a mixture
+of static and dynamic information.
+
+The first function simply wraps the code that would have run anyway,
+so it has access to the same scope as the original code. You can also
+leverage this to control _when_ and _how_ that code runs, if at all.
+Here are a couple of `onApply` hooks that illustrate this point:
+
+```javascript
+function onApply(continue) {
+    try {
+        // Do stuff before letting code run.
+        const result = continue();
+        // Do stuff after letting code run.
+        return result;
+    } catch (e) {
+        // Maybe handle errors the original implementation didn't.
+    }
+}
+```
+
+```javascript
+// Affects ALL functions!
+function onApply() {
+    return 'something completely different';
+}
+```
+
+This allows you to not only collect information, but also influence
+program behavior. Since hooks must run in advance of source code, you
+can leverage this to inject patches dynamically.
