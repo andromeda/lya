@@ -76,7 +76,7 @@ e.g.
 ```javascript
 const { callWithLya } = require("@andromeda/lya");
 
-/callWithLya(config)
+callWithLya(config)
 ```
 
 Returns `config.onReady()`. While control is in `config.onReady()`,
