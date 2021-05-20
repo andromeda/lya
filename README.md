@@ -55,6 +55,14 @@ module.exports = function configureLya(argv) {
 }
 ```
 
+You can then pass the module to Lya as a trusted file. Note that the
+`require` function is unique to `example.js`, but we assume
+`analyze-me.js` is still in the same directory.
+
+```console
+$ lya example.js
+```
+
 
 ## API Reference
 
