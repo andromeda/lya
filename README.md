@@ -88,7 +88,36 @@ The `config` object supports the following keys.
 * `onReady`: A function suitable for use as an [`onReady`][] hook.
 
 
-## Hook Reference
+## Alphabetized Hook Reference
+
+### `afterAnalysis`
+[`afterAnalysis`]: #afteranalysis
+
+`afterAnalysis := Any -> Any`
+
+Called exactly once after [`onReady`][] to perform postprocessing on
+[`onReady`][]'s return value, but immediately before control leaves
+[`callWithLya`][]. This hook determines the return value of
+[`callWithLya`][].
+
+The sole argument is the value returned from [`onReady`][].
+
+The default implementation is the identity function.
+
+
+### `onError`
+[`onError`]: #onerror
+
+`onError := Error -> Any`
+
+Called exactly once when [`callWithLya`][] catches a thrown
+value. This hook determines the return value of [`callWithLya`][] if
+it does not re-throw its argument.
+
+The sole argument is the value caught by [`callWithLya`][].
+
+The default implementation simply throws its argument.
+
 
 ### `onReady`
 [`onReady`]: #onready
@@ -96,4 +125,5 @@ The `config` object supports the following keys.
 `onReady := () -> Any`
 
 Called exactly once for every application of [`callWithLya`][] to
-define an entry point for analysis.
+define an entry point for analysis. If `onReady` throws no error,
+[`callWithLya`][] forwards its return value to [`afterAnalysis`][].

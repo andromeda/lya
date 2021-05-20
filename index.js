@@ -22,14 +22,17 @@ function noop() {}
 
 function callWithLya(instrumentation) {
   Module.wrap = bindModuleWrapOverride(instrumentation);
+  var onReady = instrumentation.onReady || function onReady() { throw new Error('onReady not defined') }
+  var onError = instrumentation.onError || function onError(e) { throw e }
+  var afterAnalysis = instrumentation.afterAnalysis || function afterAnalysis(v) { return v; }
 
   try {
-    var result = instrumentation.onReady();
+    var result = onReady();
     Module.wrap = originalWrap;
-    return result;
+    return afterAnalysis(result);
   } catch (error) {
     Module.wrap = originalWrap;
-    throw error;
+    return onError(error);
   }
 }
 
