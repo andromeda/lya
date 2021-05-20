@@ -16,13 +16,15 @@ var instrument = require('./instrument.js');
 
 var originalWrap = Module.wrap;
 
+var cjsArguments = ['exports', 'require', 'module', '__dirname', '__filename'];
+
 function noop() {}
 
-function callWithLya(config) {
-  Module.wrap = bindModuleWrapOverride(config);
+function callWithLya(instrumentation) {
+  Module.wrap = bindModuleWrapOverride(instrumentation);
 
   try {
-    var result = config.onReady();
+    var result = instrumentation.onReady();
     Module.wrap = originalWrap;
     return result;
   } catch (error) {
@@ -31,66 +33,93 @@ function callWithLya(config) {
   }
 }
 
-function bindModuleWrapOverride(config) {
-  return function rewriteCommonJsSource(script) {
-    // User gets first dibs so that won't see instrumentation. They
-    // may also return per-module configuration for outlier programs.
-    function keepScript(c) { return c.script }
-    var userOverride = (config.onModuleWrap || keepScript)({
+function bindModuleWrapOverride(instrumentation) {
+  return function wrap(script) {
+    // User gets first dibs on the original code. They may also return
+    // per-module instrumentation for outlier programs.
+    var fallback = { script: script, instrumentation: instrumentation };
+    function returnFallback() { return fallback }
+    var planModuleRewrite = instrumentation.onModuleWrap || returnFallback;
+    var moduleSpecific = planModuleRewrite({
       script: script,
       acorn: acorn,
       astring: astring,
-      config: config
-    }) || config;
+      instrumentation: instrumentation,
+    }) || fallback;
 
-    var userScript = userOverride.script || script;
-    var newConfig = userOverride.config || config;
+    // Shebangs may break parsers, but we don't want to remove them.
+    var commentedOutShebang = moduleSpecific.script.replace(/^\s*#!/, '//#!');
+    var analysisReady = rewriteModule(commentedOutShebang, moduleSpecific.instrumentation);
 
-    // Shebangs will break parsers, but we don't want to hide them.
-    var commentedOutShebang = userScript.replace(/^\s*#!/, '//#!');
-    var analysisReady = rewriteModule(commentedOutShebang, newConfig);
-
-    // Useful in case the code breaks from a rewrite and we want to
-    // see why, or throw an error to prevent execution.
-    (newConfig.onModuleRewrite || noop)({ script: analysisReady });
+    // Allow user to react to rewrites
+    var afterModuleRewrite = moduleSpecific.instrumentation.afterModuleRewrite || noop;
+    afterModuleRewrite({ script: analysisReady });
 
     return analysisReady;
   }
 }
 
-function rewriteModule(script, config) {
-  // For binding in generated code with a low risk of collision.
-  var empiricallyUniqueIdentifier = `__lya${crypto.randomBytes(8).toString('hex')}`;
 
+function rewriteModule(script, instrumentation) {
   var ast = acorn.parse(script, Object.assign({
     sourceType: 'script',
     ecmaVersion: 2020,
-  }, config.acornConfig || {}));
+  }, instrumentation.acornConfig || {}));
+  
+  // Declare a shallow clone of the instrumentation as a
+  // non-collidable global to preserve own properties per-module.
+  var instId = generateIdentifier();
+  var rewritten = instrument.instrumentCode(ast, instId, instrumentation);
+  global[instId] = Object.assign({}, instrumentation);
 
-  var rewritten = instrument.instrumentCode(
-    ast, empiricallyUniqueIdentifier, config);
+  // Move the user's CommonJS where instrumentation is visible.
+  var userCjsExpr = originalWrap(rewritten).replace(/;$/, '');
+  var userCjsCall = makeCallExpression(userCjsExpr, cjsArguments);
+  var equipExpr = '(function (' + instId + '){return ' + userCjsCall + '})';
 
-  // We put config in the global object to share with our modules, but
-  // the module needs hide the reference from user code.
-  global[empiricallyUniqueIdentifier] = config;
+  // Inject code to move instrumentation out of global scope.
+  var recvIIFE = '(' + extractIntrumentationCode + ')("' + instId + '")';
+  var equipCall = makeCallExpression(equipExpr, [recvIIFE]);
 
-  var moveGlobal = (function extractInstrumentation(id) {
-    var g = global[id];
-    delete global[id];
-    return g;
-  }).toString();
+  // A second wrap gives Lya control over the transition from the
+  // beginning of the CommonJS module, to user code. It also
+  // provides correct bindings for `extractIntrumentationCode`.
+  return originalWrap(equipCall);
+}
 
-  var cjsExpression = originalWrap(rewritten).replace(/;$/, '');
-  var injectInstrumentation = [
-    '(function (' + empiricallyUniqueIdentifier + ') {',
-    'return ' + cjsExpression + '(module, exports, require, __dirname, __filename);',
-    '})(' + moveGlobal + '("' + empiricallyUniqueIdentifier + '"))',
-  ].join('');
 
-  // A second wrap ensures that Lya controls the transition from the
-  // beginning of the CommonJS module, to the beginning of the user's
-  // code.
-  return originalWrap(injectInstrumentation);
+// This injectable code must appear in a CommonJS module to work.
+var extractIntrumentationCode = minify(function x(id) {
+  var instrumentation = global[id];
+
+  // Prevent checking the global object for instrumentation.
+  delete global[id];
+
+  // For dodging shadows and surprising reassignments.
+  instrumentation.global = global;
+  instrumentation.module = module;
+  instrumentation.exports = exports;
+  instrumentation.require = require;
+  instrumentation.__dirname = __dirname;
+  instrumentation.__filename = __filename;
+
+  return instrumentation;
+}.toString());
+
+
+// We need non-collidable identifiers to mitigate the risk of input
+// code that tries to sabotage an analysis.
+function generateIdentifier() {
+  return '__lya' + crypto.randomBytes(4).toString('hex');
+}
+
+function makeCallExpression(fexpr, args) {
+  return fexpr + '(' + args.join(',') + ')';
+}
+
+function minify(js) {
+  var ast = acorn.parse(js, { ecmaVersion: 5 });
+  return astring.generate(ast, { indent: '', lineEnd: '' })
 }
 
 if (require.main === module) {
@@ -101,5 +130,5 @@ if (require.main === module) {
     process.exit(1);
   }
 
-  callWithLya(require(path.resolve(process.cwd(), entry)));
+  callWithLya(require(path.resolve(process.cwd(), entry))(process.argv.slice(2)));
 }
