@@ -59,7 +59,7 @@ function test(message, f) {
   try {
     stack.push(message);
     f();
-    console.log('PASS:', stack.join(' > '));
+    console.log('PASS:', stack.map((l) => l.split('\n')[0]).join(' > '));
   } catch (e) {
     console.log('FAIL:', stack.join(' > '), e);
     throw e;
