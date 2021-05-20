@@ -2,11 +2,8 @@
 
 Mailing lists: [Commits](lya-commits@googlegroups.com) | [Discussion](lya-discuss@googlegroups.com)
 
-Lya is a coarse-grained dynamic analysis framework for Node.js. Use
-Lya to identify and address vulnerabilities, bottlenecks, and errors.
-
-“Coarse-grained” means that Lya limits analyses to a relatively low
-level of detail to reduce overhead.
+Lya is an analysis framework for Node.js. Use Lya to identify and
+address vulnerabilities, bottlenecks, and errors.
 
 
 ## How to Use Lya
