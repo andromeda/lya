@@ -7,7 +7,7 @@
     "all": "npm run l && npm run t",
     "lint": "./node_modules/eslint/bin/eslint.js .",
     "fix": "./node_modules/eslint/bin/eslint.js --fix .",
-    "test": "node lya.test.js"
+    "test": "node run-tests.js"
   },
   "bin": {
     "lya": "./index.js"
