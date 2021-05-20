@@ -129,6 +129,5 @@ if (require.main === module) {
   var userEntry = process.argv[2];
   var completePath = path.resolve(process.cwd(), userEntry);
   var entry = fs.existsSync(completePath) ? completePath : userEntry;
-
-  callWithLya(require(entry)(process.argv.slice(3)));
+  console.log(callWithLya(require(entry)(process.argv.slice(3))));
 }

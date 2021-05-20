@@ -63,6 +63,11 @@ You can then pass the module to Lya as a trusted file. Note that the
 $ lya example.js
 ```
 
+The command will print the value returned from `callFromLya` to STDOUT
+using `console.log`, meaning that if you don't want
+inspection-friendly output, you may need to pass your output to
+`JSON.stringify` first.
+
 
 ## API Reference
 
