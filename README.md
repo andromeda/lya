@@ -59,6 +59,7 @@ module.exports = function configureLya(argv) {
 ## API Reference
 
 ### `callWithLya`
+[`callWithLya`]: #callwithlya
 
 `callWithLya := (LyaConfig) -> Any`
 
@@ -82,6 +83,7 @@ The `config` object supports the following keys.
 ## Hook Reference
 
 ### `onReady`
+[`onReady`]: #onready
 
 `onReady := () -> Any`
 
