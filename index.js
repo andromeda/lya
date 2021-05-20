@@ -65,7 +65,7 @@ function rewriteModule(script, instrumentation) {
     sourceType: 'script',
     ecmaVersion: 2020,
   }, instrumentation.acornConfig || {}));
-  
+
   // Declare a shallow clone of the instrumentation as a
   // non-collidable global to preserve own properties per-module.
   var instId = generateIdentifier();
@@ -123,12 +123,9 @@ function minify(js) {
 }
 
 if (require.main === module) {
-  var entry = process.argv[2];
+  var userEntry = process.argv[2];
+  var completePath = path.resolve(process.cwd(), userEntry);
+  var entry = fs.existsSync(completePath) ? completePath : userEntry;
 
-  if (!entry || !fs.existsSync(entry)) {
-    console.log('Expected existing Node.js module file. Got', entry);
-    process.exit(1);
-  }
-
-  callWithLya(require(path.resolve(process.cwd(), entry))(process.argv.slice(2)));
+  callWithLya(require(entry)(process.argv.slice(3)));
 }
