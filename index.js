@@ -113,8 +113,7 @@ function minify(js) {
 
 function findEntryModule(require, userEntry) {
   if (!userEntry) {
-    console.error('Please specify an input file as a command line argument.');
-    process.exit(1);
+    throw new Error('Please specify an input file as a command line argument.');
   }
 
   var completePath = path.resolve(process.cwd(), userEntry);
@@ -125,13 +124,11 @@ function findEntryModule(require, userEntry) {
   try {
     return require.resolve(entry);
   } catch (e) {
-    console.error(`Could not resolve '${userEntry}' using require.resolve`);
-
     if (isFile) {
-      console.error('Tried to read as a file from ${completePath}');
+      throw new Error('Tried to read as a file from ${completePath}');
+    } else {
+      throw new Error(`Could not resolve '${userEntry}' using require.resolve`);
     }
-
-    process.exit(1);
   }
 }
 

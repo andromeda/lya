@@ -90,6 +90,19 @@ all files loaded as modules.
 See [`CallWithLyaInput`][] for the supported keys.
 
 
+## `findEntryModule`
+
+`findEntryModule := (require := Function, userEntry := Any)`
+
+Returns an argument suitable for use with the given `require`
+function, or throws an error explaining why one cannot be determined.
+
+If `require('path').resolve(process.cwd(), userEntry)` is an existing
+file, then the value of that expression is returned. This is useful
+for treating command line arguments as relative paths to the user's
+working directory.
+
+
 # Hook Reference
 
 ## `afterAnalysis`
