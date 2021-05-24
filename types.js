@@ -10,27 +10,25 @@ function identity(v) { return v }
 function defaultApply(f) { return f() }
 
 function makeCallWithLyaInput(callWithLyaInput) {
-  var cwli = callWithLyaInput || {};
-  
-  return {
-    acornConfig: cwli.acornConfig || {
+  return Object.assign({
+    acornConfig: {
       sourceType: 'script',
       ecmaVersion: 2020,
     },
-    afterAnalysis: cwli.afterAnalysis || identity,
-    afterRewriteModule: cwli.afterRewriteModule || function afterRewriteModule(v) { return v.script },
-    onModuleWrap: cwli.onModuleWrap || identity,
-    onCommonJsApply: cwli.onCommonJsApply || defaultApply,
-    onCallExpression: cwli.onCallExpression || defaultApply,
-    onHook: cwli.onHook || defaultApply,
-    onWrite: cwli.onWrite,
-    onError: cwli.onError || function onError(e) {
+    afterAnalysis: identity,
+    afterRewriteModule: function afterRewriteModule(v) {
+      return v.script
+    },
+    onModuleWrap: identity,
+    onCommonJsApply: defaultApply,
+    onHook: defaultApply,
+    onError: function onError(e) {
       throw e;
     },
-    onReady: cwli.onReady || function onReady() {
+    onReady: function onReady() {
       throw new Error('onReady not defined');
     },
-  };
+  }, callWithLyaInput || {});
 }
 
 function makeRewriteModuleInput(userCallWithLyaInput, script) {

@@ -11,15 +11,9 @@
 //
 // See https://github.com/davidbonnet/astring#extending
 
-// Use additional reference to dodge user modifications.
-var provided = module.exports = {
+module.exports = {
   gen,
-  injectHook,
   instrumentCode,
-  equipAssignmentExpression,
-  equipCallExpression,
-  equipMemberExpression,
-  equipNewExpression,
 };
 
 var astring = require('astring');
@@ -107,6 +101,7 @@ function bindGenerator(instrumentationId, instrumentation) {
     var equipName = 'equip' + esNodeType;
     var hookName = 'on' + esNodeType;
     var hooks = instrumentation.rewriteModuleInput.callWithLyaInput;
+    function recurse(n) {return gen(n, iface)}
 
     // Set default implementation
     iface[esNodeType] = astring.GENERATOR[esNodeType];
@@ -114,77 +109,27 @@ function bindGenerator(instrumentationId, instrumentation) {
     // Hook defined? Rewrite the code to inject a call.
     if (hooks[hookName]) {
       iface[esNodeType] = function (node, state) {
-        var options = provided[equipName] ? provided[equipName](node) : {};
+        var options = {};
 
         options.instrumentationId = instrumentationId;
         options.instrumentation = instrumentation;
         options.node = node;
         options.hookName = hookName;
         options.isExpression = /Expression/.test(esNodeType);
+        options.injectProperties = hooks[equipName] ? hooks[equipName](node, recurse) : {};
 
         var code = hooks.onHook(function () {
           return injectHook(options);
         }, options);
 
-        return state.write(code);
+        if (!code && code !== '') {
+          return astring.GENERATOR[esNodeType](node, state);
+        } else {
+          return state.write(code);
+        }
       }
     }
 
     return iface;
   }, {})
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// The `equip*` functions are defined as `ESTree -> Object`, making
-// them easier to test.  They each return part of an object used as an
-// argument for `injectHook`.
-
-function equipCallExpression(node) {
-  return {
-    usingNew: false,
-    injectProperties: {
-      target: gen(node.callee),
-      args: '[' + node.arguments.map((n) => gen(n)).join(',') + ']',
-    },
-  };
-}
-
-
-function equipNewExpression(node) {
-  return equipCallExpression(node);
-}
-
-
-function equipMemberExpression(node) {
-  return {
-    injectProperties: {
-      target: gen(node.object),
-      value: gen(node),
-    },
-  };
-}
-
-
-function equipAssignmentExpression(node) {
-  var lhs = gen(node.left);
-
-  // An assignment might create a new global variable.  One way to
-  // check if that is going to happen is by detecting if an
-  // injected access fails. That allows us to "warn" the hook that
-  // a new global is incoming.
-  //
-  // This only works for unprefixed global assignments.
-  var isReference = (
-    '(function () {try{' + lhs + ';return false}' +
-    'catch(e){return e instanceof ReferenceError }})()'
-  );
-
-  return {
-    injectProperties: {
-      operator: "'" + node.operator + "'",
-      isUnprefixedGlobalDeclaration: isReference,
-      value: gen(node.right),
-    },
-  };
 }

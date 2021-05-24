@@ -147,11 +147,14 @@ working directory.
 [hookref]: #hook-reference
 
 In Lya, hooks are JavaScript functions called at well-defined times to
-influence either Lya's behavior, or a subject's behavior. Hooks
-injected into subjects are typically [cross-phase hooks][].
+influence either Lya's behavior, or a subject's behavior. Hooks with
+special roles are given a different name, such as [cross-phase
+hooks][] or [equip hooks][].
 
 Hooks may start with `on`, `before`, or `after` to clarify their
-temporal relationship with an event.
+temporal relationship with an event, or may start with a verb to
+clarify their role.
+
 
 ## Cross-Phase Hooks
 [cross-phase hook]: #cross-phase-hooks
@@ -188,6 +191,24 @@ module _lexically_ containing the operation.
 
 `context.node` is the [ESTree][] expressing the operation.
 
+## Equip Hooks
+[equip hook]: #equip-hooks
+[equip hooks]: #equip-hooks
+
+`E := (node : ESTree, generate : Function) -> Object`
+
+An **equip hook**, like [cross phase hooks][], operates with
+[ESTrees][].  They always have the name `equipX`, where `X` is the
+name of an [`ESTree`][] type. They return objects with source code to
+evaluate at runtime for the given [ESTree][]. Any properties defined
+in the returned object will appear in the second argument of a
+[cross-phase hook][].
+
+See [`requires.js`](examples/requires.js) for an example. It uses an
+`equipCallExpression` and an `onCallExpression` [cross-phase hook][]
+to build a table of CommonJS modules and their immediate dependencies.
+This demonstrates how an equip hook and a cross-phase hook can
+cooperate.
 
 
 ## `afterAnalysis`
@@ -501,6 +522,8 @@ CommonJS.
 [Acorn]: https://github.com/acornjs/acorn
 [Astring]: https://github.com/davidbonnet/astring
 [`acorn.parse`]: https://github.com/acornjs/acorn/tree/master/acorn#interface
+[ESTree]: https://github.com/estree/estree
+[ESTrees]: https://github.com/estree/estree
 [`ESTree`]: https://github.com/estree/estree
 [`CallExpression`]: https://github.com/estree/estree/blob/master/es5.md#callexpression
 [`Literal`]: https://github.com/estree/estree/blob/master/es5.md#literal
