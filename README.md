@@ -1,4 +1,4 @@
-## Lya: Library-oriented Dynamic Analysis for Node.js Programs
+# Lya: Library-oriented Dynamic Analysis for Node.js Programs
 
 Mailing lists: [Commits](lya-commits@googlegroups.com) | [Discussion](lya-discuss@googlegroups.com)
 
@@ -8,13 +8,13 @@ Lya uses a combination of static _and_ dynamic information to draw
 more meaningful conclusions about data.
 
 
-## How to Use Lya
+# How to Use Lya
 
 You can use Lya programmatically, or from a command-line utility.  The
 methods are kept similar to make Lya easy to extend.
 
 
-### Programmatic Use
+## Programmatic Use
 
 To use Lya programmatically, call [`callWithLya`][] with your
 configuration. The minimal program uses the [`onReady`][] hook.
@@ -34,7 +34,7 @@ of the program's actual behavior. This means you should only create
 hooks using __trusted code__.
 
 
-### Command-Line Use
+## Command-Line Use
 
 You can use the provided `lya` executable to designate a CommonJS
 module to provide an argument to `callWithLya`.
@@ -68,9 +68,9 @@ inspection-friendly output, you may need to pass your output to
 `JSON.stringify` first.
 
 
-## API Reference
+# API Reference
 
-### `callWithLya`
+## `callWithLya`
 [`callWithLya`]: #callwithlya
 
 `callWithLya := (config : CallWithLyaInput) -> Any`
@@ -90,9 +90,9 @@ all files loaded as modules.
 See [`CallWithLyaInput`][] for the supported keys.
 
 
-## Hook Reference
+# Hook Reference
 
-### `afterAnalysis`
+## `afterAnalysis`
 [`afterAnalysis`]: #afteranalysis
 
 `afterAnalysis := Any -> Any`
@@ -107,7 +107,7 @@ The sole argument is the value returned from [`onReady`][].
 The default implementation is the identity function.
 
 
-### `afterRewriteModule`
+## `afterRewriteModule`
 [`afterRewriteModule`]: #aftermodulerewrite
 
 `afterRewriteModule := (rwi : RewriteModuleInput) -> String`
@@ -123,7 +123,7 @@ The default implementation only returns the `script` property of the
 input argument.
 
 
-### `onError`
+## `onError`
 [`onError`]: #onerror
 
 `onError := (err : Any) -> Any`
@@ -138,7 +138,7 @@ not re-throw its argument.
 The default implementation simply throws its argument.
 
 
-### `onReady`
+## `onReady`
 [`onReady`]: #onready
 
 `onReady := () -> Any`
@@ -148,7 +148,7 @@ define an entry point for analysis. If `onReady` throws no error,
 [`callWithLya`][] forwards its return value to [`afterAnalysis`][].
 
 
-### `onApply`
+## `onApply`
 [`onApply`]: #onapply
 
 ```
@@ -194,7 +194,7 @@ function onApply() {
 ```
 
 
-### `onHook`
+## `onHook`
 [`onHook`]: #onhook
 
 ```
@@ -258,7 +258,7 @@ monitor Lya's modifications using something like `onHook: f => (v
 => console.log(v), v)(f())`.
 
 
-### `onModuleWrap`
+## `onModuleWrap`
 [`onModuleWrap`]: #onmodulewrap
 
 `onModuleWrap := (state : RewriteModuleState) -> RewriteModuleInput`
