@@ -278,7 +278,8 @@ call a user's hook.
 
 `original` is a thunk that, when called, returns a string. The string
 contains instrumented source code as Lya would inject it into a
-subject. `options` holds information used to compute Lya's code.
+subject. `options` holds information used to compute the value of
+`original()`.
 
 `options.instrumentationId`: A string form of the module-specific
 identifier used to access the instrumentation object in the subject.
@@ -302,7 +303,7 @@ used to compute some hook arguments. When the hook named by
 properties named by `options.injectProperties`, but the values
 come from evaluating said source code for the property.
 
-For a partial example:
+For a strictly illustrative example:
 
 ```javascript
 {
@@ -317,16 +318,21 @@ For a partial example:
 implies that the hook is fired like so:
 
 ```
-I['X']({ now: Date.now(), instrumentation: I, ... })
+I.rewriteModuleInput.callWithLyaInput['X']({
+  now: Date.now(),
+  instrumentation: I,
+  ...,
+})
 ```
 
 Note that this hook operates on code at instrumentation-time, allowing
-a static interpretation of code. Leverage this to fine-tune what code
-gains instrumentation to reduce overhead.
+a static interpretation of code. Leverage this for metaprogramming,
+specifically to select what code gains instrumentation to reduce
+overhead.
 
 The default implementation simply returns `original()`, so you can
-monitor Lya's modifications using something like `onHook: f => (v
-=> console.log(v), v)(f())`.
+monitor Lya's modifications using something like `f => (v =>
+console.log(v), v)(f())`.
 
 
 ## `onModuleWrap`
