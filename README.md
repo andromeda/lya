@@ -147,11 +147,8 @@ working directory.
 [hookref]: #hook-reference
 
 In Lya, hooks are JavaScript functions called at well-defined times to
-influence either Lya's behavior, or a subject's behavior. When and
-where the hooks are called are significant.
-
-Hooks are always normal JavaScript functions, but hooks injected into
-subjects are typically [cross-phase hooks][].
+influence either Lya's behavior, or a subject's behavior. Hooks
+injected into subjects are typically [cross-phase hooks][].
 
 Hooks may start with `on`, `before`, or `after` to clarify their
 temporal relationship with an event.
