@@ -410,8 +410,7 @@ The sole argument to [`callWithLya`][].
 
 An `Instrumentation` object is a CommonJS module-specific object
 injected into the runtime by Lya. Instrumentation captures original
-arguments to the CommonJS function, the actual global object, and help
-provide access to relevant configuration for hooks.
+arguments to the CommonJS function and the actual global object.
 
 Instrumentation objects are important because one is guarenteed to
 exist lexically inside each CommonJS module. This makes it possible
