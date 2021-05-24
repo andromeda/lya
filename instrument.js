@@ -11,19 +11,21 @@
 //
 // See https://github.com/davidbonnet/astring#extending
 
-module.exports = {
+// Use additional reference to dodge user modifications.
+var provided = module.exports = {
   gen,
   injectHook,
   instrumentCode,
   equipAssignmentExpression,
   equipCallExpression,
+  equipMemberExpression,
   equipNewExpression,
 };
 
 var astring = require('astring');
 
-function instrumentCode(ast, instrumentationId, instrumentation, rewriteModuleInput) {
-  return gen(ast, bindGenerator(instrumentationId, instrumentation, rewriteModuleInput));
+function instrumentCode(ast, instrumentationId, instrumentation) {
+  return gen(ast, bindGenerator(instrumentationId, instrumentation));
 }
 
 
@@ -77,7 +79,7 @@ function injectHook(userOptions) {
 
   // This appears in code as a CallExpression like this
   /*
-    __lya8323_h['onApply'](function () {return console.log(1)}, {
+    __lya8323_h['onCallExpression'](function () {return console.log(1)}, {
       <whatever was in injectProperties>
       instrumentation: __lya8323,
       estree: { "type": "CallExpression", ... },
@@ -85,7 +87,7 @@ function injectHook(userOptions) {
 
     where
       - `instrumentationId` is `__lya8323`
-      - `subscript` is ['onApply'], and
+      - `subscript` is ['onCallExpression'], and
       - `hookArguments` is the remaining parenthetical.
   */
   return instrumentationId + '_h' + subscript + hookArguments;
@@ -103,30 +105,9 @@ function requireKey(o, key) {
 // object, and generate the full interface from the `equip*`
 // functions in the module.
 
-function bindGenerator(instrumentationId, instrumentation, rewriteModuleInput) {
-  var hooksToEquipFunctions = [
-    ['onApply', equipCallExpression],
-    ['onWrite', equipAssignmentExpression],
-    ['onNew', equipNewExpression],
-    ['onMemberAccess', equipMemberExpression],
-  ];
-
-  return hooksToEquipFunctions.reduce(function (iface, pair) {
-    var hookName = pair[0];
-    var equip = pair[1];
-    var esTreeNodeType = equip.name.replace('equip', '');
-    var hooks = instrumentation.rewriteModuleInput.callWithLyaInput;
-
-    // Only rewrite code if there's a hook to call.
-    if (typeof hooks[hookName] === 'function')  {
-      iface[esTreeNodeType] = bindInjectionSite(
-        instrumentationId,
-        instrumentation,
-        hookName,
-        rewriteModuleInput,
-        equip);
-    }
-
+function bindGenerator(instrumentationId, instrumentation) {
+  return Object.keys(astring.GENERATOR).reduce(function (iface, esNodeType) {
+    iface[esNodeType] = bindInjectionSite(esNodeType, instrumentationId, instrumentation);
     return iface;
   }, {})
 }
@@ -134,22 +115,33 @@ function bindGenerator(instrumentationId, instrumentation, rewriteModuleInput) {
 
 // Return a function used to extend astring to print a particular
 // ESTree as valid ECMAScript. In the context of Lya, the returned
-// function injects a hook call against the instrumentation.
-function bindInjectionSite(instrumentationId, instrumentation, hookName, rewriteModuleInput, equip) {
-  return function (node, state) {
-    var options = equip(node);
-    options.instrumentationId = instrumentationId;
-    options.instrumentation = instrumentation;
-    options.node = node;
-    options.hookName = hookName;
-    options.isExpression = /Expression/.test(node.type);
+// function injects a hook call against the instrumentation when
+// the hook is available.
+function bindInjectionSite(esNodeType, instrumentationId, instrumentation) {
+  var equipName = 'equip' + esNodeType;
+  var hookName = 'on' + esNodeType;
+  var hooks = instrumentation.rewriteModuleInput.callWithLyaInput;
 
-    var code = rewriteModuleInput.callWithLyaInput.onHook(function () {
-      return injectHook(options);
-    }, options);
+  if (hooks[hookName]) {
+    return function (node, state) {
+      var options = provided[equipName] ? provided[equipName](node) : {};
 
-    return state.write(code);
-  };
+      options.instrumentationId = instrumentationId;
+      options.instrumentation = instrumentation;
+      options.node = node;
+      options.hookName = hookName;
+      options.isExpression = /Expression/.test(esNodeType);
+
+      var code = hooks.onHook(function () {
+        return injectHook(options);
+      }, options);
+
+      return state.write(code);
+    }
+  }
+  else {
+    return astring.GENERATOR[esNodeType];
+  }
 }
 
 

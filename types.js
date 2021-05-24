@@ -21,7 +21,7 @@ function makeCallWithLyaInput(callWithLyaInput) {
     afterRewriteModule: cwli.afterRewriteModule || function afterRewriteModule(v) { return v.script },
     onModuleWrap: cwli.onModuleWrap || identity,
     onCommonJsApply: cwli.onCommonJsApply || defaultApply,
-    onApply: cwli.onApply || defaultApply,
+    onCallExpression: cwli.onCallExpression || defaultApply,
     onHook: cwli.onHook || defaultApply,
     onWrite: cwli.onWrite,
     onError: cwli.onError || function onError(e) {

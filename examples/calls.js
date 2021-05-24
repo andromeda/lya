@@ -17,7 +17,7 @@ module.exports = function callAnalysis(argv, lya) {
       return require(lya.findEntryModule(require, argv[0]));
     },
 
-    onApply: function onApply(f, { target, instrumentation: { module } }) {
+    onCallExpression: function onCallExpression(f, { target, instrumentation: { module } }) {
       if (!counts.has(target))
         counts.set(target, []);
 

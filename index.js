@@ -60,7 +60,7 @@ function rewriteModule(rewriteModuleInput) {
   // A non-collidable global helps preserve own properties.
   var instId = generateIdentifier();
   var instrumentation = { rewriteModuleInput: rewriteModuleInput };
-  var rewritten = instrument.instrumentCode(ast, instId, instrumentation, rewriteModuleInput);
+  var rewritten = instrument.instrumentCode(ast, instId, instrumentation);
   global[instId] = instrumentation;
 
   // Move the user's CommonJS where instrumentation is visible.

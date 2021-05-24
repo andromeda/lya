@@ -144,6 +144,53 @@ working directory.
 
 
 # Hook Reference
+[hookref]: #hook-reference
+
+In Lya, hooks are JavaScript functions called at well-defined times to
+influence either Lya's behavior, or a subject's behavior. When and
+where the hooks are called are significant.
+
+Hooks are always normal JavaScript functions, but hooks injected into
+subjects are typically [cross-phase hooks][].
+
+Hooks may start with `on`, `before`, or `after` to clarify their
+temporal relationship with an event.
+
+## Cross-Phase Hooks
+[cross-phase hook]: #cross-phase-hooks
+[cross-phase hooks]: #cross-phase-hooks
+
+`H := (original : Function, context : Object) -> String`
+
+This is a base definition for **cross-phase hooks**, or hooks called
+from injected code, in advance of program instructions. Cross-phase
+hooks may review both dynamic and static information at runtime, and
+are a strict subset of available hooks.
+
+For a given ESTree node type `X`, Lya will look for a cross-phase hook
+named `onX`. For example, a [`Literal`][] node causes Lya to look for
+an `onLiteral` hook.  `onLiteral` would fire when the _runtime_
+encounters the form expressed by the ESTree, and the hook may inspect
+the original [`Literal`][] node. However, the source code will not be
+altered to call the hook if the user did not provide a hook to use.
+
+Hooks like this are implicitly defined for compatible ESTree nodes, so
+many of them **are implicitly documented by this section**. Hooks that
+are documented here will either extend this definition, or behave
+entirely differently.
+
+`original` is a thunk constructed by Lya that lexically wraps the
+original source code. In most cases, `return original()` will execute
+the original function and return the value the author intended.
+
+`context` is an object clarifying the nature of the operation.
+
+`context.instrumentation` is the [`Instrumentation`] object for the
+module _lexically_ containing the operation.
+
+`context.node` is the [ESTree][] expressing the operation.
+
+
 
 ## `afterAnalysis`
 [`afterAnalysis`]: #afteranalysis
@@ -222,37 +269,23 @@ define an entry point for analysis. If `onReady` throws no error,
 [`callWithLya`][] forwards its return value to [`afterAnalysis`][].
 
 
-## `onApply`
-[`onApply`]: #onapply
+## `onCallExpression`
+[`onCallExpression`]: #oncallexpression
 
 ```
-onApply := (original : Function, context : Object) -> Any
+onCallExpression := (original : Function, context : Object) -> Any
 ```
 
-A hook that fires in place of a function call in a subject.
+A [cross-phase hook][] that fires in place of a function call in a subject.
 
 Returns a value for use where the call was hooked.
 
-`original` is a thunk constructed by Lya, wrapping the call to the
-given function, as it originally appeared in the source
-code. Therefore, `return original()` will execute the original
-function and return the value the author intended.
-
-`context` is an object clarifying the nature of the call.
-`context.instrumentation` is the [`Instrumentation`] object for the
-module _lexically_ containing the function call.
-
-`context.node` is the [`CallExpression`][] [`ESTree`][] describing the
-call as it appears in source code.
-
 `context.target` is a reference to the function being called.
-
-`context.args` is an array of arguments that would be passed to
-`target` if `original()` were called.
+`context.args` is an array of arguments that would be passed to `target` if `original()` were called.
 
 
 ```javascript
-function onApply(continue) {
+function onCallExpression(continue) {
     try {
         // Do stuff before letting code run.
         const result = continue();
@@ -266,7 +299,7 @@ function onApply(continue) {
 
 ```javascript
 // Affects ALL functions, so this will likely break everything.
-function onApply() {
+function onCallExpression() {
     return 'something completely different';
 }
 ```
@@ -298,7 +331,7 @@ identifier used to access the instrumentation object in the subject.
 source code that will be replaced.
 
 `options.hookName`: The string name of a hook, suitable for use as an
-object key (e.g. `'onApply'`).
+object key (e.g. `'onCallExpression'`).
 
 `options.isExpression`: A boolean indicating whether `options.node` is
 an ECMAScript expression, as opposed to a statement or special
@@ -378,27 +411,14 @@ particular shape.
 ```javascript
 {
   acornConfig: Object,
-  afterAnalysis: Function,
-  afterRewriteModule: Function,
-  onApply: Function,
-  onError: Function,
-  onHook: Function,
-  onModuleWrap: Function,
-  onReady: Function,
+  ...hooks
 }
 ```
 
 The sole argument to [`callWithLya`][].
 
 * `acornConfig`: A suitable second argument to [`acorn.parse`][]. Defaults to `{ sourceType: 'script', ecmaVersion: 2020 }`.
-* `afterRewriteModule`: An [`afterRewriteModule`][] hook.
-* `afterAnalysis`: An [`afterAnalysis`][] hook.
-* `onApply`: An [`onApply`][] hook.
-* `onError`: An [`onError`][] hook.
-* `onHook`: An [`onHook`][] hook.
-* `onModuleWrap`: An [`onModuleWrap`][] hook.
-* `onReady`: An [`onReady`][] hook.
-
+* `...hooks`: any hook defined in the (Hook Reference)[hookref].
 
 ## `Instrumentation`
 [`Instrumentation`]: #instrumentation
@@ -485,4 +505,5 @@ CommonJS.
 [`acorn.parse`]: https://github.com/acornjs/acorn/tree/master/acorn#interface
 [`ESTree`]: https://github.com/estree/estree
 [`CallExpression`]: https://github.com/estree/estree/blob/master/es5.md#callexpression
+[`Literal`]: https://github.com/estree/estree/blob/master/es5.md#literal
 [`module`]: https://nodejs.org/api/modules.html#modules_the_module_object

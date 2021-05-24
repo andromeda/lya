@@ -6,7 +6,7 @@ module.exports = function importAnalysis(argv, lya) {
       return require(lya.findEntryModule(require, argv[0]));
     },
 
-    onApply: function onApply(original, info) {
+    onCallExpression: function onCallExpression(original, info) {
       const result = original();
 
       var I = info.instrumentation;
