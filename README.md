@@ -83,8 +83,9 @@ const { callWithLya } = require("@andromeda/lya");
 callWithLya(config)
 ```
 
-Returns `config.onReady()`. While control is in `config.onReady()`,
-Lya will auto-refactor all files loaded as modules.
+Returns `config.onReady()`, or `config.onError(e)` for some caught
+`e`. While control is in `config.onReady()`, Lya will auto-refactor
+all files loaded as modules.
 
 See [`CallWithLyaInput`][] for the supported keys.
 
@@ -297,6 +298,7 @@ particular shape.
   afterRewriteModule: Function,
   onApply: Function,
   onError: Function,
+  onHook: Function,
   onModuleWrap: Function,
   onReady: Function,
 }
@@ -309,6 +311,7 @@ The sole argument to [`callWithLya`][].
 * `afterAnalysis`: An [`afterAnalysis`][] hook.
 * `onApply`: An [`onApply`][] hook.
 * `onError`: An [`onError`][] hook.
+* `onHook`: An [`onHook`][] hook.
 * `onModuleWrap`: An [`onModuleWrap`][] hook.
 * `onReady`: An [`onReady`][] hook.
 
@@ -355,7 +358,7 @@ The properties are
 ## `RewriteModuleState`
 [`RewriteModuleState`]: #modulerewritestate
 
-```
+```javascript
 {
     script: String,
     acorn: Object,
