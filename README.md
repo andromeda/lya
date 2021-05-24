@@ -41,13 +41,20 @@ module to provide an argument to `callWithLya`.
 
 For example, you can define a CommonJS module named `example.js`.  The
 module must export a function that, when called, returns an object to
-use with `callWithLya`. The argument `argv` is an array of _remaining_
-arguments on the command line (that is, the part of `process.argv`
-left over after removing the arguments that led to calling
-`configureLya`).
+use with `callWithLya`.
+
+The first argument, `argv`, is an array of _remaining_ arguments on
+the command line (that is, the part of `process.argv` left over after
+removing the arguments that led to calling `configureLya`).
+
+The second argument, `lya`, is `===` to the `module.exports` set by
+the main module of `lya`. This dependency injection pattern is meant
+to allow users to create custom launchers quickly.
 
 ```javascript
-module.exports = function configureLya(argv) {
+// example.js
+
+module.exports = function configureLya(argv, lya) {
   return {
     onReady: () => require("./analyze-me.js"),
   };
