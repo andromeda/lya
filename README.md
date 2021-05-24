@@ -3,9 +3,9 @@
 Mailing lists: [Commits](lya-commits@googlegroups.com) | [Discussion](lya-discuss@googlegroups.com)
 
 Lya is an analysis framework for Node.js. Use Lya to identify and
-address vulnerabilities, bottlenecks, and errors. Unlike alternatives,
-Lya uses a combination of static _and_ dynamic information to draw
-more meaningful conclusions about data.
+address vulnerabilities, bottlenecks, and errors. Lya supplements its
+dynamic analysis with lexical information, allowing analyses to reach
+more useful conclusions.
 
 
 # How to Use Lya
@@ -66,6 +66,39 @@ The command will print the value returned from `callFromLya` to STDOUT
 using `console.log`, meaning that if you don't want
 inspection-friendly output, you may need to pass your output to
 `JSON.stringify` first.
+
+
+# Model
+
+Lya instruments input CommonJS modules ("subjects") during runtime, in
+response to a user calling `require` in the context of
+[`callWithLya`][]. When Lya is actively instrumenting code, we say
+that we are in "instrumentation time". Due to JavaScript's nature,
+instrumentation time occurs in the Node.js runtime. However, Lya
+forces instrumentation to occur before executing user code, allowing
+programmers to reason about input JavaScript in source form.
+
+During instrumentation time, Lya refactors CommonJS modules into a
+functionally-equivalent form. A refactored subject includes its own
+[`Instrumentation`][] object, which communicates both lexical and
+dynamic information. The code will contain calls to user-provided
+hooks, allowing users to either allow the existing code to run as it
+was originally written, or to override the behavior.
+
+To create a "coarse-grained" analysis with less overhead, a user may
+configure exactly what statements and/or expressions are rewritten
+using the [`onHook`][] hook. [`onHook`][] is a metaprogramming
+facility that allows the user to extend instrumentation, or override
+Lya's own static operations in a manner that resembles all other
+hooks.
+
+Lya's runtime shares the same V8 environment (Isolate, Context), which
+means that there exist programs that may sabotage Lya's operation.
+(e.g. damaging the global `Object` prototype).  This is an artifact of
+Lya assuming that you _trust input code_, and that it should preserve
+its existing function.  To help you avoid breakages, Lya forces your
+code to run in advance of a saboteur, such that you may override the
+behavior of said saboteur by redirecting assignments or accesses.
 
 
 # API Reference
