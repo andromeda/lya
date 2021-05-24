@@ -162,10 +162,10 @@ temporal relationship with an event.
 
 `H := (original : Function, context : Object) -> String`
 
-This is a base definition for **cross-phase hooks**, or hooks called
-from injected code, in advance of program instructions. Cross-phase
-hooks may review both dynamic and static information at runtime, and
-are a strict subset of available hooks.
+**Cross-phase hooks** are hooks called from injected code, in advance
+of original program instructions. Cross-phase hooks may review both
+dynamic and static information at runtime, and are a strict subset of
+available hooks.
 
 For a given ESTree node type `X`, Lya will look for a cross-phase hook
 named `onX`. For example, a [`Literal`][] node causes Lya to look for
@@ -174,10 +174,10 @@ encounters the form expressed by the ESTree, and the hook may inspect
 the original [`Literal`][] node. However, the source code will not be
 altered to call the hook if the user did not provide a hook to use.
 
-Hooks like this are implicitly defined for compatible ESTree nodes, so
-many of them **are implicitly documented by this section**. Hooks that
-are documented here will either extend this definition, or behave
-entirely differently.
+**All cross-phase hooks are implicitly documented by this
+section**. Another hook's entry in this manual may extend this
+definition. If it does not, then expect it to behave independently of
+this section.
 
 `original` is a thunk constructed by Lya that lexically wraps the
 original source code. In most cases, `return original()` will execute
