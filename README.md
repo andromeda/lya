@@ -155,22 +155,26 @@ define an entry point for analysis. If `onReady` throws no error,
 onApply := (original : Function, context : Object) -> Any
 ```
 
-A hook that fires before a function call in the subject.
+A hook that fires in place of a function call in a subject.
 
 Returns a value for use where the call was hooked.
 
-Arguments:
+`original` is a thunk constructed by Lya, wrapping the call to the
+given function, as it originally appeared in the source
+code. Therefore, `return original()` will execute the original
+function and return the value the author intended.
 
-* `original`: A thunk constructed by Lya, wrapping the call to the
-  given function, as it originally appeared in the source
-  code. Therefore, `return original()` will execute the original
-  function and return the value the author intended.
+`context` is an object clarifying the nature of the call.
+`context.instrumentation` is the [`Instrumentation`] object for the
+module _lexically_ containing the function call.
 
-* `context`: An object clarifying the nature of the call.
-  * `instrumentation`: The [`Instrumentation`] object for the module _lexically_ containing the function call.
-  * `node`: The [`CallExpression`][] ESTree node describing the call as it appears in source code.
-  * `target`: A reference to the function being called.
-  * `args`: An array of arguments that would be passed to `target` if `original()` were called.
+`context.node` is the [`CallExpression`][] [`ESTree`][] describing the
+call as it appears in source code.
+
+`context.target` is a reference to the function being called.
+
+`context.args` is an array of arguments that would be passed to
+`target` if `original()` were called.
 
 
 ```javascript
