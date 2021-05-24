@@ -175,7 +175,7 @@ function equipAssignmentExpression(node) {
 
   return {
     injectProperties: {
-      operator: node.operator,
+      operator: "'" + node.operator + "'",
       isUnprefixedGlobalDeclaration: isReference,
       value: gen(node.right),
     },
