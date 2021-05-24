@@ -3,7 +3,9 @@
 Mailing lists: [Commits](lya-commits@googlegroups.com) | [Discussion](lya-discuss@googlegroups.com)
 
 Lya is an analysis framework for Node.js. Use Lya to identify and
-address vulnerabilities, bottlenecks, and errors.
+address vulnerabilities, bottlenecks, and errors. Unlike alternatives,
+Lya uses a combination of static _and_ dynamic information to draw
+more meaningful conclusions about data.
 
 
 ## How to Use Lya
