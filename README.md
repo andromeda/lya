@@ -102,10 +102,10 @@ hooks.
 Lya's runtime shares the same V8 environment (Isolate, Context), which
 means that there exist programs that may sabotage Lya's operation.
 (e.g. damaging the global `Object` prototype).  This is an artifact of
-Lya assuming that you _trust input code_, and that it should preserve
-its existing function.  To help you avoid breakages, Lya forces your
-code to run in advance of a saboteur, such that you may override the
-behavior of said saboteur.
+Lya assuming that you _trust input code_, and it should preserve all
+functionality.  To help you avoid breakages, Lya forces your code to
+run in advance of a saboteur, such that you may override the behavior
+of said saboteur.
 
 
 # API Reference
