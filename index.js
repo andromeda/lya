@@ -20,8 +20,6 @@ var originalWrap = Module.wrap.bind(Module);
 var cjsArguments = ['exports', 'require', 'module', '__dirname', '__filename'];
 
 
-//const convert = (hrtime) => (hrtime[0] * 1e9) + hrtime[1];
-
 function callWithLya(userCallWithLyaInput) {
   var callWithLyaInput = types.makeCallWithLyaInput(userCallWithLyaInput);
   Module.wrap = bindModuleWrapOverride(callWithLyaInput);
