@@ -99,49 +99,39 @@ function requireKey(o, key) {
 }
 
 
-// bindGenerator returns an astring generator interface, which
-// controls how an ESTree turns to ECMAScript source code. We base the
-// transformations on the identifier used for the instrumentation
-// object, and generate the full interface from the `equip*`
-// functions in the module.
+// Returns an astring generator interface to control how an ESTree
+// turns to ECMAScript code.
 
 function bindGenerator(instrumentationId, instrumentation) {
   return Object.keys(astring.GENERATOR).reduce(function (iface, esNodeType) {
-    iface[esNodeType] = bindInjectionSite(esNodeType, instrumentationId, instrumentation);
+    var equipName = 'equip' + esNodeType;
+    var hookName = 'on' + esNodeType;
+    var hooks = instrumentation.rewriteModuleInput.callWithLyaInput;
+
+    // Set default implementation
+    iface[esNodeType] = astring.GENERATOR[esNodeType];
+
+    // Hook defined? Rewrite the code to inject a call.
+    if (hooks[hookName]) {
+      iface[esNodeType] = function (node, state) {
+        var options = provided[equipName] ? provided[equipName](node) : {};
+
+        options.instrumentationId = instrumentationId;
+        options.instrumentation = instrumentation;
+        options.node = node;
+        options.hookName = hookName;
+        options.isExpression = /Expression/.test(esNodeType);
+
+        var code = hooks.onHook(function () {
+          return injectHook(options);
+        }, options);
+
+        return state.write(code);
+      }
+    }
+
     return iface;
   }, {})
-}
-
-
-// Return a function used to extend astring to print a particular
-// ESTree as valid ECMAScript. In the context of Lya, the returned
-// function injects a hook call against the instrumentation when
-// the hook is available.
-function bindInjectionSite(esNodeType, instrumentationId, instrumentation) {
-  var equipName = 'equip' + esNodeType;
-  var hookName = 'on' + esNodeType;
-  var hooks = instrumentation.rewriteModuleInput.callWithLyaInput;
-
-  if (hooks[hookName]) {
-    return function (node, state) {
-      var options = provided[equipName] ? provided[equipName](node) : {};
-
-      options.instrumentationId = instrumentationId;
-      options.instrumentation = instrumentation;
-      options.node = node;
-      options.hookName = hookName;
-      options.isExpression = /Expression/.test(esNodeType);
-
-      var code = hooks.onHook(function () {
-        return injectHook(options);
-      }, options);
-
-      return state.write(code);
-    }
-  }
-  else {
-    return astring.GENERATOR[esNodeType];
-  }
 }
 
 
