@@ -36,62 +36,65 @@ function callWithLya(userCallWithLyaInput) {
 
 function bindModuleWrapOverride(callWithLyaInput) {
   return function wrap(script) {
-    // User gets first dibs.
+    // User gets first dibs, and may override behavior for the module. 
     var rewriteModuleInput = types.makeRewriteModuleInput(callWithLyaInput, script);
+    var cwli = rewriteModuleInput.callWithLyaInput;
 
-    rewriteModuleInput = callWithLyaInput.onModuleWrap(rewriteModuleInput) || rewriteModuleInput;
+    rewriteModuleInput = cwli.onModuleWrap(rewriteModuleInput) || rewriteModuleInput;
 
     // Shebangs may break parsers, but we don't want to remove them.
     rewriteModuleInput.script = rewriteModuleInput.script.replace(/^\s*#!/, '//#!');
     rewriteModuleInput.script = rewriteModule(rewriteModuleInput);
 
     // Allow user to react to rewrites
-    return rewriteModuleInput.afterRewriteModule(rewriteModuleInput);
+    return cwli.afterRewriteModule(rewriteModuleInput);
   }
 }
 
 
 function rewriteModule(rewriteModuleInput) {
-  var ast = acorn.parse(rewriteModuleInput.script, rewriteModuleInput.acornConfig);
+  var ast = rewriteModuleInput.acorn.parse(
+    rewriteModuleInput.script,
+    rewriteModuleInput.callWithLyaInput.acornConfig);
 
   // A non-collidable global helps preserve own properties.
   var instId = generateIdentifier();
   var instrumentation = { rewriteModuleInput: rewriteModuleInput };
-  var rewritten = instrument.instrumentCode(ast, instId, instrumentation, rewriteModuleInput.onHook);
+  var rewritten = instrument.instrumentCode(ast, instId, instrumentation, rewriteModuleInput);
   global[instId] = instrumentation;
 
   // Move the user's CommonJS where instrumentation is visible.
   var userCjsExpr = originalWrap(rewritten).replace(/;$/, '');
   var userCjsCall = makeCallExpression(userCjsExpr, cjsArguments);
-  var equipExpr = '(function (' + instId + '){return ' + userCjsCall + '})';
+  var hookedCjsCall = makeCallExpression(instId + "_h['onCommonJsApply']", [userCjsCall, instId]);
+  var equipExpr = '(function (' + instId + ', ' + instId + '_h){return ' + hookedCjsCall + '})';
 
   // Inject transfer from global scope to function scope.
-  var recvIIFE = '(' + extractIntrumentationCode + ')("' + instId + '")';
-  var equipCall = makeCallExpression(equipExpr, [recvIIFE]);
+  var recvIIFE = '(' + extractIntrumentationCode + ')("' + instId + '",' + equipExpr + ')';
 
   // A second wrap gives Lya control over the transition from the
   // beginning of the CommonJS module, to user code. It also
   // provides correct bindings for `extractIntrumentationCode`.
-  return originalWrap(equipCall);
+  return originalWrap(recvIIFE);
 }
 
 
 // This injectable code must appear in a CommonJS module to work.
-var extractIntrumentationCode = minify(function x(id) {
-  var instrumentation = global[id];
+var extractIntrumentationCode = minify(function x(id, next) {
+  var I = global[id];
 
   // Prevent checking the global object for instrumentation.
   delete global[id];
 
   // For dodging shadows and surprising reassignments.
-  instrumentation.global = global;
-  instrumentation.module = module;
-  instrumentation.exports = exports;
-  instrumentation.require = require;
-  instrumentation.__dirname = __dirname;
-  instrumentation.__filename = __filename;
+  I.global = (new Function('return this'))();
+  I.module = module;
+  I.exports = exports;
+  I.require = require;
+  I.__dirname = __dirname;
+  I.__filename = __filename;
 
-  return instrumentation;
+  return next(I, I.rewriteModuleInput.callWithLyaInput);
 }.toString());
 
 

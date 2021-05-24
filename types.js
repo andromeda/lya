@@ -1,9 +1,13 @@
+var acorn = require('acorn');
+var astring = require('astring');
+
 module.exports = {
   makeCallWithLyaInput,
   makeRewriteModuleInput,
 };
 
 function identity(v) { return v }
+function defaultApply(f) { return f() }
 
 function makeCallWithLyaInput(callWithLyaInput) {
   var cwli = callWithLyaInput || {};
@@ -16,8 +20,9 @@ function makeCallWithLyaInput(callWithLyaInput) {
     afterAnalysis: cwli.afterAnalysis || identity,
     afterRewriteModule: cwli.afterRewriteModule || function afterRewriteModule(v) { return v.script },
     onModuleWrap: cwli.onModuleWrap || identity,
-    onApply: cwli.onApply,
-    onHook: cwli.onHook || function onHook(f) { return f() },
+    onCommonJsApply: cwli.onCommonJsApply || defaultApply,
+    onApply: cwli.onApply || defaultApply,
+    onHook: cwli.onHook || defaultApply,
     onWrite: cwli.onWrite,
     onError: cwli.onError || function onError(e) {
       throw e;
@@ -29,14 +34,10 @@ function makeCallWithLyaInput(callWithLyaInput) {
 }
 
 function makeRewriteModuleInput(userCallWithLyaInput, script) {
-  var cwli = makeCallWithLyaInput(userCallWithLyaInput);
-
   return {
-    afterRewriteModule: cwli.afterRewriteModule,
+    acorn: acorn,
+    astring: astring,
     script: script,
-    acornConfig: cwli.acornConfig,
-    onApply: cwli.onApply,
-    onHook: cwli.onHook,
-    onWrite: cwli.onWrite,
+    callWithLyaInput: makeCallWithLyaInput(userCallWithLyaInput),
   };
 }

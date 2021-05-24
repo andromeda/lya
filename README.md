@@ -184,6 +184,27 @@ not re-throw its argument.
 The default implementation simply throws its argument.
 
 
+## `onCommonJsApply`
+[`onCommonJsApply`]: #oncommonjsapply
+
+`onCommonJsApply := (original : Function, inst : Instrumentation) -> Any`
+
+A hook that fires in place of a function call for a CommonJS module to
+analyze as a subject.
+
+Returns a value to use as the return value of the function
+representing the CommonJS module.
+
+`original` is a thunk that applies and returns the function
+encapsulating the subject as Node.js originally intended.
+
+`inst` is an [`Instrumentation`][] containing the original `exports`,
+`require`, `module`, `__dirname`, and `__filename` arguments meant for
+the subject.
+
+The default implementation simply returns `original()`.
+
+
 ## `onReady`
 [`onReady`]: #onready
 
@@ -381,46 +402,42 @@ The sole argument to [`callWithLya`][].
 }
 ```
 
-An `Instrumentation` object is generated for each CommonJS module
-rewritten by Lya. Instances are injected so that they can capture the
-original arguments to the CommonJS function, and to provide access to
-_relevant_ configuration in hooks.
+An `Instrumentation` object is a CommonJS module-specific object
+injected into the runtime by Lya. Instrumentation captures original
+arguments to the CommonJS function, the actual global object, and help
+provide access to relevant configuration for hooks.
 
 Instrumentation objects are important because one is guarenteed to
 exist lexically inside each CommonJS module. This makes it possible
 for a dynamic analysis to check where an operation _lexically_
 appeared.
 
-The properties are
-
-* `exports`, `require`, `module`, `__dirname`, `__filename`: The
+`exports`, `require`, `module`, `__dirname` and `__filename` are
   CommonJS arguments bound where the instrumentation object appears in
-  refactored source code.
+    refactored source code.
 
-* `global`: The value bound to `global` at the time the
-  instrumentation object was created.
+`global` is bound to the actual global object.
 
-* `rewriteModuleInput`: The [`RewriteModuleInput`][] used to rewrite
-  the source code of the module.
-
+`rewriteModuleInput` is a [`RewriteModuleInput`][] object.  Use it to
+understand configuration affecting the module.
 
 
-## `RewriteModuleState`
-[`RewriteModuleState`]: #modulerewritestate
+## `RewriteModuleInput`
+[`RewriteModuleInput`]: #rewritemoduleinput
 
 ```javascript
 {
     script: String,
     acorn: Object,
     astring: Object,
-    rewriteModuleInput: RewriteModuleInput,
+    callWithLyaInput: CallWithLyaInput,
 }
 ```
 
 The sole argument provided to [`onModuleWrap`][] and
 [`afterRewriteModule`][].
 
-`script` is the source code of the module.
+`script` is the source code of a module to rewrite.
 
 `acorn` is a reference to Lya's instance of [Acorn][], which is used
 to parse ECMAScript.
@@ -428,9 +445,7 @@ to parse ECMAScript.
 `astring` is a reference to Lya's instance of [Astring][], which is
 used to turn parsed ECMAScript back to JavaScript for use in Node.js.
 
-`rewriteModuleInput` is a [`RewriteModuleInput`][] object derived from
-the argument to [`callWithLya`][], or the value returned from
-[`onModuleWrap`][].
+`callWithLyaInput`: A [`CallWithLyaInput`][] object.
 
 
 ## `OnModuleWrapOutput`
@@ -450,19 +465,7 @@ CommonJS.
 
 `rewriteConfig` is a [`RewriteModuleInput`][] object.
 
-## `RewriteModuleInput`
-[`RewriteModuleInput`]: #modulerewriteoptions
 
-```javascript
-{
-   acornConfig: Object,
-   onApply: Function,
-   afterRewriteModule: Function
-}
-```
-
-A subset of [`CallWithLyaInput`][] used to refactor and instrument
-CommonJS modules. The properties have the same meaning.
 
 
 [Acorn]: https://github.com/acornjs/acorn

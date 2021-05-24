@@ -17,12 +17,13 @@ module.exports = {
   instrumentCode,
   equipAssignmentExpression,
   equipCallExpression,
+  equipNewExpression,
 };
 
 var astring = require('astring');
 
-function instrumentCode(ast, instrumentationId, instrumentation, onHook) {
-  return gen(ast, bindGenerator(instrumentationId, instrumentation, onHook));
+function instrumentCode(ast, instrumentationId, instrumentation, rewriteModuleInput) {
+  return gen(ast, bindGenerator(instrumentationId, instrumentation, rewriteModuleInput));
 }
 
 
@@ -76,7 +77,7 @@ function injectHook(userOptions) {
 
   // This appears in code as a CallExpression like this
   /*
-    __lya8323['onApply'](function () {return console.log(1)}, {
+    __lya8323_h['onApply'](function () {return console.log(1)}, {
       <whatever was in injectProperties>
       instrumentation: __lya8323,
       estree: { "type": "CallExpression", ... },
@@ -87,7 +88,7 @@ function injectHook(userOptions) {
       - `subscript` is ['onApply'], and
       - `hookArguments` is the remaining parenthetical.
   */
-  return instrumentationId + subscript + hookArguments;
+  return instrumentationId + '_h' + subscript + hookArguments;
 }
 
 function requireKey(o, key) {
@@ -102,24 +103,27 @@ function requireKey(o, key) {
 // object, and generate the full interface from the `equip*`
 // functions in the module.
 
-function bindGenerator(instrumentationId, instrumentation, onHook) {
+function bindGenerator(instrumentationId, instrumentation, rewriteModuleInput) {
   var hooksToEquipFunctions = [
     ['onApply', equipCallExpression],
     ['onWrite', equipAssignmentExpression],
+    ['onNew', equipNewExpression],
+    ['onMemberAccess', equipMemberExpression],
   ];
 
   return hooksToEquipFunctions.reduce(function (iface, pair) {
     var hookName = pair[0];
     var equip = pair[1];
     var esTreeNodeType = equip.name.replace('equip', '');
+    var hooks = instrumentation.rewriteModuleInput.callWithLyaInput;
 
     // Only rewrite code if there's a hook to call.
-    if (typeof instrumentation[hookName] === 'function')  {
+    if (typeof hooks[hookName] === 'function')  {
       iface[esTreeNodeType] = bindInjectionSite(
         instrumentationId,
         instrumentation,
         hookName,
-        onHook,
+        rewriteModuleInput,
         equip);
     }
 
@@ -131,7 +135,7 @@ function bindGenerator(instrumentationId, instrumentation, onHook) {
 // Return a function used to extend astring to print a particular
 // ESTree as valid ECMAScript. In the context of Lya, the returned
 // function injects a hook call against the instrumentation.
-function bindInjectionSite(instrumentationId, instrumentation, hookName, onHook, equip) {
+function bindInjectionSite(instrumentationId, instrumentation, hookName, rewriteModuleInput, equip) {
   return function (node, state) {
     var options = equip(node);
     options.instrumentationId = instrumentationId;
@@ -139,7 +143,11 @@ function bindInjectionSite(instrumentationId, instrumentation, hookName, onHook,
     options.node = node;
     options.hookName = hookName;
     options.isExpression = /Expression/.test(node.type);
-    var code = onHook(function () { return injectHook(options) }, options);
+
+    var code = rewriteModuleInput.callWithLyaInput.onHook(function () {
+      return injectHook(options);
+    }, options);
+
     return state.write(code);
   };
 }
@@ -152,12 +160,29 @@ function bindInjectionSite(instrumentationId, instrumentation, hookName, onHook,
 
 function equipCallExpression(node) {
   return {
+    usingNew: false,
     injectProperties: {
       target: gen(node.callee),
       args: '[' + node.arguments.map((n) => gen(n)).join(',') + ']',
     },
   };
 }
+
+
+function equipNewExpression(node) {
+  return equipCallExpression(node);
+}
+
+
+function equipMemberExpression(node) {
+  return {
+    injectProperties: {
+      target: gen(node.object),
+      value: gen(node),
+    },
+  };
+}
+
 
 function equipAssignmentExpression(node) {
   var lhs = gen(node.left);
