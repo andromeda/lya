@@ -48,8 +48,8 @@ the command line (that is, the part of `process.argv` left over after
 removing the arguments that led to calling `configureLya`).
 
 The second argument, `lya`, is `===` to the `module.exports` set by
-the main module of `lya`. This dependency injection pattern is meant
-to allow users to create custom launchers quickly.
+the main module of `lya`. This dependency injection pattern lets you
+create custom launchers quickly.
 
 ```javascript
 // example.js
