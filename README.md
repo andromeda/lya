@@ -98,7 +98,7 @@ means that there exist programs that may sabotage Lya's operation.
 Lya assuming that you _trust input code_, and that it should preserve
 its existing function.  To help you avoid breakages, Lya forces your
 code to run in advance of a saboteur, such that you may override the
-behavior of said saboteur by redirecting assignments or accesses.
+behavior of said saboteur.
 
 
 # API Reference
