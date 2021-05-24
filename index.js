@@ -66,7 +66,10 @@ function rewriteModule(rewriteModuleInput) {
   // Move the user's CommonJS where instrumentation is visible.
   var userCjsExpr = originalWrap(rewritten).replace(/;$/, '');
   var userCjsCall = makeCallExpression(userCjsExpr, cjsArguments);
-  var hookedCjsCall = makeCallExpression(instId + "_h['onCommonJsApply']", [userCjsCall, instId]);
+  var hookedCjsCall = makeCallExpression(
+    instId + "_h['onCommonJsApply']",
+    ['function () { return ' + userCjsCall + '}',
+     instId]);
   var equipExpr = '(function (' + instId + ', ' + instId + '_h){return ' + hookedCjsCall + '})';
 
   // Inject transfer from global scope to function scope.
@@ -105,7 +108,7 @@ function generateIdentifier() {
   return '__lya' + crypto.randomBytes(4).toString('hex');
 }
 
-function makeCallExpression(fexpr, args) {
+function makeCallExpression(fexpr, args = []) {
   return fexpr + '(' + args.join(',') + ')';
 }
 
