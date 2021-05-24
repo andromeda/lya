@@ -2,6 +2,7 @@
 
 module.exports = {
   callWithLya,
+  findEntryModule,
 };
 
 var crypto = require('crypto');
@@ -13,74 +14,60 @@ var acorn = require('acorn');
 var astring = require('astring');
 
 var instrument = require('./instrument.js');
+var types = require('./types.js');
 
-var originalWrap = Module.wrap;
-
+var originalWrap = Module.wrap.bind(Module);
 var cjsArguments = ['exports', 'require', 'module', '__dirname', '__filename'];
 
-function noop() {}
 
-function callWithLya(instrumentation) {
-  Module.wrap = bindModuleWrapOverride(instrumentation);
-  var onReady = instrumentation.onReady || function onReady() { throw new Error('onReady not defined') }
-  var onError = instrumentation.onError || function onError(e) { throw e }
-  var afterAnalysis = instrumentation.afterAnalysis || function afterAnalysis(v) { return v; }
+//const convert = (hrtime) => (hrtime[0] * 1e9) + hrtime[1];
+
+function callWithLya(userCallWithLyaInput) {
+  var callWithLyaInput = types.makeCallWithLyaInput(userCallWithLyaInput);
+  Module.wrap = bindModuleWrapOverride(callWithLyaInput);
 
   try {
-    var result = onReady();
+    var result = callWithLyaInput.onReady();
     Module.wrap = originalWrap;
-    return afterAnalysis(result);
+    return callWithLyaInput.afterAnalysis(result);
   } catch (error) {
     Module.wrap = originalWrap;
-    return onError(error);
+    return callWithLyaInput.onError(error);
   }
 }
 
-function bindModuleWrapOverride(instrumentation) {
+function bindModuleWrapOverride(callWithLyaInput) {
   return function wrap(script) {
-    // User gets first dibs on the original code. They may also return
-    // per-module instrumentation for outlier programs.
-    var fallback = { script: script, instrumentation: instrumentation };
-    function returnFallback() { return fallback }
-    var planModuleRewrite = instrumentation.onModuleWrap || returnFallback;
-    var moduleSpecific = planModuleRewrite({
-      script: script,
-      acorn: acorn,
-      astring: astring,
-      instrumentation: instrumentation,
-    }) || fallback;
+    // User gets first dibs.
+    var rewriteModuleInput = types.makeRewriteModuleInput(callWithLyaInput, script);
+
+    rewriteModuleInput = callWithLyaInput.onModuleWrap(rewriteModuleInput) || rewriteModuleInput;
 
     // Shebangs may break parsers, but we don't want to remove them.
-    var commentedOutShebang = moduleSpecific.script.replace(/^\s*#!/, '//#!');
-    var analysisReady = rewriteModule(commentedOutShebang, moduleSpecific.instrumentation);
+    rewriteModuleInput.script = rewriteModuleInput.script.replace(/^\s*#!/, '//#!');
+    rewriteModuleInput.script = rewriteModule(rewriteModuleInput);
 
     // Allow user to react to rewrites
-    var afterModuleRewrite = moduleSpecific.instrumentation.afterModuleRewrite || noop;
-    afterModuleRewrite({ script: analysisReady });
-
-    return analysisReady;
+    return rewriteModuleInput.afterRewriteModule(rewriteModuleInput);
   }
 }
 
 
-function rewriteModule(script, instrumentation) {
-  var ast = acorn.parse(script, Object.assign({
-    sourceType: 'script',
-    ecmaVersion: 2020,
-  }, instrumentation.acornConfig || {}));
+function rewriteModule(rewriteModuleInput) {
+  var ast = acorn.parse(rewriteModuleInput.script, rewriteModuleInput.acornConfig);
 
-  // Declare a shallow clone of the instrumentation as a
-  // non-collidable global to preserve own properties per-module.
+  // A non-collidable global helps preserve own properties.
   var instId = generateIdentifier();
-  var rewritten = instrument.instrumentCode(ast, instId, instrumentation);
-  global[instId] = Object.assign({}, instrumentation);
+  var instrumentation = Object.assign({}, rewriteModuleInput);
+  var rewritten = instrument.instrumentCode(ast, instId, instrumentation, rewriteModuleInput.onHook);
+  global[instId] = instrumentation;
 
   // Move the user's CommonJS where instrumentation is visible.
   var userCjsExpr = originalWrap(rewritten).replace(/;$/, '');
   var userCjsCall = makeCallExpression(userCjsExpr, cjsArguments);
   var equipExpr = '(function (' + instId + '){return ' + userCjsCall + '})';
 
-  // Inject code to move instrumentation out of global scope.
+  // Inject transfer from global scope to function scope.
   var recvIIFE = '(' + extractIntrumentationCode + ')("' + instId + '")';
   var equipCall = makeCallExpression(equipExpr, [recvIIFE]);
 
@@ -110,8 +97,9 @@ var extractIntrumentationCode = minify(function x(id) {
 }.toString());
 
 
-// We need non-collidable identifiers to mitigate the risk of input
-// code that tries to sabotage an analysis.
+// Non-collidable identifiers handles some cases of input code that
+// tries to sabotage an analysis, but this alone does not make such an
+// attack infeasible.
 function generateIdentifier() {
   return '__lya' + crypto.randomBytes(4).toString('hex');
 }
@@ -125,9 +113,34 @@ function minify(js) {
   return astring.generate(ast, { indent: '', lineEnd: '' })
 }
 
-if (require.main === module) {
-  var userEntry = process.argv[2];
+function findEntryModule(require, userEntry) {
+  if (!userEntry) {
+    console.error('Please specify an input file as a command line argument.');
+    process.exit(1);
+  }
+
   var completePath = path.resolve(process.cwd(), userEntry);
-  var entry = fs.existsSync(completePath) ? completePath : userEntry;
-  console.log(callWithLya(require(entry)(process.argv.slice(3))));
+  var stats = fs.existsSync(completePath) && fs.statSync(completePath);
+  var isFile = stats && stats.isFile();
+  var entry = isFile ? completePath : userEntry;
+
+  try {
+    return require.resolve(entry);
+  } catch (e) {
+    console.error(`Could not resolve '${userEntry}' using require.resolve`);
+
+    if (isFile) {
+      console.error('Tried to read as a file from ${completePath}');
+    }
+
+    process.exit(1);
+  }
+}
+
+
+if (require.main === module) {
+  var entry = findEntryModule(require, process.argv[2]);
+  var analysis = require(entry);
+  var callWithLyaInput = analysis(process.argv.slice(3), module.exports);
+  console.log(callWithLya(callWithLyaInput));
 }

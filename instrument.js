@@ -21,8 +21,8 @@ module.exports = {
 
 var astring = require('astring');
 
-function instrumentCode(ast, instrumentationId, instrumentation) {
-  return gen(ast, bindGenerator(instrumentationId, instrumentation));
+function instrumentCode(ast, instrumentationId, instrumentation, onHook) {
+  return gen(ast, bindGenerator(instrumentationId, instrumentation, onHook));
 }
 
 
@@ -102,7 +102,7 @@ function requireKey(o, key) {
 // object, and generate the full interface from the `equip*`
 // functions in the module.
 
-function bindGenerator(instrumentationId, instrumentation) {
+function bindGenerator(instrumentationId, instrumentation, onHook) {
   var hooksToEquipFunctions = [
     ['onApply', equipCallExpression],
     ['onWrite', equipAssignmentExpression],
@@ -116,7 +116,11 @@ function bindGenerator(instrumentationId, instrumentation) {
     // Only rewrite code if there's a hook to call.
     if (typeof instrumentation[hookName] === 'function')  {
       iface[esTreeNodeType] = bindInjectionSite(
-        instrumentationId, instrumentation, hookName, equip);
+        instrumentationId,
+        instrumentation,
+        hookName,
+        onHook,
+        equip);
     }
 
     return iface;
@@ -127,7 +131,7 @@ function bindGenerator(instrumentationId, instrumentation) {
 // Return a function used to extend astring to print a particular
 // ESTree as valid ECMAScript. In the context of Lya, the returned
 // function injects a hook call against the instrumentation.
-function bindInjectionSite(instrumentationId, instrumentation, hookName, equip) {
+function bindInjectionSite(instrumentationId, instrumentation, hookName, onHook, equip) {
   return function (node, state) {
     var options = equip(node);
     options.instrumentationId = instrumentationId;
@@ -135,7 +139,8 @@ function bindInjectionSite(instrumentationId, instrumentation, hookName, equip) 
     options.node = node;
     options.hookName = hookName;
     options.isExpression = /Expression/.test(node.type);
-    return state.write(injectHook(options));
+    var code = onHook(function () { return injectHook(options) }, options);
+    return state.write(code);
   };
 }
 
