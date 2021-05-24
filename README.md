@@ -177,8 +177,9 @@ definition. If it does not, then expect it to behave independently of
 this section.
 
 `original` is a thunk constructed by Lya that lexically wraps the
-original source code. In most cases, `return original()` will execute
-the original function and return the value the author intended.
+original source code. In most cases, `original()` will execute the
+original code and return a value the author intended (if a return
+value is expected).
 
 `context` is an object clarifying the nature of the operation.
 
