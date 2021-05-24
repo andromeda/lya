@@ -332,13 +332,13 @@ monitor Lya's modifications using something like `onHook: f => (v
 ## `onModuleWrap`
 [`onModuleWrap`]: #onmodulewrap
 
-`onModuleWrap := (state : RewriteModuleState) -> RewriteModuleInput`
+`onModuleWrap := (state : RewriteModuleInput) -> RewriteModuleInput`
 
 Called each time Node.js uses `Module.wrap` for a new CommonJS module,
 but before the source code is actually wrapped with a CommonJS
 function expression.
 
-The `script` property of the [`RewriteModuleState`][] argument is the
+The `script` property of the [`RewriteModuleInput`][] argument is the
 source code exactly as it appeared when loaded into memory, before
 being equipped for use with CommonJS.
 
