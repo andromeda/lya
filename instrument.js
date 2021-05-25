@@ -44,10 +44,7 @@ function bindHookWrapper(instrumentationId, node, hookName) {
     injectProperties = injectProperties || {};
 
     // Send all info down to hook.
-    injectProperties.instrumentation = instrumentationId;
-    injectProperties.estree = JSON.stringify(node, function (key, value) {
-      return (key === 'start' || key === 'end') ? undefined : value;
-    });
+    injectProperties.I = instrumentationId;
 
     var propertyDeclarations = (
       Object
@@ -89,7 +86,6 @@ function bindGenerator(instrumentationId, instrumentation) {
     var refactorName = 'refactor' + esNodeType;
     var hookName = 'on' + esNodeType;
     var hooks = instrumentation.rewriteModuleInput.callWithLyaInput;
-    function recurse(n) {return gen(n, iface)}
 
     // Set default implementation
     iface[esNodeType] = astring.GENERATOR[esNodeType];
@@ -103,7 +99,12 @@ function bindGenerator(instrumentationId, instrumentation) {
           node: node,
           hookName: hookName,
           wrap: bindHookWrapper(instrumentationId, node, hookName),
-          instrument: recurse,
+          instrument: function instrument(n) {
+            if (n === node) {
+              throw new Error('Cycle detected. Do not call instrument() on the node that came with it.');
+            }
+            return gen(n, iface);
+          },
           render: gen,
         };
 

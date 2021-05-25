@@ -199,10 +199,8 @@ value is expected).
 
 `context` is an object clarifying the nature of the operation.
 
-`context.instrumentation` is the [`Instrumentation`] object for the
-module _lexically_ containing the operation.
-
-`context.node` is the [ESTree][] expressing the operation.
+`context.I` is the [`Instrumentation`] object for the module
+_lexically_ containing the operation.
 
 ## Live Refactor Hooks
 [Live refactor hook]: #live-refactor-hooks
@@ -212,16 +210,16 @@ module _lexically_ containing the operation.
 
 `R := (options : LiveRefactorHookInput) -> String`
 
-A **live refactor hook** is a hook that returns JavaScript source code
-compatible with Node.js.  The returned code represents a refactored
-form of a (parsed) input.
+A **live refactor hook** is a hook that returns source code compatible
+with Node.js.  The returned code often represents a refactored form of
+code described by [`LiveRefactorHookInput`][], but does not have to be
+exactly the syntactic form that was originally there.
 
-You might think of these hooks as a kind of macro, but that wouldn't
-be quite fair. Live refactor hooks are certainly a metaprogramming
-facility, but their name indicates that they share the same runtime
-with the code they return. They extend a program that _dynamically_
-creates more code for it to execute, not an extension for some
-expansion phase.
+You might think of these hooks as macros, but that wouldn't be quite
+accurate. While a metaprogramming facility, "live refactor" means that
+the code generation is still at runtime. These hooks extend a program
+that _dynamically_ creates more code to execute, so any parallels to
+an expansion phase are loosely drawn.
 
 A live refactor hook may choose to generate the same code the author
 originally intended exactly where necessary.
@@ -344,75 +342,6 @@ function onCallExpression() {
 }
 ```
 
-
-## `onHook`
-[`onHook`]: #onhook
-
-```
-onHook := (original: Function, options: Object) -> Any
-```
-
-Called each time Lya is about to replace input code with an
-instrumented functional equivalent. The injected code is expected to
-call a user's hook.
-
-`original` is a thunk that, when called, returns a string. The string
-contains instrumented source code as Lya would inject it into a
-subject. `options` holds information used to compute the value of
-`original()`.
-
-`options.instrumentationId`: A string form of the module-specific
-identifier used to access the instrumentation object in the subject.
-
-`options.instrumentation`: The [`Instrumentation`][] object bound to
-`options.instrumentationId` in the subject.
-
-`options.node`: The [`ESTree`][] object in the subject reflecting
-source code that will be replaced.
-
-`options.hookName`: The string name of a hook, suitable for use as an
-object key (e.g. `'onCallExpression'`).
-
-`options.isExpression`: A boolean indicating whether `options.node` is
-an ECMAScript expression, as opposed to a statement or special
-operator.
-
-`options.injectProperties`: An object expressing generated source code
-used to compute some hook arguments. When the hook named by
-`options.hookName` runs, its input argument will contain the
-properties named by `options.injectProperties`, but the values
-come from evaluating said source code for the property.
-
-For a strictly illustrative example:
-
-```javascript
-{
-   hookName: 'X',
-   instrumentationId: 'I',
-   injectProperties: {
-     now: 'Date.now()',
-   }
-}
-```
-
-implies that the hook is fired like so:
-
-```
-I.rewriteModuleInput.callWithLyaInput['X']({
-  now: Date.now(),
-  instrumentation: I,
-  ...,
-})
-```
-
-Note that this hook operates on code at instrumentation-time, allowing
-a static interpretation of code. Leverage this for metaprogramming,
-specifically to select what code gains instrumentation to reduce
-overhead.
-
-The default implementation simply returns `original()`, so you can
-monitor Lya's modifications using something like `f => (v =>
-console.log(v), v)(f())`.
 
 
 ## `onModuleWrap`
