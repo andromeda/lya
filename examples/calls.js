@@ -39,8 +39,8 @@ module.exports = function callAnalysis(argv, lya) {
     // Create JSON Array output where functions are listed in
     // alphabetical order (.sort()). Show how many times each function
     // was called, along with where the function call appeared.
-    afterAnalysis: () =>
-      JSON.stringify(
+    afterAnalysis: function afterAnalysis() {
+      return JSON.stringify(
         Array
           .from(counts)
           .sort(([a],[b]) => a.name.localeCompare(b.name))
@@ -53,6 +53,7 @@ module.exports = function callAnalysis(argv, lya) {
                              .split('\n')
                              .slice(1, -2)
                              .map((l) => l.replace(/^\s+at /, ''))),
-          })), null, 2),
+          })), null, 2)
+    },
   };
 }
