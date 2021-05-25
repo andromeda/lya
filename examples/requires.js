@@ -36,10 +36,15 @@ module.exports = function importAnalysis(argv, lya) {
       var args = R.node.arguments;
       var render = R.render;
       
-      return wrap(render(node),
-                  (callee.type === 'Identifier' && callee.name === 'require')
-                  ? {required: render(args[0]), target: render(callee) }
-                  : {});
+      return wrap(render(node), {
+        injectProperties: (
+          callee.type === 'Identifier' && callee.name === 'require'
+            ? {
+              required: render(args[0]),
+              target: render(callee)
+            }
+          : {}),
+      });
     },
 
     afterAnalysis: function afterAnalysis() {

@@ -40,8 +40,11 @@ function gen(ast, generator = astring.GENERATOR) {
 // code. This is dangerous if the hooks come from untrusted code.
 
 function bindHookWrapper(instrumentationId, node, hookName) {
-  return function (source, injectProperties) {
-    injectProperties = injectProperties || {};
+  return function (source, userOptions) {
+    var options = userOptions || {};
+    var addReturn = options.addReturn || true;
+    var useHook = options.hookName || hookName;
+    var injectProperties = options.injectProperties || {};
 
     // Send all info down to hook.
     injectProperties.I = instrumentationId;
@@ -56,8 +59,8 @@ function bindHookWrapper(instrumentationId, node, hookName) {
     );
 
     var properties = '{' + propertyDeclarations.join(',') + '}';
-    var subscript = "['" + hookName + "']";
-    var deferred = 'function () {' + source + '}';
+    var subscript = "['" + useHook + "']";
+    var deferred = 'function () {' + (addReturn ? 'return ' : '') + source  + '}';
     var hookArguments = '(' + deferred + ',' + properties + ')';
 
     // This appears in code as a CallExpression like this
@@ -91,7 +94,7 @@ function bindGenerator(instrumentationId, instrumentation) {
     iface[esNodeType] = astring.GENERATOR[esNodeType];
 
     // Hook defined? Rewrite the code to inject a call.
-    if (hooks[hookName]) {
+    if (hooks[refactorName] || hooks[hookName]) {
       iface[esNodeType] = function (node, state) {
         var options = {
           instrumentationId: instrumentationId,

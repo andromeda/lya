@@ -38,7 +38,9 @@ module.exports = function callAnalysis(argv, lya) {
 
     refactorCallExpression: function refactorCallExpression(R) {
       return R.wrap(R.render(R.node), {
-        target: R.render(R.node.callee),
+        injectProperties: {
+          target: R.render(R.node.callee),
+        },
       });
     },
 
