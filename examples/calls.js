@@ -36,6 +36,13 @@ module.exports = function callAnalysis(argv, lya) {
       return f();
     },
 
+    refactorCallExpression: function refactorCallExpression(R) {
+      return R.wrap(R.render(R.node), {
+        target: R.render(R.node.callee),
+      });
+    },
+
+    
     // Create JSON Array output where functions are listed in
     // alphabetical order (.sort()). Show how many times each function
     // was called, along with where the function call appeared.

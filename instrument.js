@@ -39,57 +39,45 @@ function gen(ast, generator = astring.GENERATOR) {
 // This function generates code for firing a hook in advance of other
 // code. This is dangerous if the hooks come from untrusted code.
 
-function injectHook(userOptions) {
-  var options = (typeof userOptions === 'object' && userOptions !== null) ? userOptions : {};
-  var isExpression = options.isExpression || true;
-  var instrumentationId = requireKey(options, 'instrumentationId');
-  var node = requireKey(options, 'node');
-  var hookName = requireKey(options, 'hookName');
-  var injectProperties = Object.assign({}, options.injectProperties || {});
+function bindHookWrapper(instrumentationId, node, hookName) {
+  return function (source, injectProperties) {
+    injectProperties = injectProperties || {};
 
-  // The properties defined here appear with their runtime values when
-  // the hook actually fires. We always want to expose the
-  // instrumentation and the ESTree for the operation, because that
-  // allows a hook to make decisions based on static information,
-  // dynamic information, AND per-module configuration.
-  injectProperties.instrumentation = instrumentationId;
-  injectProperties.estree = JSON.stringify(node, function (key, value) {
-    return (key === 'start' || key === 'end') ? undefined : value;
-  });
+    // Send all info down to hook.
+    injectProperties.instrumentation = instrumentationId;
+    injectProperties.estree = JSON.stringify(node, function (key, value) {
+      return (key === 'start' || key === 'end') ? undefined : value;
+    });
 
-  var propertyDeclarations = (
-    Object
-      .keys(injectProperties)
-      .reduce(function (props, name) {
-        props.push(name + ':' + injectProperties[name]);
-        return props;
-      }, [])
-  );
+    var propertyDeclarations = (
+      Object
+        .keys(injectProperties)
+        .reduce(function (props, name) {
+          props.push(name + ':' + injectProperties[name]);
+          return props;
+        }, [])
+    );
 
-  var properties = '{' + propertyDeclarations.join(',') + '}';
-  var subscript = "['" + hookName + "']";
-  var deferred = 'function () {' + (isExpression ? 'return ' : '') + gen(node) + '}';
-  var hookArguments = '(' + deferred + ',' + properties + ')';
+    var properties = '{' + propertyDeclarations.join(',') + '}';
+    var subscript = "['" + hookName + "']";
+    var deferred = 'function () {' + source + '}';
+    var hookArguments = '(' + deferred + ',' + properties + ')';
 
-  // This appears in code as a CallExpression like this
-  /*
-    __lya8323_h['onCallExpression'](function () {return console.log(1)}, {
+    // This appears in code as a CallExpression like this
+    /*
+      __lya8323_h['onCallExpression'](function () {return console.log(1)}, {
       <whatever was in injectProperties>
       instrumentation: __lya8323,
       estree: { "type": "CallExpression", ... },
-    });
+      });
 
-    where
+      where
       - `instrumentationId` is `__lya8323`
       - `subscript` is ['onCallExpression'], and
       - `hookArguments` is the remaining parenthetical.
-  */
-  return instrumentationId + '_h' + subscript + hookArguments;
-}
-
-function requireKey(o, key) {
-  if (key in o) return o[key];
-  throw new Error('Missing ' + key);
+    */
+    return instrumentationId + '_h' + subscript + hookArguments;
+  }
 }
 
 
@@ -98,7 +86,7 @@ function requireKey(o, key) {
 
 function bindGenerator(instrumentationId, instrumentation) {
   return Object.keys(astring.GENERATOR).reduce(function (iface, esNodeType) {
-    var equipName = 'equip' + esNodeType;
+    var refactorName = 'refactor' + esNodeType;
     var hookName = 'on' + esNodeType;
     var hooks = instrumentation.rewriteModuleInput.callWithLyaInput;
     function recurse(n) {return gen(n, iface)}
@@ -109,18 +97,21 @@ function bindGenerator(instrumentationId, instrumentation) {
     // Hook defined? Rewrite the code to inject a call.
     if (hooks[hookName]) {
       iface[esNodeType] = function (node, state) {
-        var options = {};
+        var options = {
+          instrumentationId: instrumentationId,
+          instrumentation: instrumentation,
+          node: node,
+          hookName: hookName,
+          wrap: bindHookWrapper(instrumentationId, node, hookName),
+          instrument: recurse,
+          render: gen,
+        };
 
-        options.instrumentationId = instrumentationId;
-        options.instrumentation = instrumentation;
-        options.node = node;
-        options.hookName = hookName;
-        options.isExpression = /Expression/.test(esNodeType);
-        options.injectProperties = hooks[equipName] ? hooks[equipName](node, recurse) : {};
+        var refactor = hooks[refactorName] || function refactor() {
+          return options.wrap(gen(node));
+        };
 
-        var code = hooks.onHook(function () {
-          return injectHook(options);
-        }, options);
+        var code = refactor(options);
 
         if (!code && code !== '') {
           return astring.GENERATOR[esNodeType](node, state);

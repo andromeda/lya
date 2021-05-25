@@ -29,15 +29,17 @@ module.exports = function importAnalysis(argv, lya) {
 
     // Equip a CallExpression with the function being called and the
     // first argument, but only if it looks like a vanilla require.
-    equipCallExpression: function equipCallExpression(node, gen) {
-      return (node.callee.type === 'Identifier' && node.callee.name === 'require')
-        ? {required: gen(node.arguments[0]), target: gen(node.callee) }
-        : {};
-    },
-
-    // Only transform code that the equip hook worked on
-    onHook: function onHook(original, options) {
-      return options.injectProperties.required && original();
+    refactorCallExpression: function refactorCallExpression(R) {
+      var wrap = R.wrap;
+      var node = R.node;
+      var callee = R.node.callee;
+      var args = R.node.arguments;
+      var render = R.render;
+      
+      return wrap(render(node),
+                  (callee.type === 'Identifier' && callee.name === 'require')
+                  ? {required: render(args[0]), target: render(callee) }
+                  : {});
     },
 
     afterAnalysis: function afterAnalysis() {
