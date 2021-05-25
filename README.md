@@ -94,18 +94,31 @@ was originally written, or to override the behavior.
 
 To create a "coarse-grained" analysis with less overhead, a user may
 configure exactly what statements and/or expressions are rewritten
-using the [`onHook`][] hook. [`onHook`][] is a metaprogramming
-facility that allows the user to extend instrumentation, or override
-Lya's own static operations in a manner that resembles all other
-hooks.
+using [live refactor hooks][]. Lya offers this metaprogramming
+facility to finely-tune the scope of instrumentation.
 
-Lya's runtime shares the same V8 environment (Isolate, Context), which
-means that there exist programs that may sabotage Lya's operation.
-(e.g. damaging the global `Object` prototype).  This is an artifact of
-Lya assuming that you _trust input code_, and it should preserve all
-functionality.  To help you avoid breakages, Lya forces your code to
-run in advance of a saboteur, such that you may override the behavior
-of said saboteur.
+**This model is meant for trusted code, or code under investigation on
+a secured system.**  Due to strong limitations with a pure-runtime
+implementations of Lya, Lya parses and generates JavaScript for
+evaluation using string concatenation and code you provide in your
+configuration. While that sounds scary, most powerful JavaScript
+projects (see Webpack) have to perform equally scary-looking source
+transformations to enable certain features. The only difference with
+Lya is that you can hook into that process at a lower level.
+
+Lya also shares its runtime the same V8 environment (Isolate +
+Context) to make certain claims about global references easier to
+demonstrate.  This unfortunately means that input programs can
+sabotage an analysis (e.g. damaging the global `Object` prototype).
+But any program that would break Lya in this way would probably break
+anything else in the same way.
+
+All of these cautions are necessary, but the design is meant to dodge
+some of JavaScript's limitations while preserving the functionality of
+input code. If you wisk to mitigate related risks, note that Lya
+forces your code to run in advance of a saboteur, such that you may
+override the behavior of said saboteur.  All potentially dangerous
+code you choose to hook is wrapped in this way.
 
 
 # API Reference
@@ -149,7 +162,7 @@ working directory.
 In Lya, hooks are JavaScript functions called at well-defined times to
 influence either Lya's behavior, or a subject's behavior. Hooks with
 special roles are given a different name, such as [cross-phase
-hooks][] or [equip hooks][].
+hooks][] or [refactor hooks][].
 
 Hooks may start with `on`, `before`, or `after` to clarify their
 temporal relationship with an event, or may start with a verb to
@@ -191,24 +204,32 @@ module _lexically_ containing the operation.
 
 `context.node` is the [ESTree][] expressing the operation.
 
-## Equip Hooks
-[equip hook]: #equip-hooks
-[equip hooks]: #equip-hooks
+## Live Refactor Hooks
+[Live refactor hook]: #live-refactor-hooks
+[Live refactor hooks]: #live-refactor-hooks
+[refactor hook]: #live-refactor-hooks
+[refactor hooks]: #live-refactor-hooks
 
-`E := (node : ESTree, generate : Function) -> Object`
+`R := (options : LiveRefactorHookInput) -> String`
 
-An **equip hook**, like [cross phase hooks][], operates with
-[ESTrees][].  They always have the name `equipX`, where `X` is the
-name of an [`ESTree`][] type. They return objects with source code to
-evaluate at runtime for the given [ESTree][]. Any properties defined
-in the returned object will appear in the second argument of a
-[cross-phase hook][].
+A **live refactor hook** is a hook that returns JavaScript source code
+compatible with Node.js.  The returned code represents a refactored
+form of a (parsed) input.
 
-See [`requires.js`](examples/requires.js) for an example. It uses an
-`equipCallExpression` and an `onCallExpression` [cross-phase hook][]
-to build a table of CommonJS modules and their immediate dependencies.
-This demonstrates how an equip hook and a cross-phase hook can
-cooperate.
+You might think of these hooks as a kind of macro, but that wouldn't
+be quite fair. Live refactor hooks are certainly a metaprogramming
+facility, but their name indicates that they share the same runtime
+with the code they return. They extend a program that _dynamically_
+creates more code for it to execute, not an extension for some
+expansion phase.
+
+A live refactor hook may choose to generate the same code the author
+originally intended exactly where necessary.
+
+See [`requires.js`](examples/requires.js) for an example. It uses a
+`refactorCallExpression` and an `onCallExpression` [cross-phase
+hook][] to build a table of CommonJS modules and their immediate
+dependencies.  This demonstrates hook cooperation.
 
 
 ## `afterAnalysis`
@@ -471,6 +492,64 @@ appeared.
 
 `rewriteModuleInput` is a [`RewriteModuleInput`][] object.  Use it to
 understand configuration affecting the module.
+
+## `LiveRefactorHookInput`
+[`LiveRefactorHookInput`]: #liverefactorhookinput
+
+```javascript
+{
+  instrumentationId: String,
+  instrumentation: Instrumentation,
+  node: ESTree,
+  hookName: String,
+  wrap: (source : String, [inject: Object]) -> String,
+  instrument: (ESTree) -> String,
+  render: (ESTree) -> String,
+}
+```
+
+Represents the sole argument to a [live refactor hook][]
+
+`instrumentationId` is a string identifier for an
+[`Instrumentation`][] object when used in the generated source code.
+
+`instrumentation` is the aforementioned [`Instrumentation`][] object.
+
+`node` is the [ESTree][] of the program to replace in source form.
+This most directly impacts the returned value.
+
+`hookName` is the name of the hook that will fire when injected using
+`wrap`.
+
+`wrap` is a bound function that takes some source code as `source`,
+and then returns the same code wrapped in an injected hook call.
+`wrap` may also accept an `inject` object, which defaults to `{}`.
+The own, enumerable properties of `inject` must each have a source
+code value. The hook's arguments will include properties of the same
+name, with values matching the _evaluated_ form of the corresponding
+source.
+
+To illustrate:
+
+```
+wrap('console.log(1)') -> __lya2432['onCallExpression']({...})
+
+// Note lack of quotes in output, indicating a source literal will evaluate as another argument
+// to the hook.
+wrap('console.log(1)', { n: '1 + 1' }) -> __lya2432['onCallExpression']({ n: 1 + 1, ...})
+```
+
+`render` is the default [AString][] source code generator. When given
+an [ESTree][], it will produce the exact source code the ESTree
+expresses. This implies that `render(node)` will produce the original
+source, whitespace style non-withstanding.
+
+`instrument` is like `render`, but the input [ESTree][] will be
+directed to the entry point of Lya's instrumentation machinery. This
+means that all ESTrees accessible from the input will be subject to
+the same rewrite rules. `instrument(node)` will throw an `Error`
+because the hook it meant to compute the output of that expression
+itself!  Only use `instrument` for children of `node`.
 
 
 ## `RewriteModuleInput`
