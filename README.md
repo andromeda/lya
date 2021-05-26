@@ -297,6 +297,19 @@ the subject.
 The default implementation simply returns `original()`.
 
 
+## `onForcedExit`
+[`onForcedExit`]: #onforcedexit
+
+`onForcedExit := (code : Number) -> Any`
+
+Called when the process is forcibly terminated using `process.exit()`
+while control is in [`callWithLya`][]. The return value is ignored,
+and the argument is the exit code.
+
+Use this hook to preserve analysis data __synchronously__, because
+Node.js will abandon any work scheduled by this hook.
+
+
 ## `onReady`
 [`onReady`]: #onready
 

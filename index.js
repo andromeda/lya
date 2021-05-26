@@ -44,14 +44,22 @@ if (require.main === module) {
 
 function callWithLya(userCallWithLyaInput) {
   var callWithLyaInput = makeCallWithLyaInput(userCallWithLyaInput);
+
+  function exit() {
+    callWithLyaInput.onForcedExit.apply(null, arguments);
+  }
+
   Module.wrap = bindModuleWrapOverride(callWithLyaInput);
+  process.on('exit', exit);
 
   try {
     var result = callWithLyaInput.onReady();
     Module.wrap = originalWrap;
+    process.removeListener('exit', exit);
     return callWithLyaInput.afterAnalysis(result);
   } catch (error) {
     Module.wrap = originalWrap;
+    process.removeListener('exit', exit);
     return callWithLyaInput.onError(error);
   }
 }
@@ -61,6 +69,7 @@ function callWithLya(userCallWithLyaInput) {
 
 function identity(v) { return v }
 function defaultApply(f) { return f() }
+function noop() {}
 
 function makeCallWithLyaInput(callWithLyaInput) {
   return Object.assign({
@@ -74,7 +83,7 @@ function makeCallWithLyaInput(callWithLyaInput) {
     },
     onModuleWrap: identity,
     onCommonJsApply: defaultApply,
-    onHook: defaultApply,
+    onForcedExit: noop,
     onError: function onError(e) {
       throw e;
     },
