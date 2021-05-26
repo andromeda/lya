@@ -44,18 +44,22 @@ if (require.main === module) {
 
 function callWithLya(userCallWithLyaInput) {
   var callWithLyaInput = makeCallWithLyaInput(userCallWithLyaInput);
-
-  function exit() {
-    callWithLyaInput.onForcedExit.apply(null, arguments);
-  }
+  var forcedExit = true;
+  function exit(v) {if (forcedExit) callWithLyaInput.onForcedExit(v)}
+  function beforeExit(v) {forcedExit = false}
 
   Module.wrap = bindModuleWrapOverride(callWithLyaInput);
+  process.on('beforeExit', beforeExit)
   process.on('exit', exit);
+
+  function cleanup() {
+    Module.wrap = originalWrap;
+    process.removeListener('beforeExit', beforeExit);
+    process.removeListener('exit', exit);
+  }
 
   try {
     var result = callWithLyaInput.onReady();
-    Module.wrap = originalWrap;
-    process.removeListener('exit', exit);
     return callWithLyaInput.afterAnalysis(result);
   } catch (error) {
     Module.wrap = originalWrap;
@@ -105,7 +109,7 @@ function makeRewriteModuleInput(userCallWithLyaInput, script) {
 
 function bindModuleWrapOverride(callWithLyaInput) {
   return function wrap(script) {
-    // User gets first dibs, and may override behavior for the module. 
+    // User gets first dibs, and may override behavior for the module.
     var rewriteModuleInput = makeRewriteModuleInput(callWithLyaInput, script);
     var cwli = rewriteModuleInput.callWithLyaInput;
 
