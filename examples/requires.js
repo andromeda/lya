@@ -1,6 +1,4 @@
-// Prepares a JSON document showing module IDs along with a list of
-// values that module used for `require`
-
+// Show modules with their `requires`
 module.exports = function importAnalysis(argv, lya) {
   const results = {};
 
@@ -11,12 +9,10 @@ module.exports = function importAnalysis(argv, lya) {
     },
 
     // Fires during runtime on user code, where a CallExpression was
-    // found at instrumentation-time. This will use the equipped
-    // properties to ascertain if the function is an actual require
-    // function.
+    // found at instrumentation-time.
     onCallExpression: function onCallExpression(original, info) {
       var result = original();
-      var I = info.instrumentation;
+      var I = info.I;
 
       // "Did a module call its own require function?"
       if (I.require === info.target) {
@@ -39,16 +35,13 @@ module.exports = function importAnalysis(argv, lya) {
       return wrap(render(node), {
         injectProperties: (
           callee.type === 'Identifier' && callee.name === 'require'
-            ? {
-              required: render(args[0]),
-              target: render(callee)
-            }
-          : {}),
+            ? { required: render(args[0]), target: render(callee) }
+            : {}),
       });
     },
 
     afterAnalysis: function afterAnalysis() {
-      return JSON.stringify(results, null, 2);
+      console.log(JSON.stringify(results, null, 2));
     },
   };
 };

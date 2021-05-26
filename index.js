@@ -13,15 +13,37 @@ var fs = require('fs');
 var acorn = require('acorn');
 var astring = require('astring');
 
-var instrument = require('./instrument.js');
-var types = require('./types.js');
-
 var originalWrap = Module.wrap.bind(Module);
 var cjsArguments = ['exports', 'require', 'module', '__dirname', '__filename'];
 
+// This injectable code must appear in a CommonJS module to work.
+var extractIntrumentationCode = minify(function x(id, next) {
+  var I = global[id];
+
+  // Prevent checking the global object for instrumentation.
+  delete global[id];
+
+  // For dodging shadows and surprising reassignments.
+  I.global = (new Function('return this'))();
+  I.module = module;
+  I.exports = exports;
+  I.require = require;
+  I.__dirname = __dirname;
+  I.__filename = __filename;
+
+  return next(I, I.rewriteModuleInput.callWithLyaInput);
+}.toString());
+
+if (require.main === module) {
+  var entry = findEntryModule(require, process.argv[2]);
+  var analysis = require(entry);
+  var callWithLyaInput = analysis(process.argv.slice(3), module.exports);
+  callWithLya(callWithLyaInput);
+}
+
 
 function callWithLya(userCallWithLyaInput) {
-  var callWithLyaInput = types.makeCallWithLyaInput(userCallWithLyaInput);
+  var callWithLyaInput = makeCallWithLyaInput(userCallWithLyaInput);
   Module.wrap = bindModuleWrapOverride(callWithLyaInput);
 
   try {
@@ -34,10 +56,48 @@ function callWithLya(userCallWithLyaInput) {
   }
 }
 
+
+// Data type constructors
+
+function identity(v) { return v }
+function defaultApply(f) { return f() }
+
+function makeCallWithLyaInput(callWithLyaInput) {
+  return Object.assign({
+    acornConfig: {
+      sourceType: 'script',
+      ecmaVersion: 2020,
+    },
+    afterAnalysis: identity,
+    afterRewriteModule: function afterRewriteModule(v) {
+      return v.script
+    },
+    onModuleWrap: identity,
+    onCommonJsApply: defaultApply,
+    onHook: defaultApply,
+    onError: function onError(e) {
+      throw e;
+    },
+    onReady: function onReady() {
+      throw new Error('onReady not defined');
+    },
+  }, callWithLyaInput || {});
+}
+
+function makeRewriteModuleInput(userCallWithLyaInput, script) {
+  return {
+    acorn: acorn,
+    astring: astring,
+    script: script,
+    callWithLyaInput: makeCallWithLyaInput(userCallWithLyaInput),
+  };
+}
+
+
 function bindModuleWrapOverride(callWithLyaInput) {
   return function wrap(script) {
     // User gets first dibs, and may override behavior for the module. 
-    var rewriteModuleInput = types.makeRewriteModuleInput(callWithLyaInput, script);
+    var rewriteModuleInput = makeRewriteModuleInput(callWithLyaInput, script);
     var cwli = rewriteModuleInput.callWithLyaInput;
 
     rewriteModuleInput = cwli.onModuleWrap(rewriteModuleInput) || rewriteModuleInput;
@@ -51,7 +111,6 @@ function bindModuleWrapOverride(callWithLyaInput) {
   }
 }
 
-
 function rewriteModule(rewriteModuleInput) {
   var ast = rewriteModuleInput.acorn.parse(
     rewriteModuleInput.script,
@@ -60,7 +119,7 @@ function rewriteModule(rewriteModuleInput) {
   // A non-collidable global helps preserve own properties.
   var instId = generateIdentifier();
   var instrumentation = { rewriteModuleInput: rewriteModuleInput };
-  var rewritten = instrument.instrumentCode(ast, instId, instrumentation);
+  var rewritten = instrumentCode(ast, instId, instrumentation);
   global[instId] = instrumentation;
 
   // Move the user's CommonJS where instrumentation is visible.
@@ -80,25 +139,6 @@ function rewriteModule(rewriteModuleInput) {
   // provides correct bindings for `extractIntrumentationCode`.
   return originalWrap(recvIIFE);
 }
-
-
-// This injectable code must appear in a CommonJS module to work.
-var extractIntrumentationCode = minify(function x(id, next) {
-  var I = global[id];
-
-  // Prevent checking the global object for instrumentation.
-  delete global[id];
-
-  // For dodging shadows and surprising reassignments.
-  I.global = (new Function('return this'))();
-  I.module = module;
-  I.exports = exports;
-  I.require = require;
-  I.__dirname = __dirname;
-  I.__filename = __filename;
-
-  return next(I, I.rewriteModuleInput.callWithLyaInput);
-}.toString());
 
 
 // Non-collidable identifiers handles some cases of input code that
@@ -139,9 +179,110 @@ function findEntryModule(require, userEntry) {
 }
 
 
-if (require.main === module) {
-  var entry = findEntryModule(require, process.argv[2]);
-  var analysis = require(entry);
-  var callWithLyaInput = analysis(process.argv.slice(3), module.exports);
-  console.log(callWithLya(callWithLyaInput));
+function instrumentCode(ast, instrumentationId, instrumentation) {
+  return gen(ast, bindGenerator(instrumentationId, instrumentation));
+}
+
+
+// Use as shorthand notation for recursively generating JavaScript
+// from a parse tree.
+function gen(ast, generator = astring.GENERATOR) {
+  return astring.generate(ast, {
+    generator: (
+      generator === astring.GENERATOR
+        ? astring.GENERATOR
+        : Object.assign({}, astring.GENERATOR, generator)),
+  });
+}
+
+
+// This function generates code for firing a hook in advance of other
+// code. This is dangerous if the hooks come from untrusted code.
+function bindHookWrapper(instrumentationId, node, hookName) {
+  return function (source, userOptions) {
+    var options = userOptions || {};
+    var addReturn = options.addReturn || true;
+    var useHook = options.hookName || hookName;
+    var injectProperties = options.injectProperties || {};
+
+    // Send all info down to hook.
+    injectProperties.I = instrumentationId;
+
+    var propertyDeclarations = (
+      Object
+        .keys(injectProperties)
+        .reduce(function (props, name) {
+          props.push(name + ':' + injectProperties[name]);
+          return props;
+        }, [])
+    );
+
+    var properties = '{' + propertyDeclarations.join(',') + '}';
+    var subscript = "['" + useHook + "']";
+    var deferred = 'function () {' + (addReturn ? 'return ' : '') + source  + '}';
+    var hookArguments = '(' + deferred + ',' + properties + ')';
+
+    // This appears in code as a CallExpression like this
+    /*
+      __lya8323_h['onCallExpression'](function () {return console.log(1)}, {
+      <whatever was in injectProperties>
+      instrumentation: __lya8323,
+      estree: { "type": "CallExpression", ... },
+      });
+
+      where
+      - `instrumentationId` is `__lya8323`
+      - `subscript` is ['onCallExpression'], and
+      - `hookArguments` is the remaining parenthetical.
+    */
+    return instrumentationId + '_h' + subscript + hookArguments;
+  }
+}
+
+
+// Returns an astring generator interface to control how an ESTree
+// turns to ECMAScript code.
+function bindGenerator(instrumentationId, instrumentation) {
+  return Object.keys(astring.GENERATOR).reduce(function (iface, esNodeType) {
+    var refactorName = 'refactor' + esNodeType;
+    var hookName = 'on' + esNodeType;
+    var hooks = instrumentation.rewriteModuleInput.callWithLyaInput;
+
+    // Set default implementation
+    iface[esNodeType] = astring.GENERATOR[esNodeType];
+
+    // Hook defined? Rewrite the code to inject a call.
+    if (hooks[refactorName] || hooks[hookName]) {
+      iface[esNodeType] = function (node, state) {
+        var options = {
+          instrumentationId: instrumentationId,
+          instrumentation: instrumentation,
+          node: node,
+          hookName: hookName,
+          wrap: bindHookWrapper(instrumentationId, node, hookName),
+          instrument: function instrument(n) {
+            if (n === node) {
+              throw new Error('Cycle detected. Do not call instrument() on the node that came with it.');
+            }
+            return gen(n, iface);
+          },
+          render: gen,
+        };
+
+        var refactor = hooks[refactorName] || function refactor() {
+          return options.wrap(gen(node));
+        };
+
+        var code = refactor(options);
+
+        if (!code && code !== '') {
+          return astring.GENERATOR[esNodeType](node, state);
+        } else {
+          return state.write(code);
+        }
+      }
+    }
+
+    return iface;
+  }, {})
 }

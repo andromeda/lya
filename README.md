@@ -5,7 +5,8 @@ Mailing lists: [Commits](lya-commits@googlegroups.com) | [Discussion](lya-discus
 Lya is an analysis framework for Node.js. Use Lya to identify and
 address vulnerabilities, bottlenecks, and errors. Lya supplements its
 dynamic analysis with lexical information, allowing analyses to reach
-more useful conclusions.
+more useful conclusions. Lya and the code it generates are written in
+ES5 for compatibility.
 
 
 # How to Use Lya
@@ -69,10 +70,9 @@ You can then pass the module to Lya as a trusted file. Note that the
 $ lya example.js
 ```
 
-The command will print the value returned from `callFromLya` to STDOUT
-using `console.log`, meaning that if you don't want
-inspection-friendly output, you may need to pass your output to
-`JSON.stringify` first.
+The command will do nothing with the output of `callWithLya`, so any
+behavior you want to enforce on exit should appear in
+[`afterAnalysis`][].
 
 
 # Model
