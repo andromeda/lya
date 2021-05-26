@@ -444,8 +444,9 @@ understand configuration affecting the module.
   instrumentation: Instrumentation,
   node: ESTree,
   hookName: String,
-  wrap: (source : String, [options: Object]) -> String,
-  instrument: (ESTree) -> String,
+  params: Object,
+  wrap: (source : String, [options : Object]) -> String,
+  instrument: (node : ESTree, [newParams : Object]) -> String,
   render: (ESTree) -> String,
 }
 ```
@@ -462,6 +463,10 @@ This most directly impacts the returned value.
 
 `hookName` is the name of the hook that will fire when injected using
 `wrap`.
+
+`params` is the current parameterization available to all
+instrumentation. It starts as the empty object, but may be
+replaced by calls to `instrument`.
 
 `wrap` is a bound function that takes some source code as `source`,
 and then returns the same code wrapped in an injected hook call.
@@ -502,6 +507,12 @@ means that all ESTrees accessible from the input will be subject to
 the same rewrite rules. `instrument(node)` will throw an `Error`
 because the hook it meant to compute the output of that expression
 itself!  Only use `instrument` for children of `node`.
+
+`instrument` optionally accepts a `newParams` argument representing an
+instrumentation-time parameterization. All live refactor hooks called
+while control is in `instrument` will have their `params` argument
+bound to `newParams`. The original reference is restored once control
+leaves `instrument`.
 
 
 ## `RewriteModuleInput`

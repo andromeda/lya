@@ -16,6 +16,11 @@ var astring = require('astring');
 var originalWrap = Module.wrap.bind(Module);
 var cjsArguments = ['exports', 'require', 'module', '__dirname', '__filename'];
 
+// Parameterizations must be module-level so that they are shared
+// across all hooks.
+var params = {};
+
+
 // This injectable code must appear in a CommonJS module to work.
 var extractIntrumentationCode = minify(function x(id, next) {
   var I = global[id];
@@ -273,11 +278,23 @@ function bindGenerator(instrumentationId, instrumentation) {
           node: node,
           hookName: hookName,
           wrap: bindHookWrapper(instrumentationId, node, hookName),
-          instrument: function instrument(n) {
+          params: params,
+          instrument: function instrument(n, nparams = params) {
             if (n === node) {
               throw new Error('Cycle detected. Do not call instrument() on the node that came with it.');
             }
-            return gen(n, iface);
+
+            if (typeof nparams !== 'object' || nparams === null) {
+              throw new Error('Non-object passed as second argument of instrument()');
+            }
+
+            // Update parameterization
+            var old = params;
+            params = nparams;
+            var output = gen(n, iface);
+            params = old;
+
+            return output;
           },
           render: gen,
         };
