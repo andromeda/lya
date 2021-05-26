@@ -20,6 +20,9 @@ var cjsArguments = ['exports', 'require', 'module', '__dirname', '__filename'];
 // across all hooks.
 var params = {};
 
+const processOn = process.on.bind(process);
+const processRemoveListener = process.removeListener.bind(process);
+
 
 // This injectable code must appear in a CommonJS module to work.
 var extractIntrumentationCode = minify(function x(id, next) {
@@ -54,13 +57,13 @@ function callWithLya(userCallWithLyaInput) {
   function beforeExit(v) {forcedExit = false}
 
   Module.wrap = bindModuleWrapOverride(callWithLyaInput);
-  process.on('beforeExit', beforeExit)
-  process.on('exit', exit);
+  processOn('beforeExit', beforeExit)
+  processOn('exit', exit);
 
   function cleanup() {
     Module.wrap = originalWrap;
-    process.removeListener('beforeExit', beforeExit);
-    process.removeListener('exit', exit);
+    processRemoveListener('beforeExit', beforeExit);
+    processRemoveListener('exit', exit);
   }
 
   try {
@@ -68,7 +71,7 @@ function callWithLya(userCallWithLyaInput) {
     return callWithLyaInput.afterAnalysis(result);
   } catch (error) {
     Module.wrap = originalWrap;
-    process.removeListener('exit', exit);
+    processRemoveListener('exit', exit);
     return callWithLyaInput.onError(error);
   }
 }
