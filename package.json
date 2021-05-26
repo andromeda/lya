@@ -4,7 +4,7 @@
   "description": "Library-oriented Dynamic Analysis",
   "main": "index.js",
   "scripts": {
-    "test": "node run-tests.js"
+    "test": "node test.js"
   },
   "bin": {
     "lya": "./index.js"
