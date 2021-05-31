@@ -1,0 +1,39 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/node-du/index.js": {
+    "require('path').resolve": {
+      "core": [
+        "string",
+        "string"
+      ]
+    },
+    "require('fs').lstat": {
+      "core": [
+        "string",
+        "function",
+        "no output"
+      ]
+    },
+    "require('./_index.js').maybePromiseWrap": {
+      "core": [
+        "string",
+        "function",
+        "no output"
+      ]
+    },
+    "require('fs').readdir": {
+      "core": [
+        "string",
+        "function",
+        "no output"
+      ]
+    },
+    "require('path').join": {
+      "core": [
+        "string",
+        "string",
+        "string"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/node-du/_index.js": {}
+}

@@ -1,0 +1,11 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/is-empty-object/index.js": {
+    "require('./_index.js').isEmptyObject": {
+      "core": [
+        "object",
+        "boolean"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/is-empty-object/_index.js": {}
+}

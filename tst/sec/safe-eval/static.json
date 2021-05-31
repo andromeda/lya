@@ -1,9 +1,0 @@
-{
-  "/home/grigorisntousakis/lya/core/tst/sec/safe-eval/poc.js": {
-    "process": "r",
-    "process.stdin": "r",
-    "process.stdin.resume": "rx",
-    "require": "rx",
-    "require('./index.js')": "irx"
-  }
-}

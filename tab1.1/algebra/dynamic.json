@@ -1,0 +1,12 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/algebra/index.js": {
+    "require('algebra-ring').algebraRing": {
+      "core": [
+        "object",
+        "object",
+        "object"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/algebra/_index.js": {}
+}

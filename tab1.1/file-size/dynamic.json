@@ -1,0 +1,11 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/file-size/index.js": {
+    "require('./_index.js').filesize": {
+      "core": [
+        "number",
+        "object"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/file-size/_index.js": {}
+}

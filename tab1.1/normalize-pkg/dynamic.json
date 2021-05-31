@@ -1,0 +1,49 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/normalize-pkg/index.js": {
+    "require('./lib/field').Field.prototype.hasOwnProperty": {
+      "core": [
+        "string",
+        "no output"
+      ]
+    },
+    "require('events').EventEmitter.prototype.emit": {
+      "core": [
+        "string",
+        "object",
+        "boolean"
+      ]
+    },
+    "require('./lib/field').Field.prototype.isValidType": {
+      "core": [
+        "string",
+        "boolean"
+      ]
+    },
+    "require('./lib/field').Field.prototype.normalize": {
+      "core": [
+        "undefined",
+        "string",
+        "object",
+        "object",
+        "no output"
+      ]
+    },
+    "require('./lib/field').Field.prototype.validate": {
+      "core": [
+        "string",
+        "string",
+        "object",
+        "object",
+        "boolean"
+      ]
+    },
+    "require('events').EventEmitter.prototype.on": {
+      "core": [
+        "string",
+        "function",
+        "object"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/normalize-pkg/_index.js": {}
+}

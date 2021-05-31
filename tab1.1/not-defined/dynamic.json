@@ -1,0 +1,11 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/not-defined/not-defined.js": {
+    "require('./_not-defined.js')": {
+      "core": [
+        "no-input",
+        "boolean"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/not-defined/_not-defined.js": {}
+}

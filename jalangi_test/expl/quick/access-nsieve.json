@@ -1,0 +1,10 @@
+{
+  "main": {
+    "require('./sunspider/access-nsieve.js')": 1
+  },
+  "access-nsieve.js": {
+    "Object": 50,
+    "Array": 300,
+    "bound consoleCall": 300
+  }
+}

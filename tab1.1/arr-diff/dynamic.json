@@ -1,0 +1,12 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/arr-diff/index.js": {
+    "require('./_index.js').diff": {
+      "core": [
+        "object",
+        "object",
+        "object"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/arr-diff/_index.js": {}
+}

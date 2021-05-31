@@ -1,0 +1,12 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/rtrim/index.js": {
+    "require('./_index.js')": {
+      "core": [
+        "string",
+        "string",
+        "string"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/rtrim/_index.js": {}
+}

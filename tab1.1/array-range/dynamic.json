@@ -1,0 +1,19 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/array-range/index.js": {
+    "require('./_index.js').newArray": {
+      "core": [
+        "number",
+        "object"
+      ]
+    },
+    "require('./_index.js').newArray.bind": {
+      "core": [
+        "object",
+        "number",
+        "number",
+        "function"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/array-range/_index.js": {}
+}

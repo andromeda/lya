@@ -1,0 +1,62 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/node-stream-spigot/index.js": {
+    "require('readable-stream/readable').Readable": {
+      "core": [
+        "object",
+        "no output"
+      ]
+    },
+    "require('readable-stream/readable').Readable.call": {
+      "core": [
+        "object",
+        "object",
+        "no output"
+      ]
+    },
+    "require('readable-stream/readable').Readable.prototype.on": {
+      "core": [
+        "string",
+        "function",
+        "object"
+      ]
+    },
+    "require('readable-stream/readable').Readable.prototype.once": {
+      "core": [
+        "string",
+        "function",
+        "object"
+      ]
+    },
+    "require('readable-stream/readable').Readable.prototype.resume": {
+      "core": [
+        "no-input",
+        "object"
+      ]
+    },
+    "require('readable-stream/readable').Readable.prototype.pipe": {
+      "core": [
+        "object",
+        "object"
+      ]
+    },
+    "require('readable-stream/readable').Readable.prototype.read": {
+      "core": [
+        "number",
+        "no output"
+      ]
+    },
+    "require('readable-stream/readable').Readable.prototype.emit": {
+      "core": [
+        "string",
+        "no output"
+      ]
+    },
+    "require('readable-stream/readable').Readable.prototype.push": {
+      "core": [
+        "string",
+        "boolean"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/node-stream-spigot/_index.js": {}
+}

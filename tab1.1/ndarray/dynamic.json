@@ -1,0 +1,13 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/ndarray/ndarray.js": {
+    "require('./_ndarray.js').wrappedNDArrayCtor": {
+      "core": [
+        "object",
+        "object",
+        "object",
+        "object"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/ndarray/_ndarray.js": {}
+}

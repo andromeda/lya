@@ -1,0 +1,11 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/is-number/index.js": {
+    "require('./_index.js')": {
+      "core": [
+        "number",
+        "boolean"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/is-number/_index.js": {}
+}

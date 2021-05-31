@@ -1,0 +1,12 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/in-array/index.js": {
+    "require('./_index.js').inArray": {
+      "core": [
+        "object",
+        "string",
+        "boolean"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/in-array/_index.js": {}
+}

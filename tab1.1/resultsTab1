@@ -1,0 +1,868 @@
+Time algebra: CALL_TIMES
+98.621478 'Time'
+98.31425 'Time'
+Time array.chunk: CALL_TIMES
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[0G27.761541 'Time'
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[0G27.845674 'Time'
+[?25hTime array-first: CALL_TIMES
+26.295488 'Time'
+26.145715 'Time'
+Time array-last: CALL_TIMES
+25.317039 'Time'
+25.006433 'Time'
+Time array-range: CALL_TIMES
+36.884087 'Time'
+36.936447 'Time'
+Time arr-diff: CALL_TIMES
+25.260322 'Time'
+25.233585 'Time'
+Time arr-flatten: CALL_TIMES
+25.392174 'Time'
+25.450888 'Time'
+Time concat-stream: CALL_TIMES
+107.627878 'Time'
+108.308443 'Time'
+Time deep-bind: CALL_TIMES
+27.48669 'Time'
+27.482705 'Time'
+Time document-ready: CALL_TIMES
+Time file-size: CALL_TIMES
+27.97383 'Time'
+28.068567 'Time'
+Time fs-promise: CALL_TIMES
+74.09356 'Time'
+73.792602 'Time'
+Time get-value: CALL_TIMES
+58.772821 'Time'
+57.782208 'Time'
+Time group-array: CALL_TIMES
+88.277261 'Time'
+85.587918 'Time'
+Time has-key-deep: CALL_TIMES
+35.928958 'Time'
+36.258322 'Time'
+Time has-value: CALL_TIMES
+27.102559 'Time'
+27.238342 'Time'
+Time he: CALL_TIMES
+80.574449 'Time'
+78.982786 'Time'
+Time identity-function: CALL_TIMES
+26.600082 'Time'
+26.575946 'Time'
+Time in-array: CALL_TIMES
+23.284113 'Time'
+23.205442 'Time'
+Time is-empty-object: CALL_TIMES
+27.069367 'Time'
+27.017675 'Time'
+Time is-generator: CALL_TIMES
+60.50534 'Time'
+60.777046 'Time'
+Time is-number: CALL_TIMES
+38.5478 'Time'
+38.371505 'Time'
+Time is-promise: CALL_TIMES
+23.962617 'Time'
+23.966548 'Time'
+Time is-sorted: CALL_TIMES
+57.36216 'Time'
+57.520777 'Time'
+Time left-pad: CALL_TIMES
+233.524868 'Time'
+231.967224 'Time'
+Time missing-deep-keys: CALL_TIMES
+46.119109 'Time'
+43.291797 'Time'
+Time ndarray: CALL_TIMES
+63.258697 'Time'
+63.463766 'Time'
+Time node-du: CALL_TIMES
+90.979755 'Time'
+91.66309 'Time'
+Time node-glob: CALL_TIMES
+    280.098182 'Time'
+    250.067659 'Time'
+    265.616489 'Time'
+    402.201559 'Time'
+    258.768091 'Time'
+    288.390991 'Time'
+    258.396011 'Time'
+    254.729028 'Time'
+    286.314153 'Time'
+            type: Timeout
+            method: _onTimeout
+            Timeout._onTimeout (test/error-callback.js:34:7)
+    249.915962 'Time'
+    292.452482 'Time'
+    230.704673 'Time'
+    238.342953 'Time'
+    336.52994 'Time'
+    802.607357 'Time'
+    123.572972 'Time'
+    80.181369 'Time'
+    244.942093 'Time'
+    244.647835 'Time'
+    355.746039 'Time'
+    259.103605 'Time'
+    453.096345 'Time'
+    261.291822 'Time'
+    1300.732017 'Time'
+    261.115291 'Time'
+    267.055662 'Time'
+    257.030019 'Time'
+    249.796118 'Time'
+    227.031776 'Time'
+    238.998262 'Time'
+    280.637539 'Time'
+    244.691934 'Time'
+    267.345654 'Time'
+    399.427792 'Time'
+    252.865668 'Time'
+    289.374195 'Time'
+    258.468337 'Time'
+    253.654021 'Time'
+    283.219868 'Time'
+            type: Timeout
+            method: _onTimeout
+            Timeout._onTimeout (test/error-callback.js:34:7)
+    251.589102 'Time'
+    292.514963 'Time'
+    231.208764 'Time'
+    238.846992 'Time'
+    333.254568 'Time'
+    804.564484 'Time'
+    125.017877 'Time'
+    80.934215 'Time'
+    244.611917 'Time'
+    243.511759 'Time'
+    359.131447 'Time'
+    259.826172 'Time'
+    457.209303 'Time'
+    260.493383 'Time'
+    1291.529687 'Time'
+    260.385629 'Time'
+    260.452014 'Time'
+    256.365854 'Time'
+    245.749514 'Time'
+    228.644549 'Time'
+    237.688574 'Time'
+Time node-slug: CALL_TIMES
+231.296937 'Time'
+233.545889 'Time'
+Time node-stream-spigot: CALL_TIMES
+4.881422 'Time'
+4.892865 'Time'
+Time normalize-pkg: CALL_TIMES
+1607.780887 'Time'
+1592.536071 'Time'
+Time not-defined: CALL_TIMES
+19.766151 'Time'
+19.734426 'Time'
+Time once: CALL_TIMES
+    255.680849 'Time'
+    264.080356 'Time'
+Time pad-left: CALL_TIMES
+25.824044 'Time'
+25.63141 'Time'
+Time pad-left-simple: CALL_TIMES
+21.843568 'Time'
+21.805026 'Time'
+Time parse-next-json-value: CALL_TIMES
+51.985657 'Time'
+52.832487 'Time'
+Time periods: CALL_TIMES
+19.941056 'Time'
+20.023879 'Time'
+Time property-validator: CALL_TIMES
+215.273008 'Time'
+214.989628 'Time'
+Time rimraf: CALL_TIMES
+    407.283321 'Time'
+    857.75999 'Time'
+    188.813732 'Time'
+    406.891273 'Time'
+    857.429631 'Time'
+    188.569215 'Time'
+Time rtrim: CALL_TIMES
+42.292487 'Time'
+42.343981 'Time'
+Time schema-inspector: CALL_TIMES
+324.841054 'Time'
+331.442752 'Time'
+Time set-value: CALL_TIMES
+50.387641 'Time'
+50.431185 'Time'
+Time staticFiles: CALL_TIMES
+Time static-props: CALL_TIMES
+28.681033 'Time'
+28.939775 'Time'
+Time syncthrough: CALL_TIMES
+    76.899056 'Time'
+    76.751772 'Time'
+Time through2: CALL_TIMES
+Time through2-map: CALL_TIMES
+68.748587 'Time'
+68.92679 'Time'
+Time time-stamp: CALL_TIMES
+25.775331 'Time'
+25.723793 'Time'
+Time unordered-array-remove: CALL_TIMES
+28.247839 'Time'
+28.29094 'Time'
+Time zipmap: CALL_TIMES
+28.822982 'Time'
+28.847905 'Time'
+Time algebra: SIMPLE_TYPES
+101.044194 'Time'
+100.487656 'Time'
+Time array.chunk: SIMPLE_TYPES
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[0G27.793408 'Time'
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[0G27.668955 'Time'
+[?25hTime array-first: SIMPLE_TYPES
+27.896472 'Time'
+27.987063 'Time'
+Time array-last: SIMPLE_TYPES
+26.838069 'Time'
+27.041275 'Time'
+Time array-range: SIMPLE_TYPES
+36.755926 'Time'
+36.762773 'Time'
+Time arr-diff: SIMPLE_TYPES
+27.34878 'Time'
+27.463574 'Time'
+Time arr-flatten: SIMPLE_TYPES
+40.569541 'Time'
+40.211338 'Time'
+Time concat-stream: SIMPLE_TYPES
+117.694013 'Time'
+116.310574 'Time'
+Time deep-bind: SIMPLE_TYPES
+28.699652 'Time'
+28.854402 'Time'
+Time document-ready: SIMPLE_TYPES
+Time file-size: SIMPLE_TYPES
+33.322668 'Time'
+33.149026 'Time'
+Time fs-promise: SIMPLE_TYPES
+75.59164 'Time'
+75.430882 'Time'
+Time get-value: SIMPLE_TYPES
+74.77417 'Time'
+74.589225 'Time'
+Time group-array: SIMPLE_TYPES
+156.656343 'Time'
+156.662812 'Time'
+Time has-key-deep: SIMPLE_TYPES
+35.971961 'Time'
+36.126486 'Time'
+Time has-value: SIMPLE_TYPES
+30.754694 'Time'
+30.585382 'Time'
+Time he: SIMPLE_TYPES
+87.778301 'Time'
+87.821848 'Time'
+Time identity-function: SIMPLE_TYPES
+26.612296 'Time'
+26.477661 'Time'
+Time in-array: SIMPLE_TYPES
+23.074691 'Time'
+23.06938 'Time'
+Time is-empty-object: SIMPLE_TYPES
+28.510966 'Time'
+28.614851 'Time'
+Time is-generator: SIMPLE_TYPES
+61.834314 'Time'
+61.850961 'Time'
+Time is-number: SIMPLE_TYPES
+41.877736 'Time'
+41.571288 'Time'
+Time is-promise: SIMPLE_TYPES
+23.738735 'Time'
+23.771103 'Time'
+Time is-sorted: SIMPLE_TYPES
+60.479486 'Time'
+60.501355 'Time'
+Time left-pad: SIMPLE_TYPES
+237.011899 'Time'
+229.322319 'Time'
+Time missing-deep-keys: SIMPLE_TYPES
+44.440688 'Time'
+45.443702 'Time'
+Time ndarray: SIMPLE_TYPES
+67.897466 'Time'
+65.117378 'Time'
+Time node-du: SIMPLE_TYPES
+93.620771 'Time'
+93.417031 'Time'
+Time node-glob: SIMPLE_TYPES
+    284.153764 'Time'
+    246.709103 'Time'
+    269.464892 'Time'
+    412.899804 'Time'
+    253.751625 'Time'
+    291.757377 'Time'
+    262.57009 'Time'
+    258.073552 'Time'
+    297.446421 'Time'
+            type: Timeout
+            method: _onTimeout
+            Timeout._onTimeout (test/error-callback.js:34:7)
+    252.371485 'Time'
+    329.743513 'Time'
+    241.920394 'Time'
+    244.391302 'Time'
+    342.911876 'Time'
+    806.634241 'Time'
+    132.07907 'Time'
+    83.976809 'Time'
+    249.543998 'Time'
+    249.321801 'Time'
+    366.306759 'Time'
+    263.517171 'Time'
+    461.622327 'Time'
+    264.410814 'Time'
+    1318.909867 'Time'
+    263.548535 'Time'
+    271.637354 'Time'
+    258.859282 'Time'
+    249.85007 'Time'
+    233.69929 'Time'
+    242.596137 'Time'
+    281.91907 'Time'
+    249.548927 'Time'
+    267.379548 'Time'
+    412.020635 'Time'
+    246.921742 'Time'
+    291.878323 'Time'
+    262.232413 'Time'
+    257.540734 'Time'
+    294.164514 'Time'
+            type: Timeout
+            method: _onTimeout
+            Timeout._onTimeout (test/error-callback.js:34:7)
+    252.103301 'Time'
+    328.602806 'Time'
+    234.491093 'Time'
+    243.074491 'Time'
+    345.118294 'Time'
+    807.376981 'Time'
+    139.256367 'Time'
+    84.193613 'Time'
+    247.901569 'Time'
+    246.1535 'Time'
+    367.545662 'Time'
+    264.071828 'Time'
+    466.92472 'Time'
+    266.441517 'Time'
+    1324.60709 'Time'
+    262.272825 'Time'
+    268.427266 'Time'
+    259.095544 'Time'
+    249.037069 'Time'
+    236.891154 'Time'
+    242.802302 'Time'
+Time node-slug: SIMPLE_TYPES
+232.649733 'Time'
+232.756549 'Time'
+Time node-stream-spigot: SIMPLE_TYPES
+4.826545 'Time'
+4.827056 'Time'
+Time normalize-pkg: SIMPLE_TYPES
+1595.900018 'Time'
+1587.334069 'Time'
+Time not-defined: SIMPLE_TYPES
+24.377385 'Time'
+24.231298 'Time'
+Time once: SIMPLE_TYPES
+    244.815183 'Time'
+    264.973972 'Time'
+Time pad-left: SIMPLE_TYPES
+26.875314 'Time'
+26.797917 'Time'
+Time pad-left-simple: SIMPLE_TYPES
+22.091115 'Time'
+22.006695 'Time'
+Time parse-next-json-value: SIMPLE_TYPES
+53.453886 'Time'
+53.187599 'Time'
+Time periods: SIMPLE_TYPES
+20.057804 'Time'
+20.046388 'Time'
+Time property-validator: SIMPLE_TYPES
+215.872652 'Time'
+217.761077 'Time'
+Time rimraf: SIMPLE_TYPES
+    411.661392 'Time'
+                29.058712 'Time'
+                28.371036 'Time'
+                28.164173 'Time'
+                28.421072 'Time'
+    901.941634 'Time'
+    191.927366 'Time'
+    410.13766 'Time'
+                28.434955 'Time'
+                28.440748 'Time'
+                28.407292 'Time'
+                28.506247 'Time'
+    905.026925 'Time'
+    191.320234 'Time'
+Time rtrim: SIMPLE_TYPES
+42.130339 'Time'
+41.785649 'Time'
+Time schema-inspector: SIMPLE_TYPES
+327.24643 'Time'
+670.349657 'Time'
+Time set-value: SIMPLE_TYPES
+58.081445 'Time'
+57.030476 'Time'
+Time staticFiles: SIMPLE_TYPES
+Time static-props: SIMPLE_TYPES
+30.32128 'Time'
+30.242424 'Time'
+Time syncthrough: SIMPLE_TYPES
+    78.978753 'Time'
+    78.820816 'Time'
+Time through2: SIMPLE_TYPES
+Time through2-map: SIMPLE_TYPES
+70.63363 'Time'
+70.904035 'Time'
+Time time-stamp: SIMPLE_TYPES
+29.626767 'Time'
+29.541977 'Time'
+Time unordered-array-remove: SIMPLE_TYPES
+28.037734 'Time'
+28.271944 'Time'
+Time zipmap: SIMPLE_TYPES
+30.559829 'Time'
+34.760352 'Time'
+Time algebra: GLOBAL_ONLY
+98.956853 'Time'
+98.447084 'Time'
+Time array.chunk: GLOBAL_ONLY
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[0G46.572115 'Time'
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[0G27.801339 'Time'
+[?25hTime array-first: GLOBAL_ONLY
+26.018469 'Time'
+26.064919 'Time'
+Time array-last: GLOBAL_ONLY
+24.84697 'Time'
+24.883636 'Time'
+Time array-range: GLOBAL_ONLY
+36.783191 'Time'
+36.730763 'Time'
+Time arr-diff: GLOBAL_ONLY
+25.071887 'Time'
+25.097511 'Time'
+Time arr-flatten: GLOBAL_ONLY
+24.394102 'Time'
+24.571146 'Time'
+Time concat-stream: GLOBAL_ONLY
+107.50912 'Time'
+107.896232 'Time'
+Time deep-bind: GLOBAL_ONLY
+27.506527 'Time'
+27.362343 'Time'
+Time document-ready: GLOBAL_ONLY
+Time file-size: GLOBAL_ONLY
+27.586475 'Time'
+27.611353 'Time'
+Time fs-promise: GLOBAL_ONLY
+73.363731 'Time'
+73.68186 'Time'
+Time get-value: GLOBAL_ONLY
+56.600842 'Time'
+56.666195 'Time'
+Time group-array: GLOBAL_ONLY
+82.631023 'Time'
+81.923102 'Time'
+Time has-key-deep: GLOBAL_ONLY
+36.188026 'Time'
+36.231266 'Time'
+Time has-value: GLOBAL_ONLY
+26.889155 'Time'
+26.785216 'Time'
+Time he: GLOBAL_ONLY
+76.336439 'Time'
+77.323566 'Time'
+Time identity-function: GLOBAL_ONLY
+26.384922 'Time'
+26.372332 'Time'
+Time in-array: GLOBAL_ONLY
+23.247004 'Time'
+23.242658 'Time'
+Time is-empty-object: GLOBAL_ONLY
+26.95466 'Time'
+26.969538 'Time'
+Time is-generator: GLOBAL_ONLY
+60.209862 'Time'
+60.276871 'Time'
+Time is-number: GLOBAL_ONLY
+38.238607 'Time'
+38.142208 'Time'
+Time is-promise: GLOBAL_ONLY
+23.691765 'Time'
+23.783963 'Time'
+Time is-sorted: GLOBAL_ONLY
+58.036999 'Time'
+57.977566 'Time'
+Time left-pad: GLOBAL_ONLY
+227.240751 'Time'
+228.291028 'Time'
+Time missing-deep-keys: GLOBAL_ONLY
+42.853202 'Time'
+42.992495 'Time'
+Time ndarray: GLOBAL_ONLY
+63.366568 'Time'
+63.21467 'Time'
+Time node-du: GLOBAL_ONLY
+90.731543 'Time'
+91.089694 'Time'
+Time node-glob: GLOBAL_ONLY
+    280.744326 'Time'
+    244.695719 'Time'
+    268.211688 'Time'
+    397.038154 'Time'
+    238.937468 'Time'
+    290.257687 'Time'
+    258.789936 'Time'
+    258.872154 'Time'
+    282.554517 'Time'
+            type: Timeout
+            method: _onTimeout
+            Timeout._onTimeout (test/error-callback.js:34:7)
+    249.713796 'Time'
+    291.305985 'Time'
+    231.988105 'Time'
+    237.463181 'Time'
+    336.44204 'Time'
+    802.796826 'Time'
+    126.353795 'Time'
+    80.814477 'Time'
+    244.462249 'Time'
+    240.987621 'Time'
+    366.530806 'Time'
+    259.120116 'Time'
+    454.527002 'Time'
+    261.430323 'Time'
+    1307.275624 'Time'
+    260.679532 'Time'
+    260.873773 'Time'
+    259.851924 'Time'
+    244.769548 'Time'
+    226.493853 'Time'
+    238.746214 'Time'
+    282.277816 'Time'
+    246.303676 'Time'
+    262.387504 'Time'
+    400.198888 'Time'
+    243.829189 'Time'
+    288.842264 'Time'
+    255.744584 'Time'
+    255.740858 'Time'
+    283.646632 'Time'
+            type: Timeout
+            method: _onTimeout
+            Timeout._onTimeout (test/error-callback.js:34:7)
+    250.50733 'Time'
+    289.260877 'Time'
+    230.85006 'Time'
+    238.113672 'Time'
+    334.759225 'Time'
+    805.52317 'Time'
+    125.856142 'Time'
+    81.187231 'Time'
+    244.893354 'Time'
+    247.541741 'Time'
+    357.450615 'Time'
+    258.213537 'Time'
+    454.810365 'Time'
+    259.754239 'Time'
+    1296.66137 'Time'
+    258.00715 'Time'
+    263.742879 'Time'
+    255.819271 'Time'
+    245.687666 'Time'
+    229.908512 'Time'
+    239.602614 'Time'
+Time node-slug: GLOBAL_ONLY
+235.131718 'Time'
+229.700265 'Time'
+Time node-stream-spigot: GLOBAL_ONLY
+4.841017 'Time'
+4.839895 'Time'
+Time normalize-pkg: GLOBAL_ONLY
+1607.503732 'Time'
+1588.370195 'Time'
+Time not-defined: GLOBAL_ONLY
+19.742553 'Time'
+19.768676 'Time'
+Time once: GLOBAL_ONLY
+    262.132093 'Time'
+    261.601667 'Time'
+Time pad-left: GLOBAL_ONLY
+25.46711 'Time'
+25.492103 'Time'
+Time pad-left-simple: GLOBAL_ONLY
+21.821634 'Time'
+21.822788 'Time'
+Time parse-next-json-value: GLOBAL_ONLY
+51.429039 'Time'
+51.490721 'Time'
+Time periods: GLOBAL_ONLY
+19.873584 'Time'
+19.961513 'Time'
+Time property-validator: GLOBAL_ONLY
+215.555419 'Time'
+218.386583 'Time'
+Time rimraf: GLOBAL_ONLY
+    406.351279 'Time'
+    857.24944 'Time'
+    188.747002 'Time'
+    405.329858 'Time'
+    854.300633 'Time'
+    187.878416 'Time'
+Time rtrim: GLOBAL_ONLY
+41.831764 'Time'
+42.160282 'Time'
+Time schema-inspector: GLOBAL_ONLY
+325.083456 'Time'
+332.106157 'Time'
+Time set-value: GLOBAL_ONLY
+50.171539 'Time'
+49.905221 'Time'
+Time staticFiles: GLOBAL_ONLY
+Time static-props: GLOBAL_ONLY
+28.693878 'Time'
+28.757307 'Time'
+Time syncthrough: GLOBAL_ONLY
+    76.965152 'Time'
+    76.87936 'Time'
+Time through2: GLOBAL_ONLY
+Time through2-map: GLOBAL_ONLY
+68.440203 'Time'
+68.673007 'Time'
+Time time-stamp: GLOBAL_ONLY
+25.353397 'Time'
+25.804819 'Time'
+Time unordered-array-remove: GLOBAL_ONLY
+28.323097 'Time'
+28.26878 'Time'
+Time zipmap: GLOBAL_ONLY
+28.977035 'Time'
+28.709634 'Time'
+Time algebra: RWX_PERFORMANCE
+99.415664 'Time'
+99.071732 'Time'
+Time array.chunk: RWX_PERFORMANCE
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[0G28.227967 'Time'
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[0G28.240824 'Time'
+[?25hTime array-first: RWX_PERFORMANCE
+27.258007 'Time'
+27.26499 'Time'
+Time array-last: RWX_PERFORMANCE
+25.989797 'Time'
+26.15248 'Time'
+Time array-range: RWX_PERFORMANCE
+37.398222 'Time'
+37.727712 'Time'
+Time arr-diff: RWX_PERFORMANCE
+26.372903 'Time'
+26.235411 'Time'
+Time arr-flatten: RWX_PERFORMANCE
+27.372284 'Time'
+27.392197 'Time'
+Time concat-stream: RWX_PERFORMANCE
+109.538228 'Time'
+109.568719 'Time'
+Time deep-bind: RWX_PERFORMANCE
+27.910941 'Time'
+27.955438 'Time'
+Time document-ready: RWX_PERFORMANCE
+Time file-size: RWX_PERFORMANCE
+29.329797 'Time'
+29.347391 'Time'
+Time fs-promise: RWX_PERFORMANCE
+75.841787 'Time'
+76.063003 'Time'
+Time get-value: RWX_PERFORMANCE
+59.767584 'Time'
+60.024483 'Time'
+Time group-array: RWX_PERFORMANCE
+88.078723 'Time'
+89.419933 'Time'
+Time has-key-deep: RWX_PERFORMANCE
+36.198532 'Time'
+36.611511 'Time'
+Time has-value: RWX_PERFORMANCE
+28.435655 'Time'
+28.498854 'Time'
+Time he: RWX_PERFORMANCE
+79.113809 'Time'
+77.91081 'Time'
+Time identity-function: RWX_PERFORMANCE
+26.872567 'Time'
+26.860771 'Time'
+Time in-array: RWX_PERFORMANCE
+23.323454 'Time'
+23.31632 'Time'
+Time is-empty-object: RWX_PERFORMANCE
+28.100076 'Time'
+28.138447 'Time'
+Time is-generator: RWX_PERFORMANCE
+61.057086 'Time'
+61.003393 'Time'
+Time is-number: RWX_PERFORMANCE
+39.981445 'Time'
+39.697379 'Time'
+Time is-promise: RWX_PERFORMANCE
+24.063652 'Time'
+24.31157 'Time'
+Time is-sorted: RWX_PERFORMANCE
+58.45463 'Time'
+58.267117 'Time'
+Time left-pad: RWX_PERFORMANCE
+235.128838 'Time'
+241.948432 'Time'
+Time missing-deep-keys: RWX_PERFORMANCE
+44.408 'Time'
+46.653875 'Time'
+Time ndarray: RWX_PERFORMANCE
+63.934834 'Time'
+64.237418 'Time'
+Time node-du: RWX_PERFORMANCE
+92.861759 'Time'
+92.602442 'Time'
+Time node-glob: RWX_PERFORMANCE
+    280.907765 'Time'
+    244.311219 'Time'
+    266.679032 'Time'
+    400.541145 'Time'
+    239.736373 'Time'
+    294.979045 'Time'
+    257.59768 'Time'
+    256.590209 'Time'
+    284.850977 'Time'
+            type: Timeout
+            method: _onTimeout
+            Timeout._onTimeout (test/error-callback.js:34:7)
+    251.306413 'Time'
+    296.576434 'Time'
+    230.801337 'Time'
+    237.853327 'Time'
+    338.762362 'Time'
+    806.783791 'Time'
+    125.819448 'Time'
+    81.476192 'Time'
+    245.341497 'Time'
+    243.780117 'Time'
+    358.598889 'Time'
+    259.1498 'Time'
+    458.377122 'Time'
+    260.52051 'Time'
+    1291.791198 'Time'
+    259.423534 'Time'
+    261.702713 'Time'
+    255.780398 'Time'
+    244.411127 'Time'
+    230.933574 'Time'
+    237.022632 'Time'
+    282.821434 'Time'
+    243.639825 'Time'
+    266.233545 'Time'
+    403.36144 'Time'
+    247.122452 'Time'
+    289.870289 'Time'
+    263.922201 'Time'
+    254.781784 'Time'
+    286.08718 'Time'
+            type: Timeout
+            method: _onTimeout
+            Timeout._onTimeout (test/error-callback.js:34:7)
+    256.461205 'Time'
+    300.608291 'Time'
+    231.02819 'Time'
+    238.907505 'Time'
+    335.230053 'Time'
+    805.949072 'Time'
+    126.059521 'Time'
+    83.381127 'Time'
+    247.139105 'Time'
+    248.70016 'Time'
+    370.749647 'Time'
+    259.735203 'Time'
+    454.655317 'Time'
+    260.9268 'Time'
+    1291.53333 'Time'
+    265.997407 'Time'
+    261.330447 'Time'
+    256.453842 'Time'
+    245.206163 'Time'
+    231.91582 'Time'
+    237.839268 'Time'
+Time node-slug: RWX_PERFORMANCE
+231.957294 'Time'
+231.124495 'Time'
+Time node-stream-spigot: RWX_PERFORMANCE
+4.977582 'Time'
+4.990031 'Time'
+Time normalize-pkg: RWX_PERFORMANCE
+1587.45101 'Time'
+1601.628713 'Time'
+Time not-defined: RWX_PERFORMANCE
+20.94621 'Time'
+21.050919 'Time'
+Time once: RWX_PERFORMANCE
+    264.509277 'Time'
+    247.500934 'Time'
+Time pad-left: RWX_PERFORMANCE
+26.472215 'Time'
+26.567719 'Time'
+Time pad-left-simple: RWX_PERFORMANCE
+22.722969 'Time'
+22.767848 'Time'
+Time parse-next-json-value: RWX_PERFORMANCE
+52.399719 'Time'
+51.857619 'Time'
+Time periods: RWX_PERFORMANCE
+20.287102 'Time'
+20.262505 'Time'
+Time property-validator: RWX_PERFORMANCE
+215.609957 'Time'
+215.196836 'Time'
+Time rimraf: RWX_PERFORMANCE
+    408.982147 'Time'
+    864.938286 'Time'
+    189.424977 'Time'
+    408.172866 'Time'
+    864.563263 'Time'
+    189.221679 'Time'
+Time rtrim: RWX_PERFORMANCE
+42.359996 'Time'
+42.246884 'Time'
+Time schema-inspector: RWX_PERFORMANCE
+337.924222 'Time'
+334.875415 'Time'
+Time set-value: RWX_PERFORMANCE
+51.104373 'Time'
+52.116438 'Time'
+Time staticFiles: RWX_PERFORMANCE
+Time static-props: RWX_PERFORMANCE
+29.474973 'Time'
+29.530066 'Time'
+Time syncthrough: RWX_PERFORMANCE
+    77.152943 'Time'
+    77.167287 'Time'
+Time through2: RWX_PERFORMANCE
+Time through2-map: RWX_PERFORMANCE
+70.284715 'Time'
+70.095225 'Time'
+Time time-stamp: RWX_PERFORMANCE
+26.734125 'Time'
+26.764873 'Time'
+Time unordered-array-remove: RWX_PERFORMANCE
+28.482802 'Time'
+28.582551 'Time'
+Time zipmap: RWX_PERFORMANCE
+29.976276 'Time'
+30.031974 'Time'

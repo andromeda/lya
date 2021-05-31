@@ -1,0 +1,2 @@
+node ../src/js/commands/jalangi.js --inlineIID --inlineSource --analysis analysis.js example.js
+

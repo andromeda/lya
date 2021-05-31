@@ -1,0 +1,11 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/array-last/index.js": {
+    "require('./_index.js').last": {
+      "core": [
+        "object",
+        "string"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/array-last/_index.js": {}
+}

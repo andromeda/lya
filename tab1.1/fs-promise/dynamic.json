@@ -1,0 +1,13 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/fs-promise/index.js": {
+    "require('thenify-all').thenifyAll.withCallback": {
+      "core": [
+        "object",
+        "object",
+        "object",
+        "object"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/fs-promise/_index.js": {}
+}

@@ -1,0 +1,17 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/once/once.js": {
+    "require('./_once.js').wrapper": {
+      "core": [
+        "function",
+        "function"
+      ]
+    },
+    "require('./_once.js').wrapper.strict": {
+      "core": [
+        "function",
+        "function"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/once/_once.js": {}
+}

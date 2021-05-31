@@ -1,0 +1,12 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/missing-deep-keys/index.js": {
+    "require('./_index.js')": {
+      "core": [
+        "object",
+        "object",
+        "object"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/missing-deep-keys/_index.js": {}
+}

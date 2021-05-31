@@ -1,0 +1,11 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/has-value/index.js": {
+    "require('./_index.js')": {
+      "core": [
+        "object",
+        "no output"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/has-value/_index.js": {}
+}

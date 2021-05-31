@@ -1,9 +1,0 @@
-{
-  "/home/grigorisntousakis/lya/tst/coarse-types/t12/generated.test": {
-  },
-  "/home/grigorisntousakis/lya/tst/coarse-types/t12/main.js": {
-    "require": "rx",
-    "require('./m1.js')": "i"
-  },
-  "/home/grigorisntousakis/lya/tst/coarse-types/t12/m1.js": {}
-}

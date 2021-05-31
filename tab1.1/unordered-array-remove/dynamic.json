@@ -1,0 +1,12 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/unordered-array-remove/index.js": {
+    "require('./_index.js').remove": {
+      "core": [
+        "object",
+        "number",
+        "number"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/unordered-array-remove/_index.js": {}
+}

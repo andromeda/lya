@@ -1,0 +1,12 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/syncthrough/syncthrough.js": {
+    "require('inherits').inherits": {
+      "core": [
+        "function",
+        "function",
+        "no output"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/syncthrough/_syncthrough.js": {}
+}

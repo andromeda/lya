@@ -1,0 +1,11 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/arr-flatten/index.js": {
+    "require('./_index.js')": {
+      "core": [
+        "object",
+        "object"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/arr-flatten/_index.js": {}
+}

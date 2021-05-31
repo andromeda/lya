@@ -1,0 +1,12 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/deep-bind/index.js": {
+    "require('./_index.js').deepBind": {
+      "core": [
+        "object",
+        "object",
+        "object"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/deep-bind/_index.js": {}
+}

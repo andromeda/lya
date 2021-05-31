@@ -1,0 +1,11 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/through2/through2.js": {
+    "require('./lib/_stream_readable.js').Readable.Transform": {
+      "core": [
+        "object",
+        "no output"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/through2/_through2.js": {}
+}

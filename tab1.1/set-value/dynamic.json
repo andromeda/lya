@@ -1,0 +1,13 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/set-value/index.js": {
+    "require('./_index.js').set": {
+      "core": [
+        "string",
+        "string",
+        "string",
+        "string"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/set-value/_index.js": {}
+}

@@ -1,0 +1,11 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/is-promise/index.js": {
+    "require('./_index.js').isPromise": {
+      "core": [
+        "object",
+        "boolean"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/is-promise/_index.js": {}
+}

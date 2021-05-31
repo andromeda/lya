@@ -1,0 +1,29 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/he/he.js": {
+    "require('./_he.js').decode": {
+      "core": [
+        "string",
+        "string"
+      ]
+    },
+    "require('./_he.js').encode": {
+      "core": [
+        "string",
+        "string"
+      ]
+    },
+    "require('./_he.js').escape": {
+      "core": [
+        "string",
+        "string"
+      ]
+    },
+    "require('./_he.js').unescape": {
+      "core": [
+        "string",
+        "string"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/he/_he.js": {}
+}

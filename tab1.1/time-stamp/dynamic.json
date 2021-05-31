@@ -1,0 +1,17 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/time-stamp/index.js": {
+    "require('./_index.js').timestamp": {
+      "core": [
+        "no-input",
+        "string"
+      ]
+    },
+    "require('./_index.js').timestamp.utc": {
+      "core": [
+        "string",
+        "string"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/time-stamp/_index.js": {}
+}

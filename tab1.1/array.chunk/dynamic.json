@@ -1,0 +1,12 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/array.chunk/index.js": {
+    "require('./_index.js').chunks": {
+      "core": [
+        "object",
+        "number",
+        "object"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/array.chunk/_index.js": {}
+}

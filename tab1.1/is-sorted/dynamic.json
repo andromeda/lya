@@ -1,0 +1,12 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/is-sorted/index.js": {
+    "require('./_index.js').checksort": {
+      "core": [
+        "object",
+        "undefined",
+        "boolean"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/is-sorted/_index.js": {}
+}

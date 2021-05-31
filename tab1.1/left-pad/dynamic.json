@@ -1,0 +1,12 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/left-pad/index.js": {
+    "require('./_index.js').leftPad": {
+      "core": [
+        "string",
+        "number",
+        "string"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/left-pad/_index.js": {}
+}

@@ -1,0 +1,26 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/schema-inspector/index.js": {
+    "require('./_index.js').generate": {
+      "core": [
+        "object",
+        "number",
+        "object"
+      ]
+    },
+    "require('./_index.js').validate": {
+      "core": [
+        "object",
+        "object",
+        "object"
+      ]
+    },
+    "require('./_index.js').sanitize": {
+      "core": [
+        "object",
+        "object",
+        "object"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/schema-inspector/_index.js": {}
+}

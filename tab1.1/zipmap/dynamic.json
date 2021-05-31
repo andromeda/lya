@@ -1,0 +1,12 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/zipmap/index.js": {
+    "require('./_index.js').zipmap": {
+      "core": [
+        "object",
+        "object",
+        "object"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/zipmap/_index.js": {}
+}

@@ -1,0 +1,11 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/node-slug/slug.js": {
+    "require('./_slug.js').slug": {
+      "core": [
+        "number",
+        "string"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/node-slug/_slug.js": {}
+}

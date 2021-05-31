@@ -1,0 +1,11 @@
+{
+  "main": {
+    "require('./sunspider/math-spectral-norm.js')": 1
+  },
+  "math-spectral-norm.js": {
+    "Object": 50,
+    "undefined": 400,
+    "Math.sqrt": 400,
+    "bound consoleCall": 400
+  }
+}

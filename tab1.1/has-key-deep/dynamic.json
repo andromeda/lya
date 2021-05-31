@@ -1,0 +1,12 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/has-key-deep/index.js": {
+    "require('./_index.js')": {
+      "core": [
+        "string",
+        "object",
+        "no output"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/has-key-deep/_index.js": {}
+}

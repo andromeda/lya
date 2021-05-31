@@ -1,0 +1,72 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/rimraf/rimraf.js": {
+    "require('assert').ok": {
+      "core": [
+        "string",
+        "string",
+        "no output"
+      ]
+    },
+    "require('assert').ok.equal": {
+      "core": [
+        "string",
+        "string",
+        "string",
+        "no output"
+      ]
+    },
+    "require('fs').lstat": {
+      "core": [
+        "string",
+        "function",
+        "no output"
+      ]
+    },
+    "require('fs').readdir": {
+      "core": [
+        "string",
+        "function",
+        "no output"
+      ]
+    },
+    "require('path').join": {
+      "core": [
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    "require('fs').statSync": {
+      "core": [
+        "string",
+        "object"
+      ]
+    },
+    "require('fs').lstatSync": {
+      "core": [
+        "string",
+        "object"
+      ]
+    },
+    "require('fs').readdirSync": {
+      "core": [
+        "string",
+        "object"
+      ]
+    },
+    "require('fs').unlinkSync": {
+      "core": [
+        "string",
+        "no output"
+      ]
+    },
+    "require('fs').rmdirSync": {
+      "core": [
+        "string",
+        "object",
+        "no output"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/rimraf/_rimraf.js": {}
+}

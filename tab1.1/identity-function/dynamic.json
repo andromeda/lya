@@ -1,0 +1,11 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/identity-function/index.js": {
+    "require('./_index.js')": {
+      "core": [
+        "number",
+        "number"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/identity-function/_index.js": {}
+}

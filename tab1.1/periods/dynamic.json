@@ -1,0 +1,37 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/periods/periods.js": {
+    "require('./_periods.js').day": {
+      "core": [
+        "no-input",
+        "number"
+      ]
+    },
+    "require('./_periods.js').days": {
+      "core": [
+        "no-input",
+        "number"
+      ]
+    },
+    "require('./_periods.js').monthRough": {
+      "core": [
+        "no-input",
+        "number"
+      ]
+    },
+    "require('./_periods.js').monthsRough": {
+      "core": [
+        "no-input",
+        "number"
+      ]
+    },
+    "require('./_periods.js').week": {
+      "core": [
+        "number",
+        "number",
+        "object",
+        "number"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/periods/_periods.js": {}
+}

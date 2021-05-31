@@ -1,0 +1,11 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/pad-left/index.js": {
+    "require('./_index.js').padLeft": {
+      "core": [
+        "string",
+        "string"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/pad-left/_index.js": {}
+}

@@ -1,0 +1,17 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/is-generator/is-generator.js": {
+    "require('./_is-generator.js').isGenerator": {
+      "core": [
+        "object",
+        "no output"
+      ]
+    },
+    "require('./_is-generator.js').isGenerator.fn": {
+      "core": [
+        "object",
+        "no output"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/is-generator/_is-generator.js": {}
+}

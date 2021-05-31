@@ -1,8 +1,0 @@
-{
-  "/home/grigorisntousakis/lya/core/tst/sec/fast-redact/poc.js": {
-    "console": "r",
-    "console.log": "rx",
-    "require": "rx",
-    "require('./index.js')": "irx"
-  }
-}

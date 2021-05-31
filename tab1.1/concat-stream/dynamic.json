@@ -1,0 +1,11 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/concat-stream/index.js": {
+    "require('./lib/_stream_readable.js').Readable.Writable": {
+      "core": [
+        "object",
+        "no output"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/concat-stream/_index.js": {}
+}

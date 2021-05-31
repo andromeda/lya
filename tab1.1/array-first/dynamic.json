@@ -1,0 +1,11 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/array-first/index.js": {
+    "require('./_index.js').arrayFirst": {
+      "core": [
+        "object",
+        "string"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/array-first/_index.js": {}
+}

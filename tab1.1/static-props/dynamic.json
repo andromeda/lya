@@ -1,0 +1,11 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/static-props/static-props.js": {
+    "require('./_static-props.js').staticProps": {
+      "core": [
+        "function",
+        "function"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/static-props/_static-props.js": {}
+}

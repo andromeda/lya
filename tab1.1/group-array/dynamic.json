@@ -1,0 +1,13 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/group-array/index.js": {
+    "require('union-value')": {
+      "core": [
+        "object",
+        "string",
+        "object",
+        "object"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/group-array/_index.js": {}
+}

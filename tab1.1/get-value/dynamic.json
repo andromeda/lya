@@ -1,0 +1,11 @@
+{
+  "/home/gntousakis/lya/tst/micro-packages/get-value/index.js": {
+    "require('isobject').isObject": {
+      "core": [
+        "undefined",
+        "no output"
+      ]
+    }
+  },
+  "/home/gntousakis/lya/tst/micro-packages/get-value/_index.js": {}
+}
