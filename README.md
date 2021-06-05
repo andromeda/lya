@@ -1,7 +1,7 @@
 # ESEC/FSE'21 Artifact for Submission #286
 
 # A Short Lya Tutorial
-Quick jump: [Introduction](#introduction) | [Installation](#installation) | [Running Lya](#running-lya)
+Quick jump: [Introduction](#introduction) | [Installation](#installation) | [Running Lya](#running-lya) | [Running Artifact](#running-artifact)
 
 This short tutorial covers the `lya`'s main functionality.
 
@@ -36,9 +36,10 @@ npm install
 
 #### From docker image
 
-```
-docker pull xxxxx
-docker start -i "name of xxxxx"
+```sh
+docker pull gntousakis/lya-jalangi:1.0.2
+lya=$(docker images | grep lya)
+docker start -i $lya
 ```
 
 ## Running Lya
@@ -65,3 +66,12 @@ The configuration above first configures running the `ON_OFF` analysis, and save
 Lya expects the  developer of a new  analysis to provide a few  methods that Lya
 will hook  across all modules. It  supports several methods, but  a useful analysis
 can be written with any subset of them. Example methods include `sourceTransform`, `onImport`, and `onRead`.
+
+## Running Artifact
+
+Start the lya container
+```sh
+docker pull gntousakis/lya-jalangi:1.0.2
+lya=$(docker images | grep lya)
+docker start -i $lya
+```
