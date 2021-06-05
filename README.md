@@ -69,9 +69,27 @@ can be written with any subset of them. Example methods include `sourceTransform
 
 ## Running Artifact
 
+#### Installing docker
+```sh
+sudo ./scripts/installDocker
+```
+#### Running the lya container
 Start the lya container
 ```sh
 docker pull gntousakis/lya-jalangi:1.0.2
 lya=$(docker images | grep lya)
 docker start -i $lya
+```
+#### Running scripts
+Inside the lya container in order to get the results
+```sh
+ cd home/lya/ 
+ cd tab1.1
+ ./run-perf.sh # This creates resultsTab1 that contains all the results
+ ./run-perf-pure.sh # This creates resultsTab1Pure that contains the results without the analysis
+ cd ..
+ cd jalangi_test/
+./run.sh  # This runs lya on jalangi suite and creates timeResultsPure.txt, timeResultsLyaNOWITH.txt, timeResultsLya.txt
+cd jalangi2/simpleAnalysis/
+./run.sh # This runs jalangi on his suite and creates timeResultsJalangi.txt, timeResultsJalangiDir.txt, timeResultsJalangiEns.txt
 ```
