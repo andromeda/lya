@@ -1,7 +1,7 @@
-# ESEC/FSE'21 Artifact for Submission #286
+# Lya: Efficient Module-Level Dynamic Analysis
+> This is the repository for ESEC/FSE'21 submission #286 (Artifact submission #37)
 
-# A Short Lya Tutorial
-Quick jump: [Introduction](#introduction) | [Installation](#installation) | [Running Lya](#running-lya) | [Running Artifact](#running-artifact)
+Quick jump: [Introduction](#introduction) | [Artifact Info](#artifact-info) | [Installation](#installation) | [Running Lya](#running-lya) | [Running Artifact](#running-artifact)
 
 This short tutorial covers the `lya`'s main functionality.
 
@@ -15,16 +15,31 @@ Programmers interested in Lya fall under two categories. The first is programmer
 
 The second is programmers who want to write their own analyses, achievable by providing a few methods and parameters; in our experience, powerful analyses can be expressed in only a few lines of code—for more info, see how to write an analysis below.
 
+## Artifact Info
+
+* [README.md](./README.md): This file, combined with the gist shared secretly with reviewers, explains what the artifact does and how it can be obtained. The gist contains secret credentials for running the experiments on the same machine used to obtain the results reported in the paper.
+
+* [REQUIREMENTS.md](./REQUIREMENTS.md]: This file covers aspects of software environment, including versions of Node.js and Racket.
+
+* [STATUS.md](./STATUS.md): This file states what kind of badge(s) we are applying for, as well as the reasons why we believe that the artifact deserves that badge(s).
+
+* [LICENSE](./LICENSE): This file describes the distribution rights. Lya is distributed under a permissive MIT License.
+
+* [INSTALL](./INSTALL.md): This file covers instructions. These instructions also include notes illustrating a very basic usage example or a method to test the installation.
+
+* [paper.pdf](./doc/lya-fse.pdf): This is the accepted version of the paper, sans `anonymous` and `review` options of the `acmart.cls` template.
+
+
 ## Installation
 
 Lya runs best with Node v8.9.4. You can use nvm (macOS/Linux) to switch Node versions between different projects.
 
-#### From Npm
+#### From npm
 
 ```sh
 npm i @andromeda/lya --save-dev
 ```
-If you want to install globally, so as to analyzing any program or library in the system, replace --save-dev with -g.
+If you want to install globally, so as to analyzing any program or library in the system, replace `--save-dev` with `-g`.
 
 #### From source
 
@@ -44,6 +59,10 @@ docker start -i $lya
 
 ## Running Lya
 
+There are two ways to use Lya. The first is to use one of its existing dynamic analyses on an existing library.
+
+#### Using an Existing Analysis
+
 Then, add lya _as  a first import at the top-level  file_ in your project—that
 is,  almost always  Lya  has to  be  the first  package to  be  loaded. One  can
 configure  several parameters,  including  use  any of  the  predefined list  of
@@ -61,11 +80,9 @@ require("./main.js");
 
 The configuration above first configures running the `ON_OFF` analysis, and saves the results in `./dynamic.json`. 
 
-#### How to Create a New  Analysis?
+#### Creating a New  Analysis
 
-Lya expects the  developer of a new  analysis to provide a few  methods that Lya
-will hook  across all modules. It  supports several methods, but  a useful analysis
-can be written with any subset of them. Example methods include `sourceTransform`, `onImport`, and `onRead`.
+Lya expects the  developer of a new  analysis to provide a few  methods that Lya will hook  across all modules. It  supports several methods, but  a useful analysis can be written with any subset of them. Example methods include `sourceTransform`, `onImport`, and `onRead`. See the [ICFP20 Tutorial]() on how to write an analysis with Lya.
 
 ## Running Artifact
 
