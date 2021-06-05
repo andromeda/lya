@@ -1,9 +1,7 @@
 # Lya: Efficient Module-Level Dynamic Analysis
 > This is the repository for ESEC/FSE'21 submission #286 (Artifact submission #37)
 
-Quick jump: [Introduction](#introduction) | [Artifact Info](#artifact-info) | [Installation](#installation) | [Running Lya](#running-lya) | [Running Artifact](#running-artifact)
-
-This short tutorial covers the `lya`'s main functionality.
+Quick jump: [Introduction](#introduction) | [Artifact Info](#artifact-info) | [Installation](#installation) | [Running Lya](#running-lya) | [More on Lya](#more-on-lya)
 
 ## Introduction
 
@@ -84,29 +82,6 @@ The configuration above first configures running the `ON_OFF` analysis, and save
 
 Lya expects the  developer of a new  analysis to provide a few  methods that Lya will hook  across all modules. It  supports several methods, but  a useful analysis can be written with any subset of them. Example methods include `sourceTransform`, `onImport`, and `onRead`. See the [ICFP20 Tutorial]() on how to write an analysis with Lya.
 
-## Running Artifact
+## More on Lya
 
-#### Installing docker
-```sh
-sudo ./scripts/installDocker
-```
-#### Running the lya container
-Start the lya container
-```sh
-docker pull gntousakis/lya-jalangi:1.0.2
-lya=$(docker images | grep lya)
-docker start -i $lya
-```
-#### Running scripts
-Inside the lya container in order to get the results
-```sh
- cd home/lya/ 
- cd tab1.1
- ./run-perf.sh # This creates resultsTab1 that contains all the results
- ./run-perf-pure.sh # This creates resultsTab1Pure that contains the results without the analysis
- cd ..
- cd jalangi_test/
-./run.sh  # This runs lya on jalangi suite and creates timeResultsPure.txt, timeResultsLyaNOWITH.txt, timeResultsLya.txt
-cd jalangi2/simpleAnalysis/
-./run.sh # This runs jalangi on his suite and creates timeResultsJalangi.txt, timeResultsJalangiDir.txt, timeResultsJalangiEns.txt
-```
+Additional resources:
