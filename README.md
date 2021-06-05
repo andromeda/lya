@@ -17,7 +17,7 @@ The second is programmers who want to write their own analyses, achievable by pr
 
 * [README.md](./README.md): This file, combined with the gist shared secretly with reviewers, explains what the artifact does and how it can be obtained. The gist contains secret credentials for running the experiments on the same machine used to obtain the results reported in the paper.
 
-* [REQUIREMENTS.md](./REQUIREMENTS.md]: This file covers aspects of software environment, including versions of Node.js and Racket.
+* [REQUIREMENTS.md](./REQUIREMENTS.md): This file covers aspects of software environment, including versions of Node.js and Racket.
 
 * [STATUS.md](./STATUS.md): This file states what kind of badge(s) we are applying for, as well as the reasons why we believe that the artifact deserves that badge(s).
 
