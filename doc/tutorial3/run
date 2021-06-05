@@ -1,0 +1,182 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+msg()
+{
+	local message="$1"
+	local bold=$(tput bold)
+	local normal=$(tput sgr0)
+	
+	local color=$(tput setaf 2)
+	local color_default=$(tput setaf 9)
+
+	echo ""
+	echo "${bold}${color}${message}${color_default}${normal}"
+}
+
+wrnmsg()
+{
+	local message="$1"
+	local bold=$(tput bold)
+	local normal=$(tput sgr0)
+	
+	local color=$(tput setaf 4)
+	local color_default=$(tput setaf 9)
+	
+  echo ""
+	echo "${bold}${color}${message}${color_default}${normal}"
+}
+
+rm -rf eval/personal.data
+rm -rf malicious/node_modules
+rm -rf malicious/pass.info
+
+while true
+do
+PS3="Select demo: "
+select option in Bottleneck Eval Malicious Exit
+do
+  case $option in
+    Bottleneck)
+      msg "Starting bottleneck Demo"
+      msg "Example of module that adds a significant bottleneck"
+
+      msg "Running the example program"
+      node bottleneck/example.js
+      msg "The program has a significant performance bottleneck!"
+
+      msg "Running it again with a simple performance analysis to extract call times"
+      ../../lya.js bottleneck/example.js -p -a call-times
+
+      msg "The performance bottleneck is detected!"
+      msg "We can see that pbkdf2Sync is the slowest function call"
+      read -p "Press enter to continue"
+
+      echo -e "\n"
+      break
+      ;;
+    Eval)
+      msg "Starting eval Demo"
+      msg "Example of a payload offload to a remote web server that executes a eval command"
+      
+      msg "Confirming that are is no personal.data file in this directory"
+      ls -l eval/*.data && true
+
+      msg "Launching the HTTP server"
+      node eval/http-server.js 8001 &
+
+      msg "Sending a malicious payload"
+      node eval/attack.js 8001
+      
+      msg "Confirming that a personal.data has been created"
+      ls -l *.data
+      msg "The payload created a personal.data file on the server!"
+      read -p "Press enter to continue"
+
+      msg "Running snyk tool on directory"
+      # cd into dir
+      # running snyk test
+
+      msg "Running npm audit on directory"
+      cd eval
+      npm audit
+      cd ..
+      msg "Both tools do not detect the attack"
+      read -p "Press enter to continue"
+
+      msg "Running HTTP server with dynamic analysis"
+      msg "Please open a new window and run the following command"
+      echo "../../lya.js eval/http-server.js -p --prop-exclude eval"
+      read -p "Press enter to continue"
+
+      msg "Sending a malicious payload again"
+      node eval/attack.js
+
+      msg "The attack is detected!"
+      read -p "Press enter to continue"
+
+      msg "Generating static analysis result"
+      mir-sa eval/node_modules/@andromeda/serial/index.js > eval/static.json
+
+      msg "Deploying payload along with dynamic + static analysis"
+      msg "Please open a new window and run the following command"
+      echo "../../lya.js eval/http-server.js -p --prop-exclude eval --module-include 'doc/tutorial3/eval/node_modules/@andromeda/serial/index.js' -r 'eval/static.json' -a RWX_ENFORCEMENT  --context-exclude 'module-locals'"
+      read -p "Press enter to continue"
+
+      msg "Sending a malicious payload again"
+      node eval/attack.js
+
+      msg "The attack is prevented!"
+      read -p "Press enter to continue"
+      echo -e "\n"
+      break
+      ;;
+    Malicious)
+      msg "Starting malicious Demo"
+      msg "Example of a module turned malicious!"
+
+      cd malicious
+      msg "Installing version 1.0.0 of @andromeda/calc"
+      npm install @andromeda/calc@1.0.0
+      
+      msg "This version is not malicious and works as expected"
+      msg "Executing example program that utilizes @andromeda/calc module"
+      node main.js
+      read -p "Press enter to continue"
+
+      msg "Generating static analysis result"
+      mir-sa node_modules/@andromeda/calc/index.js > static.json
+
+      msg "We now install version 2.0.0 of @andromeda/calc"
+      npm install @andromeda/calc@2.0.0
+
+      msg "Running the example program again"
+      node main.js
+      
+      msg "This version is malicious and reads a personal.info file and writes to pass.info"
+      ls -l
+      read -p "Press enter to continue"
+
+      msg "Running snyk tool on directory"
+      # cd into dir
+      # running snyk test
+
+      msg "Running npm audit on directory"
+      npm audit
+      msg "Both tools do not detect the attack"
+      read -p "Press enter to continue"
+
+      msg "Running the example program with the dynamic analysis"
+      ../../../lya.js main.js -p --prop-exclude eval
+
+      msg "The attack is detected!"
+      read -p "Press enter to continue"
+      
+      msg "Deploying payload along with dynamic + static analysis"
+      msg "Please open a new window and run the following command"
+      ../../../lya.js main.js -p --prop-exclude eval --module-include 'doc/tutorial3/malicious/node_modules/@andromeda/calc/index.js' -r 'static.json' -a RWX_ENFORCEMENT --context-exclude 'module-locals' & true
+      
+      msg "The attack is prevented!"
+      read -p "Press enter to continue"
+      echo -e "\n"
+      cd ..
+      break
+      ;;
+    Exit)
+      rm -rf eval/personal.data
+      rm -rf malicious/node_modules
+      rm -rf malicious/pass.info
+      
+      echo -e "\n\n"      
+      msg "End of demo!"
+      exit
+      ;;
+    *)
+      wrnmsg "Invalid Option" 
+
+      echo -e "\n"
+      break
+      ;;
+  esac   
+  done
+done
