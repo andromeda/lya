@@ -1,0 +1,18 @@
+{
+  "/home/grigorisntousakis/lya/doc/tutorial/slides/fields/include/generated.test": {},
+  "/home/grigorisntousakis/lya/doc/tutorial/slides/fields/include/main.js": {
+    "require": "rx",
+    "require('fs')": "ir",
+    "require('./m1.js')": "i",
+    "require('fs').createWriteStream": "rx"
+  },
+  "/home/grigorisntousakis/lya/doc/tutorial/slides/fields/include/m1.js": {
+    "require": "rx",
+    "require('./m2.js')": "ir",
+    "require('./m2.js').add": "rx"
+  },
+  "/home/grigorisntousakis/lya/doc/tutorial/slides/fields/include/m2.js": {
+    "module": "r",
+    "module.exports": "w"
+  }
+}

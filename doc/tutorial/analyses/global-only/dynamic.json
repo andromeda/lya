@@ -1,0 +1,7 @@
+{
+  "/home/grigorisntousakis/lya/doc/tutorial/analyses/examples/global-only/main.js": {},
+  "/home/grigorisntousakis/lya/doc/tutorial/analyses/examples/global-only/add.js": {
+    "Array": true,
+    "console.log": true
+  }
+}

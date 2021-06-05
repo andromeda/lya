@@ -1,0 +1,14 @@
+{
+  "/home/grigorisntousakis/lya/doc/tutorial/showcase/example_1/lya.js": {},
+  "/home/grigorisntousakis/lya/doc/tutorial/showcase/example_1/main.js": {
+    "require": "rx",
+    "require('arr-diff')": "ir",
+    "require('arr-diff').diff": "rx"
+  },
+  "/home/grigorisntousakis/lya/node_modules/arr-diff/index.js": {
+    "module": "r",
+    "module.exports": "w",
+    "Array": "r",
+    "Array.isArray": "rx"
+  }
+}

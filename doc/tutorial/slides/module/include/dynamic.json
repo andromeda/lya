@@ -1,0 +1,9 @@
+{
+  "/home/grigorisntousakis/lya/tst/slides/t0/include/generated.test": {},
+  "/home/grigorisntousakis/lya/tst/slides/t0/include/main.js": {
+    "require": "rx",
+    "require('fs')": "ir",
+    "require('./m1.js')": "i",
+    "require('fs').createWriteStream": "rx"
+  }
+}
