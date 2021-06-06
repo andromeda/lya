@@ -12,6 +12,8 @@ const preset = {
   IMPORTS: pathJoin(__dirname, '../analysis/simple/imports.js'),
   ON_OFF: pathJoin(__dirname, '../analysis/access/on-off.js'),
   ON_OFF_ENFORCE: pathJoin(__dirname, '../analysis/access/on-off-enforce.js'),
+  RWX_ENFORCEMENT: pathJoin(__dirname, '../analysis/access/rwx-enforcement.js'),
+  RWX: pathJoin(__dirname, '../analysis/access/rwx.js'),
   SIMPLE_TYPES: pathJoin(__dirname, '../analysis/spec/simple-types.js'),
   SUB_TYPES: pathJoin(__dirname, 'sub-types.js'),
   TERM_INDEX: pathJoin(__dirname, '../analysis/simple/term-index.js'),
