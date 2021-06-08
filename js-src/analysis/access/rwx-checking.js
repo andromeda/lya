@@ -2,12 +2,10 @@ let env;
 
 const uniqueValid = new Set();
 const uniqueInvalid = new Set();
-const path = require('path');
 const fs = require('fs');
 let countValid = 0;
 let countInvalid = 0;
 let groundTruth;
-let debug = false;
 
 // We need to get the path of the main module in order to find dynamic json
 const getAnalysisData = () => {
@@ -24,15 +22,13 @@ const getAnalysisData = () => {
 };
 
 const checkUndefined = (info) => {
-   
   const module = groundTruth[info.currentModule];
   if (module === undefined) {
-    return info.declareModule
+    return info.declareModule;
   }
 
-  return info.currentModule
-
-}
+  return info.currentModule;
+};
 
 // TODO: Make the path of the imported analysis result  not absolute
 // etc.. /greg/home/lya/tst/main.js ~> main.js
@@ -69,10 +65,10 @@ const checkRWX = (storedCalls, truename, modeGrid) => {
 // Analyses provided by LYA.
 // onRead <~ is called before every object is read
 const onRead = (info) => {
-  info.currentModule = checkUndefined(info); 
+  info.currentModule = checkUndefined(info);
   if (info.nameToStore != 'global') {
     const pattern = /require[(](.*)[)]/;
-    info.currentModule = checkUndefined(info); 
+    info.currentModule = checkUndefined(info);
     if (pattern.test(info.nameToStore)) {
       checkRWX(groundTruth[info.currentModule],
           info.nameToStore.match(pattern)[0], ['r']);
@@ -87,14 +83,14 @@ const onRead = (info) => {
 
 // onWrite <~ is called before every write of an object
 const onWrite = (info) => {
-  info.currentModule = checkUndefined(info); 
+  info.currentModule = checkUndefined(info);
   checkRWX(groundTruth[info.currentModule], info.parentName, ['r']);
   checkRWX(groundTruth[info.currentModule], info.nameToStore, ['w']);
 };
 
 // onCallPre <~ is called before the execution of a function
 const onCallPre = (info) => {
-  info.currentModule = checkUndefined(info); 
+  info.currentModule = checkUndefined(info);
   if (info.typeClass === 'module-locals') {
     checkRWX(groundTruth[info.currentModule],
         'require', ['r', 'x']);
@@ -114,11 +110,13 @@ const onCallPre = (info) => {
 // onExit (toSave == place to save the result) --maybe make it module-local?
 const onExit = () => {
   const debugName = env.conf.debugName ? env.conf.debugName : '';
-  const expl = '# name: (total, uniqueValid, uniqueInvalid, countValid, countInvalid, ratio, correctness)';
+  const expl = '# name: (total, uniqueValid, uniqueInvalid,' +
+    'countValid, countInvalid, ratio, correctness)';
   const total = env.counters.total;
   const ratio = (+(countInvalid / total).toFixed(5));
   const corr = countValid > 0 ? 'correct' : '';
-  const msg = `${debugName} ${total} ${uniqueValid.size} ${uniqueInvalid.size} ${countValid} ${countInvalid} ${ratio} ${corr} ${expl}`;
+  const msg = `${debugName} ${total} ${uniqueValid.size} ${uniqueInvalid.size} 
+    ${countValid} ${countInvalid} ${ratio} ${corr} ${expl}`;
   if (env.conf.print) {
     console.error(msg);
   }
@@ -130,7 +128,6 @@ const onExit = () => {
 module.exports = (e) => {
   env = e;
   groundTruth = env.conf.rules? require(env.conf.rules) : getAnalysisData();
-  debug = env.conf.debug;
   return {
     onRead: onRead,
     onCallPre: onCallPre,
