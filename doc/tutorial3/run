@@ -59,7 +59,7 @@ do
       msg "Starting eval Demo"
       
       msg "Installing dependencies"
-      node install eval/
+      npm install eval/
 
       msg "Example of a payload offload to a remote web server that executes a eval command"
       
