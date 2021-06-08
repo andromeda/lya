@@ -57,6 +57,10 @@ do
       ;;
     Eval)
       msg "Starting eval Demo"
+      
+      msg "Installing dependencies"
+      node install eval/
+
       msg "Example of a payload offload to a remote web server that executes a eval command"
       
       msg "Confirming that are is no personal.data file in this directory"
@@ -72,10 +76,6 @@ do
       ls -l *.data
       msg "The payload created a personal.data file on the server!"
       read -p "Press enter to continue"
-
-      msg "Running snyk tool on directory"
-      # cd into dir
-      # running snyk test
 
       msg "Running npm audit on directory"
       cd eval

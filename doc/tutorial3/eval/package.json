@@ -4,8 +4,6 @@
   "main": "main.js",
   "dependencies": {
     "@andromeda/serial": "^1.0.0",
-    "crypto": "^1.0.1",
-    "express": "^4.17.1",
     "tiny-json-http": "^7.3.0"
   },
   "devDependencies": {},
