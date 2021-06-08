@@ -42,11 +42,11 @@ npm install
 
 ### Option 3: From docker image
 ```Shell
-docker pull xxxxx
-docker start -i "name of xxxxx"
-```
+docker run -it gntousakis/lya:1.0.0
 
-**FIXME**
+# Inside the container
+cd home/lya/ 
+```
 
 ## Quick Start
 
