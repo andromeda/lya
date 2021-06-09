@@ -84,4 +84,10 @@ Lya expects the  developer of a new  analysis to provide a few  methods that Lya
 
 ## More on Lya
 
-Additional resources:
+* [ICFP Tutorial Material](./doc/tutorial/)
+* [Configuring and Using Lya](./doc/config.md)
+* [Cool Tutorial to try](./doc/tutorial3)
+* [Developing Analyses](./doc/dev.md)
+* [Contributing](./doc/contrib.md)
+* [Commits](lya-commits@googlegroups.com) 
+* [Discussion](lya-discuss@googlegroups.com)
