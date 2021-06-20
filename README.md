@@ -50,9 +50,7 @@ npm install
 #### From docker image
 
 ```sh
-docker pull gntousakis/lya-jalangi:1.0.2
-lya=$(docker images | grep lya)
-docker start -i $lya
+docker start -i lya
 ```
 
 ## Running Lya
