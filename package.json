@@ -1,6 +1,6 @@
 {
   "name": "@andromeda/lya",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "description": "Library-oriented Dynamic Analysis",
   "main": "src/core.js",
   "scripts": {
@@ -73,8 +73,7 @@
   },
   "homepage": "https://github.com/andromeda/lya",
   "dependencies": {
-    "arg": "^4.1.3",
-    "example5": "file:doc/tutorial3/eval"
+    "arg": "^4.1.3"
   },
   "devDependencies": {
     "chai": "^4.2.0",
